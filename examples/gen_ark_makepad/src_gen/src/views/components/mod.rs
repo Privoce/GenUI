@@ -1,1 +1,1 @@
-pub mod header ; pub mod banner ; pub mod main_page ;
+pub mod header ; pub mod banner ; pub mod main_page ; pub mod my_widget;

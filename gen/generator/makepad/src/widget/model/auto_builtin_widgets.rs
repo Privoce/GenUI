@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
-use gen_utils::common::{fs, snake_to_camel, Source, Ulid};
+use gen_utils::{
+    common::{fs, snake_to_camel, Source, Ulid},
+    error::{Errors, FsError},
+};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse2, parse_str, Ident};
@@ -11,6 +14,9 @@ use crate::ToToken;
 use super::{live_design::LiveDesign, role::Role, safe_widget::SafeWidget};
 
 pub trait AutoBuiltinCompile {
+    fn before_compile<P>(&self, path: P) -> Result<(), Errors>
+    where
+        P: AsRef<std::path::Path>;
     /// widget -> safe_widget (if role is for or if_else) -> insert into AUTO_BUILTIN_WIDGETS -> AutoBuiltinWidgets -> compile
     /// this fn will return a vec of live_register!
     fn compile<P>(&self, path: P) -> Option<Vec<String>>
@@ -19,6 +25,27 @@ pub trait AutoBuiltinCompile {
 }
 
 impl AutoBuiltinCompile for Vec<SafeWidget> {
+    fn before_compile<P>(&self, path: P) -> Result<(), Errors>
+    where
+        P: AsRef<std::path::Path>,
+    {
+        // judget if src/auto dir exists, if exists, remove all files in it, if not exists, create it
+        let auto_dir = path.as_ref().join("src").join("auto");
+        if auto_dir.exists() {
+            std::fs::remove_dir_all(auto_dir.as_path()).map_err(|e| {
+                Errors::FsError(FsError::Delete {
+                    path: path.as_ref().to_path_buf(),
+                    reason: e.to_string(),
+                })
+            })?;
+        }
+        std::fs::create_dir(auto_dir.as_path()).map_err(|e| {
+            Errors::FsError(FsError::Create {
+                path: path.as_ref().to_path_buf(),
+                reason: e.to_string(),
+            })
+        })
+    }
     fn compile<P>(&self, path: P) -> Option<Vec<String>>
     where
         P: AsRef<std::path::Path>,
@@ -42,7 +69,7 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
                     fs::append(
                         path.as_ref(),
                         &format!(
-                            "pub mod {}; ",
+                            "#[allow(non_snake_case)] pub mod {}; ",
                             source.compiled_file.file_stem().unwrap().to_str().unwrap()
                         ),
                     )
@@ -87,7 +114,8 @@ fn for_widget_to_live_design(
         .join(&format!("{}_{}.rs", &origin_widget_name, ulid));
     // check current widget is define or is static ---------------------------------------------------------------------------------------------------
     if widget.is_static {
-        let widget_name = parse_str::<TokenStream>(&format!("{}{}", &origin_widget_name, ulid)).unwrap();
+        let widget_name =
+            parse_str::<TokenStream>(&format!("{}{}", &origin_widget_name, ulid)).unwrap();
         let inner_tree = parse_str::<TokenStream>(widget.tree.as_ref().unwrap()).unwrap();
         // generate widget tree code -----------------------------------------------------------------------------------------------------------------
         let tree = quote! {
@@ -100,7 +128,8 @@ fn for_widget_to_live_design(
         let loop_ident = parse_str::<TokenStream>(&credential.iter_ident).unwrap();
         let loop_type = parse_str::<TokenStream>(&loop_type).unwrap();
         let origin_ref = parse_str::<TokenStream>(&format!("{}Ref", &origin_widget_name)).unwrap();
-        let widget_ref = parse_str::<TokenStream>(&format!("{}{}Ref", &origin_widget_name, ulid)).unwrap();
+        let widget_ref =
+            parse_str::<TokenStream>(&format!("{}{}Ref", &origin_widget_name, ulid)).unwrap();
         let live_hook = widget
             .live_hook
             .as_ref()

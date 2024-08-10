@@ -202,6 +202,7 @@ impl Makepad {
                 .join("src")
                 .join("auto")
                 .join("mod.rs");
+            let _ = auto_widgets.before_compile(self.main_rs.source.compiled_dir.as_path()).unwrap();
             let _ = fs::create_file(auto_path.as_path())
                 .expect("create auto dir or auto mod.rs failed");
             auto_widgets.compile(auto_path.as_path())

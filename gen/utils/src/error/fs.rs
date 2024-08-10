@@ -13,6 +13,8 @@ pub enum FsError {
     Read { path: PathBuf, reason: String },
     /// Write Error
     Write { path: PathBuf, reason: String },
+    /// Delete Error
+    Delete { path: PathBuf, reason: String },
     /// UnExpected Error, maybe the file or dir can not access to be read or wrote or found
     UnExpected(String),
 }
@@ -23,11 +25,15 @@ impl Display for FsError {
             FsError::FileNotFound(p) => f.write_fmt(format_args!("File: {:?} can not found", p)),
             FsError::DirNotFound(p) => f.write_fmt(format_args!("Dir: {:?} can not found", p)),
             FsError::Read { path, reason } => f.write_fmt(format_args!(
-                "Read File: {:?} Error\n Reason: {}",
+                "Read File|Dir: {:?} Error\n Reason: {}",
                 path, reason
             )),
             FsError::Write { path, reason } => f.write_fmt(format_args!(
-                "Write File: {:?} Error\n Reason: {}",
+                "Write File|Dir: {:?} Error\n Reason: {}",
+                path, reason
+            )),
+            FsError::Delete { path, reason } => f.write_fmt(format_args!(
+                "Delete File|Dir: {:?} Error\n Reason: {}",
                 path, reason
             )),
             FsError::UnExpected(reason) => f.write_fmt(format_args!("UnExpected Error: {}", reason)),
