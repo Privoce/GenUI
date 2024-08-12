@@ -11,7 +11,7 @@ use std::fmt::Display;
 use std::{collections::HashMap, default, fmt::Debug};
 
 use gen_converter::model::script::PropFn;
-use gen_parser::{PropsKey, Value};
+use gen_parser::{PropsKey, Value, BUILTIN_PROPS};
 use gen_utils::{common::snake_to_camel, error::Errors};
 use proc_macro2::TokenStream;
 use syn::{Ident, ItemStruct};
@@ -89,8 +89,11 @@ const MARKDOWN: &str = "Markdown";
 const HTML: &str = "Html";
 
 /// 判断是否是内置属性， 内置属性需要忽略
+/// 事实上，这里只是个防备，因为这些内置属性一般都会在处理之前移除
+/// 如果这个函数返回true，说明当前开发者忘记移除内置属性，这是个bug
+/// 这会直接panic
 pub fn prop_ignore(prop: &str) -> bool {
-    ["id", "class", "as_prop"].contains(&prop)
+    BUILTIN_PROPS.contains(&prop)
 }
 
 #[derive(Debug, Clone, Default)]
@@ -422,6 +425,46 @@ impl BuiltIn {
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
             BuiltIn::Root => todo!(),
+            BuiltIn::DropDown => todo!(),
+            BuiltIn::LinkLabel => todo!(),
+            BuiltIn::DesktopButton => todo!(),
+            BuiltIn::Splitter => todo!(),
+            BuiltIn::RotatedImage => todo!(),
+            BuiltIn::FoldButton => todo!(),
+            BuiltIn::FoldHeader => todo!(),
+            BuiltIn::Slider => todo!(),
+            BuiltIn::SliderBig => todo!(),
+            BuiltIn::SlidesView => todo!(),
+            BuiltIn::Slide => todo!(),
+            BuiltIn::SlideBody => todo!(),
+            BuiltIn::SlideChapter => todo!(),
+            BuiltIn::ScrollBar => todo!(),
+            BuiltIn::ScrollBars => todo!(),
+            BuiltIn::Markdown => todo!(),
+            BuiltIn::Html => todo!(),
+        }
+    }
+    pub fn default_deref_ptr(&self, name: &str) -> TokenStream{
+        match self{
+            BuiltIn::Window => todo!(),
+            BuiltIn::View => todo!(),
+            BuiltIn::ScrollXView => todo!(),
+            BuiltIn::ScrollYView => todo!(),
+            BuiltIn::ScrollXYView => todo!(),
+            BuiltIn::SolidView => todo!(),
+            BuiltIn::RectView => todo!(),
+            BuiltIn::RectShadowView => todo!(),
+            BuiltIn::RoundedView => todo!(),
+            BuiltIn::RoundedShadowView => todo!(),
+            BuiltIn::TextInput => todo!(),
+            BuiltIn::Label => todo!(),
+            BuiltIn::Button => todo!(),
+            BuiltIn::Area => todo!(),
+            BuiltIn::Icon => todo!(),
+            BuiltIn::Image => todo!(),
+            BuiltIn::CheckBox => todo!(),
+            BuiltIn::Radio => todo!(),
+            BuiltIn::Root => root::RootPropPtr::deref_struct_ptr(name),
             BuiltIn::DropDown => todo!(),
             BuiltIn::LinkLabel => todo!(),
             BuiltIn::DesktopButton => todo!(),

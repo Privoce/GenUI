@@ -14,7 +14,7 @@ pub fn handle_event(
     prop_fields: Option<&Vec<Ident>>,
 ) -> TokenStream {
     quote_handle_event(
-        Some(ident("root")),
+        Some(ident("deref_widget")),
         event,
         props,
         instance_name,
@@ -24,6 +24,6 @@ pub fn handle_event(
 
 pub fn draw_walk() -> TokenStream {
     quote! {
-        self.root.draw_walk(cx, scope, walk)
+        self.deref_widget.draw_walk(cx, scope, walk)
     }
 }

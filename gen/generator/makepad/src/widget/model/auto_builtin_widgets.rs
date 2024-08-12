@@ -55,44 +55,118 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
         }
         let mut registers = vec![];
         for widget in self {
-            match &widget.role {
+            let (source, live_design) = match &widget.role {
                 Role::For {
                     id,
                     credential,
                     loop_type,
                     props,
-                } => {
-                    let (source, live_design) =
-                        for_widget_to_live_design(widget, id, credential, loop_type, props);
-
-                    // insert target mod into auto/mod.rs
-                    fs::append(
-                        path.as_ref(),
-                        &format!(
-                            "#[allow(non_snake_case)] pub mod {}; ",
-                            source.compiled_file.file_stem().unwrap().to_str().unwrap()
-                        ),
-                    )
-                    .expect("insert auto builtin widget mod failed");
-                    registers.push(format!(
-                        "crate::{}::live_design(cx);",
-                        source.to_live_register()
-                    ));
-                    // now should compile to source file
-                    let _ = fs::write(
-                        source.compiled_file.as_path(),
-                        &live_design.to_token_stream().to_string(),
-                    )
-                    .expect("write auto builtin widget source file failed");
+                } => for_widget_to_live_design(widget, id, credential, loop_type, props),
+                Role::If { id, props, .. } => {
+                    // dbg!(&self);
+                    if_widget_to_live_design(widget, id)
                 }
-                Role::If { .. } => {
-                    todo!("if_else widget compile");
-                }
-                _ => {}
-            }
+                _ => continue,
+            };
+            // insert target mod into auto/mod.rs
+            fs::append(
+                path.as_ref(),
+                &format!(
+                    "#[allow(non_snake_case)] pub mod {}; ",
+                    source.compiled_file.file_stem().unwrap().to_str().unwrap()
+                ),
+            )
+            .expect("insert auto builtin widget mod failed");
+            registers.push(format!(
+                "crate::{}::live_design(cx);",
+                source.to_live_register()
+            ));
+            // now should compile to source file
+            let _ = fs::write(
+                source.compiled_file.as_path(),
+                &live_design.to_token_stream().to_string(),
+            )
+            .expect("write auto builtin widget source file failed");
         }
         Some(registers)
     }
+}
+
+fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDesign) {
+    let mut live_design = LiveDesign::default();
+    // get widget source and change compiled_file to xxx/src_gen/src/auto/${source}.rs ---------------------------------------------------------------
+    let mut source = widget.source.as_ref().unwrap().clone();
+    source.compiled_file = source
+        .compiled_dir
+        .as_path()
+        .join("src")
+        .join("auto")
+        .join(&format!("{}_{}.rs", &widget.name, ulid));
+    // check current widget is define or is static ---------------------------------------------------------------------------------------------------
+    if widget.is_static {
+        let widget_name = parse_str::<TokenStream>(&format!("{}{}", &widget.name, ulid)).unwrap();
+        let inner_tree = parse_str::<TokenStream>(widget.tree.as_ref().unwrap()).unwrap();
+        // generate widget tree code -----------------------------------------------------------------------------------------------------------------
+        let tree = quote! {
+            #widget_name = {{#widget_name}}{
+                height: Fit,
+                width: Fit,
+                item: #inner_tree
+            }
+        };
+        live_design.tree = Some(tree);
+        // generate widget logic ---------------------------------------------------------------------------------------------------------------------
+        let if_widgets =
+            widget
+                .children
+                .as_ref()
+                .unwrap()
+                .iter()
+                .fold(TokenStream::new(), |mut acc, item| {
+                    // prefix: if|else_if|else, so name is : `${prefix}_${name}`, such as if_button
+                    let name = parse_str::<TokenStream>(
+                        format!("{}_{}", item.role.prefix_if().unwrap(), item.name).as_str(),
+                    )
+                    .unwrap();
+                    let ty =
+                        parse_str::<TokenStream>(snake_to_camel(&item.name).unwrap().as_str())
+                            .unwrap();
+                    acc.extend(quote! {
+                        #[live] #name: #ty,
+                    });
+                    acc
+                });
+
+        let if_signals = quote! {};
+        let draw_walk_expr = quote! {};
+        let handle_event_expr = quote! {};
+        let logic = quote! {
+            #[derive(Live, Widget, LiveHook)]
+            pub struct #widget_name {
+                #[rust] #[redraw] area: Area,
+                #[layout] layout: Layout,
+                #[walk] walk: Walk,
+                #if_widgets
+                #if_signals
+            }
+
+            impl Widget for #widget_name {
+                fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+                    cx.begin_turtle(walk, self.layout);
+                    #draw_walk_expr
+                    cx.end_turtle();
+                    DrawStep::done()
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    #handle_event_expr
+                }
+            }
+        };
+        live_design.logic = Some(logic);
+    } else {
+        panic!("do define widget, not support now");
+    }
+    (source, live_design)
 }
 
 fn for_widget_to_live_design(

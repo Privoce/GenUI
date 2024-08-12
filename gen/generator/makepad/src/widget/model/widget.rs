@@ -10,8 +10,9 @@ use gen_parser::{Bind, For, PropsKey, Value};
 use gen_utils::common::{
     ident, snake_to_camel,
     syn_ext::{let_to_self, TypeGetter},
-    Source,
+    IFSignal, Source, Ulid,
 };
+
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
@@ -26,8 +27,12 @@ use crate::{
 };
 
 use super::{
-    handler::WidgetHandler, live_hook::LiveHookTrait, role::Role, safe_widget::SafeWidget,
-    traits::WidgetTrait, ToLiveDesign,
+    handler::WidgetHandler,
+    live_hook::LiveHookTrait,
+    role::{Role, RoleType},
+    safe_widget::SafeWidget,
+    traits::WidgetTrait,
+    ToLiveDesign,
 };
 
 /// ## 当生成 live_design! 中的节点时
@@ -38,7 +43,7 @@ pub struct Widget {
     /// Makepad live_design! macro
     // pub live_design: Option<LiveDesign>,
     pub is_root: bool,
-    pub is_prop: bool,
+    /// is a built-in widget
     pub is_built_in: bool,
     /// is a define widget
     pub is_static: bool,
@@ -98,7 +103,7 @@ impl Widget {
         is_root: bool,
     ) -> Self {
         let mut widget = Widget::default();
-        
+
         match special {
             Some(special) => {
                 widget.source.replace(special.clone());
@@ -107,7 +112,15 @@ impl Widget {
                     // 获取文件名且改为首字母大写的camel
                     match inherits {
                         Some(_) => {
-                            widget.name = widget.source.as_ref().unwrap().source_name();
+                            widget.name = snake_to_camel(
+                                format!(
+                                    "{}_{}",
+                                    widget.source.as_ref().unwrap().source_name(),
+                                    name
+                                )
+                                .as_str(),
+                            )
+                            .unwrap();
                         }
                         None => {
                             // 首个节点没有inherits且name不是`component`
@@ -160,10 +173,6 @@ impl Widget {
     }
     pub fn set_is_static(&mut self, is_static: bool) -> &mut Self {
         self.is_static = is_static;
-        self
-    }
-    pub fn set_is_prop(&mut self, is_prop: bool) -> &mut Self {
-        self.is_prop = is_prop;
         self
     }
     pub fn set_is_built_in(&mut self, is_built_in: bool) -> &mut Self {
@@ -266,7 +275,7 @@ impl Widget {
             // if is not, check self.role is special or not, if is special, get for_ident or if_ident
             match &self.role {
                 Role::Normal => None,
-                Role::If { .. } => todo!("wait to impl"),
+                Role::If { .. } => None, // temlpate None todo!!!
                 Role::For { credential, .. } => {
                     Some(once(credential.iter_ident.to_string()).collect())
                 }
@@ -290,7 +299,7 @@ impl Widget {
         current_instance: Option<&CurrentInstance>,
         prop_fields: Option<&Vec<Ident>>,
     ) -> &mut Self {
-        if !self.is_root{
+        if !self.is_root {
             return self;
         }
 
@@ -340,7 +349,7 @@ impl Widget {
     }
     pub fn draw_walk(&mut self, draw_walk_tk: Option<TokenStream>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
-        if self.is_root{
+        if self.is_root {
             let builtin = self.inherits.as_ref().unwrap();
             let _ = self
                 .traits
@@ -384,6 +393,15 @@ impl Widget {
                 prop_ptr,
                 self.get_inherits().unwrap(),
             ));
+        } else {
+            // check current widget is root widgert? if true, set prop_ptr to BuiltIn::default_prop_ptr
+            if self.is_root {
+                self.prop_ptr.replace(
+                    self.get_inherits()
+                        .expect("root widget must has inherits")
+                        .default_deref_ptr(&self.name),
+                );
+            }
         }
         self
     }
@@ -419,12 +437,14 @@ impl Widget {
         &mut self,
         bind_props: Option<HashMap<&PropsKey, &Value>>,
         script: Option<&ScriptModel>,
+        if_ulid: Option<Ulid>,
     ) -> &mut Self {
         self.role = Role::Normal;
         if let Some(bind_props) = bind_props {
             // find `for` or `if` in bind props
             let mut for_flag = 0;
             let mut if_flag = 0;
+            let mut if_signal = None;
 
             let (mut for_ident, mut for_index, mut for_item): (
                 Option<String>,
@@ -451,9 +471,10 @@ impl Widget {
                         for_index = index.as_ref().map(|v| v.to_string());
                         for_item = item.as_ref().map(|v| v.to_string());
                     }
-                } else if k.name() == "if" {
+                } else if k.name() == "if" || k.name() == "else" || k.name() == "else_if" {
                     if_flag += 1;
                     if_ident = Some(v.to_string());
+                    if_signal = Some(IFSignal::from(k.name()));
                 }
             }
             // now check for or if flag and handle wait_checks
@@ -466,7 +487,8 @@ impl Widget {
                         .map(|(k, v)| (k.clone(), v.clone()))
                         .collect();
 
-                    self.role = Role::new_if(props);
+                    // self.role = Role::new_if(props, if_signal.unwrap());
+                    self.role = Role::new_option_if(props, if_signal.unwrap(), if_ulid);
                 } // if
                 (1_i32, 0_i32) => {
                     let props = bind_props
@@ -529,20 +551,64 @@ impl Widget {
     /// 1. replace widget name to `${widget_name}${ulid}`
     /// 2. directly remove props and children (these will be handled in for or if)
     pub fn handle_role(&mut self) -> &mut Self {
-        let ulid = match &self.role {
-            Role::If { id, .. } | Role::For { id, .. } => id,
-            Role::Normal => {
-                return self;
+        match &self.role {
+            Role::If { id, signal, .. } => {
+                match signal {
+                    IFSignal::If => {
+                        // if signal is If, create a new safe widget from current widget, and replace current widget
+                        let mut safety = SafeWidget::new_if_widget(&self);
+                        safety.append_tree(format!("if_{}: {}", &self.name, self.to_tree()));
+                        safety.insert_to_auto();
+                        let name = format!("IfWidget{}", id);
+                        self.name = name;
+                        self.clear();
+                    }
+                    IFSignal::ElseIf | IFSignal::Else => {
+                        // if signal is ElseIf or Else, do not need to create a new widget, append current widget to safe widget(from AUTO_WIDGET) then clear current widget
+                        let mut safeties = AUTO_BUILTIN_WIDGETS.lock().unwrap();
+                        // find if widget
+                        let mut safety = safeties.iter_mut().find(|widget| {
+                            let source_match =
+                                widget.source.as_ref().unwrap() == self.source.as_ref().unwrap();
+                            let if_ulid_match = widget.role.match_role(id);
+
+                            source_match && if_ulid_match.is_some_and(|x| x)
+                        });
+
+                        // if find, append else panic!
+                        if safety.is_some() {
+                            let prefix = self.role.prefix_if().unwrap();
+                            safety.as_mut().unwrap().append_tree(format!(
+                                "{}_{}: {}",
+                                prefix,
+                                &self.name,
+                                self.to_tree()
+                            ));
+                            safety
+                                .as_mut()
+                                .unwrap()
+                                .push_child((self as &Widget).into());
+                            self.clear();
+                        } else {
+                            panic!("can not find if widget to append else if widget")
+                        }
+                    }
+                }
+
+                self
             }
-        };
-        let name = format!("{}{}", snake_to_camel(&self.name).unwrap(), ulid);
-        // copy current widget and empty all
-        let mut safety = SafeWidget::from(&*self);
-        safety.tree = Some(self.to_tree().to_string());
-        safety.insert_to_auto();
-        self.clear();
-        self.name = name;
-        self
+            Role::For { id, .. } => {
+                let name = format!("{}{}", snake_to_camel(&self.name).unwrap(), id);
+                // copy current widget and empty all
+                let mut safety = SafeWidget::from(&*self);
+                safety.append_tree(self.to_tree().to_string());
+                safety.insert_to_auto();
+                self.clear();
+                self.name = name;
+                self
+            }
+            Role::Normal => self,
+        }
     }
     /// convert part or all of widget to live_design tree code, similar to `widget_children_tree`, but it start from self
     pub fn to_tree(&self) -> TokenStream {
@@ -550,7 +616,7 @@ impl Widget {
         tk.extend(component_render(
             self.id.as_ref(),
             self.is_root,
-            self.is_prop,
+            self.is_static,
             self.as_prop,
             &snake_to_camel(&self.name).unwrap(),
             self.props.clone(),
@@ -564,7 +630,7 @@ impl Widget {
             for child in children {
                 let Widget {
                     is_root,
-                    is_prop,
+                    is_static,
                     is_built_in,
                     id,
                     as_prop,
@@ -582,7 +648,7 @@ impl Widget {
                 tk.extend(component_render(
                     id.as_ref(),
                     *is_root,
-                    *is_prop,
+                    *is_static,
                     *as_prop,
                     &name,
                     props.clone(),
@@ -610,7 +676,8 @@ impl ToLiveDesign for Widget {
                 .expect("root widget need id to get widget tree")
                 .to_string()
         } else {
-            self.source.as_ref().unwrap().source_name_lower()
+            // self.source.as_ref().unwrap().source_name_lower()
+            self.id.as_ref().unwrap_or(&self.name).to_string()
         };
 
         tk.extend(special_struct(
@@ -719,7 +786,7 @@ impl ToLiveDesign for Widget {
 
 impl From<gen_converter::model::Model> for Widget {
     fn from(value: gen_converter::model::Model) -> Self {
-        dbg!(&value);
+        // dbg!(&value);
         let gen_converter::model::Model {
             special,
             template,
@@ -731,23 +798,54 @@ impl From<gen_converter::model::Model> for Widget {
         } = value;
 
         let template = template.unwrap();
-        build_widget(
+        let (widget, _) = build_widget(
             Some(&special),
             &template,
             style.as_ref(),
             script.as_ref(),
             true,
-        )
+            None,
+        );
+
+        widget.unwrap()
     }
 }
 
+/// ## Build widget
+/// ### Params
+/// - special: widget special
+/// - template: widget template
+/// - style: widget style
+/// - script: widget script
+/// - is_root: is root widget
+/// - if_ulid: if widget use if to control, it need ulid to replace and pass to same level widget to handle
+/// ### IF Ulid Pass Flow
+/// ```
+/// ┌──────────────┐                                                         
+/// │  widget :if  │ ───────► set_role(ulid: None) here ulid will be created
+/// └──────────────┘                                                         
+///                                             │                            
+///                                             ▼                            
+///                                       ┌───────────┐                      
+///                          ┌─────────── │  if ulid  │                      
+///                          │            └───────────┘                      
+///                          │                                               
+///                          │   set_role()     │                            
+///    now finish            │                  ▼                            
+///                          │                                               
+/// ┌──────────────┐         ▼         ┌──────────────────┐                  
+/// │ widget else  │   ◄─────────────  │  widget :elseif  │  use if ulid     
+/// └──────────────┘       pass        └──────────────────┘                  
+///                                                                      
+///  ```
 fn build_widget(
     special: Option<&Source>,
     template: &TemplateModel,
     style: Option<&ConvertStyle>,
     script: Option<&ScriptModel>,
     is_root: bool,
-) -> Widget {
+    if_ulid: Option<Ulid>,
+) -> (Option<Widget>, Option<Ulid>) {
     let mut widget = Widget::new(
         special,
         template.get_name(),
@@ -759,8 +857,8 @@ fn build_widget(
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
     // before all, check widget role from template  bind props
     widget
-        .set_role(template.get_bind_props(), script)
         .set_is_root(template.is_root())
+        .set_role(template.get_bind_props(), script, if_ulid)
         .set_id(template.get_id())
         .set_as_prop(template.as_prop)
         .set_props(widget_styles)
@@ -768,18 +866,42 @@ fn build_widget(
         .set_is_static(template.is_static())
         .handle_role();
 
-    if template.has_children() {
-        widget.set_children(
-            template
-                .get_children()
-                .unwrap()
-                .iter()
-                .map(|item| build_widget(special, item, style, script, false))
-                .collect(),
-        );
+    if widget.name == "RootComponent" {
+        // dbg!(&widget);
     }
-    
-    return widget;
+
+    if template.has_children() {
+        let mut child_if_uilid = None;
+        for child in template.get_children().unwrap() {
+            let (child_widget, ulid) =
+                build_widget(special, child, style, script, false, child_if_uilid);
+            child_if_uilid = ulid;
+            if let Some(child_widget) = child_widget {
+                widget.push_child(child_widget);
+            }
+        }
+
+        // template.get_children().unwrap().iter().fold(
+        //     Vec::new(),
+        //     |mut acc, item| {
+        //         let  build_widget(special, item, style, script, false, None).map(|x| acc.push(x));
+        //         acc
+        //     },
+        // )
+        // widget.set_children();
+    }
+
+    // judget current widget role is if?, cause if widget(IFSignal::Else_IF and Else) need to be ignore, and IFSignal::If need to be replace(replace is handle in handle_role fn)
+    if let RoleType::If(role) = RoleType::from(&widget.role) {
+        let ulid = widget.role.get_if_uild();
+        return match role {
+            IFSignal::If => (Some(widget), ulid),
+            IFSignal::ElseIf => (None, ulid),
+            IFSignal::Else => (None, None),
+        };
+    }
+
+    return (Some(widget), None);
 }
 
 /// get styles from style by id

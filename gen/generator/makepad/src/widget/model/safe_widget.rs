@@ -16,7 +16,6 @@ use super::{
 #[derive(Debug, Default, Clone)]
 pub struct SafeWidget {
     pub is_root: bool,
-    pub is_prop: bool,
     pub is_built_in: bool,
     /// is a define widget
     pub is_static: bool,
@@ -60,15 +59,66 @@ impl SafeWidget {
             Role::Normal => panic!("normal widget not need to transform to safe widget!"),
         };
 
-        format!("import crate::auto::{}_{}::*;", snake_to_camel(&self.name).unwrap(), id)
+        format!(
+            "import crate::auto::{}_{}::*;",
+            snake_to_camel(&self.name).unwrap(),
+            id
+        )
+    }
+    /// ## create a new Ifwidget(SafeWidget) from a Widget
+    pub fn new_if_widget(widget: &Widget) -> Self {
+        SafeWidget {
+            is_root: widget.is_root,
+            is_built_in: false,
+            is_static: true,
+            id: widget.id.clone(),
+            as_prop: widget.as_prop,
+            name: "IfWidget".to_string(),
+            source: widget.source.clone(),
+            imports: None,
+            uses: None,
+            props: None,
+            events: None,
+            prop_ptr: None,
+            event_ptr: None,
+            event_ref: None,
+            event_set: None,
+            children: Some(vec![widget.into()]),
+            inherits: Some(BuiltIn::Area),
+            traits: None,
+            live_hook: None,
+            role: widget.role.clone(),
+            tree: None,
+        }
+    }
+    /// ## append tree code to SafeWidget tree
+    pub fn append_tree(&mut self, tree: String) -> () {
+        match self.tree.as_mut() {
+            Some(t) => {
+                t.push_str(format!(", {}", tree).as_str());
+            }
+            None => {
+                let _ = self.tree.replace(tree);
+            }
+        }
+    }
+    pub fn push_child(&mut self, child: SafeWidget) -> () {
+        match self.children.as_mut() {
+            Some(children) => {
+                children.push(child);
+            }
+            None => {
+                let _ = self.children.replace(vec![child]);
+            }
+        }
     }
 }
+
 
 impl From<&Widget> for SafeWidget {
     fn from(value: &Widget) -> Self {
         let Widget {
             is_root,
-            is_prop,
             is_built_in,
             is_static,
             id,
@@ -92,7 +142,6 @@ impl From<&Widget> for SafeWidget {
 
         SafeWidget {
             is_root: *is_root,
-            is_prop: *is_prop,
             is_built_in: *is_built_in,
             is_static: *is_static,
             id: id.clone(),

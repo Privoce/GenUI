@@ -7,8 +7,11 @@ use crate::{
     common::parse_comment as parse_common_comment,
     CloseType, Value,
 };
-use gen_utils::{common::tokenizer::{END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN}, parser::{parse_bind_key, parse_function_key, parse_normal, parse_string, trim}};
 use gen_utils::error::Error;
+use gen_utils::{
+    common::tokenizer::{END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN},
+    parser::{parse_bind_key, parse_function_key, parse_normal, parse_string, trim},
+};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while_m_n},
@@ -95,8 +98,14 @@ fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> 
     let input = input.trim();
     let key_type: PropertyKeyType = key_type.into();
     // if following is not `=`, means no value, use default true
-    if !input.starts_with('='){
-        return Ok((input, (key_type, key, Value::UnKnown(true.to_string()))))
+    if !input.starts_with('=') {
+        // now only `else` need to use bind
+        let key_type = if key == "else" {
+            PropertyKeyType::Bind
+        } else {
+            key_type
+        };
+        return Ok((input, (key_type, key, Value::UnKnown(true.to_string()))));
     }
 
     let (input, value) = preceded(tag(EQUAL_SIGN), parse_string)(input)?;
