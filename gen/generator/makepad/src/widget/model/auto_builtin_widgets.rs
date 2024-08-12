@@ -111,12 +111,13 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
             #widget_name = {{#widget_name}}{
                 height: Fit,
                 width: Fit,
-                item: #inner_tree
+                #inner_tree
             }
         };
         live_design.tree = Some(tree);
         // generate widget logic ---------------------------------------------------------------------------------------------------------------------
-        let if_widgets =
+        let mut is_else = false;
+        let if_widgets_signals =
             widget
                 .children
                 .as_ref()
@@ -124,20 +125,33 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                 .iter()
                 .fold(TokenStream::new(), |mut acc, item| {
                     // prefix: if|else_if|else, so name is : `${prefix}_${name}`, such as if_button
-                    let name = parse_str::<TokenStream>(
-                        format!("{}_{}", item.role.prefix_if().unwrap(), item.name).as_str(),
-                    )
-                    .unwrap();
-                    let ty =
-                        parse_str::<TokenStream>(snake_to_camel(&item.name).unwrap().as_str())
+                    let prefix = item.role.prefix_if().unwrap();
+                    if prefix == "else" {
+                        is_else = true;
+                    }
+                    // --------------------------------- widget ---------------------------------
+                    let name =
+                        parse_str::<TokenStream>(format!("{}_{}", &prefix, item.name).as_str())
                             .unwrap();
+                    let ty = parse_str::<TokenStream>(snake_to_camel(&item.name).unwrap().as_str())
+                        .unwrap();
+                    // --------------------------------- signal ---------------------------------
+                    let signal = if !is_else {
+                        Some(
+                            parse_str::<TokenStream>(format!("#[rust] {}_signal: bool", &prefix).as_str())
+                                .unwrap(),
+                        )
+                    } else {
+                        None
+                    };
+                    // --------------------------------- generate ---------------------------------
                     acc.extend(quote! {
                         #[live] #name: #ty,
+                        #signal
                     });
                     acc
                 });
 
-        let if_signals = quote! {};
         let draw_walk_expr = quote! {};
         let handle_event_expr = quote! {};
         let logic = quote! {
@@ -146,8 +160,7 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                 #[rust] #[redraw] area: Area,
                 #[layout] layout: Layout,
                 #[walk] walk: Walk,
-                #if_widgets
-                #if_signals
+                #if_widgets_signals
             }
 
             impl Widget for #widget_name {
