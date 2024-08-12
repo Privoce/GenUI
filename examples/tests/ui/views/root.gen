@@ -2,7 +2,8 @@
   <root id="ui">
     <window id="main_window">
       <view flow="Down" height="All" id="main_view">
-        
+        <button :if="flag1" text="True Btn"></button>
+        <button else text="False Btn"></button>
       </view>
     </window>
   </root>

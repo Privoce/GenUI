@@ -3,7 +3,21 @@ use std::{collections::HashMap, fmt::Display};
 use gen_utils::common::tokenizer::SPACE;
 
 use crate::{Bind, Value};
+/// # Builtin props
+/// |Name    | Description              | Format                         |
+/// |--------|--------------------------|--------------------------------|
+/// |for     | GenUI Loop Prop Key      | `:for="(index, item) in list"` |
+/// |if      | GenUI If Prop Key        | `:if="condition"`              |
+/// |else_if | GenUI Else If Prop Key   | `:else_if="condition"`         |
+/// |else    | GenUI Else Prop Key      | `else`                         |
+/// |as_prop | GenUI As Prop Key        | `as_prop="true"` or `as_prop`  |
+/// |id      | GenUI Id Prop Key        | `id="id"`                      |
+pub const BUILTIN_PROPS: [&str; 7] = ["for", "if", "else_if", "else", "as_prop", "id", "class"];
 
+/// # Property Key Type
+/// - Normal: normal property key, no prefix
+/// - Bind: bind property key, use `:` to define
+/// - Function: function property key, use `@` to define
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum PropertyKeyType {
     Normal,
@@ -15,6 +29,10 @@ pub enum PropertyKeyType {
 
 #[allow(dead_code)]
 impl PropertyKeyType {
+    /// ## convert value to Builtin Value
+    /// - normal => Value::UnKnown
+    /// - bind => Value::Bind
+    /// - function => Value::Function
     pub fn to_value(&self, value: &str) -> Value {
         let value = value.to_string();
         match self {
@@ -23,12 +41,15 @@ impl PropertyKeyType {
             PropertyKeyType::Function => Value::Function(value.into()),
         }
     }
+    /// ## check current property key type is normal or not
     pub fn is_normal(&self) -> bool {
         matches!(self, Self::Normal)
     }
+    /// ## check current property key type is bind or not
     pub fn is_bind(&self) -> bool {
         matches!(self, Self::Bind)
     }
+    /// ## check current property key type is function or not
     pub fn is_function(&self) -> bool {
         matches!(self, Self::Function)
     }
@@ -62,8 +83,15 @@ impl From<&str> for PropertyKeyType {
     }
 }
 
+/// # Property Key
+/// Parse the property key in template or style tag
+/// ## Format
+/// - normal: `name`
+/// - bind: `:name`
+/// - function: `@name`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PropsKey {
+    /// property key name
     name: String,
     /// same as function
     /// judge the use place (template|style)
@@ -104,7 +132,10 @@ impl PropsKey {
     pub fn is_fn(&self) -> bool {
         self.ty.is_function()
     }
-   
+    /// ## check current props key is builtin or not
+    pub fn is_builtin(&self) -> bool {
+        BUILTIN_PROPS.contains(&self.name())
+    }
 }
 
 impl Display for PropsKey {

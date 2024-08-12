@@ -92,9 +92,15 @@ fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
 #[allow(dead_code)]
 fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> {
     let (input, (key_type, key)) = parse_property_key(input)?;
+    let input = input.trim();
+    let key_type: PropertyKeyType = key_type.into();
+    // if following is not `=`, means no value, use default true
+    if !input.starts_with('='){
+        return Ok((input, (key_type, key, Value::UnKnown(true.to_string()))))
+    }
+
     let (input, value) = preceded(tag(EQUAL_SIGN), parse_string)(input)?;
     // parse value
-    let key_type: PropertyKeyType = key_type.into();
     let value = key_type.to_value(value);
     Ok((input, (key_type, key, value)))
 }
