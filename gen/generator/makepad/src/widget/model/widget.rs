@@ -719,6 +719,7 @@ impl ToLiveDesign for Widget {
 
 impl From<gen_converter::model::Model> for Widget {
     fn from(value: gen_converter::model::Model) -> Self {
+        dbg!(&value);
         let gen_converter::model::Model {
             special,
             template,

@@ -2,12 +2,7 @@ pub mod builder;
 pub mod target;
 pub mod wasm;
 
-use std::{
-    fs, mem,
-    path::PathBuf,
-    process::{Child, Command},
-    sync::Mutex,
-};
+use std::{fs, path::PathBuf, process::Child, sync::Mutex};
 
 use gen_converter::model::Model;
 use gen_utils::{
@@ -18,6 +13,7 @@ use gen_utils::{
 };
 use lazy_static::lazy_static;
 use target::Makepad;
+
 use toml_edit::DocumentMut;
 use wasm::Wasm;
 
@@ -88,73 +84,8 @@ impl CompilerImpl for Compiler {
             Err(e) => executor.fail_fn(e),
         }
     }
-    /// ## check if the generate rust project exists, if not create one
-    ///
-    /// ### details
-    /// - check if the project exists which named "src_gen"
-    ///     - true: return true
-    ///     - false: create a new rust project named "src_gen"
-    /// - and need to check whether the super project is a rust workspace project
-    ///     - if not, panic and tell the user to create a workspace project
-    ///     - if true, check and add the "src_gen" project to the workspace member list
-    /// ### test
-    /// - no src_gen: 👌
-    /// - no src_gen and no workspace: 👌
     fn exist_or_create(&self) -> () {
-        // check the super project is a workspace project or not
-        let mut super_path = self.origin_path.clone();
-        super_path.pop();
-
-        let mut super_toml_path = super_path.clone();
-        super_toml_path.push("Cargo.toml");
-        if !super_toml_path.exists() {
-            panic!("Cargo.toml not found in the super project, you should create a workspace project first");
-        } else {
-            // read the super project's Cargo.toml file and check the workspace member list
-            let mut super_toml = fs::read_to_string(super_toml_path.as_path())
-                .expect("failed to read super project's Cargo.toml")
-                .parse::<DocumentMut>()
-                .expect("Failed to parse Cargo.toml");
-
-            let member_list = super_toml
-                .get_mut("workspace")
-                .expect("workspace not found in Cargo.toml")
-                .get_mut("members")
-                .expect("members not found in Cargo.toml")
-                .as_array_mut()
-                .expect("members is not an array");
-
-            // check member list contains the src_gen project or not
-            if member_list
-                .iter()
-                .find(|item| item.as_str().unwrap() == "src_gen")
-                .is_none()
-            {
-                // add the src_gen project to the workspace member list
-                // member_list.push(toml::Value::String("src_gen".to_string()));
-                member_list.push("src_gen");
-            }
-            // write back
-            fs::write(super_toml_path.as_path(), super_toml.to_string())
-                .expect("failed to write super project's Cargo.toml");
-        }
-
-        // check the src_gen project exists or not
-        // let compiled_dir = Source::project_dir_to_compiled(&self.origin_path);
         let compiled_dir = self.compiled_path.clone();
-        if !compiled_dir.exists() {
-            // use std::process::Command to create a new rust project
-            let status = Command::new("cargo")
-                .args(["new", "src_gen"])
-                .current_dir(super_path.as_path())
-                .status()
-                .expect("failed to create src_gen project");
-
-            if !status.success() {
-                panic!("failed to create src_gen project");
-            }
-        }
-
         // read the origin project's Cargo.toml file and move the [dependencies] to the src_gen project except gen's dependencies
         let origin_toml_path = &self.origin_path.join("Cargo.toml");
         if !origin_toml_path.exists() {
@@ -189,7 +120,7 @@ impl CompilerImpl for Compiler {
             origin_dependencies[name.as_str()] = value;
         }
 
-        let _ = mem::replace(compiled_dependencies, origin_dependencies);
+        let _ = std::mem::replace(compiled_dependencies, origin_dependencies);
 
         // compiled_dependencies.extend(origin_dependencies.iter());
         // write back
@@ -208,7 +139,7 @@ impl CompilerImpl for Compiler {
             main_rs,
         });
     }
-    
+
     /// init makepad project
     /// - create main.rs
     /// - create app entry rs file (eg: app.rs)

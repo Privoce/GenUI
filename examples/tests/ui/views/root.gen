@@ -2,14 +2,14 @@
   <root id="ui">
     <window id="main_window">
       <view flow="Down" height="All" id="main_view">
-        <button :for="(index, value) in btnlist" :text="value" :font_size="btn_size"></button>
+        
       </view>
     </window>
   </root>
 </template>
 
 <script>
-let btnlist: Vec<String> = vec!["a".to_string(), "b".to_string()];
+let flag1 = true;
 </script>
 
 <style>

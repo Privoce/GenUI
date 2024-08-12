@@ -1,1 +1,1 @@
-pub use makepad_widgets ; pub use makepad_widgets :: makepad_draw ; pub mod app ; pub mod views ; pub mod auto ;
+pub use makepad_widgets ; pub use makepad_widgets :: makepad_draw ; pub mod app ; pub mod views ;

@@ -13,7 +13,7 @@ use nom::{bytes::complete::tag, sequence::delimited, IResult};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Bind {
-    // normal is a bind ident
+    // normal is a bind ident, maybe it bind a ident or a closure ident
     Normal(String),
     For(For),
 }
@@ -73,6 +73,7 @@ pub struct For {
 
 impl For {
     // todo!("这个方法后面需要移除，暂时写在这里，这个实际item到底默认是什么其实需要依靠iter_ident的类型来判断，但现在还没写好这个判断的地方")
+    // 目前我没找到相关可以识别的包，可能需要自己写一个
     pub fn fmt_enumerate(&self) -> String {
         format!(
             "({}, {})",
