@@ -92,7 +92,9 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
     }
 }
 
+/// generate if widget live design ------------------------------------------------------------------------------------------------------------------------------------------------
 fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDesign) {
+    /// generate set prop in ref fn
     fn set_prop_in_ref(prop_name: &str) -> TokenStream {
         let set_name = parse_str::<TokenStream>(format!("set_{}", prop_name).as_str()).unwrap();
         let prop_name = parse_str::<TokenStream>(prop_name).unwrap();
@@ -101,6 +103,24 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                 if let Some(mut instance) = self.borrow_mut() {
                     instance.#prop_name = #prop_name;
                 }
+            }
+        }
+    }
+    /// generate if draw walk expr, format: `if self.if_xxx { let _ = self.xxx.draw_walk(cx, scope, walk); }`
+    fn if_draw_walk(signal_name: &str, widget_ref: TokenStream) -> TokenStream {
+        let signal_name = parse_str::<TokenStream>(signal_name).unwrap();
+        quote! {
+            if self.#signal_name {
+                let _ = self.#widget_ref.draw_walk(cx, scope, walk);
+            }
+        }
+    }
+    /// generate if handle event expr, format: `if self.if_xxx { self.xxx.handle_event(cx, event, scope); }`
+    fn if_handle_event(signal_name: &str, widget_ref: TokenStream) -> TokenStream {
+        let signal_name = parse_str::<TokenStream>(signal_name).unwrap();
+        quote! {
+            if self.#signal_name {
+                self.#widget_ref.handle_event(cx, event, scope)
             }
         }
     }
@@ -130,43 +150,51 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
         live_design.tree = Some(tree);
         // generate widget logic ---------------------------------------------------------------------------------------------------------------------
         let mut is_else = false;
-        let (if_widgets_signals, impl_widget_ref) = widget.children.as_ref().unwrap().iter().fold(
-            (TokenStream::new(), TokenStream::new()),
-            |(mut acc1, mut acc2), item| {
-                // prefix: if|else_if|else, so name is : `${prefix}_${name}`, such as if_button
-                let prefix = item.role.prefix_if().unwrap();
-                if prefix == "else" {
-                    is_else = true;
-                }
-                // --------------------------------- widget ---------------------------------
-                let name = parse_str::<TokenStream>(format!("{}_{}", &prefix, item.name).as_str())
-                    .unwrap();
-                let ty =
-                    parse_str::<TokenStream>(snake_to_camel(&item.name).unwrap().as_str()).unwrap();
-                // --------------------------------- signal ---------------------------------
-                let signal = if !is_else {
-                    acc2.extend(set_prop_in_ref(format!("{}_signal", &prefix).as_str()));
-                    Some(
-                        parse_str::<TokenStream>(
-                            format!("#[rust] {}_signal: bool, ", &prefix).as_str(),
+        let (if_widgets_signals, impl_widget_ref, draw_walk_expr, handle_event_expr) =
+            widget.children.as_ref().unwrap().iter().fold(
+                (
+                    TokenStream::new(),
+                    TokenStream::new(),
+                    TokenStream::new(),
+                    TokenStream::new(),
+                ),
+                |(mut acc1, mut acc2, mut acc3, mut acc4), item| {
+                    // prefix: if|else_if|else, so name is : `${prefix}_${name}`, such as if_button
+                    let prefix = item.role.prefix_if().unwrap();
+                    if prefix == "else" {
+                        is_else = true;
+                    }
+                    // --------------------------------- widget ---------------------------------
+                    let name =
+                        parse_str::<TokenStream>(format!("{}_{}", &prefix, item.name).as_str())
+                            .unwrap();
+                    let ty = parse_str::<TokenStream>(snake_to_camel(&item.name).unwrap().as_str())
+                        .unwrap();
+                    // --------------------------------- signal ---------------------------------
+                    let signal = if !is_else {
+                        let signal_name = format!("{}_signal", &prefix);
+                        acc2.extend(set_prop_in_ref(&signal_name));
+                        acc3.extend(if_draw_walk(&signal_name, name.clone()));
+                        acc4.extend(if_handle_event(&signal_name, name.clone()));
+                        Some(
+                            parse_str::<TokenStream>(
+                                format!("#[rust] {}_signal: bool, ", &prefix).as_str(),
+                            )
+                            .unwrap(),
                         )
-                        .unwrap(),
-                    )
-                } else {
-                    None
-                };
-                // --------------------------------- generate ---------------------------------
-                acc1.extend(quote! {
-                    #[live] #name: #ty,
-                    #signal
-                });
+                    } else {
+                        None
+                    };
+                    // --------------------------------- generate ---------------------------------
+                    acc1.extend(quote! {
+                        #[live] #name: #ty,
+                        #signal
+                    });
 
-                (acc1, acc2)
-            },
-        );
+                    (acc1, acc2, acc3, acc4)
+                },
+            );
 
-        let draw_walk_expr = quote! {};
-        let handle_event_expr = quote! {};
         let logic = quote! {
             #[derive(Live, Widget, LiveHook)]
             pub struct #widget_name {
@@ -177,7 +205,7 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
             }
 
             impl Widget for #widget_name {
-                fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+                fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
                     cx.begin_turtle(walk, self.layout);
                     #draw_walk_expr
                     cx.end_turtle();
@@ -199,6 +227,7 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
     (source, live_design)
 }
 
+/// generate for widget live design ------------------------------------------------------------------------------------------------------------------------------------------------
 fn for_widget_to_live_design(
     widget: &SafeWidget,
     ulid: &Ulid,
