@@ -1,7 +1,7 @@
 use std::{borrow::BorrowMut, collections::HashSet};
 
 use gen_converter::model::script::PropFn;
-use gen_parser::Value;
+use gen_parser::{PropsKey, Value};
 use gen_utils::{
     common::{
         token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
@@ -354,7 +354,7 @@ pub fn quote_makepad_widget_struct(value: &ItemStruct) -> ItemStruct {
 
 /// 根据widget的绘制函数生成对应的代码
 /// 生成对应widget的绘制函数中的代码
-/// 这部分很统一，所有的widget都是这样处理的
+/// 这部分很统一，所有的widget都是这样处理的(除了自动生成的IFWidget和ForWidget)
 pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>) -> Option<TokenStream> {
     let tk = if let Some(draw_widget_tk) = draw_widget {
         let mut tk = TokenStream::new();
@@ -368,24 +368,56 @@ pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>) -> Option<TokenStrea
                 is_prop,
             } = item;
             // from widget get prop value
-            // 当前只考虑builtin，自定义类型组件后续增加
-            let builtin = BuiltIn::from(&widget);
-            let pv = builtin.prop_bind(key, ident, *is_prop, &local_ident(code));
-            if !is_prop {
-                tk.extend(code.to_token_stream());
+            if key.is_builtin() {
+                // here is_builtin just is gen builtin not makepad builtin
+                let _ = bind_widget_prop_value(id, key, ident, code).map(|x| tk.extend(x));
+            } else {
+                // 当前只考虑builtin，自定义类型组件后续增加
+                let builtin = BuiltIn::from(&widget);
+                let pv = builtin.prop_bind(key, ident, *is_prop, &local_ident(code));
+                if !is_prop {
+                    tk.extend(code.to_token_stream());
+                }
+                tk.extend(apply_over_and_redraw(
+                    None,
+                    widget,
+                    id,
+                    token_stream_to_tree(pv),
+                ));
             }
-            tk.extend(apply_over_and_redraw(
-                None,
-                widget,
-                id,
-                token_stream_to_tree(pv),
-            ));
         }
         Some(tk)
     } else {
         None
     };
     tk
+}
+
+pub fn bind_widget_prop_value(
+    id: &str,
+    key: &PropsKey,
+    ident: &Value,
+    code: &Stmt,
+) -> Option<TokenStream> {
+    fn is_if(key: &PropsKey) -> bool {
+        (key.is_bind() || key.is_fn()) && key.name() == "if"
+    }
+
+    return if is_if(key) {
+        let id = parse_str::<TokenStream>(id).unwrap();
+        let func = parse_str::<TokenStream>(&format!(
+            "set_{}_signal({});",
+            key.name(),
+            ident.to_string()
+        ))
+        .unwrap();
+        Some(quote! {
+            #code
+            self.if_widget(id!(#id)).#func
+        })
+    } else {
+        None
+    };
 }
 
 // pub fn quote_draw_widget_define(draw_widget: &Option<Vec<PropFn>>,code: TokenStream)->Option<TokenStream>{

@@ -33,10 +33,10 @@ impl Role {
     pub fn new_option_if(
         props: HashMap<PropsKey, Value>,
         signal: IFSignal,
-        ulid: Option<Ulid>,
+        ulid: Option<&Ulid>,
     ) -> Self {
         Role::If {
-            id: ulid.unwrap_or(Ulid::new()),
+            id: ulid.unwrap_or(&Ulid::new()).clone(),
             props,
             signal,
         }

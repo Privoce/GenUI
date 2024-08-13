@@ -2,8 +2,8 @@
   <component id="ui" inherits="root">
     <window id="main_window">
         <view flow="Down" height="All" id="main_view">
-          <button :if="flag1" text="True Btn"></button>
-          <button else text="False Btn"></button>
+          <button :if="flag1" text="True Btn" id="if_widget1"></button>
+          <button else text="False Btn" id="if_widget1"></button>
         </view>
       </window>
   </component>

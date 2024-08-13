@@ -155,6 +155,9 @@ impl AppMain {
 }
 
 impl ToLiveDesign for AppMain {
+    fn widget_uses(&self) -> Option<TokenStream> {
+        None
+    }
     fn widget_tree(&self) -> Option<TokenStream> {
         let app = token_tree_ident(&self.name);
         let root = token_tree_ident(&self.root_ref);

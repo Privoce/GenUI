@@ -134,7 +134,7 @@ pub enum BuiltIn {
     ScrollBar,
     ScrollBars,
     Markdown,
-    Html
+    Html,
 }
 
 impl BuiltIn {
@@ -295,7 +295,7 @@ impl BuiltIn {
             BuiltIn::SlidesView => slide::SlidesViewPropPtr::from(ptr).to_token_stream(),
             BuiltIn::SlideBody => {
                 panic!("SlideBody can not be inherited you need to inherits Label")
-            },
+            }
             BuiltIn::ScrollBar => scroll::ScrollBarPropPtr::from(ptr).to_token_stream(),
             BuiltIn::ScrollBars => scroll::ScrollBarsPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Markdown => markdown::MarkdownPropPtr::from(ptr).to_token_stream(),
@@ -404,7 +404,7 @@ impl BuiltIn {
             BuiltIn::Html => todo!(),
         }
     }
-    pub fn animation_applys(&self) -> Vec<&str>{
+    pub fn animation_applys(&self) -> Vec<&str> {
         match self {
             BuiltIn::Window => todo!(),
             BuiltIn::View => view::ViewProps::animation_applys(),
@@ -444,8 +444,8 @@ impl BuiltIn {
             BuiltIn::Html => todo!(),
         }
     }
-    pub fn default_deref_ptr(&self, name: &str) -> TokenStream{
-        match self{
+    pub fn default_deref_ptr(&self, name: &str) -> TokenStream {
+        match self {
             BuiltIn::Window => todo!(),
             BuiltIn::View => todo!(),
             BuiltIn::ScrollXView => todo!(),
@@ -594,7 +594,7 @@ pub trait StaticProps: Debug + ToToken {
     fn props(props: &HashMap<PropsKey, Value>) -> Self
     where
         Self: Sized;
-    /// handle single GenUI prop to makepad prop and bind to struct 
+    /// handle single GenUI prop to makepad prop and bind to struct
     fn prop(&mut self, prop_name: &str, value: &Value) -> ();
     // /// convert GenUI prop (from prop manuel) to makepad prop
     // /// this fn can be used in animation
@@ -606,5 +606,5 @@ pub trait DynProps {
 }
 
 pub trait AnimationApplys {
-   fn animation_applys() -> Vec<&'static str>; 
+    fn animation_applys() -> Vec<&'static str>;
 }

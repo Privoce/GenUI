@@ -1,6 +1,11 @@
-use std::{collections::HashMap, fmt::Display};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
-use gen_utils::common::tokenizer::SPACE;
+use gen_utils::common::{syn_ext::UnifiedGetter, tokenizer::SPACE};
+use proc_macro2::TokenStream;
+use syn::Stmt;
 
 use crate::{Bind, Value};
 /// # Builtin props
@@ -186,4 +191,70 @@ pub fn props_to_style_string(props: Props) -> String {
     props_to_string(props, |(k, v)| {
         format!(r#"{}: {};"#, k.to_string(), v.to_string())
     })
+}
+
+pub trait ScriptFilter {
+    /// filter fields from script with bind props
+    fn filter_fields(&self, sc: Option<&Vec<Stmt>>) -> Option<TokenStream>;
+    fn fields(&self) -> Option<HashSet<String>>;
+}
+
+impl ScriptFilter for Option<HashMap<&PropsKey, &Value>> {
+    fn filter_fields(&self, sc: Option<&Vec<Stmt>>) -> Option<TokenStream> {
+        if sc.is_none() {
+            return None;
+        }
+       
+        return if let Some(fields) = self {
+            let fields = fields.iter().fold(HashSet::new(), |mut acc, (_, v)| {
+               
+                if let Value::Bind(bind) = v {
+                    match bind {
+                        Bind::Normal(ident) => match ident.as_str() {
+                            "else" => {}
+                            _ => {
+                                let _ = acc.insert(ident.to_string());
+                            }
+                        },
+                        Bind::For(for_bind) => {
+                            let _ = acc.insert(for_bind.iter_ident.to_string());
+                        }
+                    }
+                } else {
+                    panic!("only bind props can be filter")
+                }
+                acc
+            });
+            // now loop the fields and find the stmt to get the type
+
+            
+            
+            for field in fields {
+                let ty = sc.ty(&field);
+                dbg!(ty);
+            }
+
+            todo!()
+        } else {
+            None
+        };
+    }
+
+    fn fields(&self) -> Option<HashSet<String>> {
+        self.as_ref().map(|fields| {
+            fields
+                .iter()
+                .map(|(_, v)| {
+                    if let Value::Bind(bind) = v {
+                        match bind {
+                            Bind::Normal(ident) => ident.to_string(),
+                            Bind::For(for_bind) => for_bind.iter_ident.to_string(),
+                        }
+                    } else {
+                        panic!("only bind props can be filter")
+                    }
+                })
+                .collect::<HashSet<String>>()
+        })
+    }
 }

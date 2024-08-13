@@ -20,5 +20,6 @@ pub trait ToLiveDesign {
     fn widget_tree(&self) -> Option<TokenStream>;
     fn widget_logic(&self) -> Option<TokenStream>;
     fn widget_imports(&self) -> Option<TokenStream>;
+    fn widget_uses(&self) -> Option<TokenStream>;
     fn to_live_design(&self) -> LiveDesign;
 }

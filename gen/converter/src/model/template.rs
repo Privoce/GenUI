@@ -213,6 +213,28 @@ impl TemplateModel {
             None => None,
         }
     }
+    /// get all bind props from the template model and children
+    pub fn get_all_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
+        let mut bind_props = HashMap::new();
+        if let Some(items) = self.get_bind_props() {
+            bind_props.extend(items);
+        }
+
+        // get all bind props from children
+        if let Some(children) = self.get_children() {
+            for child in children {
+                if let Some(items) = child.get_all_bind_props() {
+                    bind_props.extend(items);
+                }
+            }
+        }
+
+        if bind_props.is_empty() {
+            None
+        } else {
+            Some(bind_props)
+        }
+    }
     // pub fn has_prop_ptr(&self) -> bool {
     //     let target = self.get_prop_ptr();
     //     let token = quote!{ #target }.to_token_stream();
@@ -359,21 +381,36 @@ impl TemplateModel {
                 // let id = node.get_id().expect(format!("bind prop need id: {}", node.get_name()).as_str()).to_string();
                 if let Some(id) = node.get_id() {
                     let name = node.get_name().to_string();
-                    match node.get_props().clone() {
-                        Some(props) => {
+
+                    let _ = node.get_bind_props().map(|props| {
+                        if !props.is_empty(){
                             bind_tree.push((
                                 (name.clone(), id.to_string()),
                                 Some(
                                     props
-                                        .clone()
                                         .into_iter()
-                                        .filter(|(k, _)| k.is_bind())
+                                        .map(|(k, v)| (k.clone(), v.clone()))
                                         .collect(),
                                 ),
                             ));
                         }
-                        None => (),
-                    }
+                    });
+
+                    // match node.get_props().clone() {
+                    //     Some(props) => {
+                    //         bind_tree.push((
+                    //             (name.clone(), id.to_string()),
+                    //             Some(
+                    //                 props
+                    //                     .clone()
+                    //                     .into_iter()
+                    //                     .filter(|(k, _)| k.is_bind())
+                    //                     .collect(),
+                    //             ),
+                    //         ));
+                    //     }
+                    //     None => (),
+                    // }
                     match node.get_callbacks().clone() {
                         Some(callbacks) => {
                             fn_tree.push((
@@ -469,7 +506,7 @@ impl Default for TemplateModel {
             root: Default::default(),
             children: Default::default(),
             parent: Default::default(),
-            as_prop: false
+            as_prop: false,
         }
     }
 }

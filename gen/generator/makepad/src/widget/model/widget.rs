@@ -1,4 +1,8 @@
-use std::{collections::HashMap, hash::Hash, iter::once};
+use std::{
+    collections::{HashMap, HashSet},
+    hash::Hash,
+    iter::once,
+};
 
 use gen_converter::model::{
     prop::ConvertStyle,
@@ -207,7 +211,11 @@ impl Widget {
     /// - set uses
     /// - set draw_walk
     /// - set handle_event
-    pub fn set_script(&mut self, script: Option<&ScriptModel>) -> &mut Self {
+    pub fn set_script(
+        &mut self,
+        script: Option<&ScriptModel>,
+        replacer: Option<&Replacer>,
+    ) -> &mut Self {
         if self.is_root || self.role.is_special() {
             if let Some(sc) = script {
                 if let ScriptModel::Gen(sc) = sc {
@@ -227,12 +235,13 @@ impl Widget {
                     // 在这里从prop_ptr中获取结构体所有的field作为后续代码中需要转换的列表
                     // 例如在handle_event中就需要
                     let prop_fields = get_props_fields(prop_ptr.as_ref());
-                    // dbg!(prop_fields);
+                    // , bind_props.filter_fields(other.as_ref())
 
                     self.set_uses(uses)
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
                         .set_event_ptr(event_ptr)
+                        .before_apply(other.as_ref(), prop_fields.as_ref())
                         .after_apply(
                             sub_prop_binds,
                             current_instance.as_ref(),
@@ -244,8 +253,7 @@ impl Widget {
                             sub_event_binds,
                             current_instance.as_ref(),
                             prop_fields.as_ref(),
-                        )
-                        .live_hook(other.as_ref(), prop_fields.as_ref());
+                        );
                 }
             } else {
                 self.is_static = true;
@@ -254,7 +262,7 @@ impl Widget {
 
         self
     }
-    pub fn live_hook(
+    pub fn before_apply(
         &mut self,
         code: Option<&Vec<Stmt>>,
         fields: Option<&Vec<Ident>>,
@@ -281,6 +289,7 @@ impl Widget {
                 }
             }
         };
+
         // handle before_apply ----------------------------------------------------------------------------------
         if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
             self.live_hook.as_mut().unwrap().before_apply(before_apply);
@@ -319,6 +328,9 @@ impl Widget {
         current_instance: Option<&CurrentInstance>,
         instance_opt: Option<&Vec<Stmt>>,
     ) -> &mut Self {
+        if !self.is_root {
+            return self;
+        }
         // 将当前实例所涉及的代码转为TokenStream
         // 需要将特定的头部转为self
         let apply_tk = instance_opt.map(|opt| {
@@ -437,7 +449,7 @@ impl Widget {
         &mut self,
         bind_props: Option<HashMap<&PropsKey, &Value>>,
         script: Option<&ScriptModel>,
-        if_ulid: Option<Ulid>,
+        replacer: Option<&Replacer>,
     ) -> &mut Self {
         self.role = Role::Normal;
         if let Some(bind_props) = bind_props {
@@ -487,7 +499,20 @@ impl Widget {
                         .map(|(k, v)| (k.clone(), v.clone()))
                         .collect();
 
-                    // self.role = Role::new_if(props, if_signal.unwrap());
+                    let if_ulid = if let Some(x) = replacer {
+                        // x.get(&(self.name.to_string(), self.id.as_ref().unwrap().to_string()))
+                        // only need id match, cause name has been changed, so iter map and find
+                        x.iter().find_map(|((_, id), ulid)| {
+                            if id == self.id.as_ref().unwrap() {
+                                Some(ulid)
+                            } else {
+                                None
+                            }
+                        })
+                    } else {
+                        None
+                    };
+                    
                     self.role = Role::new_option_if(props, if_signal.unwrap(), if_ulid);
                 } // if
                 (1_i32, 0_i32) => {
@@ -530,7 +555,7 @@ impl Widget {
         self.is_built_in = false;
         self.is_static = true;
         self.uses = None;
-        self.id = None;
+        // self.id = None;
         self.as_prop = false;
         self.source = None;
         self.imports = None;
@@ -557,7 +582,9 @@ impl Widget {
                     IFSignal::If => {
                         // if signal is If, create a new safe widget from current widget, and replace current widget
                         let mut safety = SafeWidget::new_if_widget(&self);
+                        self.id = None;
                         safety.append_tree(format!("if_{}: {}", &self.name, self.to_tree()));
+                        self.id = safety.id.clone(); // back set id
                         safety.insert_to_auto();
                         let name = format!("IfWidget{}", id);
                         self.name = name;
@@ -566,6 +593,7 @@ impl Widget {
                     IFSignal::ElseIf | IFSignal::Else => {
                         // if signal is ElseIf or Else, do not need to create a new widget, append current widget to safe widget(from AUTO_WIDGET) then clear current widget
                         let mut safeties = AUTO_BUILTIN_WIDGETS.lock().unwrap();
+
                         // find if widget
                         let mut safety = safeties.iter_mut().find(|widget| {
                             let source_match =
@@ -577,6 +605,7 @@ impl Widget {
 
                         // if find, append else panic!
                         if safety.is_some() {
+                            self.id = None;
                             let prefix = self.role.prefix_if().unwrap();
                             safety.as_mut().unwrap().append_tree(format!(
                                 "{}_{}: {}",
@@ -663,6 +692,26 @@ impl Widget {
 }
 
 impl ToLiveDesign for Widget {
+    fn widget_uses(&self) -> Option<TokenStream> {
+        let auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
+        if auto_widgets.is_empty() {
+            return None;
+        } else {
+            let auto_widgets = auto_widgets
+                .iter()
+                .filter(|widget| {
+                    widget.source.as_ref().unwrap().compiled_file
+                        == self.source.as_ref().unwrap().compiled_file
+                })
+                .fold(TokenStream::new(), |mut acc, widget| {
+                    let item = parse_str::<TokenStream>(&widget.to_use_import()).unwrap();
+                    acc.extend(item);
+                    acc
+                });
+
+            Some(auto_widgets)
+        }
+    }
     /// get widget tree
     fn widget_tree(&self) -> Option<TokenStream> {
         let mut tk = TokenStream::new();
@@ -804,12 +853,16 @@ impl From<gen_converter::model::Model> for Widget {
             style.as_ref(),
             script.as_ref(),
             true,
-            None,
+            &mut None,
         );
 
         widget.unwrap()
     }
 }
+
+/// ## Replacer
+/// <(widget_name, widget_id), ulid>
+pub type Replacer = HashMap<(String, String), Ulid>;
 
 /// ## Build widget
 /// ### Params
@@ -844,38 +897,43 @@ fn build_widget(
     style: Option<&ConvertStyle>,
     script: Option<&ScriptModel>,
     is_root: bool,
-    if_ulid: Option<Ulid>,
-) -> (Option<Widget>, Option<Ulid>) {
+    replacer: &mut Option<Replacer>,
+) -> (Option<Widget>, Option<((String, String), Ulid)>) {
     let mut widget = Widget::new(
         special,
         template.get_name(),
         template.get_inherits(),
         is_root,
     );
+
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), template.get_class(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
     // before all, check widget role from template  bind props
     widget
         .set_is_root(template.is_root())
-        .set_role(template.get_bind_props(), script, if_ulid)
         .set_id(template.get_id())
         .set_as_prop(template.as_prop)
         .set_props(widget_styles)
-        .set_script(script)
         .set_is_static(template.is_static())
+        .set_role(template.get_bind_props(), script, replacer.as_ref())
         .handle_role();
 
-    if widget.name == "RootComponent" {
-        // dbg!(&widget);
-    }
-
     if template.has_children() {
-        let mut child_if_uilid = None;
+        // let mut child_replacer = None;
         for child in template.get_children().unwrap() {
-            let (child_widget, ulid) =
-                build_widget(special, child, style, script, false, child_if_uilid);
-            child_if_uilid = ulid;
+            let (child_widget, c_replacer) =
+                build_widget(special, child, style, script, false, replacer);
+
+            let _ = c_replacer.map(|((name, id), ulid)| {
+                // child_replacer.as_mut().unwrap().insert((name.to_string(), id.to_string()), ulid.clone());
+                if replacer.is_none() {
+                    replacer.replace(once(((name, id), ulid)).collect());
+                } else {
+                    replacer.as_mut().unwrap().insert((name, id), ulid);
+                }
+            });
+
             if let Some(child_widget) = child_widget {
                 widget.push_child(child_widget);
             }
@@ -890,13 +948,22 @@ fn build_widget(
         // )
         // widget.set_children();
     }
+    // dbg!(&replacer);
+    widget.set_script(script, replacer.as_ref());
 
     // judget current widget role is if?, cause if widget(IFSignal::Else_IF and Else) need to be ignore, and IFSignal::If need to be replace(replace is handle in handle_role fn)
     if let RoleType::If(role) = RoleType::from(&widget.role) {
         let ulid = widget.role.get_if_uild();
+
         return match role {
-            IFSignal::If => (Some(widget), ulid),
-            IFSignal::ElseIf => (None, ulid),
+            IFSignal::If => {
+                let replacer = Some((
+                    (widget.name.to_string(), widget.id.as_ref().unwrap().clone()),
+                    ulid.unwrap(),
+                ));
+                (Some(widget), replacer)
+            }
+            IFSignal::ElseIf => (None, None),
             IFSignal::Else => (None, None),
         };
     }

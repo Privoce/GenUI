@@ -9,6 +9,7 @@ use super::ToLiveDesign;
 /// 它由大量虚拟Widget节点组成
 #[derive(Debug, Clone)]
 pub struct LiveDesign {
+    pub uses: TokenStream,
     /// live design 中引入的依赖
     pub imports: TokenStream,
     /// live design 中的节点树
@@ -24,7 +25,6 @@ impl LiveDesign {
 
 impl Default for LiveDesign {
     fn default() -> Self {
-
         let imports = quote! {
             import makepad_widgets::base::*;
             import makepad_widgets::theme_desktop_dark::*;
@@ -32,6 +32,9 @@ impl Default for LiveDesign {
         };
 
         Self {
+            uses: quote! {
+                use makepad_widgets::*;
+            },
             imports,
             tree: None,
             logic: None,
@@ -41,12 +44,13 @@ impl Default for LiveDesign {
 
 impl ToToken for LiveDesign {
     fn to_token_stream(&self) -> TokenStream {
+        let uses = &self.uses;
         let imports = &self.imports;
         let tree = &self.tree;
         let logic = &self.logic;
 
         quote! {
-            use makepad_widgets::*;
+            #uses
             live_design!{
                 #imports
 
@@ -65,6 +69,7 @@ where
     fn from(value: &T) -> Self {
         let mut live_design = LiveDesign::default();
 
+        let _ = value.widget_uses().map(|x| live_design.uses.extend(x));
         let tree = value.widget_tree();
         let logic = value.widget_logic();
         let imports = value.widget_imports();

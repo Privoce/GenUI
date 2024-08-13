@@ -138,7 +138,7 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                     // --------------------------------- signal ---------------------------------
                     let signal = if !is_else {
                         Some(
-                            parse_str::<TokenStream>(format!("#[rust] {}_signal: bool", &prefix).as_str())
+                            parse_str::<TokenStream>(format!("#[rust] {}_signal: bool, ", &prefix).as_str())
                                 .unwrap(),
                         )
                     } else {

@@ -105,7 +105,14 @@ fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> 
         } else {
             key_type
         };
-        return Ok((input, (key_type, key, Value::UnKnown(true.to_string()))));
+        return Ok((
+            input,
+            (
+                key_type,
+                key,
+                Value::Bind(crate::Bind::Normal("else".to_string())),
+            ),
+        ));
     }
 
     let (input, value) = preceded(tag(EQUAL_SIGN), parse_string)(input)?;

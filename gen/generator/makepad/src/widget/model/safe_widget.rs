@@ -52,7 +52,7 @@ impl SafeWidget {
         let mut auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
         auto_widgets.push(self);
     }
-    pub fn to_live_import(&self) -> String {
+    fn to_import(&self, prefix: &str)->String{
         let id = match &self.role {
             Role::If { id, .. } => id,
             Role::For { id, .. } => id,
@@ -60,10 +60,17 @@ impl SafeWidget {
         };
 
         format!(
-            "import crate::auto::{}_{}::*;",
+            "{} crate::auto::{}_{}::*;",
+            prefix,
             snake_to_camel(&self.name).unwrap(),
             id
         )
+    }
+    pub fn to_live_import(&self) -> String {
+        self.to_import("import")
+    }
+    pub fn to_use_import(&self) -> String {
+        self.to_import("use")
     }
     /// ## create a new Ifwidget(SafeWidget) from a Widget
     pub fn new_if_widget(widget: &Widget) -> Self {
