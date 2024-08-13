@@ -1,6 +1,6 @@
-use crate::auto::IfWidget_01J55FKXJ1J2ETBD5WR3R4N8S7::*;
+use crate::auto::IfWidget_01J55HMYA50BA9FS80JYCMPVYS::*;
 use makepad_widgets::*;
-live_design! { import makepad_widgets :: base :: * ; import makepad_widgets :: theme_desktop_dark :: * ; import makepad_draw :: shader :: std :: * ; import crate :: auto :: IfWidget_01J55FKXJ1J2ETBD5WR3R4N8S7 ::*; ui = {{ RootComponent }}{ main_window = < Window >{ window : { } flow : Down , width : Fill , height : Fill , main_view = < View >{ flow : Down , height : All , if_widget1 = < IfWidget01J55FKXJ1J2ETBD5WR3R4N8S7 >{ } } } } }
+live_design! { import makepad_widgets :: base :: * ; import makepad_widgets :: theme_desktop_dark :: * ; import makepad_draw :: shader :: std :: * ; import crate :: auto :: IfWidget_01J55HMYA50BA9FS80JYCMPVYS ::*; ui = {{ RootComponent }}{ main_window = < Window >{ window : { } flow : Down , width : Fill , height : Fill , main_view = < View >{ flow : Down , height : All , if_widget1 = < IfWidget01J55HMYA50BA9FS80JYCMPVYS >{ } } } } }
 #[derive(Live, Widget)]
 pub struct RootComponent {
     #[live]
@@ -20,6 +20,7 @@ impl Widget for RootComponent {
 impl LiveHook for RootComponent {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         let flag1 = true;
-        self.if_widget(id!(if_widget1)).set_if_signal(flag1);
+        self.if_widget01_j55_hmya50_ba9_fs80_jycmpvys(id!(if_widget1))
+            .set_if_signal(flag1);
     }
 }

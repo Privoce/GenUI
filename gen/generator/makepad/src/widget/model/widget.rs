@@ -246,6 +246,7 @@ impl Widget {
                             sub_prop_binds,
                             current_instance.as_ref(),
                             instance_opt.as_ref(),
+                            replacer
                         )
                         .draw_walk(None) // 暂时先写个None
                         .handle_event(
@@ -327,6 +328,7 @@ impl Widget {
         prop_binds: &Option<Vec<PropFn>>,
         current_instance: Option<&CurrentInstance>,
         instance_opt: Option<&Vec<Stmt>>,
+        replacer: Option<&Replacer>
     ) -> &mut Self {
         if !self.is_root {
             return self;
@@ -351,7 +353,7 @@ impl Widget {
             })
         });
 
-        let draw_widget_tk = quote_draw_widget(prop_binds);
+        let draw_widget_tk = quote_draw_widget(prop_binds, replacer);
 
         let apply_tk = combine_option(apply_tk, draw_widget_tk);
 
