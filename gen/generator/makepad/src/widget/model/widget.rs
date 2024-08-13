@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    hash::Hash,
-    iter::once,
-};
+use std::{collections::HashMap, hash::Hash, iter::once};
 
 use gen_converter::model::{
     prop::ConvertStyle,
@@ -246,7 +242,7 @@ impl Widget {
                             sub_prop_binds,
                             current_instance.as_ref(),
                             instance_opt.as_ref(),
-                            replacer
+                            replacer,
                         )
                         .draw_walk(None) // 暂时先写个None
                         .handle_event(
@@ -328,7 +324,7 @@ impl Widget {
         prop_binds: &Option<Vec<PropFn>>,
         current_instance: Option<&CurrentInstance>,
         instance_opt: Option<&Vec<Stmt>>,
-        replacer: Option<&Replacer>
+        replacer: Option<&Replacer>,
     ) -> &mut Self {
         if !self.is_root {
             return self;
@@ -514,7 +510,7 @@ impl Widget {
                     } else {
                         None
                     };
-                    
+
                     self.role = Role::new_option_if(props, if_signal.unwrap(), if_ulid);
                 } // if
                 (1_i32, 0_i32) => {

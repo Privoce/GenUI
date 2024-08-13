@@ -703,6 +703,7 @@ pub fn combine_option(l: Option<TokenStream>, r: Option<TokenStream>) -> Option<
     }
 }
 
+
 #[macro_export]
 macro_rules! from_struct_to_ptr {
     ($ptr: ty, $field: expr, $field_ty: expr) => {
