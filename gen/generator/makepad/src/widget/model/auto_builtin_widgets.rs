@@ -182,6 +182,11 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                             .unwrap(),
                         )
                     } else {
+                        acc3.extend(quote! {
+                            else{
+                                let _ = self.#name.draw_walk(cx, scope, walk);
+                            }
+                        });
                         None
                     };
                     // --------------------------------- generate ---------------------------------
