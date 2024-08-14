@@ -50,17 +50,6 @@ impl Makepad {
     where
         P: AsRef<Path>,
     {
-        // match root {
-        //     Some(root) => {
-        //         let gen_model: Widget =
-        //             gen_converter::model::Model::new(root, &path.as_ref().to_path_buf(), false)
-        //                 .unwrap()
-        //                 .into();
-        //         ModelTree::new(gen_model.into())
-        //     }
-        //     None => ModelTree::default_root(),
-        // }
-
         let mut widget = Widget::default_ui_root();
 
         widget.source.replace((root.unwrap(), path.as_ref()).into());
@@ -183,7 +172,10 @@ impl Makepad {
     /// - compile app.rs
     /// - compile lib.rs
     /// - compile other widget.rs (which is in ModelTree, use ModelTree compile method to compile)
-    pub fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) {
+    pub fn compile<P>(&mut self, entry: &str, path: P, gen_files: Option<&Vec<&PathBuf>>)
+    where
+        P: AsRef<Path>,
+    {
         // compile main.rs
         self.main_rs.compile();
         // compile other widget.rs
@@ -202,13 +194,20 @@ impl Makepad {
                 .join("src")
                 .join("auto")
                 .join("mod.rs");
-            let _ = auto_widgets.before_compile(self.main_rs.source.compiled_dir.as_path()).unwrap();
+            let _ = auto_widgets
+                .before_compile(self.main_rs.source.compiled_dir.as_path())
+                .unwrap();
             let _ = fs::create_file(auto_path.as_path())
                 .expect("create auto dir or auto mod.rs failed");
             auto_widgets.compile(auto_path.as_path())
         } else {
             None
         };
+
+        let _ = std::mem::replace(
+            &mut self.app_main,
+            Self::create_app_main(entry, path, self.tree.as_ref().unwrap()),
+        );
         // create app main and compile app.rs
         // get auto widgets live register
         self.compile_app_main(gen_files, auto_live_registers);

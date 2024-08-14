@@ -93,7 +93,6 @@ impl Widget {
         widget.id.replace("ui".to_string());
         widget.name = "Root".to_string();
         widget.is_static = true;
-
         widget
     }
     pub fn new(
@@ -125,9 +124,6 @@ impl Widget {
         widget.is_static = is_static; // is static may be change after
         widget.is_root = is_root;
         widget.source.replace(source.clone());
-
-        // widget.set_traits(WidgetTrait::default());
-        // widget.live_hook.replace(LiveHookTrait::default());
         widget
     }
     pub fn new_builtin(name: &str) -> Self {

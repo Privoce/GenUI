@@ -18,18 +18,3 @@ pub trait ToToken {
         token_stream_to_tree(self.to_token_stream())
     }
 }
-
-#[cfg(test)]
-mod test_makepad {
-
-    use crate::{
-        widget::model::{widget::Widget, ToLiveDesign},
-        ToToken,
-    };
-
-    #[test]
-    fn widget_default() {
-        let widget = Widget::default_ui_root();
-        dbg!(widget.to_live_design().to_token_stream().to_string());
-    }
-}

@@ -145,7 +145,7 @@ impl CompilerImpl for Compiler {
     /// - create app entry rs file (eg: app.rs)
     /// - create lib.rs (depend on root)
     fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> () {
-        let _ = self.target.as_mut().unwrap().compile(gen_files);
+        let _ = self.target.as_mut().unwrap().compile(&self.entry, self.origin_path.as_path(), gen_files);
     }
 
     fn insert(&mut self, node: Box<dyn std::any::Any>) -> () {

@@ -201,6 +201,7 @@ impl ModelTree {
         }
     }
     /// get super ui root name
+    /// return (root_source_name, root_widget_id)
     pub fn super_ui_root(&self) -> (String, String) {
         // self.node.source().unwrap().source_name_lower()
         self.node.super_ui_root()
