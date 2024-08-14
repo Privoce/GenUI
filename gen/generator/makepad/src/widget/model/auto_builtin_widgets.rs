@@ -62,8 +62,7 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
                     loop_type,
                     props,
                 } => for_widget_to_live_design(widget, id, credential, loop_type, props),
-                Role::If { id, props, .. } => {
-                    // dbg!(&self);
+                Role::If { id,  .. } => {
                     if_widget_to_live_design(widget, id)
                 }
                 _ => continue,

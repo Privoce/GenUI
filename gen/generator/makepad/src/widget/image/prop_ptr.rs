@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct ImagePropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{ImagePropPtr, "image", "Image"}
+from_struct_to_ptr!{ImagePropPtr, "Image"}
 
 ptr_to_token!(ImagePropPtr);

@@ -9,6 +9,6 @@ use crate::{
 
 pub struct ButtonPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!(ButtonPropPtr, "button", "Button");
+from_struct_to_ptr!(ButtonPropPtr, "Button");
 
 ptr_to_token!(ButtonPropPtr);

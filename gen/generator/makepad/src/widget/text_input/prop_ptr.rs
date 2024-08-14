@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct TextInputPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{TextInputPropPtr, "text_input", "TextInput"}
+from_struct_to_ptr!{TextInputPropPtr, "TextInput"}
 
 ptr_to_token!(TextInputPropPtr);

@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct CheckBoxPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{CheckBoxPropPtr, "checkbox", "CheckBox"}
+from_struct_to_ptr!{CheckBoxPropPtr, "CheckBox"}
 
 ptr_to_token!(CheckBoxPropPtr);

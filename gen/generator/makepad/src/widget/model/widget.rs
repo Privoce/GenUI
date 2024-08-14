@@ -89,8 +89,8 @@ impl Hash for Widget {
 impl Widget {
     pub fn default_ui_root() -> Self {
         let mut widget = Widget::default();
-
-        widget.set_is_root(true).set_id(Some(&"ui".to_string()));
+        widget.is_root = true;
+        widget.id.replace("ui".to_string());
         widget.name = "Root".to_string();
         widget.is_static = true;
 
@@ -100,83 +100,60 @@ impl Widget {
         special: Option<&Source>,
         name: &str,
         inherits: Option<&String>,
+        id: Option<&String>,
         is_root: bool,
+        script: Option<&ScriptModel>,
     ) -> Self {
         let mut widget = Widget::default();
+        // current widget source must be existed
+        let source = special.expect("widget source must be existed");
+        let is_component = name == "component";
+        let (name, inherits, is_builtin, is_static) = WidgetHandler::build_widget_struct_name(
+            &source.source_name(),
+            name,
+            id,
+            is_component,
+            inherits,
+            is_root,
+            script,
+        );
+        // handle widget ------------------------------------------------------------------------------------------
+        widget.name = name;
+        let _ = inherits.map(|x| widget.inherits.replace(x));
+        let _ = id.map(|x| widget.id.replace(x.to_string()));
+        widget.is_built_in = is_builtin;
+        widget.is_static = is_static; // is static may be change after
+        widget.is_root = is_root;
+        widget.source.replace(source.clone());
 
-        match special {
-            Some(special) => {
-                widget.source.replace(special.clone());
-                if is_root {
-                    let inherits_widget = BuiltIn::try_from(inherits).unwrap();
-                    // 获取文件名且改为首字母大写的camel
-                    match inherits {
-                        Some(_) => {
-                            widget.name = snake_to_camel(
-                                format!(
-                                    "{}_{}",
-                                    widget.source.as_ref().unwrap().source_name(),
-                                    name
-                                )
-                                .as_str(),
-                            )
-                            .unwrap();
-                        }
-                        None => {
-                            // 首个节点没有inherits且name不是`component`
-                            if name.eq("component") {
-                                widget.name = inherits_widget.to_string();
-                            } else {
-                                widget.name = BuiltIn::try_from(name).unwrap().to_string();
-                                widget.set_is_built_in(true);
-                            }
-                        }
-                    }
-                    widget.set_inherits(inherits_widget);
-                } else {
-                    widget.name = name.to_string();
-                    if let Ok(inherits) = BuiltIn::try_from(name) {
-                        widget.set_is_built_in(true).set_inherits(inherits);
-                    }
-                }
-            }
-            None => {
-                widget.name = name.to_string();
-                if let Ok(inherits) = BuiltIn::try_from(name) {
-                    widget.set_is_built_in(true).set_inherits(inherits);
-                }
-            }
-        }
-        widget.set_traits(WidgetTrait::default());
-        widget.live_hook.replace(LiveHookTrait::default());
+        // widget.set_traits(WidgetTrait::default());
+        // widget.live_hook.replace(LiveHookTrait::default());
         widget
     }
     pub fn new_builtin(name: &str) -> Self {
         let mut widget = Widget::default();
         widget.name = name.to_string();
-        widget.set_is_built_in(BuiltIn::try_from(name).is_ok());
+        widget.is_built_in = BuiltIn::try_from(name).is_ok();
         widget
     }
-    pub fn set_id(&mut self, id: Option<&String>) -> &mut Self {
-        if let Some(id) = id {
-            self.id = Some(id.to_string());
+    pub fn get_live_hook_mut(&mut self) -> &mut LiveHookTrait {
+        if self.live_hook.is_none() {
+            self.live_hook.replace(LiveHookTrait::default());
         }
-        self
+        self.live_hook.as_mut().unwrap()
+    }
+    pub fn get_traits_mut(&mut self) -> &mut WidgetTrait {
+        if self.traits.is_none() {
+            self.traits.replace(WidgetTrait::default());
+        }
+        self.traits.as_mut().unwrap()
     }
     pub fn set_as_prop(&mut self, as_prop: bool) -> &mut Self {
         self.as_prop = as_prop;
         self
     }
-    pub fn set_is_root(&mut self, is_root: bool) -> &mut Self {
-        self.is_root = is_root;
-        self
-    }
     pub fn set_is_static(&mut self, is_static: bool) -> &mut Self {
         self.is_static = is_static;
-        self
-    }
-    pub fn set_is_built_in(&mut self, is_built_in: bool) -> &mut Self {
-        self.is_built_in = is_built_in;
         self
     }
     /// if can not parse by BuiltIn Widget -> panic!
@@ -193,14 +170,6 @@ impl Widget {
         }
         self
     }
-    // pub fn push_prop(&mut self, key: String, value: TokenStream) -> &mut Self {
-    //     if self.props.is_none() {
-    //         self.props.replace(HashMap::new());
-    //     }
-    //     self.props.as_mut().unwrap().insert(key, value);
-
-    //     self
-    // }
     /// ## set widget script
     /// - set prop_ptr
     /// - set event_ptr
@@ -289,7 +258,7 @@ impl Widget {
 
         // handle before_apply ----------------------------------------------------------------------------------
         if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
-            self.live_hook.as_mut().unwrap().before_apply(before_apply);
+            self.get_live_hook_mut().before_apply(before_apply);
         }
 
         self
@@ -353,19 +322,15 @@ impl Widget {
 
         let apply_tk = combine_option(apply_tk, draw_widget_tk);
 
-        let _ = self.live_hook.as_mut().unwrap().after_apply(apply_tk);
+        let _ = self.get_live_hook_mut().after_apply(apply_tk);
 
         self
     }
     pub fn draw_walk(&mut self, draw_walk_tk: Option<TokenStream>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
         if self.is_root {
-            let builtin = self.inherits.as_ref().unwrap();
-            let _ = self
-                .traits
-                .as_mut()
-                .unwrap()
-                .draw_walk(builtin.draw_walk(&draw_walk_tk));
+            let draw_walk_tk = self.inherits.as_ref().unwrap().draw_walk(&draw_walk_tk);
+            let _ = self.get_traits_mut().draw_walk(draw_walk_tk);
         }
         self
     }
@@ -398,6 +363,10 @@ impl Widget {
         self.inherits.as_ref()
     }
     pub fn set_prop_ptr(&mut self, prop_ptr: &Option<ItemStruct>) -> &mut Self {
+        if !self.is_root {
+            return self;
+        }
+
         if let Some(prop_ptr) = prop_ptr {
             self.prop_ptr.replace(WidgetHandler::prop_ptr(
                 prop_ptr,
@@ -413,6 +382,7 @@ impl Widget {
                 );
             }
         }
+
         self
     }
     pub fn set_event_ptr(&mut self, event_ptr: &Option<ItemEnum>) -> &mut Self {
@@ -901,7 +871,9 @@ fn build_widget(
         special,
         template.get_name(),
         template.get_inherits(),
+        template.get_id(),
         is_root,
+        script,
     );
 
     // get styles from style by id
@@ -909,11 +881,8 @@ fn build_widget(
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
     // before all, check widget role from template  bind props
     widget
-        .set_is_root(template.is_root())
-        .set_id(template.get_id())
         .set_as_prop(template.as_prop)
         .set_props(widget_styles)
-        .set_is_static(template.is_static())
         .set_role(template.get_bind_props(), script, replacer.as_ref())
         .handle_role();
 
@@ -936,17 +905,8 @@ fn build_widget(
                 widget.push_child(child_widget);
             }
         }
-
-        // template.get_children().unwrap().iter().fold(
-        //     Vec::new(),
-        //     |mut acc, item| {
-        //         let  build_widget(special, item, style, script, false, None).map(|x| acc.push(x));
-        //         acc
-        //     },
-        // )
-        // widget.set_children();
     }
-    // dbg!(&replacer);
+
     widget.set_script(script, replacer.as_ref());
 
     // judget current widget role is if?, cause if widget(IFSignal::Else_IF and Else) need to be ignore, and IFSignal::If need to be replace(replace is handle in handle_role fn)

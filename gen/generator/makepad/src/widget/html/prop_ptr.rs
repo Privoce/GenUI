@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct HtmlPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{HtmlPropPtr, "html", "Html"}
+from_struct_to_ptr!{HtmlPropPtr, "Html"}
 
 ptr_to_token!(HtmlPropPtr);

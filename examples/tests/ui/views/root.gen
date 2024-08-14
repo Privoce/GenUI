@@ -1,8 +1,8 @@
 <template>
-  <component id="ui" inherits="root">
+  <component id="RootComponent" inherits="root">
     <window id="main_window">
         <view flow="Down" height="All" id="main_view">
-          <button :if="flag1" text="True Btn" id="if_widget1"></button>
+          <button :if="props.flag1" text="True Btn" id="if_widget1"></button>
           <button else text="False Btn" id="if_widget1"></button>
         </view>
       </window>
@@ -10,7 +10,15 @@
 </template>
 
 <script>
-let flag1 = true;
+use gen_macros::{Prop};
+
+#[derive(Prop)]
+pub struct RootComponent{
+    pub flag1: bool
+}
+
+let mut props = RootComponent::default();
+props.flag1 = true;
 </script>
 
 <style>

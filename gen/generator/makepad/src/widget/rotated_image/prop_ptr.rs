@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct RotatedImagePropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{RotatedImagePropPtr, "rotated_image", "RotatedImage"}
+from_struct_to_ptr!{RotatedImagePropPtr, "RotatedImage"}
 
 ptr_to_token!(RotatedImagePropPtr);

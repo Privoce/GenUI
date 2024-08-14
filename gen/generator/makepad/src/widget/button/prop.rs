@@ -104,7 +104,7 @@ impl DynProps for ButtonProps {
             // ------------------- other ------------------
             Event::GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
             Text::TEXT => quote_prop(vec![TEXT], &value),
-            _ => panic!("cannot match prop in BuiltIn label"),
+            _ => panic!("cannot match prop:{} in BuiltIn button", prop.name()),
         }
     }
 }

@@ -1,3 +1,3 @@
-mod prop;
+mod widget;
 
-pub use prop::*;
+pub use widget::*;

@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct FoldHeaderPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{FoldHeaderPropPtr, "fold_header", "FoldHeader"}
+from_struct_to_ptr!{FoldHeaderPropPtr, "FoldHeader"}
 
 ptr_to_token!(FoldHeaderPropPtr);

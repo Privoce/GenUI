@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct DesktopButtonPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{DesktopButtonPropPtr, "desktop_button", "DesktopButton"}
+from_struct_to_ptr!{DesktopButtonPropPtr, "DesktopButton"}
 
 ptr_to_token!(DesktopButtonPropPtr);

@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct RadioButtonPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{RadioButtonPropPtr, "radio_button", "RadioButton"}
+from_struct_to_ptr!{RadioButtonPropPtr, "RadioButton"}
 
 ptr_to_token!(RadioButtonPropPtr);

@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct SliderPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{SliderPropPtr, "slider", "Slider"}
+from_struct_to_ptr!{SliderPropPtr, "Slider"}
 
 ptr_to_token!(SliderPropPtr);

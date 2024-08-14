@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct LabelPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!(LabelPropPtr,"label", "Label");
+from_struct_to_ptr!(LabelPropPtr, "Label");
 
 ptr_to_token!(LabelPropPtr);

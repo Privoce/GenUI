@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct WindowPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!(WindowPropPtr, "window", "Window");
+from_struct_to_ptr!(WindowPropPtr, "Window");
 
 ptr_to_token!(WindowPropPtr);

@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct ViewPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!(ViewPropPtr,"view","View");
+from_struct_to_ptr!(ViewPropPtr, "View");
 
 ptr_to_token!(ViewPropPtr);

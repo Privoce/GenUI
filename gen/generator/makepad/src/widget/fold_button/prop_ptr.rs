@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct FoldButtonPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{FoldButtonPropPtr, "fold_button", "FoldButton"}
+from_struct_to_ptr!{FoldButtonPropPtr, "FoldButton"}
 
 ptr_to_token!(FoldButtonPropPtr);

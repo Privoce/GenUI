@@ -706,7 +706,7 @@ pub fn combine_option(l: Option<TokenStream>, r: Option<TokenStream>) -> Option<
 
 #[macro_export]
 macro_rules! from_struct_to_ptr {
-    ($ptr: ty, $field: expr, $field_ty: expr) => {
+    ($ptr: ty, $field_ty: expr) => {
         impl From<&ItemStruct> for $ptr {
             fn from(value: &ItemStruct) -> Self {
                 // 将GenUI的结构体转为Makepad的属性结构体
@@ -716,7 +716,7 @@ macro_rules! from_struct_to_ptr {
                     // add view
                     fields
                         .named
-                        .push(struct_field(vec!["deref"], $field, $field_ty));
+                        .push(struct_field(vec!["deref"], "deref_widget", $field_ty));
                 }
                 Self(new_item)
             }

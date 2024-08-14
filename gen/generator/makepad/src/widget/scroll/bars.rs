@@ -18,7 +18,7 @@ use crate::{
 
 pub struct ScrollBarsPropPtr(pub ItemStruct);
 
-from_struct_to_ptr! {ScrollBarsPropPtr, "scroll_bars", "ScrollBars"}
+from_struct_to_ptr! {ScrollBarsPropPtr, "ScrollBars"}
 
 ptr_to_token!(ScrollBarsPropPtr);
 

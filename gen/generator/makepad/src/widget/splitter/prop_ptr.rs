@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct SplitterPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{SplitterPropPtr, "splitter", "Splitter"}
+from_struct_to_ptr!{SplitterPropPtr, "Splitter"}
 
 ptr_to_token!(SplitterPropPtr);

@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct DropDownPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{DropDownPropPtr, "drop_down", "DropDown"}
+from_struct_to_ptr!{DropDownPropPtr, "DropDown"}
 
 ptr_to_token!(DropDownPropPtr);

@@ -9,7 +9,7 @@ use crate::{
 
 pub struct RootPropPtr(pub ItemStruct);
 
-from_struct_to_ptr! {RootPropPtr, "root", "Root"}
+from_struct_to_ptr! {RootPropPtr, "Root"}
 
 ptr_to_token!(RootPropPtr);
 

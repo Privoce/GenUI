@@ -6,6 +6,6 @@ use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils
 
 pub struct ScrollBarPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{ScrollBarPropPtr, "scroll_bar", "ScrollBar"}
+from_struct_to_ptr!{ScrollBarPropPtr, "ScrollBar"}
 
 ptr_to_token!(ScrollBarPropPtr);
