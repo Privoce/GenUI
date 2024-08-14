@@ -58,6 +58,17 @@ impl Makepad {
             children: None,
         }
     }
+    /// ## Create a default app main
+    /// which is used in before compile function to create a minimal app main
+    pub fn create_default_app_main<P>(entry: &str, path: P) -> AppMain
+    where
+        P: AsRef<Path>,
+    {
+        let app_path = path.as_ref().join(format!("{}.gen", entry).as_str());
+        let source = Source::from((app_path.as_path(), path.as_ref()));
+
+        AppMain::new(&source)
+    }
     pub fn create_app_main<P>(entry: &str, path: P, widget_tree: &ModelTree) -> AppMain
     where
         P: AsRef<Path>,

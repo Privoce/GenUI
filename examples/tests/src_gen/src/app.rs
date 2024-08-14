@@ -1,10 +1,5 @@
 use makepad_widgets::*;
-live_design! { 
-    import makepad_widgets :: base :: * ; 
-    import makepad_widgets :: theme_desktop_dark :: * ; 
-    import makepad_draw :: shader :: std :: * ; 
-    import crate :: views :: root :: * ; 
-    App = { { App } } { root : < RootComponent > { } } }
+live_design! { import makepad_widgets :: base :: * ; import makepad_widgets :: theme_desktop_dark :: * ; import makepad_draw :: shader :: std :: * ; import crate :: views :: root :: * ; App = { { App } } { root : < RootComponent > { } } }
 #[derive(Live, LiveHook)]
 pub struct App {
     #[live]
@@ -21,7 +16,7 @@ impl LiveRegister for App {
     fn live_register(cx: &mut Cx) {
         crate::makepad_widgets::live_design(cx);
         crate::views::root::live_design(cx);
-        crate::auto::IfWidget_01J5810NW4J6M5MPJPE69X95N0::live_design(cx);
+        crate::auto::IfWidget_01J581N86JK6B4ACA3Y20D59YS::live_design(cx);
     }
 }
 app_main!(App);

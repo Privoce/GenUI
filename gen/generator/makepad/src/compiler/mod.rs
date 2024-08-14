@@ -131,8 +131,9 @@ impl CompilerImpl for Compiler {
         let main_rs = Makepad::create_main_rs(&self.entry, self.origin_path.as_path());
         let widget_tree =
             Makepad::create_widget_tree(self.origin_path.as_path(), self.root.as_ref());
-        let app_main =
-            Makepad::create_app_main(&self.entry, self.origin_path.as_path(), &widget_tree);
+        // let app_main =
+        //     Makepad::create_app_main(&self.entry, self.origin_path.as_path(), &widget_tree);
+        let app_main = Makepad::create_default_app_main(&self.entry, self.origin_path.as_path());
         self.target.replace(Makepad {
             app_main,
             tree: Some(widget_tree),
