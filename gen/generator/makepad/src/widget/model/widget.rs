@@ -9,13 +9,13 @@ use gen_parser::{Bind, For, PropsKey, Value};
 
 use gen_utils::common::{
     ident, snake_to_camel,
-    syn_ext::{let_to_self, TypeGetter},
+    syn_ext::{let_to_self, ImplConverter, TypeGetter},
     IFSignal, Source, Ulid,
 };
 
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
+use syn::{parse_str, Ident, ItemEnum, ItemImpl, ItemStruct, Stmt, StmtMacro};
 
 use crate::{
     compiler::AUTO_BUILTIN_WIDGETS,
@@ -180,13 +180,14 @@ impl Widget {
         if self.is_root || self.role.is_special() {
             if let Some(sc) = script {
                 if let ScriptModel::Gen(sc) = sc {
-                    if self.is_root{dbg!(&sc);}
+                    // if self.is_root{dbg!(&sc);}
                     let GenScriptModel {
                         uses,
                         prop_ptr,
                         event_ptr,
                         sub_prop_binds,
                         sub_event_binds,
+                        instance_default_impl,
                         // other,
                         imports,
                         current_instance,
@@ -203,7 +204,7 @@ impl Widget {
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
                         .set_event_ptr(event_ptr)
-                        .before_apply(other.as_ref(), prop_fields.as_ref())
+                        .before_apply(other.as_ref(), prop_fields.as_ref(), instance_default_impl.as_ref())
                         .after_apply(
                             sub_prop_binds,
                             current_instance.as_ref(),
@@ -225,14 +226,20 @@ impl Widget {
 
         self
     }
+    /// ## Set Before Apply
+    /// 在before_apply中，主要是处理一些在应用前的代码, 例如一些绑定前的代码和一些初始化代码
+    /// 1. 组件的实例化，例如`impl Default for $Instance`
     pub fn before_apply(
         &mut self,
         code: Option<&Vec<Stmt>>,
         fields: Option<&Vec<Ident>>,
+        instance_default_impl: Option<&ItemImpl>,
     ) -> &mut Self {
-        if code.is_none() {
-            return self;
-        }
+       
+        // if code.is_none() {
+        //     return self;
+        // }
+        let mut before_apply_tk = TokenStream::new();
         // get check_list --------------------------------------------------------------------------------------
         let check_list = if self.is_root {
             // if is root widget, it should check if it is_static
@@ -254,10 +261,22 @@ impl Widget {
         };
 
         // handle before_apply ----------------------------------------------------------------------------------
-        if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
-            self.get_live_hook_mut().before_apply(before_apply);
+        if let Some(before_apply) = instance_default_impl {
+            before_apply_tk.extend(before_apply.default_to_self());
         }
 
+        if code.is_some(){
+            if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
+                // self.get_live_hook_mut().before_apply(before_apply);
+                before_apply_tk.extend(before_apply);
+            }
+        }
+       
+        // set before apply -------------------------------------------------------------------------------------
+        if !before_apply_tk.is_empty(){
+            self.get_live_hook_mut().before_apply(before_apply_tk);
+        }
+        
         self
     }
     /// - prop_binds: 模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
