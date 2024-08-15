@@ -180,6 +180,7 @@ impl Widget {
         if self.is_root || self.role.is_special() {
             if let Some(sc) = script {
                 if let ScriptModel::Gen(sc) = sc {
+                    if self.is_root{dbg!(&sc);}
                     let GenScriptModel {
                         uses,
                         prop_ptr,
@@ -197,7 +198,7 @@ impl Widget {
                     // 例如在handle_event中就需要
                     let prop_fields = get_props_fields(prop_ptr.as_ref());
                     // , bind_props.filter_fields(other.as_ref())
-
+                   
                     self.set_uses(uses)
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
@@ -294,6 +295,7 @@ impl Widget {
         if !self.is_root {
             return self;
         }
+        
         // 将当前实例所涉及的代码转为TokenStream
         // 需要将特定的头部转为self
         let apply_tk = instance_opt.map(|opt| {

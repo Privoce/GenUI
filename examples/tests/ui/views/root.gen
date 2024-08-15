@@ -17,8 +17,16 @@ pub struct RootComponent{
     pub flag1: bool
 }
 
+impl Default for RootComponent{
+    fn default() -> Self {
+        Self{
+            flag1: true
+        }
+    }
+}
+
 let mut props = RootComponent::default();
-props.flag1 = true;
+props.flag1 = false;
 </script>
 
 <style>
