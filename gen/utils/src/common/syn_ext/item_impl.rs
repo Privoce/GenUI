@@ -6,6 +6,33 @@ use syn::{token::For, Expr, ImplItem, ItemImpl, Stmt};
 
 use crate::common;
 
+pub trait ImplGetter {
+    /// ## get the fields of the struct in the impl
+    /// ```rust
+    /// let item_impl = syn::parse_str::<ItemImpl>("impl Default for Component { fn default() -> Self { Self{ value: 0, } } }").unwrap();
+    /// assert_eq!(item_impl.fields(), vec!["value".to_string()]);
+    /// ```
+    fn fields(&self) -> Vec<String>;
+}
+
+impl ImplGetter for ItemImpl {
+    fn fields(&self) -> Vec<String> {
+        let mut fields = Vec::new();
+        if let ImplItem::Fn(item_fn) = self.items.last().unwrap() {
+            for stmt in &item_fn.block.stmts {
+                if let Stmt::Expr(expr, _) = stmt {
+                    if let Expr::Struct(expr_struct) = expr {
+                        for field in &expr_struct.fields {
+                            fields.push(field.member.to_token_stream().to_string());
+                        }
+                    }
+                }
+            }
+        }
+        fields
+    }
+}
+
 /// # Converter for syn::token::ItemImpl
 pub trait ImplConverter {
     /// ## convert the Default impl trait to local
@@ -75,5 +102,21 @@ impl ImplConverter for ItemImpl {
                     .eq(&common::ident(ident));
         }
         false
+    }
+}
+
+#[cfg(test)]
+mod test_ext {
+    use syn::ItemImpl;
+
+    use super::ImplGetter;
+
+    #[test]
+    fn fields() {
+        let item_impl = syn::parse_str::<ItemImpl>(
+            "impl Default for Component { fn default() -> Self { Self{ value: 0, } } }",
+        )
+        .unwrap();
+        dbg!(item_impl.fields());
     }
 }

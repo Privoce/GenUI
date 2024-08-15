@@ -1,9 +1,10 @@
 <template>
-  <component id="RootComponent" inherits="root">
+  <component id="ui" inherits="root">
     <window id="main_window">
         <view flow="Down" height="All" id="main_view">
           <button :if="props.flag1" text="True Btn" id="if_widget1"></button>
           <button else text="False Btn" id="if_widget1"></button>
+          <button id="toggle_btn" text="click here to change if signal" @click="toggle"></button>
         </view>
       </window>
   </component>
@@ -26,7 +27,10 @@ impl Default for RootComponent{
 }
 
 let mut props = RootComponent::default();
-props.flag1 = false;
+
+let mut toggle = || {
+  props.flag1 = false;
+};
 </script>
 
 <style>

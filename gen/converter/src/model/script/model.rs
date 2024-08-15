@@ -6,7 +6,7 @@ use syn::{Block, Expr, Ident, ItemImpl, Meta, Pat, Stmt, StmtMacro};
 
 use crate::model::PropTree;
 
-use super::{r#use::UseMod, LifeTime, PropFn};
+use super::{r#use::UseMod, LifeTime, PropFn, PropFnOnly};
 
 /// # GenUI Script Model
 /// Model here is used to represent the script of the component or logic code
@@ -132,7 +132,7 @@ pub struct GenScriptModel {
     /// 例如上面的代码中的`current_instance.text = "Hello".to_string();`
     /// 这里应该都是Expr，但使用Stmt，因为Stmt能表示完整语句
     pub instance_opt: Option<Vec<Stmt>>,
-    pub instance_default_impl: Option<ItemImpl>,
+    pub instance_default_impl: Option<(Vec<PropFnOnly>, ItemImpl)>,
     /// 其他的代码，例如一些过程代码
     pub other: Option<Vec<syn::Stmt>>,
 }
@@ -291,7 +291,9 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
                                 && is_for.eq(&syn::token::For::default())
                             {
                                 if model.instance_default_impl.is_none() {
-                                    model.instance_default_impl.replace(impl_item.clone());
+                                    model
+                                        .instance_default_impl
+                                        .replace(PropFnOnly::filter_default_impl(impl_item, &bind_fn_tree.0));
                                 } else {
                                     panic!("Only one Instance Default trait impl can be used");
                                 }

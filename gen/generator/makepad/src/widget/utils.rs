@@ -1,11 +1,11 @@
 use std::{borrow::BorrowMut, collections::HashSet};
 
-use gen_converter::model::script::PropFn;
+use gen_converter::model::script::{PropFn, PropFnOnly};
 use gen_parser::{PropsKey, Value};
 use gen_utils::{
     common::{
-        token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
-        token_tree_punct_alone, trees_to_token_stream,
+        string::FixedString, token_stream_to_tree, token_tree_group, token_tree_group_paren,
+        token_tree_ident, token_tree_punct_alone, trees_to_token_stream,
     },
     error::Errors,
 };
@@ -355,7 +355,10 @@ pub fn quote_makepad_widget_struct(value: &ItemStruct) -> ItemStruct {
 /// 根据widget的绘制函数生成对应的代码
 /// 生成对应widget的绘制函数中的代码
 /// 这部分很统一，所有的widget都是这样处理的(除了自动生成的IFWidget和ForWidget)
-pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>, replacer: Option<&Replacer>) -> Option<TokenStream> {
+pub fn quote_draw_widget(
+    draw_widget: &Option<Vec<PropFn>>,
+    replacer: Option<&Replacer>,
+) -> Option<TokenStream> {
     let tk = if let Some(draw_widget_tk) = draw_widget {
         let mut tk = TokenStream::new();
         for item in draw_widget_tk {
@@ -370,7 +373,8 @@ pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>, replacer: Option<&Re
             // from widget get prop value
             if key.is_builtin() {
                 // here is_builtin just is gen builtin not makepad builtin
-                let _ = bind_widget_prop_value(id, key, ident, code, replacer).map(|x| tk.extend(x));
+                let _ = bind_widget_prop_value(id, key, &ident.to_string(), Some(code), replacer)
+                    .map(|x| tk.extend(x));
             } else {
                 // 当前只考虑builtin，自定义类型组件后续增加
                 let builtin = BuiltIn::from(&widget);
@@ -393,12 +397,46 @@ pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>, replacer: Option<&Re
     tk
 }
 
+pub trait QuoteDraw {
+    fn draw_prop(&self, replacer: Option<&Replacer>) -> Option<TokenStream>;
+}
+
+impl QuoteDraw for PropFnOnly {
+    fn draw_prop(&self, replacer: Option<&Replacer>) -> Option<TokenStream> {
+        let PropFnOnly {
+            widget,
+            id,
+            key,
+            ident,
+        } = self;
+        let mut ident = ident
+            .is_bind_and_get()
+            .unwrap()
+            .to_string()
+            .split_fixed(".");
+        // change the first part to self
+        ident[0] = "self".to_string();
+
+        return if key.is_builtin() {
+            bind_widget_prop_value(id, key, &ident.join("."), None, replacer)
+        } else {
+            let widget = parse_str::<TokenStream>(widget).unwrap();
+            let id = parse_str::<TokenStream>(id).unwrap();
+            let name = parse_str::<TokenStream>(key.name()).unwrap();
+            let ident = parse_str::<TokenStream>(&ident.join(".")).unwrap();
+            Some(quote! {
+                self.#widget(id!(#id)).apply_over_and_redraw(cx, live!{ #name: (#ident) })
+            })
+        };
+    }
+}
+
 pub fn bind_widget_prop_value(
     id: &str,
     key: &PropsKey,
-    ident: &Value,
-    code: &Stmt,
-    replacer: Option<&Replacer>
+    ident: &str,
+    code: Option<&Stmt>,
+    replacer: Option<&Replacer>,
 ) -> Option<TokenStream> {
     fn is_if(key: &PropsKey) -> bool {
         (key.is_bind() || key.is_fn()) && key.name() == "if"
@@ -406,7 +444,7 @@ pub fn bind_widget_prop_value(
 
     return if is_if(key) {
         // replacer must be Some
-        let replacer = replacer.unwrap().iter().find_map(|((_, r_id),ulid)| {
+        let replacer = replacer.unwrap().iter().find_map(|((_, r_id), ulid)| {
             if r_id == id {
                 Some(ulid.to_snake())
             } else {
@@ -414,14 +452,14 @@ pub fn bind_widget_prop_value(
             }
         });
 
-        let widget_name = parse_str::<TokenStream>(&format!("if_widget{}", replacer.expect("replacer must be Some!"))).unwrap();
-        let id = parse_str::<TokenStream>(id).unwrap();
-        let func = parse_str::<TokenStream>(&format!(
-            "set_{}_signal({});",
-            key.name(),
-            ident.to_string()
+        let widget_name = parse_str::<TokenStream>(&format!(
+            "if_widget{}",
+            replacer.expect("replacer must be Some!")
         ))
         .unwrap();
+        let id = parse_str::<TokenStream>(id).unwrap();
+        let func =
+            parse_str::<TokenStream>(&format!("set_{}_signal({});", key.name(), ident)).unwrap();
         Some(quote! {
             #code
             self.#widget_name(id!(#id)).#func
@@ -702,7 +740,6 @@ pub fn combine_option(l: Option<TokenStream>, r: Option<TokenStream>) -> Option<
         (None, None) => None,
     }
 }
-
 
 #[macro_export]
 macro_rules! from_struct_to_ptr {

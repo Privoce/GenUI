@@ -2,7 +2,7 @@ use std::{collections::HashMap, hash::Hash, iter::once};
 
 use gen_converter::model::{
     prop::ConvertStyle,
-    script::{CurrentInstance, GenScriptModel, PropFn, ScriptModel, UseMod},
+    script::{CurrentInstance, GenScriptModel, PropFn, PropFnOnly, ScriptModel, UseMod},
     TemplateModel,
 };
 use gen_parser::{Bind, For, PropsKey, Value};
@@ -21,7 +21,7 @@ use crate::{
     compiler::AUTO_BUILTIN_WIDGETS,
     utils::{component_render, special_struct},
     widget::{
-        utils::{combine_option, quote_draw_widget},
+        utils::{combine_option, quote_draw_widget, QuoteDraw},
         BuiltIn,
     },
 };
@@ -199,12 +199,17 @@ impl Widget {
                     // 例如在handle_event中就需要
                     let prop_fields = get_props_fields(prop_ptr.as_ref());
                     // , bind_props.filter_fields(other.as_ref())
-                   
+
                     self.set_uses(uses)
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
                         .set_event_ptr(event_ptr)
-                        .before_apply(other.as_ref(), prop_fields.as_ref(), instance_default_impl.as_ref())
+                        .before_apply(
+                            other.as_ref(),
+                            prop_fields.as_ref(),
+                            instance_default_impl.as_ref(),
+                            replacer,
+                        )
                         .after_apply(
                             sub_prop_binds,
                             current_instance.as_ref(),
@@ -233,12 +238,10 @@ impl Widget {
         &mut self,
         code: Option<&Vec<Stmt>>,
         fields: Option<&Vec<Ident>>,
-        instance_default_impl: Option<&ItemImpl>,
+        instance_default_impl: Option<&(Vec<PropFnOnly>, ItemImpl)>,
+        replacer: Option<&Replacer>,
     ) -> &mut Self {
-       
-        // if code.is_none() {
-        //     return self;
-        // }
+        
         let mut before_apply_tk = TokenStream::new();
         // get check_list --------------------------------------------------------------------------------------
         let check_list = if self.is_root {
@@ -259,24 +262,29 @@ impl Widget {
                 }
             }
         };
-
+        
         // handle before_apply ----------------------------------------------------------------------------------
-        if let Some(before_apply) = instance_default_impl {
-            before_apply_tk.extend(before_apply.default_to_self());
+        if self.is_root{
+            if let Some((props, before_apply)) = instance_default_impl {
+                before_apply_tk.extend(before_apply.default_to_self());
+                before_apply_tk.extend(props.iter().fold(TokenStream::new(), |mut acc, prop| {
+                    let _ = prop.draw_prop(replacer).map(|x| acc.extend(x));
+                    acc
+                }));
+            }
         }
 
-        if code.is_some(){
+        if code.is_some() {
             if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
-                // self.get_live_hook_mut().before_apply(before_apply);
                 before_apply_tk.extend(before_apply);
             }
         }
-       
+
         // set before apply -------------------------------------------------------------------------------------
-        if !before_apply_tk.is_empty(){
+        if !before_apply_tk.is_empty() {
             self.get_live_hook_mut().before_apply(before_apply_tk);
         }
-        
+
         self
     }
     /// - prop_binds: 模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
