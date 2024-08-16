@@ -35,6 +35,7 @@ impl WidgetHandler {
         is_root: bool,
         script: Option<&ScriptModel>,
     ) -> (String, Option<BuiltIn>, bool, bool) {
+       
         // only root widget can define as a component
         if is_component && is_root {
             let inherits =

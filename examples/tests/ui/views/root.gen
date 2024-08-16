@@ -1,10 +1,10 @@
 <template>
-  <component id="ui" inherits="root">
+  <component id="RootComponent" inherits="root">
     <window id="main_window">
         <view flow="Down" height="All" id="main_view">
           <button :if="props.flag1" text="True Btn" id="if_widget1"></button>
           <button else text="False Btn" id="if_widget1"></button>
-          <button id="toggle_btn" text="click here to change if signal" @click="toggle"></button>
+          <button id="toggle_btn" text="click here to change if signal" @clicked="toggle"></button>
         </view>
       </window>
   </component>

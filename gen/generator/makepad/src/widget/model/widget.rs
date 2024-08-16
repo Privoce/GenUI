@@ -301,7 +301,6 @@ impl Widget {
         if !self.is_root {
             return self;
         }
-
         let instance_name = if let Some(instance) = current_instance {
             instance.name()
         } else {

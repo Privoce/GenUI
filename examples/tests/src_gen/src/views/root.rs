@@ -1,6 +1,6 @@
-use crate::auto::IfWidget_01J5AXZRF2FRRY49M9X6ZXACEQ::*;
+use crate::auto::IfWidget_01J5CPRGE2FSF8XJX7TB383PA2::*;
 use makepad_widgets::*;
-live_design! { import makepad_widgets :: base :: * ; import makepad_widgets :: theme_desktop_dark :: * ; import makepad_draw :: shader :: std :: * ; import crate :: auto :: IfWidget_01J5AXZRF2FRRY49M9X6ZXACEQ ::*; RootComponent = {{ RootComponent }}{ main_window = < Window >{ window : { } flow : Down , width : Fill , height : Fill , main_view = < View >{ flow : Down , height : All , if_widget1 = < IfWidget01J5AXZRF2FRRY49M9X6ZXACEQ >{ } } } } }
+live_design! { import makepad_widgets :: base :: * ; import makepad_widgets :: theme_desktop_dark :: * ; import makepad_draw :: shader :: std :: * ; import crate :: auto :: IfWidget_01J5CPRGE2FSF8XJX7TB383PA2 ::*; RootComponent = {{ RootComponent }}{ main_window = < Window >{ window : { } flow : Down , width : Fill , height : Fill , main_view = < View >{ flow : Down , height : All , if_widget1 = < IfWidget01J5CPRGE2FSF8XJX7TB383PA2 >{ } toggle_btn = < Button >{ text : "click here to change if signal" , } } } } }
 #[derive(Live, Widget)]
 pub struct RootComponent {
     #[live]
@@ -14,17 +14,19 @@ impl Widget for RootComponent {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();
-        if let Event::Actions(actions) = event {}
+        if let Event::Actions(actions) = event {
+            let mut toggle = || {
+                self.flag1 = false;
+            };
+            let _ = toggle();
+        }
         self.deref_widget.handle_event(cx, event, scope);
     }
 }
 impl LiveHook for RootComponent {
     fn before_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.flag1 = true;
-        self.if_widget01_j5_axzrf2_frry49_m9_x6_zxaceq(id!(if_widget1))
+        self.if_widget01_j5_cprge2_fsf8_xjx7_tb383_pa2(id!(if_widget1))
             .set_if_signal(self.flag1);
-    }
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
-        self.flag1 = false;
     }
 }

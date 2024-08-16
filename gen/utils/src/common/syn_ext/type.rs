@@ -1,5 +1,5 @@
 use quote::ToTokens;
-use syn::{Pat, PatType, Stmt, Type};
+use syn::{Ident, Pat, PatType, Stmt, Type};
 
 #[allow(dead_code)]
 pub trait TypeGetter {
@@ -33,5 +33,29 @@ impl TypeGetter for Stmt {
                 panic!("Type not supported")
             }
         })
+    }
+}
+
+pub trait PatTypeGetter {
+    /// Get the type in Pat::Type
+    fn get(&self) -> Option<(Ident, Ident)>;
+}
+
+impl PatTypeGetter for Pat {
+    fn get(&self) -> Option<(Ident, Ident)> {
+        if let Pat::Type(pat_type) = self {
+            let k = if let Pat::Ident(ident) = &*pat_type.pat {
+                Some(ident.ident.clone())
+            } else {
+                None
+            };
+            let v = if let Type::Path(path) = &*pat_type.ty {
+                Some(path.path.segments.first().unwrap().ident.clone())
+            } else {
+                None
+            };
+            return Some((k.unwrap(), v.unwrap()));
+        }
+        None
     }
 }

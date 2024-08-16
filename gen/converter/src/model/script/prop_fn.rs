@@ -36,6 +36,17 @@ pub struct PropFnOnly {
     pub ident: Value,
 }
 
+impl From<&PropFn> for PropFnOnly {
+    fn from(value: &PropFn) -> Self {
+        PropFnOnly {
+            widget: value.widget.clone(),
+            id: value.id.clone(),
+            key: value.key.clone(),
+            ident: value.ident.clone(),
+        }
+    }
+}
+
 impl PropFnOnly {
     pub fn filter_default_impl(
         item_impl: &ItemImpl,
