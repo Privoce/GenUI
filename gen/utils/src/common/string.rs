@@ -1,3 +1,5 @@
+use proc_macro2::TokenStream;
+use syn::parse_str;
 use crate::{split_fixed_impl, common::{snake_to_camel, camel_to_snake, Ulid}};
 
 /// ## Split a string by a fixed pattern
@@ -33,7 +35,10 @@ pub trait FixedString {
     /// ## convert camel to snake which camel is contain ulid
     /// prefix is use to split, cause this string often format: `$widget_name$ulid`
     fn camel_to_snake_ulid(&self, prefix: Option<&str>) -> String;
+    /// ## is str has ulid or not, split by prefix
     fn has_ulid(&self, prefix: &str) -> bool;
+    /// ## to_token_stream
+    fn parse_str_stream(&self) -> TokenStream;
 }
 
 split_fixed_impl!(String);

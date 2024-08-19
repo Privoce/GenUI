@@ -1,8 +1,12 @@
+use gen_utils::common::string::FixedString;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_str, Ident};
 
-use super::{live_hook::LiveHookTrait, traits::WidgetTrait};
+use super::{
+    live_hook::{ImplLiveHook, LiveHookTrait},
+    traits::WidgetTrait,
+};
 
 #[derive(Debug, Default, Clone)]
 pub struct SafeWidgetTrait {
@@ -111,22 +115,18 @@ impl From<&LiveHookTrait> for SafeLiveHookTrait {
 }
 
 impl SafeLiveHookTrait {
-    pub fn to_token_stream(&self, target: Ident) -> TokenStream{
-        fn handle(item: Option<&String>) -> Option<TokenStream>{
-            item.map(|x| parse_str::<TokenStream>(x).unwrap())
-        }
-
-        let before_live_design = handle(self.before_live_design.as_ref());
-        let apply_value_unknown = handle(self.apply_value_unknown.as_ref());
-        let apply_value_instance = handle(self.apply_value_instance.as_ref());
-        let skip_apply = handle(self.skip_apply.as_ref());
-        let before_apply = handle(self.before_apply.as_ref());
-        let after_apply = handle(self.after_apply.as_ref());
-        let after_apply_from = handle(self.after_apply_from.as_ref());
-        let after_new_from_doc = handle(self.after_new_from_doc.as_ref());
-        let after_update_from_doc = handle(self.after_update_from_doc.as_ref());
-        let after_apply_from_doc = handle(self.after_apply_from_doc.as_ref());
-        let after_new_before_apply = handle(self.after_new_before_apply.as_ref());
+    pub fn to_token_stream(&self, target: Ident) -> TokenStream {
+        let before_live_design = self.before_live_design();
+        let apply_value_unknown = self.apply_value_unknown.as_ref();
+        let apply_value_instance = self.apply_value_instance.as_ref();
+        let skip_apply = self.skip_apply.as_ref();
+        let before_apply = self.before_apply.as_ref();
+        let after_apply = self.after_apply.as_ref();
+        let after_apply_from = self.after_apply_from.as_ref();
+        let after_new_from_doc = self.after_new_from_doc.as_ref();
+        let after_update_from_doc = self.after_update_from_doc.as_ref();
+        let after_apply_from_doc = self.after_apply_from_doc.as_ref();
+        let after_new_before_apply = self.after_new_before_apply.as_ref();
 
         quote! {
             impl LiveHook for #target{
@@ -143,5 +143,128 @@ impl SafeLiveHookTrait {
                 #after_new_before_apply
             }
         }
+    }
+}
+
+impl ImplLiveHook for SafeLiveHookTrait {
+    fn before_live_design(&self) -> Option<TokenStream> {
+        self.before_live_design.as_ref().map(|x| {
+            let tk = x.parse_str_stream();
+            quote! {
+                fn before_live_design(_cx:&mut Cx){
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn apply_value_unknown(&self) -> Option<TokenStream> {
+        self.apply_value_unknown.as_ref().map(|tk| {
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn apply_value_unknown(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) -> usize {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn apply_value_instance(&self) -> Option<TokenStream> {
+        self.apply_value_instance.as_ref().map(|tk|{
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn apply_value_instance(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) -> usize {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn skip_apply(&self) -> Option<TokenStream> {
+        self.skip_apply.as_ref().map(|tk|{
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn skip_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) -> Option<usize> {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn before_apply(&self) -> Option<TokenStream> {
+        self.before_apply.as_ref().map(|tk|{
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn before_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn after_apply(&self) -> Option<TokenStream> {
+        self.after_apply.as_ref().map(|tk|{
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn after_apply_from(&self) -> Option<TokenStream> {
+        self.after_apply_from.as_ref().map(|tk| {
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn after_apply_from(&mut self, cx: &mut Cx, apply: &mut Apply) {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn after_new_from_doc(&self) -> Option<TokenStream> {
+        self.after_new_from_doc.as_ref().map(|tk| {
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn after_new_from_doc(&mut self, cx: &mut Cx) {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn after_update_from_doc(&self) -> Option<TokenStream> {
+        self.after_update_from_doc.as_ref().map(|tk| {
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn after_update_from_doc(&mut self, cx: &mut Cx) {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn after_apply_from_doc(&self) -> Option<TokenStream> {
+        self.after_apply_from_doc.as_ref().map(|tk| {
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn after_apply_from_doc(&mut self, cx: &mut Cx) {
+                    #tk
+                }
+            }
+        })
+    }
+
+    fn after_new_before_apply(&self) -> Option<TokenStream> {
+        self.after_new_before_apply.as_ref().map(|tk| {
+            let tk = tk.parse_str_stream();
+            quote! {
+                fn after_new_before_apply(&mut self, cx: &mut Cx) {
+                    #tk
+                }
+            }
+        })
     }
 }

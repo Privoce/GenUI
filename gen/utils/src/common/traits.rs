@@ -45,6 +45,10 @@ macro_rules! split_fixed_impl {
                     false
                 }
             }
+
+            fn parse_str_stream(&self) -> TokenStream {
+                parse_str::<TokenStream>(&self).unwrap()
+            }
         }
     };
 }

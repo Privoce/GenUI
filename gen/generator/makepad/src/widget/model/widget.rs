@@ -156,11 +156,6 @@ impl Widget {
     /// if can not parse by BuiltIn Widget -> panic!
     pub fn set_props(&mut self, props: Option<HashMap<PropsKey, Value>>) -> &mut Self {
         if let Some(props) = props {
-            // if self.is_built_in {
-            //     self.props = Some(BuiltIn::from(&self.name).props(&props));
-            // } else {
-            //     todo!("widget props define unsoloved => {:#?}",props);
-            // }
             if self.is_built_in {
                 self.props = Some(BuiltIn::from(&self.name).props(&props));
             }
