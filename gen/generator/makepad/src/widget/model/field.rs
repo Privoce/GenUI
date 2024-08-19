@@ -71,8 +71,6 @@ impl From<&PropFn> for Field{
         //     is_prop,
         // } = value;
 
-        // todo!
-
         todo!()
     }
 }

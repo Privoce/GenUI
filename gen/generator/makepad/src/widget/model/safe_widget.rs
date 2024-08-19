@@ -93,7 +93,7 @@ impl SafeWidget {
             children: Some(vec![widget.into()]),
             inherits: Some(BuiltIn::Area),
             traits: None,
-            live_hook: None,
+            live_hook: widget.live_hook.as_ref().map(|x| x.into()),
             role: widget.role.clone(),
             tree: None,
         }

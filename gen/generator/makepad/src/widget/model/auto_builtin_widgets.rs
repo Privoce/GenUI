@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
 use gen_utils::{
-    common::{fs, ident, snake_to_camel, Source, Ulid},
+    common::{fs, snake_to_camel, Source, Ulid},
     error::{Errors, FsError},
 };
 use proc_macro2::TokenStream;
@@ -196,12 +196,12 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                 },
             );
 
-        let live_hook = widget
-            .live_hook
-            .as_ref()
-            .map(|x| x.to_token_stream(ident(&format!("{}{}", &widget.name, ulid))));
+        // let live_hook = widget
+        //     .live_hook
+        //     .as_ref()
+        //     .map(|x| x.to_token_stream(ident(&format!("{}{}", &widget.name, ulid))));
         let logic = quote! {
-            #[derive(Live, Widget)]
+            #[derive(Live, Widget, LiveHook)]
             pub struct #widget_name {
                 #[rust] #[redraw] area: Area,
                 #[layout] layout: Layout,
@@ -220,8 +220,6 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                     #handle_event_expr
                 }
             }
-
-            #live_hook
 
             impl #widget_ref {
                 #impl_widget_ref

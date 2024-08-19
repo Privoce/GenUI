@@ -15,12 +15,10 @@ pub const TEXTURE: &str = "Texture";
 pub const UP: &str = "Up";
 //-------------[for Makepad::Cursor]--------------------------------
 pub const HIDDEN: &str = "Hidden";
-pub const DEFAULT: &str = "Default";
 pub const CROSSHAIR: &str = "Crosshair";
 pub const HAND: &str = "Hand";
 pub const ARROW: &str = "Arrow";
 pub const MOVE: &str = "Move";
-pub const TEXT: &str = "Text";
 pub const WAIT: &str = "Wait";
 pub const HELP: &str = "Help";
 pub const NOT_ALLOWED: &str = "NotAllowed";

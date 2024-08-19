@@ -52,16 +52,16 @@ pub struct LiveHookTrait {
 impl LiveHookTrait {
     pub fn to_token_stream(&self, target: Ident) -> TokenStream {
         let before_live_design = self.before_live_design();
-        let apply_value_unknown = self.apply_value_unknown.as_ref();
-        let apply_value_instance = self.apply_value_instance.as_ref();
-        let skip_apply = self.skip_apply.as_ref();
-        let before_apply = self.before_apply.as_ref();
-        let after_apply = self.after_apply.as_ref();
-        let after_apply_from = self.after_apply_from.as_ref();
-        let after_new_from_doc = self.after_new_from_doc.as_ref();
-        let after_update_from_doc = self.after_update_from_doc.as_ref();
-        let after_apply_from_doc = self.after_apply_from_doc.as_ref();
-        let after_new_before_apply = self.after_new_before_apply.as_ref();
+        let apply_value_unknown = self.apply_value_unknown();
+        let apply_value_instance = self.apply_value_instance();
+        let skip_apply = self.skip_apply();
+        let before_apply = self.before_apply();
+        let after_apply = self.after_apply();
+        let after_apply_from = self.after_apply_from();
+        let after_new_from_doc = self.after_new_from_doc();
+        let after_update_from_doc = self.after_update_from_doc();
+        let after_apply_from_doc = self.after_apply_from_doc();
+        let after_new_before_apply = self.after_new_before_apply();
 
         quote! {
             impl LiveHook for #target{

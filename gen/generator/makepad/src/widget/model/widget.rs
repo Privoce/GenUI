@@ -200,26 +200,27 @@ impl Widget {
                     self.set_uses(uses)
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
-                        .set_event_ptr(event_ptr)
-                        .before_apply(
-                            other.as_ref(),
-                            prop_fields.as_ref(),
-                            instance_default_impl.as_ref(),
-                            replacer,
-                        )
-                        .after_apply(
-                            sub_prop_binds,
-                            current_instance.as_ref(),
-                            instance_opt.as_ref(),
-                            replacer,
-                        )
-                        .draw_walk(None) // 暂时先写个None
-                        .handle_event(
-                            sub_event_binds,
-                            &prop_tree.0,
-                            current_instance.as_ref(),
-                            prop_fields.as_ref(),
-                        );
+                        .set_event_ptr(event_ptr);
+                    let bind_prop_tk = self.before_apply(
+                        other.as_ref(),
+                        prop_fields.as_ref(),
+                        instance_default_impl.as_ref(),
+                        replacer,
+                    );
+                    self.after_apply(
+                        sub_prop_binds,
+                        current_instance.as_ref(),
+                        instance_opt.as_ref(),
+                        replacer,
+                        bind_prop_tk,
+                    )
+                    .draw_walk(None) // 暂时先写个None
+                    .handle_event(
+                        sub_event_binds,
+                        &prop_tree.0,
+                        current_instance.as_ref(),
+                        prop_fields.as_ref(),
+                    );
                 }
             } else {
                 self.is_static = true;
@@ -229,15 +230,17 @@ impl Widget {
         self
     }
     /// ## Set Before Apply
-    /// 在before_apply中，主要是处理一些在应用前的代码, 例如一些绑定前的代码和一些初始化代码
+    /// 在before_apply中，主要是处理一些在应用前的代码, 其中对实例进行网络请求，实例初始化等操作
+    /// 这个方法会返回一个Option<TokenStream>，表示当前实例初始化绑定的代码，这段代码会在after_apply中被调用
     pub fn before_apply(
         &mut self,
         code: Option<&Vec<Stmt>>,
         fields: Option<&Vec<Ident>>,
         instance_default_impl: Option<&(Vec<PropFnOnly>, ItemImpl)>,
         replacer: Option<&Replacer>,
-    ) -> &mut Self {
+    ) -> Option<TokenStream> {
         let mut before_apply_tk = TokenStream::new();
+        let mut bind_prop_tk = TokenStream::new();
         // get check_list --------------------------------------------------------------------------------------
         let check_list = if self.is_root {
             // if is root widget, it should check if it is_static
@@ -262,7 +265,7 @@ impl Widget {
         if self.is_root {
             if let Some((props, default_impl)) = instance_default_impl {
                 before_apply_tk.extend(default_impl.default_to_self());
-                before_apply_tk.extend(props.iter().fold(TokenStream::new(), |mut acc, prop| {
+                bind_prop_tk.extend(props.iter().fold(TokenStream::new(), |mut acc, prop| {
                     let _ = prop.draw_prop(replacer).map(|x| acc.extend(x));
                     acc
                 }));
@@ -277,11 +280,68 @@ impl Widget {
 
         // set before apply -------------------------------------------------------------------------------------
         if !before_apply_tk.is_empty() {
-            self.get_live_hook_mut().before_apply.replace(before_apply_tk);
+            self.get_live_hook_mut()
+                .before_apply
+                .replace(before_apply_tk);
         }
 
+        if bind_prop_tk.is_empty() {
+            None
+        } else {
+            Some(bind_prop_tk)
+        }
+    }
+    /// ## Set After Apply
+    /// after_apply主要是处理一些在应用后的代码，对实例初始化后的属性进行绑定,数据更新等操作
+    ///
+    pub fn after_apply(
+        &mut self,
+        prop_binds: &Option<Vec<PropFn>>,
+        current_instance: Option<&CurrentInstance>,
+        instance_opt: Option<&Vec<Stmt>>,
+        replacer: Option<&Replacer>,
+        bind_prop_tk: Option<TokenStream>,
+    ) -> &mut Self {
+        if !self.is_root {
+            return self;
+        }
+
+        // 将当前实例所涉及的代码转为TokenStream
+        // 需要将特定的头部转为self
+        let apply_tk = instance_opt.map(|opt| {
+            let instance_name = current_instance
+                .unwrap()
+                .name()
+                .expect("current instance must have name")
+                .to_string();
+            opt.into_iter().fold(TokenStream::new(), |mut acc, item| {
+                // 这里我本来可以一点点替换的，但发现似乎这样会错过很多情况，所以转而使用转为String后进行replace
+                let item = item.to_token_stream().to_string();
+
+                // let item = item.replacen(&instance_name, "self", 1);
+                let item = item.replace(&instance_name, "self");
+
+                acc.extend(parse_str::<TokenStream>(&item));
+                acc
+            })
+        });
+
+        let draw_widget_tk = quote_draw_widget(prop_binds, replacer);
+        // set after apply ---------------------------------------------------------------------------------------
+        let _ = combine_option(apply_tk, draw_widget_tk)
+            .map(|apply_tk| self.get_live_hook_mut().after_apply.replace(apply_tk));
+
+        // bind props -------------------------------------------------------------------------------------------
+        let _ = bind_prop_tk.map(|bind_prop_tk| {
+            if let Some(after_apply) = self.get_live_hook_mut().after_apply.as_mut() {
+                after_apply.extend(bind_prop_tk)
+            } else {
+                self.get_live_hook_mut().after_apply.replace(bind_prop_tk);
+            }
+        });
         self
     }
+
     /// - prop_binds: 整个模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
     /// - events: 模板中绑定的events
     /// - current_instance: 当前实例(属性实例)，用于获取实例名，它需要和prop_fields一起使用，来找到原Gen代码中需要被替换的部分(`current_instance.prop_field`)
@@ -309,45 +369,7 @@ impl Widget {
         let _ = self.traits.as_mut().unwrap().handle_event(handle_event_tk);
         self
     }
-    pub fn after_apply(
-        &mut self,
-        prop_binds: &Option<Vec<PropFn>>,
-        current_instance: Option<&CurrentInstance>,
-        instance_opt: Option<&Vec<Stmt>>,
-        replacer: Option<&Replacer>,
-    ) -> &mut Self {
-        if !self.is_root {
-            return self;
-        }
 
-        // 将当前实例所涉及的代码转为TokenStream
-        // 需要将特定的头部转为self
-        let apply_tk = instance_opt.map(|opt| {
-            let instance_name = current_instance
-                .unwrap()
-                .name()
-                .expect("current instance must have name")
-                .to_string();
-            opt.into_iter().fold(TokenStream::new(), |mut acc, item| {
-                // 这里我本来可以一点点替换的，但发现似乎这样会错过很多情况，所以转而使用转为String后进行replace
-                let item = item.to_token_stream().to_string();
-
-                // let item = item.replacen(&instance_name, "self", 1);
-                let item = item.replace(&instance_name, "self");
-
-                acc.extend(parse_str::<TokenStream>(&item));
-                acc
-            })
-        });
-
-        let draw_widget_tk = quote_draw_widget(prop_binds, replacer);
-
-        let _ = combine_option(apply_tk, draw_widget_tk).map(|apply_tk|{
-            self.get_live_hook_mut().after_apply.replace(apply_tk)
-        });
-
-        self
-    }
     pub fn draw_walk(&mut self, draw_walk_tk: Option<TokenStream>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
         if self.is_root {
@@ -905,8 +927,7 @@ fn build_widget(
     widget
         .set_as_prop(template.as_prop)
         .set_props(widget_styles)
-        .set_role(template.get_bind_props(), script, replacer.as_ref())
-        .handle_role();
+        .set_role(template.get_bind_props(), script, replacer.as_ref());
 
     if template.has_children() {
         // let mut child_replacer = None;
@@ -929,10 +950,9 @@ fn build_widget(
         }
     }
 
-    // if widget.is_root {
-    //     dbg!(template.get_props_tree().0);
-    // }
-    widget.set_script(script, replacer.as_ref(), template.get_props_tree());
+    widget
+        .set_script(script, replacer.as_ref(), template.get_props_tree())
+        .handle_role();
 
     // judget current widget role is if?, cause if widget(IFSignal::Else_IF and Else) need to be ignore, and IFSignal::If need to be replace(replace is handle in handle_role fn)
     if let RoleType::If(role) = RoleType::from(&widget.role) {
