@@ -1,12 +1,12 @@
-//! # Convert RSX DSL to AST
+//! # Convert Gen DSL to AST
 //! ## How to convert
 //! ```code
 //!                                                    Real AST
 //! -----------       ---------------   Strategy   ---------------
-//! | RSX DSL |  -->  | ParseTarget |  ----------> | ParseResult |
+//! | Gen DSL |  -->  | ParseTarget |  ----------> | ParseResult |
 //! -----------       ---------------              ---------------  
 //! ```
-//! ## RSX
+//! ## Gen
 //! 
 //! - Template
 //! - Script

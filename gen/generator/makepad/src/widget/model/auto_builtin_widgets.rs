@@ -294,6 +294,7 @@ fn for_widget_to_live_design(
             }
             Some(set_props)
         };
+        let as_widget = parse_str::<TokenStream>(&format!("as_{}", &widget.name)).unwrap();
         // 注意！这个方法需要处理
         let enumerate = parse_str::<TokenStream>(&credential.fmt_enumerate()).unwrap();
 
@@ -313,7 +314,7 @@ fn for_widget_to_live_design(
                     cx.begin_turtle(walk, self.layout);
                     for #enumerate in self.#loop_ident.iter().enumerate() {
                         let target = self.children.get_or_insert(cx, LiveId(index as u64), |cx|{
-                            WidgetRef::new_from_ptr(cx, self.item).as_button()
+                            WidgetRef::new_from_ptr(cx, self.item).#as_widget()
                         });
 
                         #set_widget_props

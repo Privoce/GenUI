@@ -122,7 +122,7 @@ impl Widget {
         let _ = inherits.map(|x| widget.inherits.replace(x));
         let _ = id.map(|x| widget.id.replace(x.to_string()));
         widget.is_built_in = is_builtin;
-        widget.is_static = is_static; // is static may be change after
+        widget.is_static = if is_root { is_static } else { true }; // is static may be change after
         widget.is_root = is_root;
         widget.source.replace(source.clone());
         widget
@@ -147,10 +147,6 @@ impl Widget {
     }
     pub fn set_as_prop(&mut self, as_prop: bool) -> &mut Self {
         self.as_prop = as_prop;
-        self
-    }
-    pub fn set_is_static(&mut self, is_static: bool) -> &mut Self {
-        self.is_static = is_static;
         self
     }
     /// if can not parse by BuiltIn Widget -> panic!

@@ -144,7 +144,7 @@ impl ParseCore {
             (true, false, true) => Strategy::TemplateStyle,
             (true, false, false) => Strategy::SingleTemplate,
             (false, true, true) => Strategy::Error(String::from(
-                "RSX Parse Strategy Error: There is no such strategy `Script` + `Style`",
+                "Gen Parse Strategy Error: There is no such strategy `Script` + `Style`",
             )),
             (false, true, false) => Strategy::SingleScript,
             (false, false, true) => Strategy::SingleStyle,
@@ -296,7 +296,7 @@ impl ParseTarget {
             (true, false, false, false) => Strategy::SingleTemplate,
             (false, true, true, true) | (false, true, true, false) => {
                 Strategy::Error(String::from(
-                    "RSX Parse Strategy Error: There is no such strategy `Script` + `Style`",
+                    "Gen Parse Strategy Error: There is no such strategy `Script` + `Style`",
                 ))
             }
             (false, true, false, true) => Strategy::ScriptComment,
