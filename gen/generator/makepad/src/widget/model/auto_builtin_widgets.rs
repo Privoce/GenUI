@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
 use gen_utils::{
-    common::{fs, snake_to_camel, Source, Ulid},
+    common::{fs, ident, snake_to_camel, Source, Ulid},
     error::{Errors, FsError},
 };
 use proc_macro2::TokenStream;
@@ -62,9 +62,7 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
                     loop_type,
                     props,
                 } => for_widget_to_live_design(widget, id, credential, loop_type, props),
-                Role::If { id,  .. } => {
-                    if_widget_to_live_design(widget, id)
-                }
+                Role::If { id, .. } => if_widget_to_live_design(widget, id),
                 _ => continue,
             };
             // insert target mod into auto/mod.rs
@@ -167,8 +165,7 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                     let name =
                         parse_str::<TokenStream>(format!("{}_{}", &prefix, item.name).as_str())
                             .unwrap();
-                    let ty = parse_str::<TokenStream>(snake_to_camel(&item.name).as_str())
-                        .unwrap();
+                    let ty = parse_str::<TokenStream>(snake_to_camel(&item.name).as_str()).unwrap();
                     // --------------------------------- signal ---------------------------------
                     let signal = if !is_else {
                         let signal_name = format!("{}_signal", &prefix);
@@ -199,8 +196,12 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                 },
             );
 
+        let live_hook = widget
+            .live_hook
+            .as_ref()
+            .map(|x| x.to_token_stream(ident(&format!("{}{}", &widget.name, ulid))));
         let logic = quote! {
-            #[derive(Live, Widget, LiveHook)]
+            #[derive(Live, Widget)]
             pub struct #widget_name {
                 #[rust] #[redraw] area: Area,
                 #[layout] layout: Layout,
@@ -219,6 +220,8 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                     #handle_event_expr
                 }
             }
+
+            #live_hook
 
             impl #widget_ref {
                 #impl_widget_ref

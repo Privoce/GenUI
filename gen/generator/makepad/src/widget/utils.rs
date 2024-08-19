@@ -481,14 +481,6 @@ pub fn bind_widget_prop_value(
     };
 }
 
-// pub fn quote_draw_widget_define(draw_widget: &Option<Vec<PropFn>>,code: TokenStream)->Option<TokenStream>{
-//     let tk = if let Some(draw_widget_tk) = draw_widget {
-
-//     }else{
-//         None
-//     };
-//     tk
-// }
 
 /// get local ident from stmt
 fn local_ident(code: &Stmt) -> String {
@@ -523,7 +515,13 @@ pub fn quote_handle_event(
     let work_tk = if let Some(event_tk) = event {
         let mut work_tk = TokenStream::new();
         for item in event_tk {
-            let code = &item.code;
+            let PropFn {
+                widget,
+                id,
+                key,
+                code,
+                ..
+            } = item;
             //----------------------------------[work_tk]---------------------------------------
             let _ = code
                 .prop_to_self_binding(instance_name, prop_fields, |props| {
@@ -531,11 +529,9 @@ pub fn quote_handle_event(
                     if props.is_empty() || binds.is_empty() {
                         None
                     } else {
-                        // dbg!(&props, &binds);
                         Some(props.iter().fold(
                             TokenStream::new(),
                             |mut acc, (prop, after_prop)| {
-                                // dbg!(&binds);
                                 let _ = binds.iter().for_each(|((w_name, w_id), tree)| {
                                     if let Some(tree) = tree {
                                         let _ = tree.iter().for_each(|(key, value)| {
@@ -564,7 +560,18 @@ pub fn quote_handle_event(
                     }
                 })
                 .map(|code| {
-                    work_tk.extend(code);
+                    let func = parse_str::<TokenStream>(&format!(
+                        "self.{}(id!({})).{}(actions)",
+                        widget,
+                        id,
+                        key.name()
+                    ))
+                    .unwrap();
+                    work_tk.extend(quote! {
+                        if #func{
+                            #code
+                        }
+                    });
                 });
         }
         Some(work_tk)
@@ -582,6 +589,7 @@ pub fn quote_handle_event(
         if let Event::Actions(actions) = event{
             #work_tk
         }
+        self.redraw(cx);
         #target_handle_tk
     }
 }

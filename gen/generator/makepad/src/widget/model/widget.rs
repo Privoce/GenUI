@@ -282,7 +282,7 @@ impl Widget {
 
         // set before apply -------------------------------------------------------------------------------------
         if !before_apply_tk.is_empty() {
-            self.get_live_hook_mut().before_apply(before_apply_tk);
+            self.get_live_hook_mut().before_apply.replace(before_apply_tk);
         }
 
         self
@@ -347,9 +347,9 @@ impl Widget {
 
         let draw_widget_tk = quote_draw_widget(prop_binds, replacer);
 
-        let apply_tk = combine_option(apply_tk, draw_widget_tk);
-
-        let _ = self.get_live_hook_mut().after_apply(apply_tk);
+        let _ = combine_option(apply_tk, draw_widget_tk).map(|apply_tk|{
+            self.get_live_hook_mut().after_apply.replace(apply_tk)
+        });
 
         self
     }
