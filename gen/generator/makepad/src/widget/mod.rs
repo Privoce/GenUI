@@ -10,7 +10,7 @@ use std::fmt::Display;
 #[allow(unused_imports)]
 use std::{collections::HashMap, default, fmt::Debug};
 
-use gen_converter::model::script::PropFn;
+use gen_converter::model::{script::PropFn, PropTree};
 use gen_parser::{PropsKey, Value, BUILTIN_PROPS};
 use gen_utils::{common::snake_to_camel, error::Errors};
 use proc_macro2::TokenStream;
@@ -359,21 +359,21 @@ impl BuiltIn {
     pub fn handle_event(
         &self,
         event: &Option<Vec<PropFn>>,
-        props: &Option<Vec<PropFn>>,
+        binds: &PropTree,
         instance_name: Option<&Ident>,
         prop_fields: Option<&Vec<Ident>>,
     ) -> TokenStream {
         match self {
             BuiltIn::Window => todo!(),
-            BuiltIn::View => view::handle_event(event, props, instance_name, prop_fields),
+            BuiltIn::View => view::handle_event(event, binds, instance_name, prop_fields),
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
-            BuiltIn::Area => area::handle_event(event, props, instance_name, prop_fields),
+            BuiltIn::Area => area::handle_event(event, binds, instance_name, prop_fields),
             BuiltIn::Icon => todo!(),
             BuiltIn::Image => todo!(),
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
-            BuiltIn::Root => root::handle_event(event, props, instance_name, prop_fields),
+            BuiltIn::Root => root::handle_event(event, binds, instance_name, prop_fields),
             BuiltIn::ScrollXView
             | BuiltIn::ScrollYView
             | BuiltIn::ScrollXYView
@@ -490,7 +490,7 @@ impl TryFrom<&str> for BuiltIn {
     type Error = Errors;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let widget_name = snake_to_camel(value).unwrap();
+        let widget_name = snake_to_camel(value);
         match widget_name.as_str() {
             WINDOW => Ok(BuiltIn::Window),
             VIEW => Ok(BuiltIn::View),

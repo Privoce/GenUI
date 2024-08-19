@@ -24,6 +24,9 @@ pub struct PropFn {
     pub is_prop: bool,
 }
 
+/// # PropFnOnly
+/// remove the `code` field from `PropFn`
+/// now it only use in model.rs: `GenScriptModel.instance_default_impl: Option<(Vec<PropFnOnly>, ItemImpl)>,`
 #[derive(Debug, Clone)]
 pub struct PropFnOnly {
     /// 组件名
@@ -48,6 +51,39 @@ impl From<&PropFn> for PropFnOnly {
 }
 
 impl PropFnOnly {
+    /// ## get bind value from default impl fields
+    /// > Note!: this fn will ignore the bind prop which do not have split sign `.`
+    /// if you have following code(item_impl):
+    /// ```rust
+    /// <label :text="prop.name" id="name_label"></label> // prop.name is bind value
+    /// 
+    /// // default impl
+    /// // ...ignore Default trait impl
+    /// Self{
+    ///    name: "div_text".to_string(), // field1
+    ///    age: 18, // field2
+    /// }
+    /// ```
+    /// then the `prop.name` will insert into `Vec<PropFnOnly>`
+    /// it looks like:
+    /// ```rust
+    /// [
+    ///     PropFnOnly {
+    ///         widget: "label",
+    ///         id: "name_label",
+    ///         key: PropsKey {
+    ///             name: "text",
+    ///             is_style: false,
+    ///             ty: Bind,
+    ///         },
+    ///         ident: Bind(
+    ///             Normal(
+    ///                 "prop.name",
+    ///             ),
+    ///         ),
+    ///     },
+    /// ],
+    /// ```
     pub fn filter_default_impl(
         item_impl: &ItemImpl,
         binds: &PropTree,

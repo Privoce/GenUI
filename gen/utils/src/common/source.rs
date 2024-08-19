@@ -41,7 +41,7 @@ impl Source {
     /// eg: src_gen/widget/hello.gen -> Hello
     pub fn source_name(&self) -> String {
         let name = self.source_name_lower();
-        snake_to_camel(&name).unwrap()
+        snake_to_camel(&name)
     }
     /// get name from source origin file back the file name without suffix
     pub fn source_name_lower(&self) -> String {

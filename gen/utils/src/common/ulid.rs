@@ -49,6 +49,12 @@ impl Ulid {
     }
 }
 
+impl From<&str> for Ulid {
+    fn from(value: &str) -> Self {
+        Ulid(value.to_string())
+    }
+}
+
 impl Display for Ulid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
@@ -61,9 +67,17 @@ pub fn ulid() -> String {
 
 #[cfg(test)]
 mod test_ulid {
+    use crate::common::string::FixedString;
+
     #[test]
     fn to_snake() {
         let ulid = super::Ulid("01J55FKXJ1J2ETBD5WR3R4N8S7".to_string());
         assert_eq!(ulid.to_snake(), "01_j55_fkxj1_j2_etbd5_wr3_r4_n8_s7");
+    }
+    #[test]
+    fn snake_to_camel(){
+        let a = "IfWidget01J55FKXJ1J2ETBD5WR3R4N8S7";
+        
+        dbg!(a.camel_to_snake_ulid(Some("IfWidget")));
     }
 }

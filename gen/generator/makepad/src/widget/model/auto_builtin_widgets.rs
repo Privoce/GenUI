@@ -167,7 +167,7 @@ fn if_widget_to_live_design(widget: &SafeWidget, ulid: &Ulid) -> (Source, LiveDe
                     let name =
                         parse_str::<TokenStream>(format!("{}_{}", &prefix, item.name).as_str())
                             .unwrap();
-                    let ty = parse_str::<TokenStream>(snake_to_camel(&item.name).unwrap().as_str())
+                    let ty = parse_str::<TokenStream>(snake_to_camel(&item.name).as_str())
                         .unwrap();
                     // --------------------------------- signal ---------------------------------
                     let signal = if !is_else {
@@ -239,7 +239,7 @@ fn for_widget_to_live_design(
     loop_type: &str,
     props: &HashMap<PropsKey, Value>,
 ) -> (Source, LiveDesign) {
-    let origin_widget_name = snake_to_camel(&widget.name).unwrap();
+    let origin_widget_name = snake_to_camel(&widget.name);
     let mut live_design = LiveDesign::default();
     // get widget source and change compiled_file to xxx/src_gen/src/auto/${source}.rs ---------------------------------------------------------------
     let mut source = widget.source.as_ref().unwrap().clone();

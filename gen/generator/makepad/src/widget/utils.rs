@@ -1,23 +1,24 @@
-use std::{borrow::BorrowMut, collections::HashSet};
-
-use gen_converter::model::script::{PropFn, PropFnOnly};
+use gen_converter::model::{
+    script::{PropFn, PropFnOnly},
+    PropTree,
+};
 use gen_parser::{PropsKey, Value};
 use gen_utils::{
-    common::{
-        ident, string::FixedString, syn_ext::ClosureConverter, token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident, token_tree_punct_alone, trees_to_token_stream
-    },
+    common::{ident, string::FixedString, syn_ext::ClosureConverter, token_stream_to_tree},
     error::Errors,
 };
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{
-    parse_quote, parse_str, visit_mut::VisitMut, Attribute, Expr, Ident, ItemStruct, Meta, Pat,
-    Stmt,
+    parse_quote, parse_str, visit_mut::VisitMut, Attribute, Ident, ItemStruct, Meta, Pat, Stmt,
 };
 
 use crate::{prop::builtin::MakepadValue, utils::apply_over_and_redraw};
 
-use super::{model::widget::Replacer, BuiltIn};
+use super::{
+    model::{role::RoleType, widget::Replacer},
+    BuiltIn,
+};
 
 pub fn vec_string_to_string(vec: &Vec<String>) -> String {
     format!(
@@ -397,10 +398,14 @@ pub fn quote_draw_widget(
 }
 
 pub trait QuoteDraw {
+    /// ## draw prop depend on PropFnOnly or PropFn
+    /// this fn will generate:
+    /// 1. not special: `self.$widget_name(id!($widget_id)).apply_over_and_redraw(cx, live!{$prop_name: ($prop_value_ident)});`
+    /// 2. is special: `self.$widget_name(id!($widget_id)).set_$set_fn($prop_name);`
     fn draw_prop(&self, replacer: Option<&Replacer>) -> Option<TokenStream>;
 }
 
-impl QuoteDraw for PropFn{
+impl QuoteDraw for PropFn {
     fn draw_prop(&self, replacer: Option<&Replacer>) -> Option<TokenStream> {
         PropFnOnly::from(self).draw_prop(replacer)
     }
@@ -422,7 +427,8 @@ impl QuoteDraw for PropFnOnly {
         // change the first part to self
         ident[0] = "self".to_string();
 
-        return if key.is_builtin() { // if widget/ for widget will into here
+        return if key.is_builtin() {
+            // if widget/ for widget will into here
             bind_widget_prop_value(id, key, &ident.join("."), None, replacer)
         } else {
             // normal widget will into here
@@ -431,7 +437,7 @@ impl QuoteDraw for PropFnOnly {
             let name = parse_str::<TokenStream>(key.name()).unwrap();
             let ident = parse_str::<TokenStream>(&ident.join(".")).unwrap();
             Some(quote! {
-                self.#widget(id!(#id)).apply_over_and_redraw(cx, live!{ #name: (#ident) })
+                self.#widget(id!(#id)).apply_over_and_redraw(cx, live!{ #name: (#ident) });
             })
         };
     }
@@ -508,89 +514,58 @@ fn local_ident(code: &Stmt) -> String {
 /// props: 属性绑定（通过使用这个，能够在事件中找到需要更改为self的部分）
 /// instance_name: 实例名称
 pub fn quote_handle_event(
-    target: Option<Ident>,
     event: &Option<Vec<PropFn>>,
-    props: &Option<Vec<PropFn>>,
+    binds: &PropTree,
     instance_name: Option<&Ident>,
     prop_fields: Option<&Vec<Ident>>,
 ) -> TokenStream {
+    let target = Some(ident("deref_widget"));
     let work_tk = if let Some(event_tk) = event {
         let mut work_tk = TokenStream::new();
-        // let mut draw_tk = TokenStream::new();
-        // dbg!(&target, event, props, instance_name, prop_fields);
         for item in event_tk {
-            // let draw_prop = item.draw_prop(None); // 暂时不处理replacer, todo!("当涉及到if_widget|for_widget需要处理replacer");
-            let PropFn {
-                widget,
-                id,
-                key,
-                ident,
-                code,
-                ..
-            } = item;
-
-            // let get_from_id = vec![
-            //     token_tree_ident("self"),
-            //     token_tree_punct_alone('.'),
-            //     token_tree_ident(widget),
-            //     token_tree_group_paren(vec![
-            //         token_tree_ident("id"),
-            //         token_tree_punct_alone('!'),
-            //         token_tree_group_paren(vec![token_tree_ident(id)]),
-            //     ]),
-            //     token_tree_punct_alone('.'),
-            // ];
-            let widget = parse_str::<TokenStream>(widget).unwrap();
-            let id = parse_str::<TokenStream>(id).unwrap();
-
-            let get_from_id = quote! {
-                self.#widget(id!(#id)).
-            };
-
+            let code = &item.code;
             //----------------------------------[work_tk]---------------------------------------
-            let _ = code.prop_to_self_binding(instance_name, prop_fields, None).map(|code|{
-                work_tk.extend(code);
-            });
-            
-
-            // let fn_ident = ident.is_fn_and_get().unwrap().to_token_easy();
-            // // todo!("这里需要添加两向绑定的操作，我们需要对闭包内的代码进行分析，找到需要替换为self的部分进行替换并进行双向绑定，其他部分直接是TokenStream即可");
-            // // code.prop_to_self_binding
-            // let mut code = code.clone();
-            // // 根据prop找到需要替换为self的部分, 并且当涉及到属性部分时，添加redraw
-            // prop_to_self_and_redraw(props.as_ref(), &mut code, instance_name, prop_fields);
-            // // dbg!(code.to_token_stream().to_string());
-            // // check active! macro and change to makepad cx.widget_action
-            // let _ = active_macro_to_cx_widget_action(&mut code);
-            // let mut code_tk = code.to_token_stream();
-            // code_tk.extend(token_stream_to_tree(fn_ident));
-
-            // // replace prop to self
-            // let code_tk = if let Some(name) = instance_name {
-            //     let tmp = code_tk
-            //         .to_string()
-            //         .replace(name.to_string().as_str(), "self");
-            //     parse_str::<TokenStream>(&tmp).unwrap()
-            // } else {
-            //     code_tk
-            // };
-
-
-            
-            // let key_name = parse_str::<TokenStream>(key.name()).unwrap();
-            // let stmt = quote!{
-            //     if #get_from_id.#key_name(actions) {
-            //         #code_tk
-            //     }
-            // };
-
-            // work_tk.extend(stmt);
-            
-
-            //----------------------------------[draw_tk]---------------------------------------
-
-            // draw_tk.extend(get_from_id);
-            // draw_tk.extend(quote! {handle_event(cx, event, scope);});
+            let _ = code
+                .prop_to_self_binding(instance_name, prop_fields, |props| {
+                    // find item in binds depend on props and draw
+                    if props.is_empty() || binds.is_empty() {
+                        None
+                    } else {
+                        // dbg!(&props, &binds);
+                        Some(props.iter().fold(
+                            TokenStream::new(),
+                            |mut acc, (prop, after_prop)| {
+                                // dbg!(&binds);
+                                let _ = binds.iter().for_each(|((w_name, w_id), tree)| {
+                                    if let Some(tree) = tree {
+                                        let _ = tree.iter().for_each(|(key, value)| {
+                                            let _ =
+                                                value.is_bind_and_get().unwrap().get_normal().map(
+                                                    |v| {
+                                                        if prop == v {
+                                                            let _ = apply_redraw_or_set_bind(
+                                                                w_name,
+                                                                w_id,
+                                                                key.name(),
+                                                                after_prop,
+                                                            )
+                                                            .map(|tk| {
+                                                                acc.extend(tk);
+                                                            });
+                                                        }
+                                                    },
+                                                );
+                                        });
+                                    }
+                                });
+                                acc
+                            },
+                        ))
+                    }
+                })
+                .map(|code| {
+                    work_tk.extend(code);
+                });
         }
         Some(work_tk)
     } else {
@@ -609,100 +584,38 @@ pub fn quote_handle_event(
         }
         #target_handle_tk
     }
-    // quote! {
-    //     let uid = self.widget_uid();
-    //     if let Event::Actions(actions) = event{
-    //         #work_tk
-    //     }
-    //     #draw_tk
-    //     #target_handle_tk
-    // }
 }
 
-fn prop_to_self_and_redraw(
-    prop: Option<&Vec<PropFn>>,
-    code: &mut Stmt,
-    instance_name: Option<&Ident>,
-    prop_fields: Option<&Vec<Ident>>,
-) -> () {
-    // 任意instance_name和prop_fields都不为空时，才进行替换，否则直接返回
-    if instance_name.is_none() || prop_fields.is_none() || prop.is_none() {
-        return;
-    }
+/// ## generate apply over and redraw or set prop fn
+/// if the widget is not virtual widget(if_widget|for_widget), do set
+/// if is normal, do apply_over_and_redraw
+pub fn apply_redraw_or_set_bind(
+    widget_name: &str,
+    widget_id: &str,
+    key: &str,
+    value: &str,
+) -> Option<TokenStream> {
+    // is virtual?
+    let role = RoleType::from(key);
+    let widget = parse_str::<TokenStream>(widget_name).unwrap();
+    let widget_id = parse_str::<TokenStream>(widget_id).unwrap();
+    if role.is_virtual() {
+        if widget_name.has_ulid(role.to_prefix_snake().unwrap()) {
+            let func =
+                parse_str::<TokenStream>(&format!("set_{}_signal({});", key, value)).unwrap();
 
-    let instance_name_str = instance_name.unwrap().to_string();
-
-    // 对prop进行遍历，找到code中需要替换为self的部分
-    if let Stmt::Local(local) = code {
-        if let Some(init) = local.init.as_mut() {
-            // 获取expr中的body
-            if let Expr::Closure(closure) = init.expr.borrow_mut() {
-                if let Expr::Block(block) = closure.body.borrow_mut() {
-                    let mut redraw_tks = HashSet::new();
-                    block.block.stmts = block
-                        .block
-                        .stmts
-                        .iter()
-                        .map(|stmt| {
-                            let mut stmt_str = stmt.to_token_stream().to_string();
-                            // 对每行语句进行遍历
-                            for field in prop_fields.unwrap() {
-                                let field_str = field.to_string();
-                                // 将instance_name和prop_fields结合起来，形成一个完整的需要替换的prop
-                                let from_str = format!("{} . {}", &instance_name_str, &field_str);
-                                let to_str = format!("self . {}", &field_str);
-                                // 对每行语句转为String, 然后在prop_fields中查找
-                                // 替换field
-                                stmt_str = stmt_str.replace(&from_str, &to_str);
-                                // 这里说明某个模板中被绑定的属性已经替换了，需要添加redraw的操作进行重绘
-                                // 需要用到prop，使用from_str从prop中find到对应的目标
-                                let target = prop.unwrap().iter().find(|x| {
-                                    x.ident
-                                        .to_string()
-                                        .eq(&format!("{}.{}", &instance_name_str, &field_str))
-                                });
-
-                                if let Some(prop_fn) = target {
-                                    let PropFn {
-                                        widget,
-                                        id,
-                                        key,
-                                        ident,
-                                        is_prop,
-                                        ..
-                                    } = prop_fn;
-
-                                    // 通过widget找到对应的builtin
-                                    let builtin = BuiltIn::from(&widget);
-
-                                    let pv =
-                                        builtin.prop_bind(key, ident, *is_prop, &instance_name_str);
-                                    let redraw_tk = apply_over_and_redraw(
-                                        None,
-                                        &widget,
-                                        id,
-                                        token_stream_to_tree(pv),
-                                    );
-                                    // 将redraw的操作收集起来最后再添加
-                                    // redraw_tks.extend(redraw_tk);
-                                    redraw_tks.insert(trees_to_token_stream(redraw_tk).to_string());
-                                }
-                            }
-                            // 最后将可能存在的instance_name替换为self
-                            stmt_str = stmt_str.replace(&instance_name_str, "self");
-                            parse_str(&stmt_str).unwrap()
-                        })
-                        .collect();
-                    // 将redraw的操作添加到block的最后
-                    block.block.stmts.extend(
-                        redraw_tks
-                            .iter()
-                            .map(|x| parse_str::<Stmt>(x).unwrap())
-                            .collect::<Vec<Stmt>>(),
-                    );
-                }
-            }
+            Some(quote! {
+                self.#widget(id!(#widget_id)).#func
+            })
+        } else {
+            None
         }
+    } else {
+        let key = parse_str::<TokenStream>(key).unwrap();
+        let value = parse_str::<TokenStream>(value).unwrap();
+        Some(quote! {
+            self.#widget(id!(#widget_id)).apply_over_and_redraw(cx, live!{ #key: (#value) });
+        })
     }
 }
 

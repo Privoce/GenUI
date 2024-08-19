@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse2, parse_str, Block, Expr, ExprBlock, ExprClosure, Ident, Local, LocalInit, Pat, Stmt};
+use syn::{parse2, parse_str, Expr, ExprBlock, ExprClosure, Ident, Local, LocalInit, Pat, Stmt};
 
 use crate::common::syn_ext::PatTypeGetter;
 
@@ -120,21 +120,29 @@ impl ClosureGetter for Local {
 ///
 pub trait ClosureConverter {
     /// get and convert target ident to `self.ident_name` and add two-way binding
-    fn prop_to_self_binding(
+    /// `F: Fn(Vec<(origin_prop, after_prop)>) -> Option<TokenStream>`
+    /// - origin_prop: origin prop name (instance_name.xxx)
+    /// - after_prop: after replaced prop name (self.xxx)
+    fn prop_to_self_binding<F>(
         &self,
         instance: Option<&Ident>,
         fields: Option<&Vec<Ident>>,
-        draw_prop: Option<TokenStream>,
-    ) -> Option<TokenStream>;
+        prop_binds: F,
+    ) -> Option<TokenStream>
+    where
+        F: Fn(Vec<(String, String)>) -> Option<TokenStream>;
 }
 
 impl ClosureConverter for Stmt {
-    fn prop_to_self_binding(
+    fn prop_to_self_binding<F>(
         &self,
         instance: Option<&Ident>,
         fields: Option<&Vec<Ident>>,
-        draw_prop: Option<TokenStream>,
-    ) -> Option<TokenStream> {
+        prop_binds: F,
+    ) -> Option<TokenStream>
+    where
+        F: Fn(Vec<(String, String)>) -> Option<TokenStream>,
+    {
         if instance.is_none() || fields.is_none() {
             return None;
         }
@@ -153,6 +161,8 @@ impl ClosureConverter for Stmt {
 
         return if let Stmt::Local(local) = self {
             let mut tk = TokenStream::new();
+            // props need to draw
+            let mut draw_props = vec![];
             // get closure name --------------------------------------------------------------------------------------
             let closure_name = if let Pat::Ident(ident) = &local.pat {
                 Some(&ident.ident)
@@ -193,6 +203,10 @@ impl ClosureConverter for Stmt {
                                         other => {
                                             // convert each stmt to string and check if has target replacer, if exist, replace it
                                             for (k, v) in &replacer {
+                                                draw_props.push((
+                                                    format!("{}.{}", k, v),
+                                                    format!("self . {}", v),
+                                                ));
                                                 let (old, new) = if v.is_empty() {
                                                     let old = other.to_token_stream().to_string();
                                                     let new =
@@ -234,11 +248,13 @@ impl ClosureConverter for Stmt {
             let mut new_local = local.clone();
             new_local.set_body({
                 let body = closure_body.expect("closure body is needed");
-                parse2::<ExprBlock>(quote!{
+                parse2::<ExprBlock>(quote! {
                     {#body}
-                }).unwrap()
+                })
+                .unwrap()
             });
             // add closure call ---------------------------------------------------------------------------------------
+            let draw_prop = prop_binds(draw_props);
             tk.extend(quote! {
                 #new_local
                 let _ = #closure_name(#closure_args);

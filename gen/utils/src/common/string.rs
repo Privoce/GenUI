@@ -1,4 +1,4 @@
-use crate::split_fixed_impl;
+use crate::{split_fixed_impl, common::{snake_to_camel, camel_to_snake, Ulid}};
 
 /// ## Split a string by a fixed pattern
 /// In Rust, when you use the split method on a string (or a slice of characters) with a pattern
@@ -26,6 +26,14 @@ pub trait FixedString {
     /// - if the string is wrapped by `"`return true else false
     /// this fn will trim the string first
     fn is_inner_string(&self) -> bool;
+    /// ## convert snake to camel
+    fn snake_to_camel(&self) -> String;
+    /// ## camel to snake
+    fn camel_to_snake(&self) -> String;
+    /// ## convert camel to snake which camel is contain ulid
+    /// prefix is use to split, cause this string often format: `$widget_name$ulid`
+    fn camel_to_snake_ulid(&self, prefix: Option<&str>) -> String;
+    fn has_ulid(&self, prefix: &str) -> bool;
 }
 
 split_fixed_impl!(String);

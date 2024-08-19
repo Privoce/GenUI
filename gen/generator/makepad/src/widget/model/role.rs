@@ -50,7 +50,7 @@ impl Role {
         }
     }
     // is for or if
-    pub fn is_special(&self) -> bool {
+    pub fn is_virtual(&self) -> bool {
         !matches!(self, Role::Normal)
     }
     pub fn get_if_uild(&self) -> Option<Ulid> {
@@ -67,7 +67,7 @@ impl Role {
             Role::Normal => None,
         }
     }
-    pub fn prefix_if(&self) -> Option<String>{
+    pub fn prefix_if(&self) -> Option<String> {
         match self {
             Role::If { signal, .. } => Some(signal.to_string()),
             _ => None,
@@ -83,11 +83,41 @@ pub enum RoleType {
 }
 
 impl RoleType {
+    /// ## convert to prefix camel
+    pub fn to_prefix_camel(&self) -> Option<&str> {
+        match self {
+            RoleType::If(_) => Some("IfWidget"),
+            RoleType::For => Some("ForWidget"),
+            RoleType::Normal => None,
+        }
+    }
+    pub fn to_prefix_snake(&self) -> Option<&str> {
+        match self {
+            RoleType::If(_) => Some("if_widget"),
+            RoleType::For => Some("for_widget"),
+            RoleType::Normal => None,
+        }
+    }
+    pub fn is_virtual(&self) -> bool {
+        !matches!(self, RoleType::Normal)
+    }
     pub fn ignore_if(&self) -> bool {
         matches!(
             self,
             RoleType::If(IFSignal::ElseIf) | RoleType::If(IFSignal::Else)
         )
+    }
+}
+
+impl From<&str> for RoleType {
+    fn from(value: &str) -> Self {
+        match value {
+            "if" => Self::If(IFSignal::If),
+            "else_if" => Self::If(IFSignal::ElseIf),
+            "else" => Self::If(IFSignal::Else),
+            "for" => Self::For,
+            _ => Self::Normal,
+        }
     }
 }
 

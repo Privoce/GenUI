@@ -132,6 +132,16 @@ pub struct GenScriptModel {
     /// 例如上面的代码中的`current_instance.text = "Hello".to_string();`
     /// 这里应该都是Expr，但使用Stmt，因为Stmt能表示完整语句
     pub instance_opt: Option<Vec<Stmt>>,
+    /// 实例的初始化代码
+    /// ```
+    /// impl Default for MyButtonWidget{
+    ///    fn default() -> Self{
+    ///       MyButtonWidget{
+    ///          text: "".to_string(),
+    ///       }
+    ///    }
+    /// }
+    /// ```
     pub instance_default_impl: Option<(Vec<PropFnOnly>, ItemImpl)>,
     /// 其他的代码，例如一些过程代码
     pub other: Option<Vec<syn::Stmt>>,

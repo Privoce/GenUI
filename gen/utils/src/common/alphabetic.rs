@@ -39,34 +39,37 @@ pub fn camel_to_snake(s: &str) -> String {
     result
 }
 
-pub fn snake_to_camel(s: &str) -> Option<String> {
-    if s.eq("checkbox"){
-        return Some("CheckBox".to_string());
+pub fn snake_to_camel(s: &str) -> String {
+    if s.eq("checkbox") {
+        return "CheckBox".to_string();
     }
 
     if s.contains("_") {
-        Some(
-            s.split('_')
-                .map(|part| {
-                    let mut c = part.chars();
-                    match c.next() {
-                        None => String::new(),
-                        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-                    }
-                })
-                .collect(),
-        )
+        return s
+            .split('_')
+            .map(|part| {
+                let mut c = part.chars();
+                match c.next() {
+                    None => String::new(),
+                    Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+                }
+            })
+            .collect();
     } else {
-        uppercase_title(s)
+        if let Some(s) = uppercase_title(s) {
+            return s;
+        } else {
+            return s.to_string();
+        }
     }
 }
 
 #[cfg(test)]
-mod test_utils{
+mod test_utils {
     use super::snake_to_camel;
 
     #[test]
-    fn snake(){
+    fn snake() {
         let name = "checkbox";
         let handled = snake_to_camel(name);
         dbg!(handled);

@@ -3,12 +3,13 @@ use std::{collections::HashMap, hash::Hash, iter::once};
 use gen_converter::model::{
     prop::ConvertStyle,
     script::{CurrentInstance, GenScriptModel, PropFn, PropFnOnly, ScriptModel, UseMod},
-    TemplateModel,
+    PropTree, TemplateModel,
 };
 use gen_parser::{Bind, For, PropsKey, Value};
 
 use gen_utils::common::{
     ident, snake_to_camel,
+    string::FixedString,
     syn_ext::{let_to_self, ImplConverter, TypeGetter},
     IFSignal, Source, Ulid,
 };
@@ -176,8 +177,9 @@ impl Widget {
         &mut self,
         script: Option<&ScriptModel>,
         replacer: Option<&Replacer>,
+        mut prop_tree: (PropTree, PropTree),
     ) -> &mut Self {
-        if self.is_root || self.role.is_special() {
+        if self.is_root || self.role.is_virtual() {
             if let Some(sc) = script {
                 if let ScriptModel::Gen(sc) = sc {
                     // if self.is_root{dbg!(&sc);}
@@ -198,8 +200,8 @@ impl Widget {
                     // 在这里从prop_ptr中获取结构体所有的field作为后续代码中需要转换的列表
                     // 例如在handle_event中就需要
                     let prop_fields = get_props_fields(prop_ptr.as_ref());
-                    // , bind_props.filter_fields(other.as_ref())
-
+                    // handle bind tree with replacer -----------------------------------------------------------------------
+                    let _ = handle_prop_tree(&mut prop_tree.0, replacer);
                     self.set_uses(uses)
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
@@ -218,8 +220,8 @@ impl Widget {
                         )
                         .draw_walk(None) // 暂时先写个None
                         .handle_event(
-                            sub_prop_binds,
                             sub_event_binds,
+                            &prop_tree.0,
                             current_instance.as_ref(),
                             prop_fields.as_ref(),
                         );
@@ -233,7 +235,6 @@ impl Widget {
     }
     /// ## Set Before Apply
     /// 在before_apply中，主要是处理一些在应用前的代码, 例如一些绑定前的代码和一些初始化代码
-    /// 1. 组件的实例化，例如`impl Default for $Instance`
     pub fn before_apply(
         &mut self,
         code: Option<&Vec<Stmt>>,
@@ -241,7 +242,6 @@ impl Widget {
         instance_default_impl: Option<&(Vec<PropFnOnly>, ItemImpl)>,
         replacer: Option<&Replacer>,
     ) -> &mut Self {
-        
         let mut before_apply_tk = TokenStream::new();
         // get check_list --------------------------------------------------------------------------------------
         let check_list = if self.is_root {
@@ -262,11 +262,11 @@ impl Widget {
                 }
             }
         };
-        
+
         // handle before_apply ----------------------------------------------------------------------------------
-        if self.is_root{
-            if let Some((props, before_apply)) = instance_default_impl {
-                before_apply_tk.extend(before_apply.default_to_self());
+        if self.is_root {
+            if let Some((props, default_impl)) = instance_default_impl {
+                before_apply_tk.extend(default_impl.default_to_self());
                 before_apply_tk.extend(props.iter().fold(TokenStream::new(), |mut acc, prop| {
                     let _ = prop.draw_prop(replacer).map(|x| acc.extend(x));
                     acc
@@ -287,27 +287,30 @@ impl Widget {
 
         self
     }
-    /// - prop_binds: 模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
+    /// - prop_binds: 整个模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
     /// - events: 模板中绑定的events
     /// - current_instance: 当前实例(属性实例)，用于获取实例名，它需要和prop_fields一起使用，来找到原Gen代码中需要被替换的部分(`current_instance.prop_field`)
     /// - prop_fields: 用于获取prop_ptr中的所有字段，用于在handle_event中找到需要更新的属性部分然后替换
+    /// - binds: 用于在handle_event中找到需要更新的属性部分然后替换
     pub fn handle_event(
         &mut self,
-        prop_binds: &Option<Vec<PropFn>>,
         events: &Option<Vec<PropFn>>,
+        binds: &PropTree,
         current_instance: Option<&CurrentInstance>,
         prop_fields: Option<&Vec<Ident>>,
     ) -> &mut Self {
         if !self.is_root {
             return self;
         }
+
         let instance_name = if let Some(instance) = current_instance {
             instance.name()
         } else {
             None
         };
+        // get builtin and do handle_event -----------------------------------------------------------------------
         let builtin = self.inherits.as_ref().unwrap();
-        let handle_event_tk = builtin.handle_event(events, prop_binds, instance_name, prop_fields);
+        let handle_event_tk = builtin.handle_event(events, binds, instance_name, prop_fields);
         let _ = self.traits.as_mut().unwrap().handle_event(handle_event_tk);
         self
     }
@@ -321,7 +324,7 @@ impl Widget {
         if !self.is_root {
             return self;
         }
-        
+
         // 将当前实例所涉及的代码转为TokenStream
         // 需要将特定的头部转为self
         let apply_tk = instance_opt.map(|opt| {
@@ -619,7 +622,7 @@ impl Widget {
                 self
             }
             Role::For { id, .. } => {
-                let name = format!("{}{}", snake_to_camel(&self.name).unwrap(), id);
+                let name = format!("{}{}", snake_to_camel(&self.name), id);
                 // copy current widget and empty all
                 let mut safety = SafeWidget::from(&*self);
                 safety.append_tree(self.to_tree().to_string());
@@ -639,7 +642,7 @@ impl Widget {
             self.is_root,
             self.is_static,
             self.as_prop,
-            &snake_to_camel(&self.name).unwrap(),
+            &snake_to_camel(&self.name),
             self.props.clone(),
             self.widget_children_tree(),
         ));
@@ -661,7 +664,7 @@ impl Widget {
                 } = child;
 
                 let name = if *is_built_in {
-                    snake_to_camel(name).unwrap()
+                    snake_to_camel(name)
                 } else {
                     name.to_string()
                 };
@@ -931,7 +934,10 @@ fn build_widget(
         }
     }
 
-    widget.set_script(script, replacer.as_ref());
+    // if widget.is_root {
+    //     dbg!(template.get_props_tree().0);
+    // }
+    widget.set_script(script, replacer.as_ref(), template.get_props_tree());
 
     // judget current widget role is if?, cause if widget(IFSignal::Else_IF and Else) need to be ignore, and IFSignal::If need to be replace(replace is handle in handle_role fn)
     if let RoleType::If(role) = RoleType::from(&widget.role) {
@@ -1018,4 +1024,67 @@ fn get_props_fields(prop_ptr: Option<&ItemStruct>) -> Option<Vec<Ident>> {
     } else {
         None
     }
+}
+
+/// ## handle PropTree
+/// this fn should be call before prop_tree is used, the fn will help to handle if_widget|for_widget prop
+/// and replace the origin to ensure the prop_tree is correct
+///
+/// ```text
+///                 origin_gen_template               
+/// ┌─────────────┬───────────┬──────────────────┐
+/// │ widget_name │ widget_id │ widget_prop_tree │
+/// └─────────────┴───────────┴─────────┬────────┘
+///               ┌─────────────────────┤          
+///      ┌────────┴───────┐             │          
+///      │      key       │       ┌─────┴─────┐    
+///      ├────────┬───────┤       │   value   │    
+///      │  prop  │ type  │       └───────────┘    
+///      └────────┴───────┘                        
+///                                               
+///     ┌─────────────────────────────────────┐    
+///     │               replacer              │    
+///     ├──────────────┬─────────────┬────────┤    
+///     │  widget_name │  widget_id  │  ulid  │    
+///     └──────────────┴─────────────┴────────┘    
+///
+///      after match widget_name and widget_id     
+///       insert replacer as prop_tree node        
+/// ```
+fn handle_prop_tree(prop_tree: &mut PropTree, replacer: Option<&Replacer>) {
+    if replacer.is_none() {
+        return;
+    }
+
+    replacer
+        .unwrap()
+        .iter()
+        .for_each(|((r_w_name, r_w_id), _)| {
+            let mut node = HashMap::new();
+            let mut prefix = RoleType::Normal;
+            // loop prop_tree to find the node which has the same widget_id
+            prop_tree.iter().for_each(|((_, w_id), tree)| {
+                if w_id == r_w_id {
+                    if let Some(tree) = tree {
+                        // node extend tree (tree's key name should not be "else", maybe more, now use [])
+                        node.extend(
+                            tree.iter()
+                                .filter(|(k, _)| !(["else"].contains(&k.name())))
+                                .map(|(k, v)| {
+                                    prefix = k.name().into();
+                                    (k.clone(), v.clone())
+                                }),
+                        );
+                    }
+                }
+            });
+
+            prop_tree.push((
+                (
+                    r_w_name.camel_to_snake_ulid(prefix.to_prefix_camel()),
+                    r_w_id.to_string(),
+                ),
+                Some(node),
+            ));
+        });
 }

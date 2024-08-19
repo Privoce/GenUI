@@ -62,7 +62,7 @@ impl SafeWidget {
         format!(
             "{} crate::auto::{}_{}::*;",
             prefix,
-            snake_to_camel(&self.name).unwrap(),
+            snake_to_camel(&self.name),
             id
         )
     }

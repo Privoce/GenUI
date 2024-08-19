@@ -6,6 +6,10 @@ use gen_utils::common::ulid;
 
 use super::event::Callbacks;
 
+/// 记录组件中是否有绑定的属性和事件
+/// 这个类型会记录下组件树中所有的绑定属性和事件, 使用`TemplateModel.get_props_tree()`获取
+/// 返回结果为双元素元组，第一个元素是绑定属性，第二个元素是绑定事件
+/// `Vec<(($widget_name, $widget_id), Some({key:PropsKey, value: Value}))>`
 pub type PropTree = Vec<((String, String), Props)>;
 
 /// # GenUI组件模型
@@ -395,22 +399,6 @@ impl TemplateModel {
                             ));
                         }
                     });
-
-                    // match node.get_props().clone() {
-                    //     Some(props) => {
-                    //         bind_tree.push((
-                    //             (name.clone(), id.to_string()),
-                    //             Some(
-                    //                 props
-                    //                     .clone()
-                    //                     .into_iter()
-                    //                     .filter(|(k, _)| k.is_bind())
-                    //                     .collect(),
-                    //             ),
-                    //         ));
-                    //     }
-                    //     None => (),
-                    // }
                     match node.get_callbacks().clone() {
                         Some(callbacks) => {
                             fn_tree.push((
@@ -510,20 +498,3 @@ impl Default for TemplateModel {
         }
     }
 }
-
-// impl Clone for TemplateModel {
-//     fn clone(&self) -> Self {
-//         Self {
-//             special: self.special.clone(),
-//             class: self.class.clone(),
-//             id: self.id.clone(),
-//             name: self.name.clone(),
-//             props: self.props.clone(),
-//             callbacks: self.callbacks.clone(),
-//             inherits: self.inherits.clone(),
-//             root: self.root.clone(),
-//             children: self.children.clone(),
-//             parent: self.parent.clone(),
-//         }
-//     }
-// }

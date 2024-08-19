@@ -122,6 +122,13 @@ impl PropsKey {
             ty: PropertyKeyType::Normal,
         }
     }
+    pub fn new_bind(name: &str, is_style: bool) -> Self {
+        Self {
+            name: name.to_string(),
+            is_style,
+            ty: PropertyKeyType::Bind,
+        }
+    }
     pub fn name(&self) -> &str {
         &self.name
     }
