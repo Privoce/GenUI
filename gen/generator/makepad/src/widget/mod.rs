@@ -310,7 +310,7 @@ impl BuiltIn {
     }
     /// you mut be sure that the value is a built-in widget
     pub fn from(value: &str) -> Self {
-        value.try_into().unwrap()
+        value.try_into().expect(&format!("BuiltIn convert fail, seems the current widget: {} is not a built-in widget", value))
     }
     /// 处理widget的draw_walk绘制函数
     pub fn draw_walk(&self, draw_walk: &Option<TokenStream>) -> TokenStream {
@@ -447,7 +447,7 @@ impl BuiltIn {
     pub fn default_deref_ptr(&self, name: &str) -> TokenStream {
         match self {
             BuiltIn::Window => todo!(),
-            BuiltIn::View => todo!(),
+            BuiltIn::View => view::ViewPropPtr::deref_struct_ptr(name),
             BuiltIn::ScrollXView => todo!(),
             BuiltIn::ScrollYView => todo!(),
             BuiltIn::ScrollXYView => todo!(),

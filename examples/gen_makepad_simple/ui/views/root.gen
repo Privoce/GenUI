@@ -7,7 +7,7 @@
         <label_view></label_view>
         <markdown class="mk1"></markdown>
         <view height="100.0">
-           <button_view></button_view>
+           <ButtonView></ButtonView>
         </view>
         <drop_down_view></drop_down_view>
         <checkbox_view></checkbox_view>

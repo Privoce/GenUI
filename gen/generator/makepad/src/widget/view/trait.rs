@@ -17,6 +17,6 @@ pub fn handle_event(
 
 pub fn draw_walk() -> TokenStream {
     quote! {
-        self.view.draw_walk(cx, scope, walk)
+        self.deref_widget.draw_walk(cx, scope, walk)
     }
 }

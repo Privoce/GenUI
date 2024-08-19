@@ -108,7 +108,7 @@ impl Widget {
         // current widget source must be existed
         let source = special.expect("widget source must be existed");
         let is_component = name == "component";
-        let (name, inherits, is_builtin, is_static) = WidgetHandler::build_widget_struct_name(
+        let (name, id, inherits, is_builtin, is_static) = WidgetHandler::build_widget_struct_name(
             &source.source_name(),
             name,
             id,
@@ -120,7 +120,7 @@ impl Widget {
         // handle widget ------------------------------------------------------------------------------------------
         widget.name = name;
         let _ = inherits.map(|x| widget.inherits.replace(x));
-        let _ = id.map(|x| widget.id.replace(x.to_string()));
+        let _ = id.map(|x| widget.id.replace(x));
         widget.is_built_in = is_builtin;
         widget.is_static = if is_root { is_static } else { true }; // is static may be change after
         widget.is_root = is_root;
@@ -152,6 +152,7 @@ impl Widget {
     /// if can not parse by BuiltIn Widget -> panic!
     pub fn set_props(&mut self, props: Option<HashMap<PropsKey, Value>>) -> &mut Self {
         if let Some(props) = props {
+            // dbg!(&self.name, self.is_built_in);
             if self.is_built_in {
                 self.props = Some(BuiltIn::from(&self.name).props(&props));
             }
@@ -726,7 +727,6 @@ impl ToLiveDesign for Widget {
         // props and children
         let mut props_children = self.props.clone().unwrap_or_default();
         props_children.extend(self.widget_children_tree().unwrap_or_default());
-
         let ui = if self.is_static {
             self.id
                 .as_ref()
@@ -780,6 +780,8 @@ impl ToLiveDesign for Widget {
             }
             if let Some(live_hook_tk) = &self.live_hook {
                 tk.extend(live_hook_tk.to_token_stream(ident(&self.name)));
+            } else {
+                tk.extend(LiveHookTrait::default().to_token_stream(ident(&self.name)));
             }
 
             if tk.is_empty() {

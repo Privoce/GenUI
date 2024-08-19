@@ -30,6 +30,9 @@ impl LifeTime {
             None => None,
         }
     }
+    pub fn is_static(&self) -> bool {
+        self.startup.is_none() && self.shutdown.is_none()
+    }
 }
 
 impl ToTokens for LifeTime {

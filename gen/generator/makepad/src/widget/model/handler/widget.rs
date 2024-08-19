@@ -11,7 +11,7 @@ pub struct WidgetHandler;
 
 impl WidgetHandler {
     /// ## Build Widget Struct Name
-    /// 1. A: 没有使用`gen_macros::Prop`标注的且没有声明id
+    /// 1. A: 没有使用`gen_macros::Prop`标注且没有声明id
     /// 2. B: 没有使用`gen_macros::Prop`标注但声明id
     /// 3. C: 使用`gen_macros::Prop`不声明id
     ///
@@ -25,7 +25,7 @@ impl WidgetHandler {
     /// ### C
     /// `${prop_struct_name}`
     /// ### Return
-    /// (widget_struct_name, builtin_inherits, is_builtin_widget, is_static)
+    /// (widget_struct_name, widget_id, builtin_inherits, is_builtin_widget, is_static)
     pub fn build_widget_struct_name(
         source_name: &str,
         widget_name: &str,
@@ -34,27 +34,35 @@ impl WidgetHandler {
         inherits: Option<&String>,
         is_root: bool,
         script: Option<&ScriptModel>,
-    ) -> (String, Option<BuiltIn>, bool, bool) {
-       
+    ) -> (String, Option<String>, Option<BuiltIn>, bool, bool) {
+        let is_static = if script.is_some() && is_root {
+            script.unwrap().is_gen_static()
+        } else {
+            false
+        };
         // only root widget can define as a component
         if is_component && is_root {
             let inherits =
                 BuiltIn::try_from(inherits.unwrap_or(&BuiltIn::default().to_string())).unwrap();
-            let name = match (id, script) {
-                (None, None) => format!("{}_{}", source_name, inherits.to_string()), // type A
+            let (name, id) = match (id, script) {
+                (None, None) => {
+                    let name_id = format!("{}_{}", source_name, inherits.to_string());
+                    (name_id.clone(), Some(name_id))
+                } // type A
                 (None, Some(ScriptModel::Gen(sc))) => {
                     // sc only can be Gen
                     if let Some(prop_struct) = &sc.prop_ptr {
-                        prop_struct.ident.to_string()
+                        let name_id = prop_struct.ident.to_string();
+                        (name_id.clone(), Some(name_id))
                     } else {
                         panic!("Component must have a prop struct if is type C")
                     }
                 } // type C
-                (Some(id), None) => id.to_string(),                                  // type B
+                (Some(id), None) => (id.to_string(), Some(id.to_string())), // type B
                 (Some(id), Some(ScriptModel::Gen(sc))) => {
                     if let Some(prop_struct) = &sc.prop_ptr {
                         if prop_struct.ident.to_string().eq(id) {
-                            id.to_string()
+                            (id.to_string(), Some(id.to_string()))
                         } else {
                             panic!("Component id must be same as prop struct name if is type C")
                         }
@@ -65,15 +73,18 @@ impl WidgetHandler {
                 _ => panic!("Can not be handled See Dyn Widget Rule"),
             };
 
-            return (name, Some(inherits), false, script.is_none());
+            return (name, id, Some(inherits), false, is_static);
         } else {
             // here means current widget is not root widget, directly return widget name
             // and the builtin inherits is self
+            let builtin = BuiltIn::try_from(widget_name);
+            let is_builtin = builtin.is_ok();
             return (
                 widget_name.to_string(),
-                BuiltIn::try_from(widget_name).ok(),
-                true,
-                script.is_none(),
+                id.map(|x| x.to_string()),
+                builtin.ok(),
+                is_builtin,
+                is_static,
             );
         }
     }

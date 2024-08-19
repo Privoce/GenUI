@@ -22,7 +22,7 @@ pub struct ButtonView{
 impl Default for ButtonView{
     fn default() -> Self {
         Self{
-            label1: "Click The Button"
+            label1: "Click The Button".to_string()
         }
     }
 }

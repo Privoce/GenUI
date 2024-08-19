@@ -7,8 +7,8 @@ fn main() {
         .add_dep("makepad-widgets")
         .local("E:/Rust/try/makepad/makepad/rik/makepad/widgets")
         .build()
-        .wasm()
-        .build()
+        // .wasm()
+        // .build()
         .build();
    
     // set app and specify target

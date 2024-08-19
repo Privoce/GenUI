@@ -1,5 +1,6 @@
 use gen_utils::common::*;
 use proc_macro2::{Span, TokenStream, TokenTree};
+use string::FixedString;
 use syn::{
     punctuated::Punctuated,
     token::{Bracket, Colon, Pound, Pub},
@@ -169,11 +170,12 @@ pub fn special_struct(
     is_static: bool,
 ) -> Vec<TokenTree> {
     let mut tk = if is_static {
+        
         vec![
             token_tree_ident(ui),
             token_tree_punct_alone('='),
             token_tree_punct_joint('<'),
-            token_tree_ident(ptr),
+            token_tree_ident(&ptr.snake_to_camel()),
             token_tree_punct_joint('>'),
         ]
     } else {

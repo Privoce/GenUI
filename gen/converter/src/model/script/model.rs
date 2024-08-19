@@ -38,6 +38,21 @@ impl ScriptModel {
         }
         panic!("Only Rs can be converted to GenScriptModel")
     }
+    /// Check if the script is static
+    /// if you call this method, it will return true if the script is static only for GenScriptModel
+    /// if you can make sure the script type is GenScriptModel, you can call `is_gen_static`
+    pub fn is_static(&self) -> Option<bool> {
+        if let ScriptModel::Gen(gen) = self {
+            return Some(gen.is_static());
+        }
+        None
+    }
+    pub fn is_gen_static(&self) -> bool {
+        if let ScriptModel::Gen(gen) = self {
+            return gen.is_static();
+        }
+        false
+    }
 }
 
 impl Default for ScriptModel {
@@ -163,6 +178,23 @@ impl CurrentInstance {
 impl GenScriptModel {
     pub fn new(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> Self {
         build_script(block, bind_fn_tree)
+    }
+    /// ## judge if the script is static
+    /// this fn do not care about `uses` and `imports`, it check other fields is_none or not
+    pub fn is_static(&self) -> bool {
+        self.prop_ptr.is_none()
+            && self.event_ptr.is_none()
+            && if self.lifetimes.is_some() {
+                self.lifetimes.as_ref().unwrap().is_static()
+            } else {
+                true
+            }
+            && self.sub_prop_binds.is_none()
+            && self.sub_event_binds.is_none()
+            && self.current_instance.is_none()
+            && self.instance_opt.is_none()
+            && self.instance_default_impl.is_none()
+            && self.other.is_none()
     }
     pub fn get_current_instance(&self) -> Option<&CurrentInstance> {
         self.current_instance.as_ref()
@@ -301,9 +333,9 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
                                 && is_for.eq(&syn::token::For::default())
                             {
                                 if model.instance_default_impl.is_none() {
-                                    model
-                                        .instance_default_impl
-                                        .replace(PropFnOnly::filter_default_impl(impl_item, &bind_fn_tree.0));
+                                    model.instance_default_impl.replace(
+                                        PropFnOnly::filter_default_impl(impl_item, &bind_fn_tree.0),
+                                    );
                                 } else {
                                     panic!("Only one Instance Default trait impl can be used");
                                 }

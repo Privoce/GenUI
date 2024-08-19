@@ -734,6 +734,16 @@ macro_rules! props_to_token {
     };
 }
 
+pub fn deref_struct_ptr(name: &str, ptr: &str) -> TokenStream {
+    let name = parse_str::<TokenStream>(name).unwrap();
+    let ptr = parse_str::<TokenStream>(ptr).unwrap();
+    quote! {
+        #[derive(Live, Widget)]
+        pub struct #name{
+            #[live] #[deref] pub deref_widget: #ptr,
+        }
+    }
+}
 #[cfg(test)]
 mod test_utils {
     #[test]

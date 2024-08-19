@@ -2,10 +2,16 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::{Fields, ItemStruct};
 
-use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils::quote_makepad_widget_struct, ToToken};
+use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils::{deref_struct_ptr, quote_makepad_widget_struct}, ToToken};
 
 pub struct ViewPropPtr(pub ItemStruct);
 
 from_struct_to_ptr!(ViewPropPtr, "View");
 
 ptr_to_token!(ViewPropPtr);
+
+impl ViewPropPtr {
+    pub fn deref_struct_ptr(name: &str) -> TokenStream {
+        deref_struct_ptr(name, "View")
+    }
+}
