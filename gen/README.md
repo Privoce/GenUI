@@ -14,7 +14,7 @@
 - [ ] GenUI Builtin-Widget (working...)
 - [x] rust lang support (use in .gen file, hold in `<script lang="rust">` or `<script>`)
 - [x] Shader
-- [ ] Toml Config
+- [x] Toml Config
 
 #### Widgets
 - [x] Window
@@ -69,6 +69,6 @@
 
 #### Control
 
-- [ ] for
-- [ ] if_else
+- [x] for
+- [x] if_else
 

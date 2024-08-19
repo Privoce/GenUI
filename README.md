@@ -36,7 +36,7 @@ The current work branch is `ark`
 - [ ] GenUI Builtin-Widget (working...)
 - [x] rust lang support (use in .gen file, hold in `<script lang="rust">` or `<script>`)
 - [x] Shader
-- [ ] Toml Config
+- [x] Toml Config
 
 #### Widgets
 - [x] Window
@@ -91,8 +91,8 @@ The current work branch is `ark`
 
 #### Control
 
-- [ ] for
-- [ ] if_else
+- [x] for
+- [x] if_else
 ## Architecture
 
 <img src="./README/imgs/framework.png">
