@@ -55,22 +55,22 @@ mod test_script_parse {
 
     #[test]
     fn test_syn_parse_var() {
-        let rsx_code_var = r#"let counter: usize = 0_usize;"#;
+        let gen_code_var = r#"let counter: usize = 0_usize;"#;
 
-        let ast_var = parse_str::<Stmt>(rsx_code_var).unwrap();
+        let ast_var = parse_str::<Stmt>(gen_code_var).unwrap();
         dbg!(ast_var);
     }
 
     #[test]
     fn test_syn_parse_fn() {
-        let rsx_code_fn = r#"
+        let gen_code_fn = r#"
         let mut btn_click = ||{
             log!("BUTTON CLICKED {}", counter);
             counter += 1;
           }
         "#;
 
-        let ast_fn = parse_str::<Expr>(rsx_code_fn).unwrap();
+        let ast_fn = parse_str::<Expr>(gen_code_fn).unwrap();
         dbg!(ast_fn);
     }
 

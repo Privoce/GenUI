@@ -34,13 +34,13 @@ impl Padding {
 
 /// Convert padding to Makepad Padding
 /// ## single
-/// - rsx:      `padding: 10`
+/// - gen:      `padding: 10`
 /// - makepad:  `padding: 10`
 /// ### multi 2
-/// - rsx:      `padding: 10 20`
+/// - gen:      `padding: 10 20`
 /// - makepad:  `padding: {top: 10, right: 20, bottom: 10, left: 20}`
 /// ### multi 4
-/// - rsx:      `padding: 10 20 0 29`
+/// - gen:      `padding: 10 20 0 29`
 /// - makepad:  `padding: {top: 10, right: 20, bottom: 0, left: 29}`
 impl TryFrom<&str> for Padding {
     type Error = Errors;

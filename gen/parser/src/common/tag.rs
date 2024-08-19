@@ -131,7 +131,7 @@ pub fn parse_style_tag(input: &str) -> IResult<&str, Targets> {
     Ok((input, Targets::Style(remain)))
 }
 
-/// # parse the whole rsx template file
+/// # parse the whole gen template file
 /// after parse, get `Vec<Targets>`
 /// then need to convert `Vec<Targets>` -> `ParseTarget`
 pub fn parse_all(input: &str) -> IResult<&str, Vec<Targets>> {

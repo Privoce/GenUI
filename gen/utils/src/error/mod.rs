@@ -68,7 +68,7 @@ impl Display for Errors {
                 "template parse still has remain: {}. Not in compliance with standard writing",
                 remain
             ),
-            Errors::ParseTargetEmpty => "`ParseTarget` is empty which means the current rsx file is empty, do not need to convert to AST".to_string(),
+            Errors::ParseTargetEmpty => "`ParseTarget` is empty which means the current gen file is empty, do not need to convert to AST".to_string(),
             Errors::ParseTargetError(e) => e.to_string(),
             Errors::MissMatchKeyWord => "Gen-Converter: MissMatchKeyWord".to_string(),
 

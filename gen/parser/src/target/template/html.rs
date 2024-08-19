@@ -384,9 +384,9 @@ mod template_parsers {
         //     .map(|x| x.to_string())
         //     .collect::<Vec<String>>()
         //     .join("\n");
-        // //E:/Rust/try/makepad/rsx/parser/t.rsx
+        // //E:/Rust/try/makepad/gen/parser/t.gen
         // let mut f =
-        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/t.html").unwrap();
+        //     File::create("/Users/user/Downloads/beyond-framework-main/gen/parser/t.html").unwrap();
         // let _ = f.write(res.as_bytes());
         // dbg!(res);
     }

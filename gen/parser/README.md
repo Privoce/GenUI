@@ -157,7 +157,7 @@ let input = r#"
 2. no `<template>` tag and no rust script has `<style>` tag --> parse as style (1 thread)
 3. no `<style>` tag and no rust script has `<template>` tag --> parse as template (1 thread)
 4. has `<template>` tag and rust script no `<style>` tag --> parse as template_script (2 thread)
-5. has 3 tag --> parse as whole rsx (3 thread)
+5. has 3 tag --> parse as whole gen (3 thread)
 
 <img src="./wiki/inner.png">
 

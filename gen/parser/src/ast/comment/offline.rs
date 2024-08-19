@@ -2,7 +2,7 @@ use super::{position::OfflinePosition, Comments};
 
 /// # Offline Comment
 /// ## Display
-/// ```rsx
+/// ```gen
 /// // this is offline comment
 /// <template>
 ///  // this is inline comment

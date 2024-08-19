@@ -31,10 +31,10 @@ impl Align {
 
 /// # convert align to Makepad Align
 /// ## single
-/// - rsx:     `align: 16`
+/// - gen:     `align: 16`
 /// - makepad: `align: {x: 16, y:16}`
 /// ## multi
-/// - rsx:     `align:16 24`
+/// - gen:     `align:16 24`
 /// - makepad: `align: {x: 16, y:24}`
 impl TryFrom<(&str, DAlign)> for Align {
     type Error = Errors;

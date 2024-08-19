@@ -356,7 +356,7 @@ mod test_result {
         // 1.125941ms
         dbg!(t.elapsed());
         // dbg!(target);
-        // let mut f = File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/t.vue").unwrap();
+        // let mut f = File::create("/Users/user/Downloads/beyond-framework-main/gen/parser/t.vue").unwrap();
         // let _ = f.write(result.to_string().as_bytes());
     }
 }

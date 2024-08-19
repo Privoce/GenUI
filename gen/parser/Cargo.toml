@@ -3,7 +3,7 @@ name = "gen_parser"
 version = "0.1.0"
 edition = "2021"
 authors = ["syf20020816@outlook.com"]
-description = "parsers for rsx (Template, Style, Script)"
+description = "parsers for gen (Template, Style, Script)"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]

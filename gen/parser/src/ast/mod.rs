@@ -175,7 +175,7 @@ impl From<ParseResult> for ParseCore {
 /// Through this structure, you can obtain the page structure
 ///  
 /// ## how to get
-/// use nom to split the rsx file
+/// use nom to split the gen file
 /// ## target check
 /// When calling to determine the existence of fields in the parsing target, the actual content will be determined to be empty or not
 /// > reject cheat syntax
@@ -284,7 +284,7 @@ impl ParseTarget {
     /// 2. no <template> tag and no rust script has <style> tag  -->  parse as style (1 thread)
     /// 3. no <style> tag and no rust script has <template> tag  -->  parse as template (1 thread)
     /// 4. has <template> tag and rust script no <style> tag --> parse as template_script (2 thread)
-    /// 5. has 3 tag --> parse as whole rsx (3 thread)
+    /// 5. has 3 tag --> parse as whole gen (3 thread)
     pub fn target_strategy(&self) -> Strategy {
         match self.has() {
             (true, true, true, true) | (true, true, true, false) => Strategy::All,
@@ -318,7 +318,7 @@ impl From<ParseCore> for ParseTarget {
     }
 }
 
-/// parse whole rsx file from `Vec<Targets>` to `ParseTarget`
+/// parse whole gen file from `Vec<Targets>` to `ParseTarget`
 impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
     type Error = Error;
 
@@ -598,7 +598,7 @@ mod ast_test {
 
         let target = ParseTarget::try_from(input).unwrap();
         let mut f =
-            File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/template.vue")
+            File::create("/Users/user/Downloads/beyond-framework-main/gen/parser/template.vue")
                 .unwrap();
         let _ = f.write_all(target.to_string().as_bytes());
         dbg!(target.to_string());
@@ -628,7 +628,7 @@ mod ast_test {
 
         let target = ParseTarget::try_from(input).unwrap();
         // let mut f =
-        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/template.rsx")
+        //     File::create("/Users/user/Downloads/beyond-framework-main/gen/parser/template.gen")
         //         .unwrap();
         // let _ = f.write_all(target.to_string().as_bytes());
         assert_eq!(target.to_string().as_str(),"//! This is a comment1\n//! This is a comment2\n//! This is a comment3\n// This is line comment\n\n/// This is a doc comment\n/// hello\n<script>\nlet mut counter:usize = 0\n        \n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        </script>\n\n// This is line comment2\n// end of line comment\n");
@@ -650,7 +650,7 @@ mod ast_test {
         let target = ParseTarget::try_from(input).unwrap();
         dbg!(&target.to_string());
         // let mut f =
-        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/template.rsx")
+        //     File::create("/Users/user/Downloads/beyond-framework-main/gen/parser/template.gen")
         //         .unwrap();
         // let _ = f.write_all(target.to_string().as_bytes());
     }

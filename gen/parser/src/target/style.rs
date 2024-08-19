@@ -230,9 +230,9 @@ mod test_style {
         //     .map(|x| x.to_string())
         //     .collect::<Vec<String>>()
         //     .join("\n");
-        // // "E:/Rust/try/makepad/rsx/parser/c.css"
+        // // "E:/Rust/try/makepad/gen/parser/c.css"
         // let mut f =
-        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/c.css").unwrap();
+        //     File::create("/Users/user/Downloads/beyond-framework-main/gen/parser/c.css").unwrap();
         // let _ = f.write(st.as_bytes());
         dbg!(res);
     }

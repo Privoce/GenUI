@@ -173,7 +173,7 @@ impl Model {
                 // model.script.replace(script.into());
                 model.script.replace(ScriptModel::from(ast.script.unwrap()));
             }
-            Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other rsx have use to inject the style or not
+            Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other gen have use to inject the style or not
             Strategy::TemplateScript => {
                 let (sender, receiver) = mpsc::channel();
                 let template = ast.template().unwrap()[0].clone();
