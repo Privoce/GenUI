@@ -2,14 +2,18 @@ use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
 use gen_utils::{
-    common::{fs, snake_to_camel, string::{format_live_design, pub_mod_non_snake_case}, Source, Ulid},
+    common::{
+        fs, snake_to_camel,
+        string::{format_live_design, pub_mod_non_snake_case, FixedString},
+        Source, Ulid,
+    },
     error::{Errors, FsError},
 };
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse2, parse_str, Ident};
 
-use crate::ToToken;
+use crate::{widget::BuiltIn, ToToken};
 
 use super::{live_design::LiveDesign, role::Role, safe_widget::SafeWidget};
 
@@ -300,7 +304,14 @@ fn for_widget_to_live_design(
             }
             Some(set_props)
         };
-        let as_widget = parse_str::<TokenStream>(&format!("as_{}", &widget.name)).unwrap();
+        let as_widget = parse_str::<TokenStream>(&format!(
+            "as_{}",
+            BuiltIn::try_from(&widget.name)
+                .unwrap()
+                .to_string()
+                .camel_to_snake()
+        ))
+        .unwrap();
         // 注意！这个方法需要处理
         let enumerate = parse_str::<TokenStream>(&credential.fmt_enumerate()).unwrap();
 

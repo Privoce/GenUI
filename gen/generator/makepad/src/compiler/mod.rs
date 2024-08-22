@@ -369,7 +369,8 @@ impl VMap {
                         .unwrap()
                         .iter()
                         .fold(String::new(), |mut bcc, v| {
-                            format_live_design_tk(format!("auto :: {}", v).as_str())
+                            bcc.push_str(&format_live_design_tk(format!("auto :: {}", v).as_str()));
+                            bcc
                         }),
                 );
                 acc

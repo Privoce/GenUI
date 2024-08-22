@@ -29,7 +29,7 @@ impl Default for RootComponent{
 }
 
 let mut props = RootComponent::default();
-let btnlist: Vec<String> = vec!["Hello".to_string(), "GenUI".to_string(), "1".to_string()];
+let btnlist: Vec<String> = vec!["Hello".to_string(), "GenUI".to_string()];
 let mut toggle = || {
   props.flag1 = !props.flag1;
 };

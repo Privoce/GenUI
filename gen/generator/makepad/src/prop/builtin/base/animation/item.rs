@@ -31,7 +31,6 @@ impl Display for AnimationItem {
     }
 }
 
-// todo!(改为&str, &Value, Builtin) 目的是为了让用户自定义targets的时候使用Gen提供的名称而不是使用makepad的
 impl TryFrom<(&str, &Value, BuiltIn)> for AnimationItem {
     type Error = Errors;
 
@@ -181,7 +180,7 @@ impl Display for OptionFrom {
 
 impl TryFrom<&Value> for OptionFrom {
     type Error = Errors;
-
+    #[allow(unused_assignments)]
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
         let mut from = Err(Errors::PropConvertFail(format!(
             "{} can not convert to OptionFrom",
