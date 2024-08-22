@@ -79,7 +79,8 @@ impl WasmImpl for Wasm {
         let mut command = Command::new("cargo");
         command.args(["makepad", "wasm"]);
         if let Some(port) = self.port {
-            command.args(["--port", &port.to_string()]);
+            // command.args(["--port=", &port.to_string()]);
+            command.arg(format!("--port={}", port));
         }
         command.args(["run", "-p", "src_gen", "--release"]);
         // command.push_str(" run -p src_gen --release");
