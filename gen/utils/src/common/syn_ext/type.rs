@@ -29,7 +29,10 @@ impl TypeGetter for Stmt {
         self.get(var).map(|x| {
             if let Type::Path(path) = &*x.ty {
                 path.path.segments.to_token_stream().to_string()
-            } else {
+            } else if let Type::Array(arr) = &*x.ty{
+                arr.to_token_stream().to_string()
+            }
+            else {
                 panic!("Type not supported")
             }
         })
