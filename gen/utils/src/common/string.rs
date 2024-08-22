@@ -15,6 +15,26 @@ pub fn split_fixed(input: &str, pat: &str) -> Vec<String> {
         .collect::<Vec<String>>()
 }
 
+pub fn pub_mod_non_snake_case(v: &str) -> String{
+    format!(
+        "#[allow(non_snake_case)] pub mod {}; ",
+        v
+    )
+}
+
+pub fn format_live_design(v: &str) -> String{
+    format!(
+        "crate::{}::live_design(cx);",
+       v
+    )
+}
+
+pub fn format_live_design_tk(v: &str) -> String{
+    format!(
+        " crate :: {} :: live_design (cx) ;",
+       v
+    )
+}
 /// # FixedString
 /// Fixed String trait is used add some useful methods to the string type.
 pub trait FixedString {

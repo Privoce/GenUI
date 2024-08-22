@@ -5,12 +5,16 @@ use gen_utils::{common::fs::create_file, compiler::ModelNodeImpl};
 use proc_macro2::TokenStream;
 
 use crate::{
-    widget::model::{widget::Widget, ToLiveDesign},
-    ToToken,
+    compiler::{AUTO_BUILTIN_WIDGETS, VIRTUAL_MAP}, widget::model::{auto_builtin_widgets::AutoBuiltinCompile, widget::Widget, ToLiveDesign}, ToToken
 };
 
 use super::RsFile;
 
+/// # Model Node
+/// Model Node is the basic unit of the model tree which must impl ModelNodeImpl
+/// - each node can be a widget or a rs file or other kinds of file (depends on the project)
+/// - each node must has a source, which is the source trace of the node
+/// - each node must has a content, which is the content of the node (file content)
 #[derive(Debug, Clone)]
 pub enum ModelNode {
     Widget(Widget),
@@ -45,6 +49,16 @@ impl ModelNode {
             ModelNode::RsFile(_) => panic!("super ui root not exist in rs file"),
         }
     }
+    /// ## 用于判断当前Widget编译后是否需要对AUTO_BUILTIN_WIDGETS进行clear
+    /// AUTO_BUILTIN_WIDGETS是一个全局变量，用于存储编译过程中生成的Widget，用于后续的编译
+    /// 当前它存储某个Widget中含有if_widget或for_widget的虚拟Widget，如何含有则需要清空，否则不需要
+    /// 为了避免重复编译，所以需要清空，而判断依据是当前Widget中has_virtual_widget字段是否为true
+    pub fn need_clear_auto_builtins(&self) -> bool {
+        match self {
+            ModelNode::Widget(widget) => widget.has_virtual_widget,
+            ModelNode::RsFile(_) => false,
+        }
+    }
 }
 
 impl ModelNodeImpl for ModelNode {
@@ -68,7 +82,21 @@ impl ModelNodeImpl for ModelNode {
     }
 
     fn compile(&self) -> () {
+        // get content from the model node --------------------------------------------------------------------
         let content = self.content().to_string();
+        // judge need to clear auto builtins ------------------------------------------------------------------
+        if self.need_clear_auto_builtins(){
+            let mut auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
+            let mut vmap = VIRTUAL_MAP.lock().unwrap();
+
+            auto_widgets.compile(vmap.as_ref().unwrap().auto_lib_path.join("mod.rs"));
+            auto_widgets.clear();
+            vmap.as_mut().unwrap().clear_old();
+            vmap.as_ref().unwrap().update_app_main_registers();
+            vmap.as_mut().unwrap().old.clear();
+        
+        };
+        // write content to file --------------------------------------------------------------------------------
         let mut file = create_file(self.source().unwrap().compiled_file.as_path()).unwrap();
         file.write_all(content.as_bytes()).unwrap();
     }
@@ -77,7 +105,6 @@ impl ModelNodeImpl for ModelNode {
 impl From<Model> for ModelNode {
     fn from(value: Model) -> Self {
         let source = &value.special;
-        // dbg!(&value);
         match &value.strategy {
             gen_parser::Strategy::None => RsFile::new_empty(source.clone()).into(),
             gen_parser::Strategy::SingleScript => RsFile::from(value).into(),

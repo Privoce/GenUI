@@ -6,25 +6,19 @@ use std::{
 
 use gen_converter::model::{file_data, Model};
 use gen_parser::ParseTarget;
-use gen_utils::common::{
-    fs::{self, create_file},
-    token_tree_ident, Source,
-};
+use gen_utils::common::{fs::create_file, token_tree_ident, Source};
 use quote::quote;
 
 use crate::{
     model::{ModelNode, ModelTree, RsFile},
     widget::{
-        model::{
-            app_main::AppMain, auto_builtin_widgets::AutoBuiltinCompile, widget::Widget,
-            ToLiveDesign,
-        },
+        model::{app_main::AppMain, widget::Widget, ToLiveDesign},
         utils::imports_to_live_registers,
     },
     ToToken,
 };
 
-use super::AUTO_BUILTIN_WIDGETS;
+use super::VIRTUAL_MAP;
 
 /// # Makepad Core
 /// Makepad is a core struct to handle makepad project
@@ -173,10 +167,6 @@ impl Makepad {
     /// insert item to model tree, if item exists, replace it
     pub fn insert(&mut self, item: Model) -> () {
         let _ = self.tree.as_mut().unwrap().insert(item.into());
-        // let live_register = self.tree.as_ref().unwrap().to_live_register();
-        // dbg!(&live_register);
-        // self.app_main.set_live_register(live_register);
-        // dbg!(&self.app_main);
     }
     /// Makepad Compile
     /// - compile main.rs
@@ -187,42 +177,25 @@ impl Makepad {
     where
         P: AsRef<Path>,
     {
-        // compile main.rs
+        // compile main.rs -------------------------------------------------------------
         self.main_rs.compile();
-        // compile other widget.rs
+        // compile other widget.rs -----------------------------------------------------
         self.tree.as_ref().unwrap().compile();
-        // compile auto widgets
-        let auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
-        let mut auto_flag = false;
-        let auto_live_registers = if !auto_widgets.is_empty() {
-            auto_flag = true;
-            // before compile auto widgets, create auto dir
-            let auto_path = self
-                .main_rs
-                .source
-                .compiled_dir
-                .as_path()
-                .join("src")
-                .join("auto")
-                .join("mod.rs");
-            let _ = auto_widgets
-                .before_compile(self.main_rs.source.compiled_dir.as_path())
-                .unwrap();
-            let _ = fs::create_file(auto_path.as_path())
-                .expect("create auto dir or auto mod.rs failed");
-            auto_widgets.compile(auto_path.as_path())
-        } else {
-            None
-        };
 
-        let _ = std::mem::replace(
-            &mut self.app_main,
-            Self::create_app_main(entry, path, self.tree.as_ref().unwrap()),
-        );
-        // create app main and compile app.rs
-        // get auto widgets live register
-        self.compile_app_main(gen_files, auto_live_registers);
-        // compile lib.rs
-        self.compile_lib_rs(auto_flag);
+        {
+            let vmap = VIRTUAL_MAP.lock().unwrap();
+            let auto_live_registers = vmap.as_ref().unwrap().live_registers();
+            let auto_flag = auto_live_registers.is_some();
+
+            let _ = std::mem::replace(
+                &mut self.app_main,
+                Self::create_app_main(entry, path, self.tree.as_ref().unwrap()),
+            );
+            // create app main and compile app.rs
+            // get auto widgets live register
+            self.compile_app_main(gen_files, auto_live_registers);
+            // compile lib.rs
+            self.compile_lib_rs(auto_flag);
+        }
     }
 }

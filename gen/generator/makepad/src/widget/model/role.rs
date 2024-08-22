@@ -59,6 +59,12 @@ impl Role {
             _ => None,
         }
     }
+    pub fn get_for_ulid(&self) -> Option<Ulid> {
+        match self {
+            Role::For { id, .. } => Some(id.clone()),
+            _ => None,
+        }
+    }
     /// match role use ulid
     /// if role is normal, return None
     pub fn match_role(&self, another: &Ulid) -> Option<bool> {
@@ -75,7 +81,7 @@ impl Role {
     }
 }
 
-#[derive(Clone, Debug, Copy, PartialEq)]
+#[derive(Clone, Debug, Copy, PartialEq, Eq, Hash)]
 pub enum RoleType {
     If(IFSignal),
     For,
@@ -84,10 +90,10 @@ pub enum RoleType {
 
 impl RoleType {
     /// ## convert to prefix camel
-    pub fn to_prefix_camel(&self) -> Option<&str> {
+    pub fn to_prefix_camel<'a>(&self, for_name: &'a str) -> Option<&'a str> {
         match self {
             RoleType::If(_) => Some("IfWidget"),
-            RoleType::For => Some("ForWidget"),
+            RoleType::For => Some(for_name),
             RoleType::Normal => None,
         }
     }

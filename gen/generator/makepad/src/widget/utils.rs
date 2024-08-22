@@ -456,7 +456,7 @@ pub fn bind_widget_prop_value(
 
     return if is_if(key) {
         // replacer must be Some
-        let replacer = replacer.unwrap().iter().find_map(|((_, r_id), ulid)| {
+        let replacer = replacer.unwrap().iter().find_map(|((_, r_id, _), ulid)| {
             if r_id == id {
                 Some(ulid.to_snake())
             } else {
@@ -480,7 +480,6 @@ pub fn bind_widget_prop_value(
         None
     };
 }
-
 
 /// get local ident from stmt
 fn local_ident(code: &Stmt) -> String {

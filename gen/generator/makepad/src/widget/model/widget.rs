@@ -19,7 +19,7 @@ use quote::{quote, ToTokens};
 use syn::{parse_str, Ident, ItemEnum, ItemImpl, ItemStruct, Stmt, StmtMacro};
 
 use crate::{
-    compiler::AUTO_BUILTIN_WIDGETS,
+    compiler::{AUTO_BUILTIN_WIDGETS, VIRTUAL_MAP},
     utils::{component_render, special_struct},
     widget::{
         utils::{combine_option, quote_draw_widget, QuoteDraw},
@@ -53,24 +53,42 @@ pub struct Widget {
     /// is widget as a prop? if prop is true , widget need id
     /// `<view id="a" as_prop></view>` => as_prop = true
     pub as_prop: bool,
+    /// widget name
     pub name: String,
+    /// if current widget is a virtual widget, origin_name is Some, else None
+    pub origin_name: Option<String>,
+    /// widget source
     pub source: Option<Source>,
+    /// makepad imports in live_design!(only exist if widget is root widget)
     pub imports: Option<TokenStream>,
+    /// rust use mod (only exist if widget is root widget)
     pub uses: Option<TokenStream>,
     // pub compiled_source: Option<PathBuf>,
     /// props in live_design
     pub props: Option<TokenStream>,
     /// events called in makepad
     pub events: Option<HashMap<String, TokenStream>>,
+    /// the prop ptr for widget, it is a struct which contains all props the widget can handle
     pub prop_ptr: Option<TokenStream>,
+    /// the event ptr for widget, it is a enum which contains all events the widget can handle
     pub event_ptr: Option<TokenStream>,
+    /// impl event ref
     pub event_ref: Option<TokenStream>,
+    /// impl event set
     pub event_set: Option<TokenStream>,
+    /// children widget
     pub children: Option<Vec<Widget>>,
+    /// widget inherits from built-in widget
     pub inherits: Option<BuiltIn>,
+    /// impl widget traits
     pub traits: Option<WidgetTrait>,
+    /// impl live_hook trait
     pub live_hook: Option<LiveHookTrait>,
+    /// current widget role, is normal or for or if
     pub role: Role,
+    /// current widget has virtual widget or not, if has, it should clear AUTO_BUILTIN_WIDGETS after compile
+    /// it is used to avoid repeat compile
+    pub has_virtual_widget: bool,
 }
 
 impl PartialEq for Widget {
@@ -159,6 +177,29 @@ impl Widget {
         }
         self
     }
+    pub fn set_has_virtual_widget(&mut self, replacer: Option<&Replacer>) -> &mut Self {
+        if self.is_root {
+            self.has_virtual_widget = replacer.is_some();
+            // handle vmap
+            let _ = replacer.map(|x| {
+                let mut vmap = VIRTUAL_MAP.lock().unwrap();
+
+                vmap.as_mut().unwrap().get_or_insert(
+                    self.source.as_ref().unwrap().compiled_file.as_path(),
+                    x.iter()
+                        .map(|((w_name, _, _), ulid)| {
+                            format!(
+                                "{}_{}",
+                                w_name.split_fixed(ulid.to_string().as_str()).join("_"),
+                                ulid
+                            )
+                        })
+                        .collect(),
+                )
+            });
+        }
+        self
+    }
     /// ## set widget script
     /// - set prop_ptr
     /// - set event_ptr
@@ -197,7 +238,8 @@ impl Widget {
                     self.set_uses(uses)
                         .set_imports(imports)
                         .set_prop_ptr(prop_ptr)
-                        .set_event_ptr(event_ptr);
+                        .set_event_ptr(event_ptr)
+                        .set_has_virtual_widget(replacer);
                     let bind_prop_tk = self.before_apply(
                         other.as_ref(),
                         prop_fields.as_ref(),
@@ -511,7 +553,7 @@ impl Widget {
                     let if_ulid = if let Some(x) = replacer {
                         // x.get(&(self.name.to_string(), self.id.as_ref().unwrap().to_string()))
                         // only need id match, cause name has been changed, so iter map and find
-                        x.iter().find_map(|((_, id), ulid)| {
+                        x.iter().find_map(|((_, id, _), ulid)| {
                             if id == self.id.as_ref().unwrap() {
                                 Some(ulid)
                             } else {
@@ -521,7 +563,6 @@ impl Widget {
                     } else {
                         None
                     };
-
                     self.role = Role::new_option_if(props, if_signal.unwrap(), if_ulid);
                 } // if
                 (1_i32, 0_i32) => {
@@ -596,13 +637,14 @@ impl Widget {
                         self.id = safety.id.clone(); // back set id
                         safety.insert_to_auto();
                         let name = format!("IfWidget{}", id);
+                        self.origin_name = Some(self.name.to_string());
                         self.name = name;
                         self.clear();
                     }
                     IFSignal::ElseIf | IFSignal::Else => {
                         // if signal is ElseIf or Else, do not need to create a new widget, append current widget to safe widget(from AUTO_WIDGET) then clear current widget
                         let mut safeties = AUTO_BUILTIN_WIDGETS.lock().unwrap();
-
+                        self.origin_name = Some(self.name.to_string());
                         // find if widget
                         let mut safety = safeties.iter_mut().find(|widget| {
                             let source_match =
@@ -637,6 +679,7 @@ impl Widget {
             }
             Role::For { id, .. } => {
                 let name = format!("{}{}", snake_to_camel(&self.name), id);
+                self.origin_name = Some(self.name.to_string());
                 // copy current widget and empty all
                 let mut safety = SafeWidget::from(&*self);
                 safety.append_tree(self.to_tree().to_string());
@@ -845,7 +888,6 @@ impl ToLiveDesign for Widget {
 
 impl From<gen_converter::model::Model> for Widget {
     fn from(value: gen_converter::model::Model) -> Self {
-        // dbg!(&value);
         let gen_converter::model::Model {
             special,
             template,
@@ -872,7 +914,7 @@ impl From<gen_converter::model::Model> for Widget {
 
 /// ## Replacer
 /// <(widget_name, widget_id), ulid>
-pub type Replacer = HashMap<(String, String), Ulid>;
+pub type Replacer = HashMap<(String, String, RoleType), Ulid>;
 
 /// ## Build widget
 /// ### Params
@@ -901,6 +943,8 @@ pub type Replacer = HashMap<(String, String), Ulid>;
 /// └──────────────┘       pass        └──────────────────┘                  
 ///                                                                      
 ///  ```
+/// ### Return
+/// (child_widget, replacer)
 fn build_widget(
     special: Option<&Source>,
     template: &TemplateModel,
@@ -908,7 +952,7 @@ fn build_widget(
     script: Option<&ScriptModel>,
     is_root: bool,
     replacer: &mut Option<Replacer>,
-) -> (Option<Widget>, Option<((String, String), Ulid)>) {
+) -> (Option<Widget>, Option<((String, String, RoleType), Ulid)>) {
     let mut widget = Widget::new(
         special,
         template.get_name(),
@@ -933,12 +977,12 @@ fn build_widget(
             let (child_widget, c_replacer) =
                 build_widget(special, child, style, script, false, replacer);
 
-            let _ = c_replacer.map(|((name, id), ulid)| {
+            let _ = c_replacer.map(|((name, id, role), ulid)| {
                 // child_replacer.as_mut().unwrap().insert((name.to_string(), id.to_string()), ulid.clone());
                 if replacer.is_none() {
-                    replacer.replace(once(((name, id), ulid)).collect());
+                    replacer.replace(once(((name, id, role), ulid)).collect());
                 } else {
-                    replacer.as_mut().unwrap().insert((name, id), ulid);
+                    replacer.as_mut().unwrap().insert((name, id, role), ulid);
                 }
             });
 
@@ -953,20 +997,43 @@ fn build_widget(
         .handle_role();
 
     // judget current widget role is if?, cause if widget(IFSignal::Else_IF and Else) need to be ignore, and IFSignal::If need to be replace(replace is handle in handle_role fn)
-    if let RoleType::If(role) = RoleType::from(&widget.role) {
-        let ulid = widget.role.get_if_uild();
+    // if let RoleType::If(role) = RoleType::from(&widget.role) {
 
-        return match role {
-            IFSignal::If => {
-                let replacer = Some((
-                    (widget.name.to_string(), widget.id.as_ref().unwrap().clone()),
-                    ulid.unwrap(),
-                ));
-                (Some(widget), replacer)
-            }
-            IFSignal::ElseIf => (None, None),
-            IFSignal::Else => (None, None),
-        };
+    // }
+
+    match RoleType::from(&widget.role) {
+        RoleType::If(role) => {
+            let ulid = widget.role.get_if_uild();
+
+            return match role {
+                IFSignal::If => {
+                    let replacer = Some((
+                        (
+                            widget.name.to_string(),
+                            widget.id.as_ref().unwrap().clone(),
+                            RoleType::from(&widget.role),
+                        ),
+                        ulid.unwrap(),
+                    ));
+                    (Some(widget), replacer)
+                }
+                IFSignal::ElseIf => (None, None),
+                IFSignal::Else => (None, None),
+            };
+        }
+        RoleType::For => {
+            let ulid = widget.role.get_for_ulid();
+            let replacer = Some((
+                (
+                    widget.name.to_string(),
+                    widget.id.as_ref().unwrap_or(&String::new()).to_string(),
+                    RoleType::For,
+                ),
+                ulid.unwrap(),
+            ));
+            return (Some(widget), replacer);
+        }
+        RoleType::Normal => {}
     }
 
     return (Some(widget), None);
@@ -1072,9 +1139,9 @@ fn handle_prop_tree(prop_tree: &mut PropTree, replacer: Option<&Replacer>) {
     replacer
         .unwrap()
         .iter()
-        .for_each(|((r_w_name, r_w_id), _)| {
+        .for_each(|((r_w_name, r_w_id, role), _)| {
             let mut node = HashMap::new();
-            let mut prefix = RoleType::Normal;
+
             // loop prop_tree to find the node which has the same widget_id
             prop_tree.iter().for_each(|((_, w_id), tree)| {
                 if w_id == r_w_id {
@@ -1083,10 +1150,7 @@ fn handle_prop_tree(prop_tree: &mut PropTree, replacer: Option<&Replacer>) {
                         node.extend(
                             tree.iter()
                                 .filter(|(k, _)| !(["else"].contains(&k.name())))
-                                .map(|(k, v)| {
-                                    prefix = k.name().into();
-                                    (k.clone(), v.clone())
-                                }),
+                                .map(|(k, v)| (k.clone(), v.clone())),
                         );
                     }
                 }
@@ -1094,7 +1158,7 @@ fn handle_prop_tree(prop_tree: &mut PropTree, replacer: Option<&Replacer>) {
 
             prop_tree.push((
                 (
-                    r_w_name.camel_to_snake_ulid(prefix.to_prefix_camel()),
+                    r_w_name.camel_to_snake_ulid(role.to_prefix_camel(&r_w_name)),
                     r_w_id.to_string(),
                 ),
                 Some(node),

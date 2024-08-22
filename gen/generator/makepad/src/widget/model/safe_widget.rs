@@ -145,6 +145,7 @@ impl From<&Widget> for SafeWidget {
             traits,
             live_hook,
             role,
+            ..
         } = value;
 
         SafeWidget {

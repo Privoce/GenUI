@@ -99,6 +99,7 @@ impl Compiler {
     /// ### tests
     /// - easy compile: 👌
     pub fn compile(&mut self) -> () {
+        // let _ = self.target.compile(gen_files);
         let _ = self.exist_or_create();
         info(SRC_GEN_INIT);
         // let _ = self.init_compile_target();

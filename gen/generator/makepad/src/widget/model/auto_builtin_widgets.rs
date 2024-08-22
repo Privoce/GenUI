@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
 use gen_utils::{
-    common::{fs, snake_to_camel, Source, Ulid},
+    common::{fs, snake_to_camel, string::{format_live_design, pub_mod_non_snake_case}, Source, Ulid},
     error::{Errors, FsError},
 };
 use proc_macro2::TokenStream;
@@ -25,26 +25,36 @@ pub trait AutoBuiltinCompile {
 }
 
 impl AutoBuiltinCompile for Vec<SafeWidget> {
-    fn before_compile<P>(&self, path: P) -> Result<(), Errors>
+    fn before_compile<P>(&self, dir: P) -> Result<(), Errors>
     where
         P: AsRef<std::path::Path>,
     {
         // judget if src/auto dir exists, if exists, remove all files in it, if not exists, create it
-        let auto_dir = path.as_ref().join("src").join("auto");
+        let auto_dir = dir.as_ref().join("src").join("auto");
+        let auto_file = auto_dir.as_path().join("mod.rs");
         if auto_dir.exists() {
             std::fs::remove_dir_all(auto_dir.as_path()).map_err(|e| {
                 Errors::FsError(FsError::Delete {
-                    path: path.as_ref().to_path_buf(),
+                    path: dir.as_ref().to_path_buf(),
                     reason: e.to_string(),
                 })
             })?;
         }
-        std::fs::create_dir(auto_dir.as_path()).map_err(|e| {
+        // create auto dir path --------------------------------------------------
+        let _ = std::fs::create_dir(auto_dir.as_path()).map_err(|e| {
             Errors::FsError(FsError::Create {
-                path: path.as_ref().to_path_buf(),
+                path: dir.as_ref().to_path_buf(),
                 reason: e.to_string(),
             })
-        })
+        });
+        // crate auto lib path ---------------------------------------------------
+        match fs::create_file(auto_file.as_path()) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Errors::FsError(FsError::Create {
+                path: auto_file,
+                reason: e.to_string(),
+            })),
+        }
     }
     fn compile<P>(&self, path: P) -> Option<Vec<String>>
     where
@@ -68,16 +78,12 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
             // insert target mod into auto/mod.rs
             fs::append(
                 path.as_ref(),
-                &format!(
-                    "#[allow(non_snake_case)] pub mod {}; ",
-                    source.compiled_file.file_stem().unwrap().to_str().unwrap()
+                &pub_mod_non_snake_case(
+                    source.compiled_file.file_stem().unwrap().to_str().unwrap(),
                 ),
             )
             .expect("insert auto builtin widget mod failed");
-            registers.push(format!(
-                "crate::{}::live_design(cx);",
-                source.to_live_register()
-            ));
+            registers.push(format_live_design(&source.to_live_register()));
             // now should compile to source file
             let _ = fs::write(
                 source.compiled_file.as_path(),
