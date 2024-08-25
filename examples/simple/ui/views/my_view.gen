@@ -1,0 +1,30 @@
+<template>
+  <component inherits="view">
+     <label :for="(index, value) in list" :text="value" font_size="16.0"></label>
+          <button :if="props.flag1" text="True Btn" id="if_widget1"></button>
+          <button else text="False Btn" id="if_widget1"></button>
+          <button id="toggle_btn" text="click here to change if signal" @clicked="toggle"></button>
+  </component>
+</template>
+
+<script>
+#[derive(Prop)]
+pub struct MyView{
+    pub flag1: bool,
+}
+
+impl Default for MyView{
+    fn default() -> Self{
+        Self{
+            flag1: false,
+        }
+    }
+}
+
+let mut props = MyView::default();
+let mut toggle = ||{
+    props.flag1 = !props.flag1;
+};
+let list: Vec<String> = vec!["Hello".to_string(), "GenUI".to_string(), "Rust".to_string()];
+</script>
+

@@ -1,0 +1,10 @@
+[compiler]
+target = "makepad"
+log_level = "info"
+logo = true
+
+[makepad]
+entry = "app"
+root = "E:/Rust/try/makepad/Gen-UI/examples/simple/ui/views/root.gen"
+[makepad.dependencies] 
+makepad-widgets = { path = "E:/Rust/try/makepad/makepad/rik/makepad/widgets" }

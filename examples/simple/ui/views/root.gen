@@ -1,0 +1,39 @@
+<template>
+  <root id="ui">
+    <window id="main_window">
+      <view flow="Down" height="All" align="0.5 0.5">
+        <label text="Gen + Makepad Project Hello World!!!" font_size="16.0"></label>
+        <MyView></MyView>
+      </view>
+    </window>
+  </root>
+</template>
+
+<script>
+import!{
+  crate::views::my_view::*;
+}
+</script>
+
+<style>
+#ui{
+  #main_window{
+    width: Fill;
+    height: Fill;
+    background_visible: true;
+    background_color: shader(|self|{
+            fn pixel(self)-> vec4{
+                    let uv = self.pos
+                    let d = length(uv - 0.5) * 2.0
+                    let t = d * d * 25.0 - self.time * 3.0
+                    let d2 = (cos(t) * 0.5 + 0.5) * (1.0 - d)
+                    let col = 0.5 + 0.5 * cos(t / 20.0 + uv.xyx + vec3(0.0,2.0,4.0))
+                    return vec4(col, d2)
+                }
+            }); 
+    flow: Down;
+    window_size: 1024.0 820.0;
+    window_position: 300.0;
+  }
+}
+</style>

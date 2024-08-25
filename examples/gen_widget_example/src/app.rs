@@ -38,12 +38,36 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     <View>{
-                        height: 100.0,
+                        height: 200.0,
                         width: Fill,
                         flow: Down,
                         align: {x: 0.5, y: 0.5},
                         <GLoading>{
                             theme: Error,
+                        }
+                        <GLabel>{
+                            text: "Loading ...",
+                        }
+                    }
+                    <View>{
+                        height: 100.0,
+                        width: Fill,
+                        flow: Down,
+                        align: {x: 0.5, y: 0.5},
+                        <GLoading>{
+                            loading_type: CircleDot
+                        }
+                        <GLabel>{
+                            text: "Loading ...",
+                        }
+                    }
+                    <View>{
+                        height: 100.0,
+                        width: Fill,
+                        flow: Down,
+                        align: {x: 0.5, y: 0.5},
+                        <GLoading>{
+                            loading_type: DotLine
                         }
                         <GLabel>{
                             text: "Loading ...",

@@ -1,6 +1,0 @@
-<template>
-  <view id="header_view" flow="Down">
-    <label text="header view"></label>
-  </view>
-</template>
-
