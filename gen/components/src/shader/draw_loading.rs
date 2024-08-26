@@ -3,32 +3,42 @@ use makepad_widgets::*;
 live_design! {
     import makepad_draw::shader::std::*;
     DrawGLoading = {{DrawGLoading}}{
+        // 顺时针
         fn arc2(uv: vec2, x: float, y: float, r: float, s: float, e: float, color: vec4, t: float) -> vec4 {
             let c = uv - vec2(x, y);
             let pi = 3.141592653589793; // PI constant
             
             let ang = atan(c.y, c.x);
-            if (ang < 0.0) {
+            // let ang = if ang < 0.0 { ang + 2.0 * pi } else { ang };
+            if ang < 0.0 {
                 ang += 2.0 * pi;
             }
             
             // 将时间转换为旋转角度
             let rotate_speed = 1.0; // 控制旋转速度
-            let rotated_angle = mod(ang + t * rotate_speed, 2.0 * pi);
+            let rotated_angle = ang - t * rotate_speed;
+            // let rotated_angle = if rotated_angle < 0.0 { rotated_angle + 2.0 * pi } else { rotated_angle % (2.0 * pi) };
+            if rotated_angle < 0.0 {
+                rotated_angle += 2.0 * pi;
+            }else{
+                rotated_angle = mod(rotated_angle, 2.0 * pi);
+            }
             
             // 计算扇形的起始和结束角度
             let start_angle = s * 2.0 * pi;
             let end_angle = e * 2.0 * pi;
-            
-            if (rotated_angle >= start_angle && rotated_angle <= end_angle) {
+            let flag1 = rotated_angle - start_angle;
+            let flag2 = end_angle - rotated_angle;
+            // rotated_angle >= start_angle && rotated_angle <= end_angle
+            if flag1 >= 0.0 && flag2 >= 0.0 {
                 return vec4(0.0); // 透明
             } else {
                 // 旋转uv坐标以跟随扇形的旋转
                 let rotation_matrix = mat2(
-                    cos(t * rotate_speed), -sin(t * rotate_speed),
-                    sin(t * rotate_speed), cos(t * rotate_speed)
+                    cos(-t * rotate_speed), -sin(-t * rotate_speed),
+                    sin(-t * rotate_speed), cos(-t * rotate_speed)
                 );
-
+        
                 let rotated_uv = rotation_matrix * c;
                 
                 // 重新计算渐变因子，这次基于旋转后的 y 坐标
@@ -43,6 +53,48 @@ live_design! {
                 return mix(s_color, e_color, gradient_factor);
             }
         }
+        // 逆时针
+        // fn arc2(uv: vec2, x: float, y: float, r: float, s: float, e: float, color: vec4, t: float) -> vec4 {
+        //     let c = uv - vec2(x, y);
+        //     let pi = 3.141592653589793; // PI constant
+            
+        //     let ang = atan(c.y, c.x);
+        //     if (ang < 0.0) {
+        //         ang += 2.0 * pi;
+        //     }
+            
+        //     // 将时间转换为旋转角度
+        //     let rotate_speed = 1.0; // 控制旋转速度
+        //     let rotated_angle = mod(ang + t * rotate_speed, 2.0 * pi);
+            
+        //     // 计算扇形的起始和结束角度
+        //     let start_angle = s * 2.0 * pi;
+        //     let end_angle = e * 2.0 * pi;
+            
+        //     if (rotated_angle >= start_angle && rotated_angle <= end_angle) {
+        //         return vec4(0.0); // 透明
+        //     } else {
+                // 旋转uv坐标以跟随扇形的旋转
+                // let rotation_matrix = mat2(
+                //     cos(t * rotate_speed), -sin(t * rotate_speed),
+                //     sin(t * rotate_speed), cos(t * rotate_speed)
+                // );
+ 
+
+        //         let rotated_uv = rotation_matrix * c;
+                
+        //         // 重新计算渐变因子，这次基于旋转后的 y 坐标
+        //         let gradient_factor = (rotated_uv.y + r) / (2.0 * r); // 将旋转后的 y 位置归一化为 [0, 1]
+        //         gradient_factor = clamp(gradient_factor, 0.0, 1.0); // 限制在 [0, 1] 范围内
+                
+        //         // 设置渐变颜色
+        //         let s_color = color;  // 起始颜色
+        //         let e_color = vec4(color.rgb, 0.1); 
+                
+        //         // 根据渐变因子混合颜色
+        //         return mix(s_color, e_color, gradient_factor);
+        //     }
+        // }
         fn pixel(self) -> vec4 {
             let loading_size = vec2(self.width, self.height);
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
