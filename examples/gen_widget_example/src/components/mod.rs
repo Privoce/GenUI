@@ -15,3 +15,5 @@ pub mod select;
 pub mod popups;
 pub mod toggles;
 pub mod progresss;
+pub mod loadings;
+pub mod states;

@@ -1,4 +1,4 @@
-use image_cache::ImageCacheImpl;
+use image_cache::{ImageCacheImpl, ImageFit};
 use makepad_widgets::*;
 
 use crate::shader::draw_card::DrawCard;
@@ -109,6 +109,12 @@ pub struct GImage {
     pub cursor: Option<MouseCursor>,
     #[live(1.0)]
     scale: f64,
+    #[live]
+    fit: ImageFit,
+    #[live(16)]
+    min_width: i64,
+    #[live(16)]
+    min_height: i64,
     // rotate -----------------
     #[live(0.0)]
     pub rotation: f32,
@@ -121,7 +127,7 @@ pub struct GImage {
     #[live]
     draw_image: DrawCard,
     #[live]
-    src: LiveDependency,
+    pub src: LiveDependency,
     #[rust(Texture::new(cx))]
     texture: Option<Texture>,
 }
@@ -163,9 +169,52 @@ impl LiveHook for GImage {
 }
 
 impl Widget for GImage {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, mut walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
+        }
+        let rect = cx.peek_walk_turtle(walk);
+        let dpi = cx.current_dpi_factor();
+        let (width, height) = if let Some(image_texture) = &self.texture {
+            self.draw_image.draw_vars.set_texture(0, image_texture);
+            let (width, height) = image_texture
+                .get_format(cx)
+                .vec_width_height()
+                .unwrap_or((self.min_width as usize, self.min_height as usize));
+            (width as f64 * self.scale, height as f64)
+        } else {
+            self.draw_image.draw_vars.empty_texture(0);
+            (self.min_width as f64 / dpi, self.min_height as f64 / dpi)
+        };
+        let aspect = width / height;
+        match self.fit {
+            ImageFit::Size => {
+                walk.width = Size::Fixed(width);
+                walk.height = Size::Fixed(height);
+            }
+            ImageFit::Stretch => {}
+            ImageFit::Horizontal => {
+                walk.height = Size::Fixed(rect.size.x / aspect);
+            }
+            ImageFit::Vertical => {
+                walk.width = Size::Fixed(rect.size.y * aspect);
+            }
+            ImageFit::Smallest => {
+                let walk_height = rect.size.x / aspect;
+                if walk_height > rect.size.y {
+                    walk.width = Size::Fixed(rect.size.y * aspect);
+                } else {
+                    walk.height = Size::Fixed(walk_height);
+                }
+            }
+            ImageFit::Biggest => {
+                let walk_height = rect.size.x / aspect;
+                if walk_height < rect.size.y {
+                    walk.width = Size::Fixed(rect.size.y * aspect);
+                } else {
+                    walk.height = Size::Fixed(walk_height);
+                }
+            }
         }
         self.draw_walk_rotated_image(cx, walk)
     }

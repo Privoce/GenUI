@@ -1,4 +1,4 @@
-# GEN Components
+# GEN Components (Basic Step 09-08)
 
 - [x] Label
 - [x] Link
@@ -13,7 +13,7 @@
 - [x] Input
 - [x] Popup
 - [x] Progress
-- [ ] Loading
+- [x] Loading
 - [ ] Badge
 - [ ] DropDown
 - [x] Toggle
@@ -27,8 +27,7 @@
 - [x] Select
 - [ ] FileUpload
 - [x] Divide
-- [ ] Loading
-- [ ] EmptyState
+- [x] State
 - [ ] BreadCrumb
 - [ ] Pagination
 - [ ] Metric
@@ -37,3 +36,5 @@
 
 ## todo
 
+- change properties to prop manuel (09-16)
+- optimize function and event (09-24)

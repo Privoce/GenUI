@@ -17,6 +17,7 @@ pub mod drop_down;
 pub mod toggle;
 pub mod progress;
 pub mod loading;
+pub mod badge;
 // pub mod tabs;
 
 live_design!{
@@ -38,6 +39,7 @@ live_design!{
     import crate::components::toggle::GToggleBase;
     import crate::components::progress::GProgressBase;
     import crate::components::loading::GLoadingBase;
+    import crate::components::badge::GBadgeBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -115,9 +117,11 @@ live_design!{
     FONT_FAMILY = dep("crate://self/resources/font/GoNotoKurrent-Regular.ttf");
     FONT_FAMILY_BOLD = dep("crate://self/resources/font/GoNotoKurrent-Bold.ttf");
     FONT_SIZE = 10.0;
+    FONT_SIZE_SMALL = 9.0;
     // padding -----------------------------------------------------
     
     GLOBAL_PADDING = {top: 10.0, left: 16.0, bottom: 10.0, right: 16.0};
+    GLOBAL_PADDING_SMALL = {top: 4.6, left: 8.6, bottom: 4.6, right: 8.6};
     // align -------------------------------------------------------
     ALIGN_CENTER_WALK = {x: 0.5, y: 0.5};
     // components --------------------------------------------------
@@ -354,5 +358,41 @@ live_design!{
         height: Fill,
         width: Fill,
     }
-
+    GState404 = <GImage>{
+        height: Fill,
+        src: dep("crate://self/resources/icons/404.png"),
+        fit: Vertical
+    }
+    GState502 = <GImage>{
+        height: Fill,
+        src: dep("crate://self/resources/icons/502.png"),
+        fit: Vertical
+    }
+    GStateNoData = <GImage>{
+        height: Fill,
+        src: dep("crate://self/resources/icons/no_data.png"),
+        fit: Vertical
+    }
+    GStateNoMsg = <GImage>{
+        height: Fill,
+        src: dep("crate://self/resources/icons/no_msg.png"),
+        fit: Vertical
+    }
+    GStateNetWorkErr = <GImage>{
+        height: Fill,
+        src: dep("crate://self/resources/icons/network_err.png"),
+        fit: Vertical
+    }
+    GStateSearch = <GImage>{
+        height: Fill,
+        src: dep("crate://self/resources/icons/searching.png"),
+        fit: Vertical
+    }
+    GBadge = <GBadgeBase>{
+        theme: Primary,
+        text: "",
+        padding: <GLOBAL_PADDING_SMALL>{}
+        font_size: (FONT_SIZE_SMALL),
+        align: <ALIGN_CENTER_WALK>{},
+    }
 }

@@ -1,4 +1,3 @@
-use gen_components::components::button::GButtonWidgetRefExt;
 use makepad_widgets::*;
 
 live_design! {
@@ -22,6 +21,8 @@ live_design! {
     import crate::components::popups::*;
     import crate::components::toggles::*;
     import crate::components::progresss::*;
+    import crate::components::loadings::*;
+    import crate::components::states::*;
 
     App = {{App}}{
         root: <Root>{
@@ -37,78 +38,31 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <View>{
-                        height: 200.0,
-                        width: Fill,
-                        flow: Down,
-                        align: {x: 0.5, y: 0.5},
-                        <GLoading>{
-                            theme: Error,
-                        }
-                        <GLabel>{
-                            text: "Loading ...",
-                        }
-                    }
-                    <View>{
+                    <GVLayout>{
+                        spacing: 6.0,
                         height: 100.0,
                         width: Fill,
-                        flow: Down,
-                        align: {x: 0.5, y: 0.5},
-                        <GLoading>{
-                            loading_type: CircleDot
+                        <GBadge>{
+                            text: "badget!",
                         }
-                        <GLabel>{
-                            text: "Loading ...",
+                        <GBadge>{
+                            round: true,
+                            theme: Success,
+                            text: "tag1",
                         }
-                    }
-                    <View>{
-                        height: 100.0,
-                        width: Fill,
-                        flow: Down,
-                        align: {x: 0.5, y: 0.5},
-                        <GLoading>{
-                            loading_type: DotLine
-                        }
-                        <GLabel>{
-                            text: "Loading ...",
+                        <GBadge>{
+                            theme: Dark,
+                            text: "other",
                         }
                     }
-
+                    <GStatesExample>{}
+                    // loading pass, test ok
+                    // <GLoadingExample>{}
                     <GProgressExample>{}
                     <GToggleExample>{}
-                    <GDropDown>{
-                        
-                        height: Fit,
-                        width: Fit,
-                        trigger = <GButton>{text:"open"},
-                        popup :<GPopup> {
-                            height: 150.0,
-                            width: 200.0,
-                            container: <GPopupContainer> {
-                                height: Fill,
-                                width: Fill,
-                                flow: Down,
-                                spacing: 10.0,
-                                padding: 10.0,
-                                <GLabel>{
-                                    text:"This is a popup",
-                                }
-                                <GButton>{
-                                    theme: Dark,
-                                    text: "Options"
-                                }
-                                <View>{
-                                    show_bg: true,
-                                    draw_bg: {color: #f00},
-                                    height: 40.0,
-                                    width: 40.0,
-                                }
-                            }
-                        }
-                    }
                     
-                    // <GShaderExample>{}
                     // <GPopupExample>{}
+                    // <GShaderExample>{}
                     // <GSelectExample>{}
                     <GLabelExample>{}
                     
@@ -157,6 +111,8 @@ impl LiveRegister for App {
         crate::components::popups::live_design(cx);
         crate::components::toggles::live_design(cx);
         crate::components::progresss::live_design(cx);
+        crate::components::loadings::live_design(cx);
+        crate::components::states::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }
