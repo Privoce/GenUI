@@ -37,6 +37,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_toggle::live_design(cx);
     crate::shader::draw_progress::live_design(cx);
     crate::shader::draw_loading::live_design(cx);
+    crate::shader::draw_icon_pixel::live_design(cx);
     // export all the components
     crate::components::live_design(cx);
 }

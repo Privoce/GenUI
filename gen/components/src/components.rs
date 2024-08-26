@@ -121,7 +121,7 @@ live_design!{
     // padding -----------------------------------------------------
     
     GLOBAL_PADDING = {top: 10.0, left: 16.0, bottom: 10.0, right: 16.0};
-    GLOBAL_PADDING_SMALL = {top: 4.6, left: 8.6, bottom: 4.6, right: 8.6};
+    GLOBAL_PADDING_SMALL = {top: 4.6, left: 9.0, bottom: 4.6, right: 9.0};
     // align -------------------------------------------------------
     ALIGN_CENTER_WALK = {x: 0.5, y: 0.5};
     // components --------------------------------------------------
@@ -389,10 +389,23 @@ live_design!{
         fit: Vertical
     }
     GBadge = <GBadgeBase>{
+        spacing: 4.6,
         theme: Primary,
         text: "",
-        padding: <GLOBAL_PADDING_SMALL>{}
+        padding: <GLOBAL_PADDING_SMALL>{},
         font_size: (FONT_SIZE_SMALL),
         align: <ALIGN_CENTER_WALK>{},
+        draw_close: {
+            fn pixel(self) -> vec4{
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let offset = 1.0;
+                sdf.move_to(self.pos.x, self.pos.y);
+                sdf.line_to(self.rect_size.x - offset, self.rect_size.y - offset);
+                sdf.move_to(self.rect_size.x - offset, self.pos.y);
+                sdf.line_to(self.pos.x, self.rect_size.y - offset);
+                sdf.stroke(self.color, 1.46);
+                return sdf.result;
+            }
+        }
     }
 }

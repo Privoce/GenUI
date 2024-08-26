@@ -48,11 +48,27 @@ live_design! {
                         <GBadge>{
                             round: true,
                             theme: Success,
-                            text: "tag1",
+                            text: "badge tag1",
                         }
-                        <GBadge>{
-                            theme: Dark,
-                            text: "other",
+                        <GHLayout>{
+                            spacing: 6.0,
+                            <GBadge>{
+                                theme: Dark,
+                                src: dep("crate://self/resources/config.svg"),
+                                text: "other",
+                            }
+                            <GBadge>{
+                                theme: Error,
+                                text: "closeable",
+                                closeable: true
+                            }
+                            <GBadge>{
+                                theme: Warning,
+                                round: true,
+                                text: "icon-close-round",
+                                src: dep("crate://self/resources/config.svg"),
+                                closeable: true
+                            }
                         }
                     }
                     <GStatesExample>{}

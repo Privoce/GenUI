@@ -16,11 +16,11 @@ pub struct GLabel {
     pub brightness: f32,
     #[live(0.5)]
     pub curve: f32,
-    #[live(1.4)]
+    #[live(1.5)]
     pub line_spacing: f64,
-    #[live(1.1)]
+    #[live(0.0)]
     pub top_drop: f64,
-    #[live(1.3)]
+    #[live(0.0)]
     pub height_factor: f64,
     #[live(TextWrap::Word)]
     pub wrap: TextWrap,

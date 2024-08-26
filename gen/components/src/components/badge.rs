@@ -1,4 +1,6 @@
-use crate::utils::get_font_family;
+use crate::shader::draw_icon::DrawGIcon;
+use crate::shader::draw_icon_pixel::DrawGIconPixel;
+use crate::utils::{get_font_family, DefaultTextStyle};
 use crate::{
     shader::draw_card::DrawCard,
     themes::{get_color, Themes},
@@ -6,9 +8,6 @@ use crate::{
 use makepad_widgets::*;
 
 live_design! {
-    import makepad_draw::shader::std::*;
-    GLOBAL_DURATION = 0.25
-
     GBadgeBase = {{GBadge}}{
         height: Fit,
         width: Fit,
@@ -17,6 +16,7 @@ live_design! {
             width: Fit,
         }
         cursor: Hand,
+        
         draw_text: {
             instance hover: 0.0,
             instance pressed: 0.0,
@@ -35,6 +35,12 @@ live_design! {
                     self.pressed
                 )
             }
+        },
+        icon_walk: {
+            margin: 0,
+        },
+        icon_layout: {
+            padding: 0,
         }
     }
 }
@@ -47,6 +53,8 @@ pub struct GBadge {
     pub background_color: Option<Vec4>,
     #[live]
     pub hover_color: Option<Vec4>,
+    #[live]
+    pub icon_hover_color: Option<Vec4>,
     #[live]
     pub pressed_color: Option<Vec4>,
     #[live]
@@ -68,6 +76,22 @@ pub struct GBadge {
     pub font_family: LiveDependency,
     #[live]
     pub cursor: Option<MouseCursor>,
+    #[live]
+    pub closeable: bool,
+    #[live]
+    pub src: LiveDependency,
+    #[live(1.0)]
+    pub icon_brightness: f32,
+    #[live(0.6)]
+    pub icon_curve: f32,
+    #[live(0.5)]
+    pub icon_linearize: f32,
+    #[live(1.0)]
+    pub icon_scale: f64,
+    #[live]
+    pub icon_color: Option<Vec4>,
+    #[live(1.0)]
+    pub icon_draw_depth: f32,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
@@ -78,6 +102,14 @@ pub struct GBadge {
     text_walk: Walk,
     #[live(true)]
     grab_key_focus: bool,
+    #[live]
+    draw_icon: DrawGIcon,
+    #[live]
+    draw_close: DrawGIconPixel,
+    #[live]
+    icon_walk: Walk,
+    #[live]
+    icon_layout: Layout,
     // deref -----------------
     #[redraw]
     #[live]
@@ -96,12 +128,18 @@ impl Widget for GBadge {
         let font = get_font_family(&self.font_family, cx);
         self.draw_text.text_style.font = font;
 
+        self.icon_walk.height = Size::Fixed(self.font_size);
+        self.icon_walk.width = Size::Fixed(self.font_size);
+        self.text_walk.margin.top = self.font_size / 4.0;
         let _ = self.draw_badge.begin(cx, walk, self.layout);
+        let _ = self.draw_icon.draw_walk(cx, self.icon_walk);
 
         let _ = self
             .draw_text
             .draw_walk(cx, self.text_walk, Align::default(), self.text.as_ref());
-
+        if self.closeable {
+            let _ = self.draw_close.draw_walk(cx, self.icon_walk);
+        }
         self.draw_badge.end(cx);
         DrawStep::done()
     }
@@ -133,6 +171,9 @@ impl LiveHook for GBadge {
         let border_color = get_color(self.theme, self.border_color, 800);
         // ------------------ font ------------------------------------------------------
         let font_color = get_color(self.theme, self.color, 100);
+        // ------------------icon color -----------------------------------------------
+        let icon_color = get_color(self.theme, self.icon_color, 100);
+        let icon_hover_color = get_color(self.theme, self.icon_hover_color, 50);
         // ------------------ round -----------------------------------------------------
 
         if self.round {
@@ -146,7 +187,7 @@ impl LiveHook for GBadge {
                         + self.layout.padding.bottom)
                         * 0.25) as f32;
                     radius += self.border_width;
-                    radius += radius / 10.0 + 0.25;
+                    radius += self.font_size as f32 / 8.0 + radius / 10.0;
                     radius
                 }
                 _ => panic!("round only support fixed and fit"),
@@ -164,17 +205,65 @@ impl LiveHook for GBadge {
                 hover_color: (hover_color),
             },
         );
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover_color: (icon_hover_color),
+                color: (icon_color),
+                brightness: (self.icon_brightness),
+                curve: (self.icon_curve),
+                linearize: (self.icon_linearize),
+                scale: (self.icon_scale),
+                draw_depth: (self.icon_draw_depth),
+            },
+        );
+
+        self.draw_icon.set_src(self.src.clone());
+        let default_text_style = DefaultTextStyle::default();
         self.draw_text.apply_over(
             cx,
             live! {
                 color: (font_color),
                 text_style: {
                     font_size: (self.font_size),
+                    brightness: (default_text_style.brightness),
+                    curve: (default_text_style.curve),
+                    line_spacing: (default_text_style.line_spacing),
+                    top_drop: (default_text_style.top_drop),
+                    height_factor: (default_text_style.height_factor),
                 },
             },
         );
+        
+        if self.closeable {
+            // self.draw_close.apply_over(
+            //     cx,
+            //     live! {
+            //         hover_color: (icon_hover_color),
+            //         color: (icon_color),
+            //         brightness: (self.icon_brightness),
+            //         curve: (self.icon_curve),
+            //         linearize: (self.icon_linearize),
+            //         scale: (self.icon_scale),
+            //         draw_depth: (self.icon_draw_depth),
+            //     },
+            // );
+            self.draw_close.apply_over(
+                cx,
+                live! {
+                    brightness: (self.icon_brightness),
+                    color: (icon_color),
+                    curve: (self.icon_curve),
+                    draw_depth: (self.icon_draw_depth),
+                    linearize: (self.icon_linearize),
+                },
+            );
+            self.draw_close.redraw(cx);
+        }
+        
         self.draw_badge.redraw(cx);
         self.draw_text.redraw(cx);
+        self.draw_icon.redraw(cx);
     }
 }
 

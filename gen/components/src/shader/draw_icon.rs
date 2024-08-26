@@ -1,8 +1,6 @@
 use makepad_widgets::*;
 live_design! {
     DrawGIcon = {{DrawGIcon}}{
-
-        
         fn get_color(self) -> vec4 {
             return mix(
                 self.color,
