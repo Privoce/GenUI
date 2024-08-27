@@ -25,6 +25,8 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::progress::live_design(cx);
     crate::components::loading::live_design(cx);
     crate::components::badge::live_design(cx);
+    crate::components::breadcrumb::live_design(cx);
+    crate::components::breadcrumb::item::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
     crate::shader::draw_card::live_design(cx);
@@ -38,6 +40,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_progress::live_design(cx);
     crate::shader::draw_loading::live_design(cx);
     crate::shader::draw_icon_pixel::live_design(cx);
+    crate::shader::draw_split::live_design(cx);
     // export all the components
     crate::components::live_design(cx);
 }

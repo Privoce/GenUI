@@ -14,12 +14,12 @@
 - [x] Popup
 - [x] Progress
 - [x] Loading
-- [ ] Badge
-- [ ] DropDown
+- [x] Badge
+- [x] DropDown
 - [x] Toggle
 - [ ] Avatar
 - [ ] ToolTip
-- [ ] Progress
+- [x] Progress
 - [ ] Slider
 - [ ] Tab
 - [ ] Table

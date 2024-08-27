@@ -17,3 +17,4 @@ pub mod toggles;
 pub mod progresss;
 pub mod loadings;
 pub mod states;
+pub mod badges;

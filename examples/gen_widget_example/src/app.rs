@@ -23,6 +23,7 @@ live_design! {
     import crate::components::progresss::*;
     import crate::components::loadings::*;
     import crate::components::states::*;
+    import crate::components::badges::*;
 
     App = {{App}}{
         root: <Root>{
@@ -39,38 +40,38 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     <GVLayout>{
-                        spacing: 6.0,
-                        height: 100.0,
+                        spacing: 10.0,
+                        height: 140.0,
                         width: Fill,
-                        <GBadge>{
-                            text: "badget!",
-                        }
-                        <GBadge>{
-                            round: true,
-                            theme: Success,
-                            text: "badge tag1",
-                        }
                         <GHLayout>{
-                            spacing: 6.0,
-                            <GBadge>{
-                                theme: Dark,
-                                src: dep("crate://self/resources/config.svg"),
-                                text: "other",
+                            height: 30.0,
+                            spacing: 10.0,
+                            <GBreadCrumbItem>{
+                                text: "Spliter",
                             }
-                            <GBadge>{
-                                theme: Error,
-                                text: "closeable",
-                                closeable: true
+                            <GBreadCrumbItem>{
+                                text: "Line",
+                                split_type: Line
                             }
-                            <GBadge>{
-                                theme: Warning,
-                                round: true,
-                                text: "icon-close-round",
-                                src: dep("crate://self/resources/config.svg"),
-                                closeable: true
+                            <GBreadCrumbItem>{
+                                text: "Arrow",
+                                split_type: Arrow
                             }
                         }
+                        <GBreadCrumb>{
+                            labels: ["home", "components", "button"],
+                        }
+                        <GBreadCrumb>{
+                            labels: ["home", "components", "gen", "ui", "crumb"],
+                            crumb_item: {
+                                split_type: Arrow,
+                            }
+                        }
+                        // <GBreadCrumb>{
+                        //     items: vec!["home", "components", "button"],
+                        // }
                     }
+                    <GBadgeExample>{}
                     <GStatesExample>{}
                     // loading pass, test ok
                     // <GLoadingExample>{}
@@ -129,6 +130,7 @@ impl LiveRegister for App {
         crate::components::progresss::live_design(cx);
         crate::components::loadings::live_design(cx);
         crate::components::states::live_design(cx);
+        crate::components::badges::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

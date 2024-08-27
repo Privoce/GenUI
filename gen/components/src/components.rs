@@ -18,6 +18,7 @@ pub mod toggle;
 pub mod progress;
 pub mod loading;
 pub mod badge;
+pub mod breadcrumb;
 // pub mod tabs;
 
 live_design!{
@@ -40,6 +41,8 @@ live_design!{
     import crate::components::progress::GProgressBase;
     import crate::components::loading::GLoadingBase;
     import crate::components::badge::GBadgeBase;
+    import crate::components::breadcrumb::GBreadCrumbBase;
+    import crate::components::breadcrumb::item::GBreadCrumbItemBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -124,6 +127,7 @@ live_design!{
     GLOBAL_PADDING_SMALL = {top: 4.6, left: 9.0, bottom: 4.6, right: 9.0};
     // align -------------------------------------------------------
     ALIGN_CENTER_WALK = {x: 0.5, y: 0.5};
+    ALIGN_LEFT_WALK = {x: 0.0, y: 0.5};
     // components --------------------------------------------------
 
     // ## GLabel
@@ -408,4 +412,22 @@ live_design!{
             }
         }
     }
+    GBreadCrumbItem = <GBreadCrumbItemBase>{
+        font_size: (FONT_SIZE),
+        align: <ALIGN_CENTER_WALK>{},
+    }
+    GBreadCrumb = <GBreadCrumbBase>{
+        height: 32.0,
+        width: Fill,
+        padding: 8.0,
+        spacing: 8.0,
+        align: <ALIGN_LEFT_WALK>{},
+        font_size: (FONT_SIZE),
+        draw_icon: <GImage>{
+            src: dep("crate://self/resources/icons/home.png"),
+        },
+        crumb_item: <GBreadCrumbItem>{
+        }
+    }
+    
 }
