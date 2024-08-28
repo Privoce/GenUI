@@ -2,7 +2,7 @@ use makepad_widgets::*;
 
 use crate::shader::draw_card::DrawCard;
 
-use super::button::{GTabButton, GTabButtonRef, GTabButtonWidgetRefExt};
+use super::button::{GTabButton, GTabButtonEvent, GTabButtonRef, GTabButtonWidgetRefExt};
 
 live_design! {
     GTabHeaderBase = {{GTabHeader}}{}
@@ -43,36 +43,9 @@ pub struct GTabHeader {
 
 impl Widget for GTabHeader {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
-        // let scroll = if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-        //     scroll_bars.begin_nav_area(cx);
-        //     scroll_bars.get_scroll_pos()
-        // } else {
-        //     self.layout.scroll
-        // };
-        // self.draw_tab_header.begin(cx, walk, self.layout);
-
-        // // render the tab_buttons depend on
-        // for (index, data) in self.items.iter().enumerate() {
-        //     let target = self.children.get_or_insert(cx, LiveId(index as u64), |cx| {
-        //         WidgetRef::new_from_ptr(cx, self.item).as_gtab_button()
-        //     });
-
-        //     target.set_text(data);
-        //     target.draw_all(cx, &mut Scope::empty());
-        // }
-        // let area = self.area();
-        // if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-        //     scroll_bars.draw_scroll_bars(cx);
-        // }
-        // self.draw_tab_header.end(cx);
-        // if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-        //     scroll_bars.set_area(area);
-        //     scroll_bars.end_nav_area(cx);
-        // }
-
         self.scroll_bars.begin(
             cx,
-            walk.with_add_padding(Padding{
+            walk.with_add_padding(Padding {
                 left: 4.0,
                 top: 2.0,
                 right: 4.0,
@@ -98,6 +71,39 @@ impl Widget for GTabHeader {
         if self.scroll_bars.handle_event(cx, event).len() > 0 {
             self.view_area.redraw(cx);
         };
+        let t_map = self.children.clone();
+        let mut target_selected = None;
+        let mut target_remove = None;
+        for (id, tab_btn_ref) in t_map.iter() {
+            tab_btn_ref
+                .as_origin_mut()
+                .unwrap()
+                .handle_event_actions(cx, event, &mut |_cx, e| match e {
+                    GTabButtonEvent::Selected => {
+                        target_selected = Some(id);
+                    }
+                    GTabButtonEvent::Close => {
+                        target_remove = Some(id.0);
+                    }
+                    _ => {}
+                });
+        }
+        // remove the tab ---------------------------------------------------------------------------------------------------
+        if let Some(remove) = target_remove {
+            self.items.remove(remove as usize);
+            self.redraw(cx);
+        }
+        // render select tab ------------------------------------------------------------------------------------------------
+        if let Some(selected) = target_selected {
+            for (id, tab_btn_ref) in self.children.iter_mut() {
+                if id == selected {
+                    tab_btn_ref.as_origin_mut().unwrap().selected = true;
+                } else {
+                    tab_btn_ref.as_origin_mut().unwrap().selected = false;
+                }
+                tab_btn_ref.as_origin_mut().unwrap().render(cx);
+            }
+        }
     }
 }
 
@@ -114,7 +120,7 @@ impl GTabHeader {
     // pub fn area(&self) -> Area{
     //     self.draw_tab_header.area
     // }
-    pub fn set_items(&mut self, items: Vec<String>){
+    pub fn set_items(&mut self, items: Vec<String>) {
         self.items = items;
     }
 }

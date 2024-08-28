@@ -48,6 +48,7 @@ live_design! {
                     <GVLayout>{
                         height: 200.0,
                         spacing: 4.0,
+                        scroll_bars: <GScrollBars> {}
                         <GHLayout>{
                             height: Fit,
                             spacing: 6.0,
@@ -61,6 +62,7 @@ live_design! {
                                 plain: true,
                                 selected: false,
                                 show_msg_count: false,
+                                closeable: false,
                                 text: "p: true, s: false, m: false"
                             }
                             <GTabButton>{
@@ -118,18 +120,18 @@ live_design! {
                                 text: "theme: Warning"
                             }
                         }
-                        // <GTabHeader>{
-                        //     width: 200.0,
-                        //     items: ["Home", "Makepad", "GenUI", "Rust"],
-                        // }
-                        // <GTabHeader>{
-                        //     item: <GTabButton>{
-                        //         plain: true,
-                        //         show_msg_count: true,
-                        //         closeable: true,
-                        //     }
-                        //     items: ["Home", "Makepad", "GenUI", "Rust"],
-                        // }
+                        <GTabHeader>{
+                            width: 200.0,
+                            items: ["Home", "Makepad", "GenUI", "Rust"],
+                        }
+                        <GTabHeader>{
+                            item: <GTabButton>{
+                                plain: true,
+                                show_msg_count: true,
+                                closeable: true,
+                            }
+                            items: ["Home", "Makepad", "GenUI", "Rust"],
+                        }
                         // <GTabHeader>{
                         //     item: <GTabButton>{
                         //         closeable: true,

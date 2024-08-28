@@ -3,7 +3,7 @@ use makepad_widgets::*;
 use crate::{
     shader::{draw_card::DrawCard, draw_icon_pixel::DrawGIconPixel, draw_tab::DrawTabBtn},
     themes::{get_color, hex_to_vec4, Themes},
-    utils::{get_font_family, set_cursor, DefaultTextStyle, AbsExt},
+    utils::{get_font_family, set_cursor, AbsExt, DefaultTextStyle},
 };
 
 live_design! {
@@ -112,6 +112,17 @@ pub struct GTabButton {
     pub layout: Layout,
 }
 
+#[derive(Clone, Debug, DefaultNone)]
+pub enum GTabButtonEvent {
+    HoverIn,
+    HoverOut,
+    /// The button is selected
+    Selected,
+    /// The close button was clicked
+    Close,
+    None,
+}
+
 impl Widget for GTabButton {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         self.draw_tab_btn.begin(cx, walk, self.layout);
@@ -164,29 +175,34 @@ impl Widget for GTabButton {
         self.draw_tab_btn.end(cx);
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
-        // if let Hit::FingerUp(_) = event.hits(cx, self.area_close()) {
-        //     self.selected = false;
-        // }
-
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let uid = self.widget_uid();
         match event.hits(cx, self.draw_tab_btn.area()) {
             Hit::FingerHoverIn(_) => {
-
                 set_cursor(cx, Some(&MouseCursor::Hand));
+                cx.widget_action(uid, &scope.path, GTabButtonEvent::HoverIn);
             }
             Hit::FingerHoverOut(f_out) => {
-                if f_out.abs.is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size) {
+                if f_out
+                    .abs
+                    .is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size)
+                {
                     set_cursor(cx, Some(&MouseCursor::Hand));
-                }else{
+                } else {
                     set_cursor(cx, None);
+                    cx.widget_action(uid, &scope.path, GTabButtonEvent::HoverOut);
                 }
             }
             Hit::FingerUp(f_up) => {
-
-                if f_up.abs.is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size) {
+                if f_up
+                    .abs
+                    .is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size)
+                {
                     self.selected = false;
+                    cx.widget_action(uid, &scope.path, GTabButtonEvent::Close);
                 } else {
-                    self.selected = !self.selected;
+                    self.selected = true;
+                    cx.widget_action(uid, &scope.path, GTabButtonEvent::Selected);
                 }
                 self.render(cx);
             }
@@ -213,6 +229,43 @@ impl LiveHook for GTabButton {
 }
 
 impl GTabButton {
+    pub fn handle_event_actions(
+        &self,
+        cx: &mut Cx,
+        event: &Event,
+        action_fn: &mut dyn FnMut(&mut Cx, GTabButtonEvent),
+    ) {
+        match event.hits(cx, self.draw_tab_btn.area()) {
+            Hit::FingerHoverIn(_) => {
+                set_cursor(cx, Some(&MouseCursor::Hand));
+            }
+            Hit::FingerHoverOut(f_out) => {
+                if f_out
+                    .abs
+                    .is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size)
+                {
+                    set_cursor(cx, Some(&MouseCursor::Hand));
+                } else {
+                    set_cursor(cx, None);
+                }
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up
+                    .abs
+                    .is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size)
+                {
+                    // self.selected = false;
+                    action_fn(cx, GTabButtonEvent::Close);
+                } else {
+                    // self.selected = true;
+                    action_fn(cx, GTabButtonEvent::Selected);
+                }
+                // self.render(cx);
+            }
+
+            _ => {}
+        }
+    }
     pub fn area(&self) -> Area {
         self.draw_tab_btn.area()
     }
@@ -327,5 +380,14 @@ impl GTabButton {
             self.draw_close.redraw(cx);
         }
         self.draw_text.redraw(cx);
+    }
+}
+
+impl GTabButtonRef {
+    pub fn as_origin(&self) -> Option<std::cell::Ref<GTabButton>> {
+        self.borrow()
+    }
+    pub fn as_origin_mut(&self) -> Option<std::cell::RefMut<GTabButton>> {
+        self.borrow_mut()
     }
 }
