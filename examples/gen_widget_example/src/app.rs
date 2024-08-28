@@ -40,26 +40,48 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GHLayout>{
-                        height: 60.0,
-                        spacing: 6.0,
-                        <GTabButton>{
-                            text: "Home"
+                    <GVLayout>{
+                        height: 180.0,
+                        spacing: 4.0,
+                        <GHLayout>{
+                            height: 60.0,
+                            spacing: 6.0,
+                            <GTabButton>{
+                                text: "Home"
+                            }
+                            <GTabButton>{
+                                show_msg_count: true,
+                                msg_count: 12,
+                                text: "Components"
+                            }
+                            <GTabButton>{
+                                closeable: true,
+                                text: "Components"
+                            }
+                            <GTabButton>{
+                                plain: true,
+                                show_msg_count: true,
+                                closeable: true,
+                                text: "Components"
+                            }
                         }
-                        <GTabButton>{
-                            show_msg_count: true,
-                            msg_count: 12,
-                            text: "Components"
+                        <GTabHeader>{
+                            width: 200.0,
+                            items: ["Home", "Makepad", "GenUI", "Rust"],
                         }
-                        <GTabButton>{
-                            closeable: true,
-                            text: "Components"
+                        <GTabHeader>{
+                            item: <GTabButton>{
+                                plain: true,
+                                show_msg_count: true,
+                                closeable: true,
+                            }
+                            items: ["Home", "Makepad", "GenUI", "Rust"],
                         }
-                        <GTabButton>{
-                            plain: true,
-                            show_msg_count: true,
-                            closeable: true,
-                            text: "Components"
+                        <GTabHeader>{
+                            item: <GTabButton>{
+                                closeable: true,
+                            }
+                            items: ["Home", "Makepad", "GenUI", "Rust"],
                         }
                     }
                     <GBreadCrumbExample>{}

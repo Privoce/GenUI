@@ -165,6 +165,16 @@ impl Widget for GTabButton {
         self.draw_tab_btn.end(cx);
         DrawStep::done()
     }
+    fn text(&self) -> String {
+        self.text.as_ref().to_string()
+    }
+    fn set_text(&mut self, v: &str) {
+        self.text.as_mut_empty().push_str(v);
+    }
+    fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
+        self.text.as_mut_empty().push_str(v);
+        self.redraw(cx)
+    }
 }
 
 impl LiveHook for GTabButton {

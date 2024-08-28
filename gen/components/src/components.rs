@@ -43,7 +43,7 @@ live_design!{
     import crate::components::badge::GBadgeBase;
     import crate::components::breadcrumb::GBreadCrumbBase;
     import crate::components::breadcrumb::item::GBreadCrumbItemBase;
-    // import crate::components::tab::header::GTabHeaderBase;
+    import crate::components::tab::header::GTabHeaderBase;
     import crate::components::tab::button::GTabButtonBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
@@ -434,21 +434,23 @@ live_design!{
         height: Fit,
         width: Fit,
         text: " ",
+        border_width: 0.0,
         padding: <GLOBAL_PADDING_SMALL>{}
         // font_size: (FONT_SIZE),
         align: <ALIGN_CENTER_WALK>{},
     }
-    // GTabHeader = <GTabHeaderBase>{
-    //     height: 52.0,
-    //     width: Fill,
-    //     scroll_bars: <GScrollBars>{
-    //         show_scroll_x: true
-    //         show_scroll_y: false
-    //         scroll_bar_x: {
-    //             draw_bar: {bar_width: 3.0}
-    //             bar_size: 4
-    //             use_vertical_finger_scroll: true
-    //         }
-    //     }
-    // }
+    GTabHeader = <GTabHeaderBase>{
+        height: Fit,
+        width: Fit,
+        scroll_bars: <GScrollBars>{
+            show_scroll_x: true
+            show_scroll_y: false
+            scroll_bar_x: {
+                draw_bar: {bar_width: 3.0}
+                bar_size: 4
+                use_vertical_finger_scroll: true
+            }
+        },
+        item: <GTabButton>{}
+    }
 }

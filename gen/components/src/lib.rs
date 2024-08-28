@@ -27,7 +27,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::badge::live_design(cx);
     crate::components::breadcrumb::live_design(cx);
     crate::components::breadcrumb::item::live_design(cx);
-    // crate::components::tab::header::live_design(cx);
+    crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
