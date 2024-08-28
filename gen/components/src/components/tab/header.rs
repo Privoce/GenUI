@@ -72,7 +72,12 @@ impl Widget for GTabHeader {
 
         self.scroll_bars.begin(
             cx,
-            walk,
+            walk.with_add_padding(Padding{
+                left: 4.0,
+                top: 2.0,
+                right: 4.0,
+                bottom: 2.0,
+            }),
             Layout::flow_right(),
         );
 
@@ -109,6 +114,9 @@ impl GTabHeader {
     // pub fn area(&self) -> Area{
     //     self.draw_tab_header.area
     // }
+    pub fn set_items(&mut self, items: Vec<String>){
+        self.items = items;
+    }
 }
 
 // impl GTabHeader {

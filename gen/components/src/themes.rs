@@ -207,7 +207,7 @@ color_v_trait!(ThemeError);
 color_v_trait!(ThemeSuccess);
 color_v_trait!(ThemeWarning);
 
-pub fn hex_to_vec4(hex: &'static str) -> Vec4 {
+pub fn hex_to_vec4(hex: &str) -> Vec4 {
     // 去掉开头的 '#' 符号
     let hex = hex.trim_start_matches('#');
 

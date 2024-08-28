@@ -32,7 +32,7 @@ live_design! {
                 show_bg: true,
                 width: Fill,
                 height: Fill,
-                draw_bg: {color: #888},
+                draw_bg: {color: #b},
                 window: {inner_size: vec2(600, 800)},
                 body = <ScrollYView>{
                     height: All,
@@ -40,49 +40,102 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    // <GTab>{
+                    //     height: 300.0,
+                    //     width: Fill,
+                    //     items: ["Home", "Makepad", "GenUI", "Rust"],
+                    // }
                     <GVLayout>{
-                        height: 180.0,
+                        height: 200.0,
                         spacing: 4.0,
                         <GHLayout>{
-                            height: 60.0,
+                            height: Fit,
                             spacing: 6.0,
                             <GTabButton>{
-                                text: "Home"
-                            }
-                            <GTabButton>{
-                                show_msg_count: true,
-                                msg_count: 12,
-                                text: "Components"
-                            }
-                            <GTabButton>{
-                                closeable: true,
-                                text: "Components"
+                                plain: false,
+                                selected: false,
+                                show_msg_count: false,
+                                text: "p: false, s: false, m: false"
                             }
                             <GTabButton>{
                                 plain: true,
-                                show_msg_count: true,
-                                closeable: true,
-                                text: "Components"
+                                selected: false,
+                                show_msg_count: false,
+                                text: "p: true, s: false, m: false"
                             }
-                        }
-                        <GTabHeader>{
-                            width: 200.0,
-                            items: ["Home", "Makepad", "GenUI", "Rust"],
-                        }
-                        <GTabHeader>{
-                            item: <GTabButton>{
+                            <GTabButton>{
                                 plain: true,
+                                selected: true,
+                                show_msg_count: false,
+                                text: "p: true, s: true, m: false"
+                            }
+                        }
+                        <GHLayout>{
+                            height: Fit,
+                            spacing: 6.0,
+                            <GTabButton>{
+                                plain: false,
+                                selected: false,
                                 show_msg_count: true,
-                                closeable: true,
+                                text: "p: false, s: false, m: true"
                             }
-                            items: ["Home", "Makepad", "GenUI", "Rust"],
-                        }
-                        <GTabHeader>{
-                            item: <GTabButton>{
-                                closeable: true,
+                            <GTabButton>{
+                                plain: false,
+                                selected: true,
+                                show_msg_count: true,
+                                text: "p: false, s: true, m: true"
                             }
-                            items: ["Home", "Makepad", "GenUI", "Rust"],
+                            <GTabButton>{
+                                plain: true,
+                                selected: true,
+                                show_msg_count: true,
+                                text: "p: true, s: true, m: true"
+                            }
                         }
+                        <GHLayout>{
+                            height: Fit,
+                            spacing: 6.0,
+                            <GTabButton>{
+                                theme: Dark,
+                                msg_count: 99,
+                                plain: false,
+                                selected: true,
+                                show_msg_count: true,
+                                text: "theme: Dark"
+                            }
+                            <GTabButton>{
+                                theme: Error,
+                                plain: false,
+                                selected: true,
+                                show_msg_count: true,
+                                text: "theme: Error"
+                            }
+                            <GTabButton>{
+                                theme: Warning,
+                                plain: true,
+                                selected: true,
+                                show_msg_count: true,
+                                text: "theme: Warning"
+                            }
+                        }
+                        // <GTabHeader>{
+                        //     width: 200.0,
+                        //     items: ["Home", "Makepad", "GenUI", "Rust"],
+                        // }
+                        // <GTabHeader>{
+                        //     item: <GTabButton>{
+                        //         plain: true,
+                        //         show_msg_count: true,
+                        //         closeable: true,
+                        //     }
+                        //     items: ["Home", "Makepad", "GenUI", "Rust"],
+                        // }
+                        // <GTabHeader>{
+                        //     item: <GTabButton>{
+                        //         closeable: true,
+                        //     }
+                        //     items: ["Home", "Makepad", "GenUI", "Rust"],
+                        // }
                     }
                     <GBreadCrumbExample>{}
                     <GBadgeExample>{}

@@ -1,27 +1,27 @@
 use makepad_widgets::*;
 
-pub mod label;
-pub mod button;
-pub mod card;
-pub mod link;
-pub mod icon;
-pub mod image;
-pub mod radio;
-pub mod checkbox;
-pub mod input;
-pub mod select;
-pub mod divider;
-pub mod shader;
-pub mod popup;
-pub mod drop_down;
-pub mod toggle;
-pub mod progress;
-pub mod loading;
 pub mod badge;
 pub mod breadcrumb;
+pub mod button;
+pub mod card;
+pub mod checkbox;
+pub mod divider;
+pub mod drop_down;
+pub mod icon;
+pub mod image;
+pub mod input;
+pub mod label;
+pub mod link;
+pub mod loading;
+pub mod popup;
+pub mod progress;
+pub mod radio;
+pub mod select;
+pub mod shader;
 pub mod tab;
+pub mod toggle;
 
-live_design!{
+live_design! {
     // imports -----------------------------------------------------
     import crate::components::label::GLabelBase;
     import crate::components::button::GButtonBase;
@@ -45,6 +45,7 @@ live_design!{
     import crate::components::breadcrumb::item::GBreadCrumbItemBase;
     import crate::components::tab::header::GTabHeaderBase;
     import crate::components::tab::button::GTabButtonBase;
+    import crate::components::tab::GTabBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -124,7 +125,7 @@ live_design!{
     FONT_SIZE = 10.0;
     FONT_SIZE_SMALL = 9.0;
     // padding -----------------------------------------------------
-    
+
     GLOBAL_PADDING = {top: 10.0, left: 16.0, bottom: 10.0, right: 16.0};
     GLOBAL_PADDING_SMALL = {top: 4.6, left: 9.0, bottom: 4.6, right: 9.0};
     // align -------------------------------------------------------
@@ -135,7 +136,7 @@ live_design!{
     // ## GLabel
     // A label component use white color
     GLabel = <GLabelBase>{
-        width: Fit, 
+        width: Fit,
         height: Fit,
         color: (COLOR_WHITE),
         font_family: (FONT_FAMILY),
@@ -205,11 +206,11 @@ live_design!{
         draw_bar: {
             instance pressed: 0.0
             instance hover: 0.0
-            
+
             instance color: (DARK_OPACITY_50)
             instance color_hover: (DARK_OPACITY_25)
             instance color_pressed: (DARK_OPACITY_75)
-            
+
             uniform bar_width: 6.0
             uniform border_radius: 1.5
 
@@ -234,7 +235,7 @@ live_design!{
                     );
                 }
                 return sdf.fill(mix(
-                    self.color, 
+                    self.color,
                     mix(
                         self.color_hover,
                         self.color_pressed,
@@ -291,17 +292,17 @@ live_design!{
         scroll_bar_y: <GScrollBar> {}
     }
     GRadio = <GRadioBase>{
-        width: 19.0, 
+        width: 19.0,
         height: 19.0,
         align: { x: 0.0, y: 0.0 }
     }
     GCheckBox = <GCheckBoxBase>{
-        width: 19.0, 
+        width: 19.0,
         height: 19.0,
         align: { x: 0.0, y: 0.0 }
     }
     GToggle = <GToggleBase>{
-        width: 36.0, 
+        width: 36.0,
         height: 19.0,
         align: { x: 0.0, y: 0.0 }
     }
@@ -438,10 +439,13 @@ live_design!{
         padding: <GLOBAL_PADDING_SMALL>{}
         // font_size: (FONT_SIZE),
         align: <ALIGN_CENTER_WALK>{},
+        plain: true,
+        closeable: true,
     }
     GTabHeader = <GTabHeaderBase>{
         height: Fit,
         width: Fit,
+        align: <ALIGN_CENTER_WALK>{},
         scroll_bars: <GScrollBars>{
             show_scroll_x: true
             show_scroll_y: false
@@ -452,5 +456,13 @@ live_design!{
             }
         },
         item: <GTabButton>{}
+    }
+    GTab = <GTabBase>{
+        height: 300.0,
+        width: Fill,
+        header: <GTabHeader>{
+
+        }
+        body: <GCard>{}
     }
 }

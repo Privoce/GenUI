@@ -28,26 +28,28 @@ live_design!{
         }
 
         fn pixel(self) -> vec4 {
-            let sdf = Sdf2d::viewport(self.pos * self.rect_size)
-            if self.transparent == 0.0 {
-                sdf.box(
-                    self.inset.x + self.border_width,
-                    self.inset.y + self.border_width,
-                    self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
-                    self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
-                    max(1.0, self.border_radius)
-                );
-               sdf.fill_keep(self.get_color());
-               
-            }else{
-                let height = 3.0;
-                sdf.rect(
-                    self.inset.x + self.border_width,
-                    self.rect_size.y - self.border_width - height,
-                    self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
-                    height
-                );
-                sdf.fill(vec4(1.0));
+            let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+
+            if self.selected == 1.0{
+                if self.plain == 1.0{
+                    let height = 3.0;
+                    sdf.rect(
+                        self.inset.x + self.border_width,
+                        self.rect_size.y - self.border_width - height,
+                        self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
+                        height
+                    );
+                    sdf.fill(self.background_color);
+                }else{
+                    sdf.box(
+                        self.inset.x + self.border_width,
+                        self.inset.y + self.border_width,
+                        self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
+                        self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
+                        max(1.0, self.border_radius)
+                    );
+                   sdf.fill_keep(self.background_color);
+                }
             }
             sdf.stroke(self.get_border_color(), self.border_width);
             return sdf.result;
@@ -65,7 +67,8 @@ pub struct DrawTabBtn{
     #[live(4.0)] pub border_radius: f32,
     #[live] pub hover_color: Vec4,
     #[live] pub pressed_color: Vec4,
-    #[live(0.0)] pub transparent: f32,
+    #[live(0.0)] pub selected: f32,
+    #[live(0.0)] pub plain: f32,
     #[live(1.0)] pub scale: f32,
     #[live(1.0)] pub opacity: f32,
     #[live(0.0)] pub rotation: f32

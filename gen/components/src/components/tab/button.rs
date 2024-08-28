@@ -2,8 +2,8 @@ use makepad_widgets::*;
 
 use crate::{
     shader::{draw_card::DrawCard, draw_icon_pixel::DrawGIconPixel, draw_tab::DrawTabBtn},
-    themes::{get_color, Themes},
-    utils::{get_font_family, DefaultTextStyle},
+    themes::{get_color, hex_to_vec4, Themes},
+    utils::{get_font_family, set_cursor, DefaultTextStyle, AbsExt},
 };
 
 live_design! {
@@ -161,9 +161,38 @@ impl Widget for GTabButton {
             self.draw_close.draw_walk(cx, self.icon_walk);
         }
 
-        
         self.draw_tab_btn.end(cx);
         DrawStep::done()
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        // if let Hit::FingerUp(_) = event.hits(cx, self.area_close()) {
+        //     self.selected = false;
+        // }
+
+        match event.hits(cx, self.draw_tab_btn.area()) {
+            Hit::FingerHoverIn(_) => {
+
+                set_cursor(cx, Some(&MouseCursor::Hand));
+            }
+            Hit::FingerHoverOut(f_out) => {
+                if f_out.abs.is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size) {
+                    set_cursor(cx, Some(&MouseCursor::Hand));
+                }else{
+                    set_cursor(cx, None);
+                }
+            }
+            Hit::FingerUp(f_up) => {
+
+                if f_up.abs.is_in(&self.draw_close.rect_pos, &self.draw_close.rect_size) {
+                    self.selected = false;
+                } else {
+                    self.selected = !self.selected;
+                }
+                self.render(cx);
+            }
+
+            _ => {}
+        }
     }
     fn text(&self) -> String {
         self.text.as_ref().to_string()
@@ -179,6 +208,18 @@ impl Widget for GTabButton {
 
 impl LiveHook for GTabButton {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        self.render(cx);
+    }
+}
+
+impl GTabButton {
+    pub fn area(&self) -> Area {
+        self.draw_tab_btn.area()
+    }
+    pub fn area_close(&self) -> Area {
+        self.draw_close.area()
+    }
+    pub fn render(&mut self, cx: &mut Cx) {
         let plain_color = |origin: u32, or: u32| -> u32 {
             if self.plain {
                 or
@@ -186,26 +227,38 @@ impl LiveHook for GTabButton {
                 origin
             }
         };
-        // todo!暂时这样写，单纯辨别一下颜色，后续更改
-        let theme = if self.selected {
-            self.theme
-        }else{
-            Themes::Dark
+
+        let select_color = |c1: Vec4, c2: &str| -> Vec4 {
+            if self.selected {
+                c1
+            } else {
+                hex_to_vec4(c2)
+            }
         };
+
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(theme, self.color, plain_color(100, 600));
+        let font_color = select_color(
+            get_color(self.theme, self.color, plain_color(100, 600)),
+            "#667085",
+        );
         let text_style = DefaultTextStyle::default();
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(theme, self.background_color, plain_color(500, 500));
-        let msg_bg_color = get_color(theme, self.background_color, plain_color(600, 100));
+        let bg_color = get_color(self.theme, self.background_color, plain_color(500, 600));
+        let msg_bg_color = select_color(
+            get_color(self.theme, self.background_color, plain_color(600, 100)),
+            "#ECEFF3",
+        );
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(theme, self.hover_color, plain_color(400, 600));
+        let hover_color = get_color(self.theme, self.hover_color, plain_color(400, 600));
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(theme, self.pressed_color, plain_color(600, 600));
+        let pressed_color = get_color(self.theme, self.pressed_color, plain_color(600, 600));
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(theme, self.border_color, plain_color(800, 600));
-        let icon_color = get_color(theme, self.icon_color, plain_color(100, 600));
-        let transparent = self.plain as u32 as f32;
+        let border_color = get_color(self.theme, self.border_color, plain_color(800, 600));
+        let icon_color = select_color(
+            get_color(self.theme, self.icon_color, plain_color(100, 600)),
+            "#667085",
+        );
+
         if self.show_msg_count {
             self.draw_msg_wrap.apply_over(
                 cx,
@@ -241,7 +294,8 @@ impl LiveHook for GTabButton {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                transparent: (transparent),
+                selected: (self.selected as u32 as f32),
+                plain: (self.plain as u32 as f32),
             },
         );
         self.draw_text.apply_over(
