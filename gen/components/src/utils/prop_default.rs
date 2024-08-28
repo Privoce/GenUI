@@ -6,6 +6,7 @@ pub struct DefaultTextStyle {
     pub top_drop: f64,
     pub font_size: f64,
     pub height_factor: f64,
+    pub line_scale: f64,
 }
 
 impl Default for DefaultTextStyle {
@@ -13,10 +14,11 @@ impl Default for DefaultTextStyle {
         Self {
             brightness: 1.0,
             curve: 0.5,
-            line_spacing: 1.5,
-            top_drop: 0.0,
+            line_spacing: 1.0,
+            top_drop: 1.1,
             font_size: 9.0,
-            height_factor: 0.0,
+            height_factor: 1.3,
+            line_scale: 0.88
         }
     }
 }

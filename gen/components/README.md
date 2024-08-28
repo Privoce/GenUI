@@ -17,7 +17,6 @@
 - [x] Badge
 - [x] DropDown
 - [x] Toggle
-- [ ] Avatar
 - [ ] ToolTip
 - [x] Progress
 - [ ] Slider
@@ -28,7 +27,7 @@
 - [ ] FileUpload
 - [x] Divide
 - [x] State
-- [ ] BreadCrumb
+- [x] BreadCrumb
 - [ ] Pagination
 - [ ] Metric
 - [ ] Menu

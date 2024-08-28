@@ -19,7 +19,7 @@ pub mod progress;
 pub mod loading;
 pub mod badge;
 pub mod breadcrumb;
-// pub mod tabs;
+pub mod tab;
 
 live_design!{
     // imports -----------------------------------------------------
@@ -43,6 +43,8 @@ live_design!{
     import crate::components::badge::GBadgeBase;
     import crate::components::breadcrumb::GBreadCrumbBase;
     import crate::components::breadcrumb::item::GBreadCrumbItemBase;
+    // import crate::components::tab::header::GTabHeaderBase;
+    import crate::components::tab::button::GTabButtonBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -426,8 +428,27 @@ live_design!{
         draw_icon: <GImage>{
             src: dep("crate://self/resources/icons/home.png"),
         },
-        crumb_item: <GBreadCrumbItem>{
-        }
+        crumb_item: <GBreadCrumbItem>{}
     }
-    
+    GTabButton = <GTabButtonBase>{
+        height: Fit,
+        width: Fit,
+        text: " ",
+        padding: <GLOBAL_PADDING_SMALL>{}
+        // font_size: (FONT_SIZE),
+        align: <ALIGN_CENTER_WALK>{},
+    }
+    // GTabHeader = <GTabHeaderBase>{
+    //     height: 52.0,
+    //     width: Fill,
+    //     scroll_bars: <GScrollBars>{
+    //         show_scroll_x: true
+    //         show_scroll_y: false
+    //         scroll_bar_x: {
+    //             draw_bar: {bar_width: 3.0}
+    //             bar_size: 4
+    //             use_vertical_finger_scroll: true
+    //         }
+    //     }
+    // }
 }

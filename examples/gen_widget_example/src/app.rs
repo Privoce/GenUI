@@ -24,6 +24,7 @@ live_design! {
     import crate::components::loadings::*;
     import crate::components::states::*;
     import crate::components::badges::*;
+    import crate::components::bread_crumbs::*;
 
     App = {{App}}{
         root: <Root>{
@@ -39,38 +40,29 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GVLayout>{
-                        spacing: 10.0,
-                        height: 140.0,
-                        width: Fill,
-                        <GHLayout>{
-                            height: 30.0,
-                            spacing: 10.0,
-                            <GBreadCrumbItem>{
-                                text: "Spliter",
-                            }
-                            <GBreadCrumbItem>{
-                                text: "Line",
-                                split_type: Line
-                            }
-                            <GBreadCrumbItem>{
-                                text: "Arrow",
-                                split_type: Arrow
-                            }
+                    <GHLayout>{
+                        height: 60.0,
+                        spacing: 6.0,
+                        <GTabButton>{
+                            text: "Home"
                         }
-                        <GBreadCrumb>{
-                            labels: ["home", "components", "button"],
+                        <GTabButton>{
+                            show_msg_count: true,
+                            msg_count: 12,
+                            text: "Components"
                         }
-                        <GBreadCrumb>{
-                            labels: ["home", "components", "gen", "ui", "crumb"],
-                            crumb_item: {
-                                split_type: Arrow,
-                            }
+                        <GTabButton>{
+                            closeable: true,
+                            text: "Components"
                         }
-                        // <GBreadCrumb>{
-                        //     items: vec!["home", "components", "button"],
-                        // }
+                        <GTabButton>{
+                            plain: true,
+                            show_msg_count: true,
+                            closeable: true,
+                            text: "Components"
+                        }
                     }
+                    <GBreadCrumbExample>{}
                     <GBadgeExample>{}
                     <GStatesExample>{}
                     // loading pass, test ok
@@ -131,6 +123,7 @@ impl LiveRegister for App {
         crate::components::loadings::live_design(cx);
         crate::components::states::live_design(cx);
         crate::components::badges::live_design(cx);
+        crate::components::bread_crumbs::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }
