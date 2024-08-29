@@ -40,11 +40,53 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    // <GTab>{
-                    //     height: 300.0,
-                    //     width: Fill,
-                    //     items: ["Home", "Makepad", "GenUI", "Rust"],
-                    // }
+
+                    <GTab>{
+                        height: 300.0,
+                        width: Fill,
+                        body: <GTabPane>{
+                            height: 200.0,
+                            width: Fill,
+                            selected: 1,
+                            <GTabBody>{
+                                text: "Tab1",
+                                height: 100.0,
+                                width: Fill,
+                                <GLabel>{
+                                    text: "GTabBody1",
+                                }
+                                <GButton>{
+                                    text: "GButton",
+                                }
+                                <GStateNoMsg>{
+                                    height: 100.0,
+                                }
+                            }
+                            <GTabBody>{
+                                text: "Tab2",
+                                height: 100.0,
+                                width: Fill,
+                                <GLabel>{
+                                    text: "GTabBody2",
+                                }
+
+                            }
+                        }
+                    }
+                    <GTabBody>{
+                        height: 200.0,
+                        width: Fill,
+                        <GLabel>{
+                            text: "GTabBody",
+                        }
+                        <GButton>{
+                            text: "GButton",
+                        }
+                        <GStateNoMsg>{
+                            height: 100.0,
+                        }
+                    }
+
                     <GVLayout>{
                         height: 200.0,
                         spacing: 4.0,
@@ -132,12 +174,6 @@ live_design! {
                             }
                             items: ["Home", "Makepad", "GenUI", "Rust"],
                         }
-                        // <GTabHeader>{
-                        //     item: <GTabButton>{
-                        //         closeable: true,
-                        //     }
-                        //     items: ["Home", "Makepad", "GenUI", "Rust"],
-                        // }
                     }
                     <GBreadCrumbExample>{}
                     <GBadgeExample>{}
@@ -146,12 +182,12 @@ live_design! {
                     // <GLoadingExample>{}
                     <GProgressExample>{}
                     <GToggleExample>{}
-                    
+
                     // <GPopupExample>{}
                     // <GShaderExample>{}
                     // <GSelectExample>{}
                     <GLabelExample>{}
-                    
+
                     <GButtonExample>{}
                     <GCardExample>{}
                     <GHLayoutExample>{}
@@ -163,7 +199,7 @@ live_design! {
                     <GImageExample>{}
                     <GDividerExample>{}
                     <GInputExample>{}
-                    
+
                 }
             }
         }
@@ -205,13 +241,10 @@ impl LiveRegister for App {
     }
 }
 
-impl MatchEvent for App {
-    
-}
+impl MatchEvent for App {}
 
 impl AppMain for App {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
-        
         self.match_event(cx, event);
         self.root.handle_event(cx, event, &mut Scope::empty());
     }

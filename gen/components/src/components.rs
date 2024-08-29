@@ -45,6 +45,8 @@ live_design! {
     import crate::components::breadcrumb::item::GBreadCrumbItemBase;
     import crate::components::tab::header::GTabHeaderBase;
     import crate::components::tab::button::GTabButtonBase;
+    import crate::components::tab::body::GTabBodyBase;
+    import crate::components::tab::pane::GTabPaneBase;
     import crate::components::tab::GTabBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
@@ -457,12 +459,22 @@ live_design! {
         },
         item: <GTabButton>{}
     }
+    GTabBody = <GTabBodyBase>{
+        height: Fill,
+        width: Fill,
+    }
+    GTabPane = <GTabPaneBase>{
+        height: Fill,
+        width: Fill,
+        margin: 0.0,
+        padding: 0.0,
+        spacing: 0.0,
+    }
     GTab = <GTabBase>{
         height: 300.0,
         width: Fill,
-        header: <GTabHeader>{
-
-        }
-        body: <GCard>{}
+        header: <GTabHeader>{},
+        flow: Down,
+        body: <GTabPane>{},
     }
 }
