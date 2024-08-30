@@ -41,7 +41,16 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-
+                    <GUpload>{
+                        
+                    }
+                    <GCard>{
+                        width: 200.0,
+                        height: 200.0,
+                        <GSplitter>{
+                        
+                        }
+                    }
                     <GTabsExample>{}
                     <GBreadCrumbExample>{}
                     <GBadgeExample>{}
@@ -51,7 +60,7 @@ live_design! {
                     <GProgressExample>{}
                     <GToggleExample>{}
 
-                    // <GPopupExample>{}
+                    <GPopupExample>{}
                     // <GShaderExample>{}
                     // <GSelectExample>{}
                     <GLabelExample>{}

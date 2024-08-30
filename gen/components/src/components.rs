@@ -5,8 +5,10 @@ pub mod breadcrumb;
 pub mod button;
 pub mod card;
 pub mod checkbox;
+pub mod collapse;
 pub mod divider;
 pub mod drop_down;
+pub mod file_upload;
 pub mod icon;
 pub mod image;
 pub mod input;
@@ -48,6 +50,7 @@ live_design! {
     import crate::components::tab::body::GTabBodyBase;
     import crate::components::tab::pane::GTabPaneBase;
     import crate::components::tab::GTabBase;
+    import crate::components::file_upload::GUploadBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -447,7 +450,7 @@ live_design! {
     }
     GTabHeader = <GTabHeaderBase>{
         height: Fit,
-        width: Fit,
+        width: Fill,
         align: <ALIGN_CENTER_WALK>{},
         scroll_bars: <GScrollBars>{
             show_scroll_x: true
@@ -485,5 +488,57 @@ live_design! {
             // clip_x: true,
             // clip_y: true,
         },
+    }
+    GSplitter = <Splitter>{
+        draw_splitter: {
+            uniform border_radius: 1.0
+            uniform splitter_pad: 1.0
+            uniform splitter_grabber: 60.0
+
+            instance pressed: 0.0
+            instance hover: 0.0
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                sdf.clear(#DDDDDD10);
+
+                if self.is_vertical > 0.5 {
+                    sdf.box(
+                        self.splitter_pad,
+                        self.rect_size.y * 0.5 - self.splitter_grabber * 0.5,
+                        self.rect_size.x - 2.0 * self.splitter_pad,
+                        self.splitter_grabber,
+                        self.border_radius
+                    );
+                }
+                else {
+                    sdf.box(
+                        self.rect_size.x * 0.5 - self.splitter_grabber * 0.5,
+                        self.splitter_pad,
+                        self.splitter_grabber,
+                        self.rect_size.y - 2.0 * self.splitter_pad,
+                        self.border_radius
+                    );
+                }
+                return sdf.fill_keep(mix(
+                    vec4(0.0),
+                    mix(
+                        vec4(0.6, 1.0, 1.0, 2.0),
+                        vec4(1.0, 1.0, 1.0, 4.0),
+                        self.pressed
+                    ),
+                    self.hover
+                ));
+            }
+        }
+    }
+    GUpload = <GUploadBase>{
+        height: 100.0,
+        width: Fill,
+        align: <ALIGN_CENTER_WALK>{},
+        icon: <GIcon>{
+            src: dep("crate://self/resources/icons/cloud_upload.svg"),
+            height: 32.0,
+            width: 32.0,
+        }
     }
 }

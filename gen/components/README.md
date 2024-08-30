@@ -17,14 +17,15 @@
 - [x] Badge
 - [x] DropDown
 - [x] Toggle
+- [x] Collapse
 - [ ] ToolTip
 - [x] Progress
-- [ ] Slider
-- [ ] Tab
+- [x] Tab
 - [ ] Table
 - [ ] Dialog
 - [x] Select
-- [ ] FileUpload
+- [x] Splitter
+- [x] FileUpload
 - [x] Divide
 - [x] State
 - [x] BreadCrumb

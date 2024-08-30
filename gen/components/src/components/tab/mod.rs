@@ -54,7 +54,7 @@ impl Widget for GTab {
 
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let _ = self
             .header
             .handle_event_actions(cx, event, &mut |e| match e {
@@ -67,6 +67,8 @@ impl Widget for GTab {
                 }
                 _ => {}
             });
+
+        self.body.handle_event(cx, event, scope);
     }
 }
 
