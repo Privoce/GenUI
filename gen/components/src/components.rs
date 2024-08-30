@@ -5,7 +5,6 @@ pub mod breadcrumb;
 pub mod button;
 pub mod card;
 pub mod checkbox;
-pub mod collapse;
 pub mod divider;
 pub mod drop_down;
 pub mod file_upload;
@@ -22,6 +21,8 @@ pub mod select;
 pub mod shader;
 pub mod tab;
 pub mod toggle;
+pub mod collapse;
+pub mod tool_btn;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -51,6 +52,7 @@ live_design! {
     import crate::components::tab::pane::GTabPaneBase;
     import crate::components::tab::GTabBase;
     import crate::components::file_upload::GUploadBase;
+    import crate::components::collapse::GCollapseBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -539,6 +541,56 @@ live_design! {
             src: dep("crate://self/resources/icons/cloud_upload.svg"),
             height: 32.0,
             width: 32.0,
+        }
+    }
+    
+    GCollapse = <GCollapseBase>{
+        height: Fit,
+        width: Fill,
+        flow: Down,
+        opened: 0.0,
+        animator: {
+            open = {
+                default: off
+                off = {
+                    from: {all: Forward {duration: 0.2}}
+                    ease: ExpDecay {d1: 0.96, d2: 0.97}
+                    redraw: true
+                    apply: {
+                        opened: [{time: 0.0, value: 1.0}, {time: 1.0, value: 0.0}]
+                    }
+                }
+                on = {
+                    from: {all: Forward {duration: 0.2}}
+                    ease: ExpDecay {d1: 0.98, d2: 0.95}
+                    redraw: true
+                    apply: {
+                        opened: [{time: 0.0, value: 0.0}, {time: 1.0, value: 1.0}]
+                    }
+                }
+            }
+        },
+        header: <GCard>{
+            height: 24.0,
+            padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
+            flow: Right,
+            align: <ALIGN_CENTER_WALK>{},
+            spacing: 6.0,
+            margin: 0.0,
+            border_radius: 0.0,
+            fold_button = <FoldButton>{},
+            fold_label = <GLabel>{ text: "Fold", }
+        },
+        body: <GCard>{
+            height: 50.0,
+            
+            width: Fill,
+            padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
+            margin: 0.0,
+            border_radius: 0.0,
+            <GLabel>{
+                text: "body"
+            }
         }
     }
 }

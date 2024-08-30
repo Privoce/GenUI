@@ -38,3 +38,7 @@
 
 - change properties to prop manuel (09-16)
 - optimize function and event (09-24)
+
+<img src="https://github-readme-stats.vercel.app/api?username=syf20020816&theme=dark" alt="Poly's github stats" title="Poly's github stats" width="49%" height="180px"></img>
+
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=syf20020816&layout=compact&theme=dark" alt="Poly's github stats" title="Poly's github stats" width="50%" height="180px"></img>

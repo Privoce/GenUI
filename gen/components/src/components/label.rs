@@ -59,9 +59,11 @@ impl Widget for GLabel {
 
         self.draw_text.text_style.font = font;
         
+        let mut padding  =self.padding;
+        padding.top += 2.0;
         self.draw_text.draw_walk(
             cx,
-            walk.with_add_padding(self.padding),
+            walk.with_add_padding(padding),
             self.align,
             self.text.as_ref(),
         );

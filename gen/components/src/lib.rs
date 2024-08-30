@@ -33,6 +33,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tab::pane::live_design(cx);
     crate::components::tab::live_design(cx);
     crate::components::file_upload::live_design(cx);
+    crate::components::collapse::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
     crate::shader::draw_card::live_design(cx);

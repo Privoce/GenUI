@@ -41,8 +41,12 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GCollapse>{
+                        height: 100.0,
+                        width: 300.0
+                    }
                     <GUpload>{
-                        
+
                     }
                     <GCard>{
                         width: 200.0,
