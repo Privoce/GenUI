@@ -1,8 +1,8 @@
 use makepad_widgets::*;
 
-use crate::{components::card::DrawState, shader::draw_card::DrawCard};
+use crate::{components::card::DrawState, shader::draw_tab_pane::DrawTabPane};
 
-use super::body::{GTabBody, GTabBodyRef, GTabBodyWidgetRefExt};
+use super::body::{GTabBodyRef, GTabBodyWidgetRefExt};
 
 live_design! {
     GTabPaneBase = {{GTabPane}}{}
@@ -22,7 +22,7 @@ pub struct GTabPane {
     pub defer_walks: Vec<(LiveId, DeferWalk)>,
     #[redraw]
     #[live]
-    pub draw_tab_pane: DrawCard,
+    pub draw_tab_pane: DrawTabPane,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -58,14 +58,16 @@ impl Widget for GTabPane {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         // let uid = self.widget_uid();
 
-    
-        let _ = self.children.iter().enumerate().for_each(|(index,(_id, child_ref))|{
-            if index == self.selected{
-                child_ref.handle_event(cx, event, scope);
-            }
-        });
+        let _ = self
+            .children
+            .iter()
+            .enumerate()
+            .for_each(|(index, (_id, child_ref))| {
+                if index == self.selected {
+                    child_ref.handle_event(cx, event, scope);
+                }
+            });
     }
-    
 }
 
 impl LiveHook for GTabPane {
@@ -103,6 +105,13 @@ impl LiveHook for GTabPane {
 }
 
 impl GTabPane {
+    pub fn remove(&mut self, index: usize) {
+        self.children.remove(&self.draw_order[index]);
+        self.draw_order.remove(index);
+    }
+    pub fn area(&self) -> Area {
+        self.draw_tab_pane.area
+    }
     pub fn header_items(&self) -> Vec<String> {
         self.children
             .iter()

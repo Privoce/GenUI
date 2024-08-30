@@ -25,6 +25,7 @@ live_design! {
     import crate::components::states::*;
     import crate::components::badges::*;
     import crate::components::bread_crumbs::*;
+    import crate::components::tabs::*;
 
     App = {{App}}{
         root: <Root>{
@@ -41,140 +42,7 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
 
-                    <GTab>{
-                        height: 300.0,
-                        width: Fill,
-                        body: <GTabPane>{
-                            height: 200.0,
-                            width: Fill,
-                            selected: 1,
-                            <GTabBody>{
-                                text: "Tab1",
-                                height: 100.0,
-                                width: Fill,
-                                <GLabel>{
-                                    text: "GTabBody1",
-                                }
-                                <GButton>{
-                                    text: "GButton",
-                                }
-                                <GStateNoMsg>{
-                                    height: 100.0,
-                                }
-                            }
-                            <GTabBody>{
-                                text: "Tab2",
-                                height: 100.0,
-                                width: Fill,
-                                <GLabel>{
-                                    text: "GTabBody2",
-                                }
-
-                            }
-                        }
-                    }
-                    <GTabBody>{
-                        height: 200.0,
-                        width: Fill,
-                        <GLabel>{
-                            text: "GTabBody",
-                        }
-                        <GButton>{
-                            text: "GButton",
-                        }
-                        <GStateNoMsg>{
-                            height: 100.0,
-                        }
-                    }
-
-                    <GVLayout>{
-                        height: 200.0,
-                        spacing: 4.0,
-                        scroll_bars: <GScrollBars> {}
-                        <GHLayout>{
-                            height: Fit,
-                            spacing: 6.0,
-                            <GTabButton>{
-                                plain: false,
-                                selected: false,
-                                show_msg_count: false,
-                                text: "p: false, s: false, m: false"
-                            }
-                            <GTabButton>{
-                                plain: true,
-                                selected: false,
-                                show_msg_count: false,
-                                closeable: false,
-                                text: "p: true, s: false, m: false"
-                            }
-                            <GTabButton>{
-                                plain: true,
-                                selected: true,
-                                show_msg_count: false,
-                                text: "p: true, s: true, m: false"
-                            }
-                        }
-                        <GHLayout>{
-                            height: Fit,
-                            spacing: 6.0,
-                            <GTabButton>{
-                                plain: false,
-                                selected: false,
-                                show_msg_count: true,
-                                text: "p: false, s: false, m: true"
-                            }
-                            <GTabButton>{
-                                plain: false,
-                                selected: true,
-                                show_msg_count: true,
-                                text: "p: false, s: true, m: true"
-                            }
-                            <GTabButton>{
-                                plain: true,
-                                selected: true,
-                                show_msg_count: true,
-                                text: "p: true, s: true, m: true"
-                            }
-                        }
-                        <GHLayout>{
-                            height: Fit,
-                            spacing: 6.0,
-                            <GTabButton>{
-                                theme: Dark,
-                                msg_count: 99,
-                                plain: false,
-                                selected: true,
-                                show_msg_count: true,
-                                text: "theme: Dark"
-                            }
-                            <GTabButton>{
-                                theme: Error,
-                                plain: false,
-                                selected: true,
-                                show_msg_count: true,
-                                text: "theme: Error"
-                            }
-                            <GTabButton>{
-                                theme: Warning,
-                                plain: true,
-                                selected: true,
-                                show_msg_count: true,
-                                text: "theme: Warning"
-                            }
-                        }
-                        <GTabHeader>{
-                            width: 200.0,
-                            items: ["Home", "Makepad", "GenUI", "Rust"],
-                        }
-                        <GTabHeader>{
-                            item: <GTabButton>{
-                                plain: true,
-                                show_msg_count: true,
-                                closeable: true,
-                            }
-                            items: ["Home", "Makepad", "GenUI", "Rust"],
-                        }
-                    }
+                    <GTabsExample>{}
                     <GBreadCrumbExample>{}
                     <GBadgeExample>{}
                     <GStatesExample>{}
@@ -237,6 +105,7 @@ impl LiveRegister for App {
         crate::components::states::live_design(cx);
         crate::components::badges::live_design(cx);
         crate::components::bread_crumbs::live_design(cx);
+        crate::components::tabs::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

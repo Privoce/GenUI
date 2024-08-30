@@ -47,6 +47,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_icon_pixel::live_design(cx);
     crate::shader::draw_split::live_design(cx);
     crate::shader::draw_tab::live_design(cx);
+    crate::shader::draw_tab_pane::live_design(cx);
     // export all the components
     crate::components::live_design(cx);
 }

@@ -3,17 +3,11 @@ pub mod button;
 pub mod header;
 pub mod pane;
 
-use body::{GTabBody, GTabBodyRef};
 use header::GTabHeader;
 use makepad_widgets::*;
 use pane::GTabPane;
 
-use crate::{
-    shader::draw_card::DrawCard,
-    themes::{get_color, Themes},
-};
-
-use super::card::Card;
+use crate::{shader::draw_card::DrawCard, themes::Themes};
 
 live_design! {
     GTabBase = {{GTab}}{}
@@ -21,7 +15,12 @@ live_design! {
 
 #[derive(Live, Widget)]
 pub struct GTab {
-    
+    #[live]
+    pub theme: Themes,
+    #[live]
+    pub background_color: Option<Vec4>,
+    #[rust]
+    pub items: Vec<String>,
     #[redraw]
     #[live]
     pub draw_tab: DrawCard,
@@ -29,10 +28,8 @@ pub struct GTab {
     pub header: GTabHeader,
     #[live]
     pub body: GTabPane,
-    #[live(0_usize)]
+    #[rust]
     pub selected: usize,
-    // #[rust]
-    // pub bodys: ComponentMap<LiveId, GTabBodyRef>,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -43,23 +40,53 @@ impl Widget for GTab {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         self.draw_tab.begin(cx, walk, self.layout);
 
-        let mut header_items = vec![];
-        let _ = self.body.children.iter().for_each(|(_id, body_ref)|{
-            header_items.push(body_ref.text())
-        });
-        // dbg!(&header_items);
-        self.header.set_items(header_items);
-       
+        self.items = self.body.header_items();
+
+        self.header.selected = self.selected;
+        self.body.selected = self.selected;
+        self.header.set_items(self.items.clone());
+
         let _ = self.header.draw_walk(cx, scope, self.header.walk);
-        
+
         let _ = self.body.draw_walk(cx, scope, self.body.walk);
 
         self.draw_tab.end(cx);
 
         DrawStep::done()
     }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        let _ = self
+            .header
+            .handle_event_actions(cx, event, &mut |e| match e {
+                header::GTabHeaderEvent::Selected(index) => {
+                    // select_target.replace(index);
+                    self.selected = index;
+                }
+                header::GTabHeaderEvent::Close(index) => {
+                    self.body.remove(index);
+                }
+                _ => {}
+            });
+    }
 }
 
 impl LiveHook for GTab {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        // let bg_color = get_color(self.theme, self.background_color, 500);
+        // self.draw_tab.apply_over(cx, live!{
+        //     background_color: (bg_color),
+        // })
+    }
+}
 
+impl GTab {
+    pub fn area(&self) -> Area {
+        self.draw_tab.area
+    }
+    pub fn area_header(&self) -> Area {
+        self.header.area()
+    }
+    pub fn area_body(&self) -> Area {
+        self.body.area()
+    }
 }

@@ -443,6 +443,7 @@ live_design! {
         align: <ALIGN_CENTER_WALK>{},
         plain: true,
         closeable: true,
+        margin: 0.0,
     }
     GTabHeader = <GTabHeaderBase>{
         height: Fit,
@@ -467,14 +468,22 @@ live_design! {
         height: Fill,
         width: Fill,
         margin: 0.0,
-        padding: 0.0,
+        padding: 6.0,
         spacing: 0.0,
     }
     GTab = <GTabBase>{
         height: 300.0,
         width: Fill,
-        header: <GTabHeader>{},
+        header: <GTabHeader>{
+            margin: {top: 0.0, left: 0.0, bottom: 0.0, right: 0.0},
+        },
+        margin: 0.0,
+        padding: 0.0,
+        spacing: 0.0,
         flow: Down,
-        body: <GTabPane>{},
+        body: <GTabPane>{
+            // clip_x: true,
+            // clip_y: true,
+        },
     }
 }

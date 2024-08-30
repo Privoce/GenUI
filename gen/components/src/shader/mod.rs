@@ -12,4 +12,5 @@ pub mod draw_toggle;
 pub mod draw_progress;
 pub mod draw_loading;
 pub mod draw_tab;
+pub mod draw_tab_pane;
 pub mod manual;
