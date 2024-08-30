@@ -53,6 +53,7 @@ live_design! {
     import crate::components::tab::GTabBase;
     import crate::components::file_upload::GUploadBase;
     import crate::components::collapse::GCollapseBase;
+    import crate::components::tool_btn::GToolButtonBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -316,6 +317,10 @@ live_design! {
     GIcon = <GIconBase>{
         width: Fit,
         height: Fit,
+    }
+    GToolButton = <GToolButtonBase>{
+        width: 32.0,
+        height: 32.0,
     }
     GImage = <GImageBase>{
         width: 32.0,

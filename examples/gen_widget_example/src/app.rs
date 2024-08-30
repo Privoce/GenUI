@@ -41,6 +41,46 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GVLayout>{
+                        height: 300.0,
+                        spacing: 6.0,
+                        width:Fill,
+                        <GHLayout>{
+                            <GToolButton>{
+                                button_type: None,
+                            }
+                            <GToolButton>{
+                                button_type: Min,
+                            }
+                            <GToolButton>{
+                                button_type: Max,
+                            }
+                            <GToolButton>{
+                                button_type: FullScreen,
+                            }
+                            <GToolButton>{
+                                button_type: Left,
+                            }
+                        }
+                        <GHLayout>{
+                            
+                            <GToolButton>{
+                                button_type: Right,
+                            }
+                            <GToolButton>{
+                                button_type: More,
+                            }
+                            <GToolButton>{
+                                button_type: Close,
+                            }
+                            <GToolButton>{
+                                button_type: Up,
+                            }
+                            <GToolButton>{
+                                button_type: Down,
+                            }
+                        }
+                    }
                     <GCollapse>{
                         height: 100.0,
                         width: 300.0
