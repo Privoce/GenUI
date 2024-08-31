@@ -15,6 +15,30 @@ live_design! {
             return t1 * t1 * t1 * start + 3.0 * t1 * t1 * t * control1 + 3.0 * t1 * t * t * control2 + t * t * t * end;
         }
 
+        // draw arc
+        fn arc_circle(uv: vec2, x: float, y: float, r: float, s: float, e: float, color: vec4) -> vec4 {
+            let c = uv - vec2(x, y);
+            let pi = 3.141592653589793; // PI constant
+            
+            // Calculate angle in range [0, 1]
+            let ang = (atan(c.y, c.x) + pi) / (2.0 * pi);
+            
+            // Normalize start and end angles to range [0, 1]
+            let s_norm = s / (2.0 * pi);
+            let e_norm = e / (2.0 * pi);
+            
+            // Check if angle is within the arc range
+            let in_arc = step(s_norm, ang) * step(ang, e_norm);
+            
+            // Calculate distance from the center
+            let dist = length(c) - r;
+            
+            // Mix color based on distance and arc range
+            let color_factor = smoothstep(-0.01, 0.01, -dist) * in_arc;
+            
+            return mix(color, vec4(0.0), color_factor);
+        }
+
         fn stroke_color(self) -> vec4 {
             return mix(
                 self.stroke_color,
@@ -138,9 +162,11 @@ live_design! {
                     sdf.line_to(start_pos.x, start_pos.y);
                     sdf.line_to(start_pos.x, end_pos.y);
                     sdf.line_to(end_pos.x * offset_smooth, end_pos.y);
-                    sdf.move_to(end_pos.x - end_pos.x * (1.0 - offset_smooth), start_pos.y + size.y * 0.2);
+                    sdf.move_to(end_pos.x - end_pos.x * (1.0 - offset_smooth) + size.x * 0.1, self.rect_size.y * 0.5 - size.y * 0.3);
                     sdf.line_to(end_pos.x , self.rect_size.y * 0.5);
-                    sdf.line_to(end_pos.x - end_pos.x * (1.0 - offset_smooth), start_pos.y + size.y * 0.8);
+                    sdf.line_to(end_pos.x - end_pos.x * (1.0 - offset_smooth) + size.x * 0.1, self.rect_size.y * 0.5 + size.y * 0.3);
+                    sdf.move_to(end_pos.x, self.rect_size.y * 0.5);
+                    sdf.line_to(end_pos.x - size.x * 0.5, self.rect_size.y * 0.5);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Expand => {
@@ -199,26 +225,64 @@ live_design! {
 
                 }
                 GToolButtonType::Add => {
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y);
-                    sdf.line_to(start_pos.x + half_size.x, end_pos.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x, start_pos.y + half_size.y);
-                    sdf.line_to(end_pos.x, start_pos.y + half_size.y);
+                    let quarter_size = size * 0.15;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.move_to(center_x, start_pos.y + quarter_size.y);
+                    sdf.line_to(center_x, end_pos.y - quarter_size.y);
+                    sdf.move_to(start_pos.x + quarter_size.x, center_y);
+                    sdf.line_to(end_pos.x - quarter_size.x, center_y);
+                    
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Delete => {
                     let half_size = size * 0.5;
                     let quarter_size = size * 0.25;
-                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, end_pos.y - quarter_size.y);
+                    let q_q_size = quarter_size * 0.8;
+                    //line ----------------------------------------------------
+                    sdf.move_to(start_pos.x, start_pos.y + quarter_size.y);
+                    sdf.line_to(end_pos.x, start_pos.y + quarter_size.y);
+                    //---------------------------------------------------------
+                    sdf.move_to(start_pos.x + q_q_size.x, start_pos.y + quarter_size.y);
+                    sdf.line_to(start_pos.x + q_q_size.x, start_pos.y + quarter_size.y - q_q_size.y);
+                    sdf.line_to(end_pos.x - q_q_size.x, start_pos.y + quarter_size.y - q_q_size.y);
+                    sdf.line_to(end_pos.x - q_q_size.x, start_pos.y + quarter_size.y);
+                    sdf.move_to(start_pos.x + q_q_size.x * 0.6, start_pos.y + quarter_size.y);
+                    sdf.line_to(start_pos.x + q_q_size.x, end_pos.y);
+                    sdf.line_to(end_pos.x - q_q_size.x, end_pos.y);
+                    sdf.line_to(end_pos.x - q_q_size.x * 0.6, start_pos.y + quarter_size.y);
+                    sdf.move_to(start_pos.x + quarter_size.x * 1.5, end_pos.y - quarter_size.y);
+                    sdf.line_to(end_pos.x - quarter_size.x * 1.5, end_pos.y - quarter_size.y)
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + quarter_size.x, end_pos.y - quarter_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + quarter_size.y);
+                }
+                GToolButtonType::DeleteKey => {
+                    let half_size = size * 0.5;
+                    let inner_size = size * 0.4;
+                    let quarter_size = size * 0.25;
+                    let q_q_size = quarter_size * 0.8;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    let offset_w = size.x * 0.1;
+                    // draw a `⌫` icon as a button
+                    // first draw outer
+                    sdf.move_to(start_pos.x, center_y);
+                    sdf.line_to(start_pos.x + q_q_size.x * 1.1, start_pos.y + q_q_size.y);
+                    sdf.line_to(end_pos.x, start_pos.y + q_q_size.y);
+                    sdf.line_to(end_pos.x, end_pos.y - q_q_size.y);
+                    sdf.line_to(start_pos.x + q_q_size.x * 1.1, end_pos.y - q_q_size.y);
+                    sdf.line_to(start_pos.x, center_y);
+                    // then draw a `×` icon
+                    sdf.move_to(start_pos.x + inner_size.x + offset_w, start_pos.y + inner_size.y);
+                    sdf.line_to(end_pos.x - inner_size.x + offset_w, end_pos.y - inner_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(start_pos.x + inner_size.x + offset_w, end_pos.y - inner_size.y);
+                    sdf.line_to(end_pos.x - inner_size.x + offset_w, start_pos.y + inner_size.y);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+
                 }
                 GToolButtonType::Correct => {
                     let half_size = size * 0.5;
-                    let quarter_size = size * 0.25;
+                    let quarter_size = size * 0.2;
                     sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
                     sdf.line_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
                     sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + quarter_size.y);
@@ -227,14 +291,15 @@ live_design! {
                 GToolButtonType::Fresh => {
                     let half_size = size * 0.5;
                     let quarter_size = size * 0.25;
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + half_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, end_pos.y - quarter_size.y);
+                    // use bezier curve to draw a circle with arrow, but the circle is not perfect
+                    // let the circle lack of a quarter
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.circle(center_x + stroke_width, center_y, half_size.x* 0.95);
+                    sdf.stroke(arc_circle(self.pos * self.rect_size, center_x, center_y, half_size.x * 0.95, 0.0, 1.0, self.stroke_color()), stroke_width);
+                    sdf.move_to(start_pos.x + quarter_size.x * 1.0, start_pos.y);
+                    sdf.line_to(start_pos.x + (center_x * 1.1 - sin(0.25 * 3.14159265358979) * center_x), start_pos.y + center_y - cos(0.25 * 3.14159265358979) * center_y);
+                    sdf.line_to(start_pos.x + quarter_size.x * 1.68, start_pos.y + (center_y - cos(0.25 * 3.14159265358979) * center_y) * 1.86);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Play => {
@@ -430,6 +495,7 @@ pub enum GToolButtonType {
     Phone = shader_enum(29),
     #[pick]
     Default = shader_enum(30),
+    DeleteKey = shader_enum(31),
 }
 
 #[derive(Live, LiveRegister, LiveHook)]

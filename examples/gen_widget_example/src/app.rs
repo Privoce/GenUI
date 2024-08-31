@@ -78,10 +78,6 @@ live_design! {
                             <GToolButton>{
                                 button_type: Down,
                             }
-                        }
-                        <GHLayout>{
-                            spacing: 6.0,
-                            height: Fit,
                             <GToolButton>{
                                 button_type: Switch,
                             }
@@ -93,6 +89,41 @@ live_design! {
                             }
                             <GToolButton>{
                                 button_type: ExpandTop,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandLeft,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandRight,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandBottom,
+                            }
+                            <GToolButton>{
+                                button_type: Add,
+                            }
+                            <GToolButton>{
+                                button_type: Delete,
+                            }
+                            <GToolButton>{
+                                button_type: Correct,
+                            }
+                        }
+                        <GHLayout>{
+                            spacing: 6.0,
+                            height: Fit,
+                            <GToolButton>{
+                                button_type: DeleteKey,
+                            }
+                            <GToolButton>{
+                                
+                                button_type: Fresh,
+                            }
+                            <GToolButton>{
+                                button_type: Play,
+                            }
+                            <GToolButton>{
+                                button_type: Stop,
                             }
                             <GToolButton>{
                                 button_type: ExpandLeft,
