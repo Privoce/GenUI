@@ -22,18 +22,18 @@ live_design! {
                 self.hover
             );
         }
-        
+
         fn pixel(self) -> vec4{
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
             // use offset to control not overlap with border
             let stroke_width = 1.0;
             let offset = stroke_width * 1.5;
             let start_pos = vec2(self.pos.x - self.border_width + offset, self.pos.y - self.border_width + offset);
-            let end_pos = vec2(self.pos.x + self.rect_size.x - self.border_width - offset * 1.0, self.pos.y + self.rect_size.y - self.border_width - offset * 1.0);
+            let end_pos = vec2(self.pos.x + self.rect_size.x - self.border_width - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - self.border_width - offset * 1.0);
             let size = end_pos - start_pos;
-            
+
             let half_size = size * 0.5;
-            
+
             match self.tool_button_type {
                 GToolButtonType::Min => {
                     // draw a `-` icon as a button
@@ -50,8 +50,8 @@ live_design! {
                     // draw a `▣` icon as a button
                     sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    let inner_size = size * 0.7;
-                    sdf.rect(start_pos.x + size.x * 0.15, start_pos.y + size.y * 0.15, inner_size.x, inner_size.y);
+                    let inner_size = size * 0.6;
+                    sdf.rect(start_pos.x + size.x * 0.2, start_pos.y + size.y * 0.2, inner_size.x, inner_size.y);
                     sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Left => {
@@ -97,34 +97,34 @@ live_design! {
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Up => {
-                    // draw a `︿` icon as a button
-                    let offset_smooth = 0.8;
-                    let height = size.y * offset_smooth;
-                    let width = size.x * offset_smooth;
-                    sdf.move_to(end_pos.x - width,  height);
-                    sdf.line_to(self.rect_size.x * 0.5, end_pos.y - height);
-                    sdf.line_to(width, height);
+                    let half_size = size * 0.5;
+                    let quarter_size = size * 0.25;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.move_to(start_pos.x + quarter_size.x, end_pos.y - quarter_size.y);
+                    sdf.line_to(center_x, center_y - quarter_size.x);
+                    sdf.line_to(end_pos.x - quarter_size.x, end_pos.y - quarter_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Down => {
-                    // draw a `﹀` icon as a button
-                    let offset_smooth = 0.8;
-                    let height = size.y * offset_smooth;
-                    let width = size.x * offset_smooth;
-                    sdf.move_to(end_pos.x - width,  end_pos.y - height);
-                    sdf.line_to(self.rect_size.x * 0.5, height);
-                    sdf.line_to(width, end_pos.y - height);
+                    let half_size = size * 0.5;
+                    let quarter_size = size * 0.25;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + quarter_size.y);
+                    sdf.line_to(center_x, center_y + quarter_size.x);
+                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + quarter_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Switch => {
                     // draw a `⇆` icon as a button
                     let half_size = size * 0.5;
                     let quarter_size = size * 0.25;
-                    sdf.move_to(quarter_size.x, 0.0);
-                    sdf.line_to(start_pos.x, half_size.y * 0.5);
-                    sdf.line_to(end_pos.x, half_size.y * 0.5);
-                    sdf.move_to(quarter_size.x, half_size.y);
-                    sdf.line_to(start_pos.x, half_size.y * 0.5);
+                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y);
+                    sdf.line_to(start_pos.x, start_pos.y + half_size.y * 0.5);
+                    sdf.line_to(end_pos.x, start_pos.y + half_size.y * 0.5);
+                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
+                    sdf.line_to(start_pos.x, start_pos.y + half_size.y * 0.5);
                     sdf.move_to(end_pos.x - quarter_size.x, end_pos.y);
                     sdf.line_to(end_pos.x, end_pos.y - half_size.y * 0.5);
                     sdf.line_to(start_pos.x, end_pos.y - half_size.y * 0.5);
@@ -431,7 +431,6 @@ pub enum GToolButtonType {
     #[pick]
     Default = shader_enum(30),
 }
-
 
 #[derive(Live, LiveRegister, LiveHook)]
 #[repr(C)]
