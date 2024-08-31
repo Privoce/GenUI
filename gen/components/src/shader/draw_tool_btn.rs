@@ -304,34 +304,43 @@ live_design! {
                 }
                 GToolButtonType::Play => {
                     let half_size = size * 0.5;
-                    let quarter_size = size * 0.25;
-                    sdf.circle(start_pos.x + half_size.x, start_pos.y + half_size.y, half_size.x);
-                    sdf.fill(self.stroke_color());
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + half_size.y);
+                    let quarter_size = half_size * 0.48;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.circle(center_x, center_y, half_size.x);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    // draw a `▶` icon 
+                    sdf.move_to((center_x - quarter_size.x) * 1.414, center_y - quarter_size.y);
+                    sdf.line_to(center_x + quarter_size.x, center_y);
+                    sdf.line_to((center_x - quarter_size.x) * 1.414, center_y + quarter_size.y);
+                    sdf.line_to((center_x - quarter_size.x) * 1.414, center_y - quarter_size.y);
+                    // sdf.stroke(self.stroke_color(), stroke_width);
                     sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Stop => {
                     let half_size = size * 0.5;
-                    let quarter_size = size * 0.25;
-                    sdf.circle(start_pos.x + half_size.x, start_pos.y + half_size.y, half_size.x);
-                    sdf.fill(self.stroke_color());
-                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, end_pos.y - quarter_size.y);
+                    let quarter_size = half_size * 0.48;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.circle(center_x, center_y, half_size.x);
                     sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.rect(center_x - quarter_size.x * 1.2, center_y - quarter_size.y, quarter_size.x * 0.8, quarter_size.y * 2.0);
+                    sdf.rect(center_x + quarter_size.x * 0.48, center_y - quarter_size.y, quarter_size.x * 0.8, quarter_size.y * 2.0);
+                    sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Setting => {
+                    // draw a `⚙` icon as a button
                     let half_size = size * 0.5;
                     let quarter_size = size * 0.25;
                     sdf.circle(start_pos.x + half_size.x, start_pos.y + half_size.y, half_size.x);
-                    sdf.fill(self.stroke_color());
+                    // sdf.fill(self.stroke_color());
                     sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
                     sdf.line_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
                     sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
                     sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + half_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
+
                 }
                 GToolButtonType::Bind => {
                     let half_size = size * 0.5;

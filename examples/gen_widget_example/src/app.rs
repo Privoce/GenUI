@@ -116,23 +116,29 @@ live_design! {
                                 button_type: DeleteKey,
                             }
                             <GToolButton>{
-                                
                                 button_type: Fresh,
                             }
                             <GToolButton>{
                                 button_type: Play,
                             }
                             <GToolButton>{
+                                
                                 button_type: Stop,
                             }
                             <GToolButton>{
-                                button_type: ExpandLeft,
+                                height: 36.0,
+                                width: 36.0,
+                                button_type: Setting,
                             }
                             <GToolButton>{
-                                button_type: ExpandRight,
+                                height: 36.0,
+                                width: 36.0,
+                                button_type: Bind,
                             }
                             <GToolButton>{
-                                button_type: ExpandBottom,
+                                height: 36.0,
+                                width: 36.0,
+                                button_type: Menu,
                             }
                             <GToolButton>{
                                 button_type: Add,
