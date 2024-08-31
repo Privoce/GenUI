@@ -319,8 +319,8 @@ live_design! {
         height: Fit,
     }
     GToolButton = <GToolButtonBase>{
-        width: 16.0,
-        height: 16.0,
+        width: 24.0,
+        height: 24.0,
     }
     GImage = <GImageBase>{
         width: 32.0,

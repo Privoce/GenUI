@@ -105,13 +105,14 @@ live_design! {
                             <GToolButton>{
                                 button_type: Delete,
                             }
-                            <GToolButton>{
-                                button_type: Correct,
-                            }
+                            
                         }
                         <GHLayout>{
                             spacing: 6.0,
                             height: Fit,
+                            <GToolButton>{
+                                button_type: Correct,
+                            }
                             <GToolButton>{
                                 button_type: DeleteKey,
                             }
@@ -122,17 +123,13 @@ live_design! {
                                 button_type: Play,
                             }
                             <GToolButton>{
-                                
                                 button_type: Stop,
                             }
                             <GToolButton>{
-                                height: 36.0,
-                                width: 36.0,
                                 button_type: Setting,
                             }
                             <GToolButton>{
-                                height: 36.0,
-                                width: 36.0,
+                                
                                 button_type: Bind,
                             }
                             <GToolButton>{

@@ -14,28 +14,60 @@ live_design! {
             let t1 = 1.0 - t;
             return t1 * t1 * t1 * start + 3.0 * t1 * t1 * t * control1 + 3.0 * t1 * t * t * control2 + t * t * t * end;
         }
+        fn circle(uv: vec2, center: vec2, radius: float, color: vec4) -> vec4 {
+            let dist = length(uv - center);
+            let edge = smoothstep(radius - 0.01, radius + 0.01, dist);
+            return mix(color, vec4(0.0), edge);
+        }
 
+        fn gear(uv: vec2, center: vec2, size: float, color: vec4) -> vec4 {
+            let pi = 3.141592653589793;
+            let num_teeth = 6.0;
+            let angle_step = 2.0 * pi / float(num_teeth);
+            let small_circle_radius = size * 0.125;
+            let large_circle_radius = size * 0.5;
+            let inner_circle_radius = size * 0.2;
+            let counter = 0.0;
+
+            // 绘制大圆
+            let result = circle(uv, center, large_circle_radius, color);
+            // 绘制一个大圆的同心小圆，这个小圆中的部分是透明的
+            let inner_circle = circle(uv, center, inner_circle_radius, vec4(1.0));
+            result = result * (vec4(1.0) - inner_circle);
+
+
+            // 绘制齿轮的齿
+            for i in 0..6 {
+                let angle = counter * angle_step;
+                let tooth_center = center + vec2(cos(angle), sin(angle)) * large_circle_radius;
+                let tooth = circle(uv, tooth_center, small_circle_radius, vec4(1.0));
+                result = result * (vec4(1.0) - tooth);
+                counter += 1.0;
+            }
+
+            return result;
+        }
         // draw arc
         fn arc_circle(uv: vec2, x: float, y: float, r: float, s: float, e: float, color: vec4) -> vec4 {
             let c = uv - vec2(x, y);
             let pi = 3.141592653589793; // PI constant
-            
+
             // Calculate angle in range [0, 1]
             let ang = (atan(c.y, c.x) + pi) / (2.0 * pi);
-            
+
             // Normalize start and end angles to range [0, 1]
             let s_norm = s / (2.0 * pi);
             let e_norm = e / (2.0 * pi);
-            
+
             // Check if angle is within the arc range
             let in_arc = step(s_norm, ang) * step(ang, e_norm);
-            
+
             // Calculate distance from the center
             let dist = length(c) - r;
-            
+
             // Mix color based on distance and arc range
             let color_factor = smoothstep(-0.01, 0.01, -dist) * in_arc;
-            
+
             return mix(color, vec4(0.0), color_factor);
         }
 
@@ -232,7 +264,7 @@ live_design! {
                     sdf.line_to(center_x, end_pos.y - quarter_size.y);
                     sdf.move_to(start_pos.x + quarter_size.x, center_y);
                     sdf.line_to(end_pos.x - quarter_size.x, center_y);
-                    
+
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Delete => {
@@ -309,7 +341,7 @@ live_design! {
                     let center_y = self.rect_size.y * 0.5;
                     sdf.circle(center_x, center_y, half_size.x);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    // draw a `▶` icon 
+                    // draw a `▶` icon
                     sdf.move_to((center_x - quarter_size.x) * 1.414, center_y - quarter_size.y);
                     sdf.line_to(center_x + quarter_size.x, center_y);
                     sdf.line_to((center_x - quarter_size.x) * 1.414, center_y + quarter_size.y);
@@ -329,36 +361,33 @@ live_design! {
                     sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Setting => {
-                    // draw a `⚙` icon as a button
-                    let half_size = size * 0.5;
+                    // draw a `⚙` icon as a button, svg path:
+                    let r = size.x * 0.5;
                     let quarter_size = size * 0.25;
-                    sdf.circle(start_pos.x + half_size.x, start_pos.y + half_size.y, half_size.x);
-                    // sdf.fill(self.stroke_color());
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + half_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    let col = gear(self.pos * self.rect_size, vec2(center_x, center_y), size.x, self.stroke_color());
+                    sdf.circle(center_x, center_y, r);
+                    sdf.fill(col);
 
                 }
                 GToolButtonType::Bind => {
-                    let half_size = size * 0.5;
+                    // draw a 📌 icon
                     let quarter_size = size * 0.25;
-                    sdf.circle(start_pos.x + half_size.x, start_pos.y + half_size.y, half_size.x);
-                    sdf.fill(self.stroke_color());
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
+                    let q_q_size = quarter_size * 0.7;
+                    let center_x = self.rect_size.x * 0.5;
+                    let center_y = self.rect_size.y * 0.5;
+                    sdf.move_to(center_x - q_q_size.x, start_pos.y + stroke_width);
+                    sdf.line_to(center_x + q_q_size.x, start_pos.y + stroke_width);
+                    sdf.line_to(center_x + q_q_size.x * 0.66, center_y - q_q_size.y * 1.86);
+                    sdf.line_to(center_x + quarter_size.x * 1.15, center_y);
+                    sdf.line_to(center_x - quarter_size.x * 1.15, center_y);
+                    sdf.line_to(center_x - q_q_size.x * 0.66, center_y - q_q_size.y * 1.86);
+                    sdf.close_path();
+                    sdf.move_to(center_x, center_y);
+                    sdf.line_to(center_x, end_pos.y - q_q_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + half_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + half_size.x, start_pos.y + quarter_size.y);
-                    sdf.line_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(start_pos.x + half_size.x, end_pos.y - quarter_size.y);
-                    sdf.line_to(start_pos.x + quarter_size.x, start_pos.y + half_size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
+
                 }
                 GToolButtonType::Menu => {
                     let half_size = size * 0.5;
