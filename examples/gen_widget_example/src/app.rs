@@ -46,8 +46,10 @@ live_design! {
                         spacing: 6.0,
                         width:Fill,
                         <GHLayout>{
+                            height: Fit,
+                            spacing: 6.0,
                             <GToolButton>{
-                                button_type: None,
+                                button_type: Default,
                             }
                             <GToolButton>{
                                 button_type: Min,
@@ -61,9 +63,6 @@ live_design! {
                             <GToolButton>{
                                 button_type: Left,
                             }
-                        }
-                        <GHLayout>{
-                            
                             <GToolButton>{
                                 button_type: Right,
                             }
@@ -78,6 +77,40 @@ live_design! {
                             }
                             <GToolButton>{
                                 button_type: Down,
+                            }
+                        }
+                        <GHLayout>{
+                            spacing: 6.0,
+                            height: Fit,
+                            <GToolButton>{
+                                button_type: Switch,
+                            }
+                            <GToolButton>{
+                                button_type: Exit,
+                            }
+                            <GToolButton>{
+                                button_type: Expand,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandTop,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandLeft,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandRight,
+                            }
+                            <GToolButton>{
+                                button_type: ExpandBottom,
+                            }
+                            <GToolButton>{
+                                button_type: Add,
+                            }
+                            <GToolButton>{
+                                button_type: Delete,
+                            }
+                            <GToolButton>{
+                                button_type: Correct,
                             }
                         }
                     }
