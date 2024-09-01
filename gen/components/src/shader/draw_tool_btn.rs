@@ -737,12 +737,57 @@ live_design! {
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Eye => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let s = vec2(start_pos.x + quarter_size.x * 0.6, center_y);
+                    let e = vec2(end_pos.x - quarter_size.x * 0.6, center_y);
+                    let c1 = vec2(center_x, start_pos.y + quarter_size.y * 0.2);
+                    let c2 = vec2(center_x, end_pos.y - quarter_size.y * 0.2);
+                    let counter1 = 0.0;
+                    let counter2 = 0.0;
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c1, e, counter1 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter1 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c2, e, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.circle(center_x, center_y, quarter_size.x * 0.6);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::EyeClose => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let s = vec2(start_pos.x + quarter_size.x * 0.6, center_y);
+                    let e = vec2(end_pos.x - quarter_size.x * 0.6, center_y);
+                    let c1 = vec2(center_x, start_pos.y + quarter_size.y * 0.2);
+                    let c2 = vec2(center_x, end_pos.y - quarter_size.y * 0.2);
+                    let counter1 = 0.0;
+                    let counter2 = 0.0;
+                    sdf.move_to(center_x - quarter_size.x, start_pos.y + quarter_size.y * 0.8);
+                    sdf.line_to(center_x + quarter_size.x, end_pos.y - quarter_size.y * 0.8);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c1, e, counter1 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter1 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c2, e, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.circle(center_x, center_y, quarter_size.x * 0.6);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Search => {
                     let quarter_size = size * 0.25;
