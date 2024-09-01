@@ -129,23 +129,25 @@ live_design! {
                                 button_type: Setting,
                             }
                             <GToolButton>{
-                                
                                 button_type: Bind,
+                            }
+                            <GToolButton>{
+                                button_type: Menu,
+                            }
+                            <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
+                                button_type: Emoji,
                             }
                             <GToolButton>{
                                 height: 36.0,
                                 width: 36.0,
-                                button_type: Menu,
+                                button_type: Phone,
                             }
                             <GToolButton>{
-                                button_type: Add,
+                                button_type: FullScreenExpand,
                             }
-                            <GToolButton>{
-                                button_type: Delete,
-                            }
-                            <GToolButton>{
-                                button_type: Correct,
-                            }
+                            
                         }
                     }
                     <GCollapse>{
