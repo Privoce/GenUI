@@ -105,8 +105,8 @@ live_design! {
         fn pixel(self) -> vec4{
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
             // use offset to control not overlap with border
-            let stroke_width = 1.0;
-            let offset = stroke_width * 1.5;
+            let stroke_width = 1.2;
+            let offset = stroke_width * 1.25;
             let start_pos = vec2(self.pos.x - self.border_width + offset, self.pos.y - self.border_width + offset);
             let end_pos = vec2(self.pos.x + self.rect_size.x - self.border_width - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - self.border_width - offset * 1.0);
             let size = end_pos - start_pos;
@@ -546,24 +546,171 @@ live_design! {
 
                 }
                 GToolButtonType::Heart => {
-                    // let
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let s = vec2(start_pos.x + quarter_size.x * 0.3, center_y - quarter_size.y * 0.1);
+                    let e = vec2(end_pos.x - quarter_size.x * 0.3, center_y - quarter_size.y * 0.1);
+                    let e1 = vec2(center_x, end_pos.y - quarter_size.y * 0.2);
+                    let c1 = vec2(start_pos.x + quarter_size.x * 0.1, center_y + quarter_size.y * 0.86);
+                    let counter = 0.0;
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c1, e1, counter / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter += 1.0;
+                    }
+                    let c2 = vec2(end_pos.x - quarter_size.x * 0.1, center_y + quarter_size.y * 0.86);
+                    let counter1 = 0.0;
+                    sdf.move_to(e1.x, e1.y);
+                    for i in 0..100{
+                        let point = bezier2(e1, c2, e, counter1 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter1 += 1.0;
+                    }
+                    
+                    let c3 = vec2(end_pos.x - quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let e2 = vec2(center_x, center_y - quarter_size.y * 0.5);
+                    let counter2 = 0.0;
+                    sdf.move_to(e.x, e.y);
+                    for i in 0..100{
+                        let point = bezier2(e, c3, e2, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
+                    let c4 = vec2(start_pos.x + quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let counter3 = 0.0;
+                    sdf.move_to(e2.x, e2.y);
+                    for i in 0..100{
+                        let point = bezier2(e2, c4, s, counter3 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter3 += 1.0;
+                    }
+                    
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::HeartBroken => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let s = vec2(start_pos.x + quarter_size.x * 0.3, center_y - quarter_size.y * 0.1);
+                    let e = vec2(end_pos.x - quarter_size.x * 0.3, center_y - quarter_size.y * 0.1);
+                    let e1 = vec2(center_x, end_pos.y - quarter_size.y * 0.2);
+                    let c1 = vec2(start_pos.x + quarter_size.x * 0.1, center_y + quarter_size.y * 0.86);
+                    let counter = 0.0;
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c1, e1, counter / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter += 1.0;
+                    }
+                    let c2 = vec2(end_pos.x - quarter_size.x * 0.1, center_y + quarter_size.y * 0.86);
+                    let counter1 = 0.0;
+                    sdf.move_to(e1.x, e1.y);
+                    for i in 0..100{
+                        let point = bezier2(e1, c2, e, counter1 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter1 += 1.0;
+                    }
+                    
+                    let c3 = vec2(end_pos.x - quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let e2 = vec2(center_x, center_y - quarter_size.y * 0.5);
+                    let counter2 = 0.0;
+                    sdf.move_to(e.x, e.y);
+                    for i in 0..100{
+                        let point = bezier2(e, c3, e2, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
+                    let c4 = vec2(start_pos.x + quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let counter3 = 0.0;
+                    sdf.move_to(e2.x, e2.y);
+                    for i in 0..100{
+                        let point = bezier2(e2, c4, s, counter3 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter3 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(e2.x, e2.y);
+                    sdf.line_to(e2.x - quarter_size.x * 0.2, e2.y + quarter_size.y * 0.4);
+                    sdf.line_to(e2.x + quarter_size.x * 0.5, e2.y + quarter_size.y * 0.66);
+                    sdf.line_to(e2.x, e2.y + quarter_size.y * 1.0);
+                    sdf.line_to(e2.x + quarter_size.x * 0.1, e2.y + quarter_size.y * 1.4);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Dislike => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let s = vec2(start_pos.x + quarter_size.x * 0.3, center_y - quarter_size.y * 0.1);
+                    let e = vec2(end_pos.x - quarter_size.x * 0.3, center_y - quarter_size.y * 0.1);
+                    let e1 = vec2(center_x, end_pos.y - quarter_size.y * 0.2);
+                    let c1 = vec2(start_pos.x + quarter_size.x * 0.1, center_y + quarter_size.y * 0.86);
+                    let counter = 0.0;
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c1, e1, counter / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter += 1.0;
+                    }
+                    let c2 = vec2(end_pos.x - quarter_size.x * 0.1, center_y + quarter_size.y * 0.86);
+                    let counter1 = 0.0;
+                    sdf.move_to(e1.x, e1.y);
+                    for i in 0..100{
+                        let point = bezier2(e1, c2, e, counter1 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter1 += 1.0;
+                    }
+                    
+                    let c3 = vec2(end_pos.x - quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let e2 = vec2(center_x, center_y - quarter_size.y * 0.5);
+                    let counter2 = 0.0;
+                    sdf.move_to(e.x, e.y);
+                    for i in 0..100{
+                        let point = bezier2(e, c3, e2, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
+                    let c4 = vec2(start_pos.x + quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let counter3 = 0.0;
+                    sdf.move_to(e2.x, e2.y);
+                    for i in 0..100{
+                        let point = bezier2(e2, c4, s, counter3 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter3 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(center_x - quarter_size.x * 0.5, center_y);
+                    sdf.line_to(center_x + quarter_size.x * 0.5, end_pos.y - quarter_size.y * 1.1);
+                    
+                    sdf.move_to(center_x - quarter_size.x * 0.5, end_pos.y - quarter_size.y * 1.1);
+                    sdf.line_to(center_x + quarter_size.x * 0.5, center_y);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Rss => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    sdf.move_to(center_x, center_y + quarter_size.y);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.6, end_pos.y - quarter_size.y * 0.4);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.4);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.4);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.6, end_pos.y - quarter_size.y * 0.4);
+                    sdf.close_path();
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(center_x, center_y - quarter_size.y * 0.6);
+                    sdf.line_to(center_x, center_y + quarter_size.y * 0.6);
+                    sdf.move_to(center_x - quarter_size.x * 0.6, center_y);
+                    sdf.line_to(center_x + quarter_size.x * 0.6, center_y);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Share => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let r = quarter_size.x * 0.4;
+                    let c1 = vec2(start_pos.x + quarter_size.x * 0.6, center_y);
+                    let c2 = vec2(end_pos.x - quarter_size.x * 0.6, start_pos.y + quarter_size.y * 0.6);
+                    let c3 = vec2(end_pos.x - quarter_size.x * 0.6, end_pos.y - quarter_size.y * 0.6);
+                    sdf.circle(c1.x, c1.y, r);
+                    sdf.move_to(c1.x, c1.y);
+                    sdf.line_to(c2.x, c2.y);
+                    sdf.circle(c2.x, c2.y, r);
+                    sdf.move_to(c1.x, c1.y);
+                    sdf.line_to(c3.x, c3.y);
+                    sdf.circle(c3.x, c3.y, r);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    
                 }
                 GToolButtonType::ZoomIn => {
                     sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
@@ -582,8 +729,23 @@ live_design! {
                     sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Search => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let r = quarter_size.x * 1.25;
+                    sdf.circle(center_x, center_y, r);
+                    sdf.move_to(center_x + r * 0.707106, center_y + r * 0.707106);
+                    sdf.line_to(end_pos.x - quarter_size.y * 0.4, end_pos.y - quarter_size.y * 0.4);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    let s = vec2(center_x - quarter_size.x * 0.5, center_y - quarter_size.y * 0.5);
+                    let e = vec2(center_x + quarter_size.x * 0.5, center_y - quarter_size.y * 0.5);
+                    let c1 = vec2(center_x, center_y - quarter_size.y * 1.0);
+                    let counter = 0.0;
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier2(s, c1, e, counter / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Connect => {
                     sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
@@ -690,8 +852,8 @@ live_design! {
                     sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Setting3 => {
-                    let quarter_size = size * 0.225;
-                    let h = stroke_width * 2.5;
+                    let quarter_size = size * 0.25;
+                    let h = stroke_width * 2.0;
                     let h2 = h * 2.4;
                     sdf.box(start_pos.x + quarter_size.x / 4.0, center_y - h / 2.0 * 6.0, size.x - quarter_size.x / 4.0, h, 0.6);
                     sdf.box(start_pos.x + quarter_size.x / 4.0, center_y, size.x - quarter_size.x / 4.0, h, 0.6);

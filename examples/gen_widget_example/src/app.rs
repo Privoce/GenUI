@@ -168,6 +168,75 @@ live_design! {
                                 button_type: Heart,
                             }
                         }
+                        <GHLayout>{
+                            spacing: 6.0,
+                            height: Fit,
+                            <GToolButton>{
+                                button_type: HeartBroken,
+                            }
+                            <GToolButton>{
+                                button_type: Dislike,
+                            }
+                            <GToolButton>{
+                                button_type: Rss,
+                            }
+                            <GToolButton>{
+                                button_type: Share,
+                            }
+                            <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
+                                button_type: ZoomIn,
+                            }
+                            <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
+                                button_type: ZoomOut,
+                            }
+                            <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
+                                button_type: Eye,
+                            }
+                            <GToolButton>{
+                                button_type: EyeClose,
+                            }
+                            <GToolButton>{
+                                button_type: Search,
+                            }
+                            <GToolButton>{
+                                button_type: Connect,
+                            }
+                            <GToolButton>{
+                                button_type: Disconnect,
+                            }
+                            <GToolButton>{
+                                button_type: Debug,
+                            }
+                            <GToolButton>{
+                                button_type: Code,
+                            }
+                            <GToolButton>{
+                                button_type: Test,
+                            }
+                            <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
+                                button_type: Open,
+                            }
+                            <GToolButton>{
+                                button_type: OpenLeft,
+                            }
+                            <GToolButton>{
+                                button_type: OpenRight,
+                            }
+                            <GToolButton>{
+                                button_type: OpenTop,
+                            }
+                            <GToolButton>{
+                                button_type: OpenBottom,
+                            }
+                        }
                     }
                     <GCollapse>{
                         height: 100.0,
