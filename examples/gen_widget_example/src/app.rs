@@ -190,31 +190,21 @@ live_design! {
                                 button_type: ZoomOut,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: Eye,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: EyeClose,
                             }
                             <GToolButton>{
                                 button_type: Search,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: Connect,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: Disconnect,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: Debug,
                             }
                             <GToolButton>{
