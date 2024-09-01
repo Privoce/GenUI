@@ -135,19 +135,38 @@ live_design! {
                                 button_type: Menu,
                             }
                             <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
                                 button_type: Emoji,
                             }
                             <GToolButton>{
-                                height: 36.0,
-                                width: 36.0,
                                 button_type: Phone,
                             }
                             <GToolButton>{
                                 button_type: FullScreenExpand,
                             }
-                            
+                            <GToolButton>{
+                                button_type: Upload,
+                            }
+                            <GToolButton>{
+                                button_type: Download,
+                            }
+                            <GToolButton>{
+                                button_type: Setting2,
+                            }
+                            <GToolButton>{
+                                button_type: Setting3,
+                            }
+                            <GToolButton>{
+                                button_type: Home,
+                            }
+                            <GToolButton>{
+                                button_type: GoOn,
+                            }
+                            <GToolButton>{
+                                button_type: Hot,
+                            }
+                            <GToolButton>{
+                                button_type: Heart,
+                            }
                         }
                     }
                     <GCollapse>{
