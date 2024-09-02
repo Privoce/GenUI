@@ -99,7 +99,7 @@ live_design! {
         draw_text: {
             instance hover: 0.0
             instance focus: 0.0
-            wrap: Word,
+            wrap: Line,
 
             fn get_color(self) -> vec4 {
                 return mix(
@@ -212,7 +212,7 @@ pub struct GInput {
     walk: Walk,
     #[live]
     label_align: Align,
-    #[live]
+    #[live(2.0)]
     cursor_width: f64,
     #[live]
     pub is_read_only: bool,
@@ -226,6 +226,8 @@ pub struct GInput {
     cursor: Cursor,
     #[rust]
     history: History,
+    #[live]
+    scroll_bars: ScrollBars,
 }
 
 impl Widget for GInput {
@@ -236,6 +238,34 @@ impl Widget for GInput {
         let font = get_font_family(&self.font_family, cx);
 
         self.draw_text.text_style.font = font;
+        let real_width = if let Size::Fixed(w) = self.walk.width {
+            Size::Fixed(w - self.layout.padding.left - self.layout.padding.right)
+        } else {
+            self.walk.width
+        };
+
+        let rect_walk = Walk {
+            height: self.walk.height,
+            width: real_width,
+            ..Default::default()
+        };
+        let padded_rect = cx.turtle().padded_rect();
+        let mut cursor_position = self.cursor_position(cx, padded_rect.size.x);
+        let scroll_width = if cursor_position.x > padded_rect.size.x {
+            cursor_position.x
+        } else {
+            padded_rect.size.x
+        };
+        self.scroll_bars.begin(
+            cx,
+            Walk {
+                height: rect_walk.height,
+                width: Size::Fixed(padded_rect.size.x),
+                ..Default::default()
+            },
+            Layout::flow_right(),
+        );
+        
         // Draw text
         if self.text.is_empty() {
             self.draw_text.empty = 1.0;
@@ -244,21 +274,25 @@ impl Widget for GInput {
         } else {
             self.draw_text.empty = 0.0;
             self.draw_text
-                .draw_walk(cx, Walk::fit(), self.label_align, self.text.as_ref());
+                .draw_walk(cx, Walk::fit(), self.label_align, &self.text);
         }
-
-        let padded_rect = cx.turtle().padded_rect();
-        
+       
+        // let padded_rect = cx.turtle().padded_rect();
         // Draw selection
         let rects = self.draw_text.selected_rects(
             cx,
             Walk::fit(),
             self.label_align,
             padded_rect.size.x,
-            self.text.as_ref(),
+            &self.text,
             self.cursor.head.min(self.cursor.tail),
             self.cursor.head.max(self.cursor.tail),
         );
+
+        let last_pos = rects
+            .last()
+            .map(|rect| padded_rect.pos + rect.pos)
+            .unwrap_or(padded_rect.pos);
         for rect in rects {
             self.draw_selection.draw_abs(
                 cx,
@@ -268,22 +302,42 @@ impl Widget for GInput {
                 },
             );
         }
-
+        // dbg!(self.scroll_bars.get_viewport_rect(cx));
+        
+        self.scroll_bars.set_scroll_x(cx, last_pos.x);
+       
+        // dbg!(self.scroll_bars.get_scroll_pos());
+        self.scroll_bars.end(cx);
         // Draw cursor
-        let cursor_position = self.cursor_position(cx, padded_rect.size.x);
+        // let mut cursor_position = self.cursor_position(cx, padded_rect.size.x);
+        // let scroll_width = cursor_position.x;
+        // if cursor_position.x > padded_rect.size.x {
+        //     dbg!(cursor_position.x);
+        //    let mut s_area = self.scroll_bars.area();
+        //    let mut s_rect = s_area.rect(cx).clone();
+        //    s_rect.pos.x = cursor_position.x;
+        //    s_area.set_rect(cx, &s_rect);
+        //    self.scroll_bars.set_area(s_area);
+        // }
         let cursor_height = self.draw_text.line_height(cx);
+        // dbg!(&cursor_position, &self.text);
+        cursor_position.x = last_pos.x;
+
+        cursor_position.y = last_pos.y;
+        // dbg!(&cursor_position);
+        // self.scroll_bars.set_scroll_pos(cx, cursor_position);
+        
+
+       
         self.draw_cursor.draw_abs(
             cx,
             Rect {
-                pos: padded_rect.pos
-                    + dvec2(
-                        cursor_position.x - 0.5 * self.cursor_width,
-                        cursor_position.y,
-                    ),
+                pos: cursor_position,
                 size: dvec2(self.cursor_width, cursor_height),
             },
         );
-
+       
+        
         self.draw_input.end(cx);
 
         if cx.has_key_focus(self.draw_input.area()) {

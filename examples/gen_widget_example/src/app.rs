@@ -47,8 +47,10 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        
-                        <GInput>{}
+                        <GInput>{
+                            width: 100.0,
+                            
+                        }
                         <GHLayout>{
                             height: Fit,
                             spacing: 6.0,

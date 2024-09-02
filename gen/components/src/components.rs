@@ -331,6 +331,15 @@ live_design! {
         brightness: 1.0,
         line_spacing: 1.5,
         font_size: (FONT_SIZE),
+        scroll_bars: <GScrollBars>{
+            show_scroll_x: true
+            show_scroll_y: false
+            scroll_bar_x: {
+                draw_bar: {bar_width: 3.0}
+                bar_size: 4
+                use_vertical_finger_scroll: true
+            }
+        },
     }
     GShader = <GShaderBase>{
         width: Fill,
