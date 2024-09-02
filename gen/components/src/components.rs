@@ -329,7 +329,7 @@ live_design! {
     GInput = <GInputBase>{
         font_family: (FONT_FAMILY),
         brightness: 1.0,
-        line_spacing: 1.45,
+        line_spacing: 1.5,
         font_size: (FONT_SIZE),
     }
     GShader = <GShaderBase>{

@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-live_design!{    
+live_design! {
     import makepad_draw::shader::std::*;
 
     DrawGText = {{DrawGText}} {
@@ -22,8 +22,20 @@ live_design!{
 pub struct DrawGText {
     #[deref]
     pub draw_super: DrawText,
-    #[live] pub hover_color: Vec4,
-    #[live] pub pressed_color: Vec4,
+    #[live]
+    pub hover_color: Vec4,
+    #[live]
+    pub pressed_color: Vec4,
     // text is empty or not
-    #[live] pub empty: f32,
+    #[live]
+    pub empty: f32,
+}
+
+impl DrawGText {
+    pub fn is_empty(&self) -> bool {
+        self.empty == 1.0
+    }
+    pub fn set_empty(&mut self, empty: bool) {
+        self.empty = if empty { 1.0 } else { 0.0 }
+    }
 }

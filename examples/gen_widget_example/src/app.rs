@@ -26,7 +26,9 @@ live_design! {
     import crate::components::badges::*;
     import crate::components::bread_crumbs::*;
     import crate::components::tabs::*;
-
+    
+    // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
+    
     App = {{App}}{
         root: <Root>{
             main_window = <Window>{
@@ -45,6 +47,8 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
+                        
+                        <GInput>{}
                         <GHLayout>{
                             height: Fit,
                             spacing: 6.0,
@@ -211,6 +215,8 @@ live_design! {
                                 button_type: Code,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Test,
                             }
                             <GToolButton>{
@@ -219,58 +225,66 @@ live_design! {
                                 button_type: Open,
                             }
                             <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
                                 button_type: OpenLeft,
                             }
                             <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
                                 button_type: OpenRight,
                             }
                             <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
                                 button_type: OpenTop,
                             }
                             <GToolButton>{
+                                height: 30.0,
+                                width: 30.0,
                                 button_type: OpenBottom,
                             }
                         }
                     }
-                    <GCollapse>{
-                        height: 100.0,
-                        width: 300.0
-                    }
-                    <GUpload>{
+                    // <GCollapse>{
+                    //     height: 100.0,
+                    //     width: 300.0
+                    // }
+                    // <GUpload>{
 
-                    }
-                    <GCard>{
-                        width: 200.0,
-                        height: 200.0,
-                        <GSplitter>{
+                    // }
+                    // <GCard>{
+                    //     width: 200.0,
+                    //     height: 200.0,
+                    //     <GSplitter>{
                         
-                        }
-                    }
-                    <GTabsExample>{}
-                    <GBreadCrumbExample>{}
-                    <GBadgeExample>{}
-                    <GStatesExample>{}
-                    // loading pass, test ok
-                    // <GLoadingExample>{}
-                    <GProgressExample>{}
-                    <GToggleExample>{}
+                    //     }
+                    // }
+                    // <GTabsExample>{}
+                    // <GBreadCrumbExample>{}
+                    // <GBadgeExample>{}
+                    // <GStatesExample>{}
+                    // // loading pass, test ok
+                    // // <GLoadingExample>{}
+                    // <GProgressExample>{}
+                    // <GToggleExample>{}
 
-                    <GPopupExample>{}
-                    // <GShaderExample>{}
-                    // <GSelectExample>{}
-                    <GLabelExample>{}
+                    // <GPopupExample>{}
+                    // // <GShaderExample>{}
+                    // // <GSelectExample>{}
+                    // <GLabelExample>{}
 
-                    <GButtonExample>{}
-                    <GCardExample>{}
-                    <GHLayoutExample>{}
-                    <GVLayoutExample>{}
-                    <GLinkExample>{}
-                    <GRadioExample>{}
-                    <GCheckBoxExample>{}
-                    <GIconExample>{}
-                    <GImageExample>{}
-                    <GDividerExample>{}
-                    <GInputExample>{}
+                    // <GButtonExample>{}
+                    // <GCardExample>{}
+                    // <GHLayoutExample>{}
+                    // <GVLayoutExample>{}
+                    // <GLinkExample>{}
+                    // <GRadioExample>{}
+                    // <GCheckBoxExample>{}
+                    // <GIconExample>{}
+                    // <GImageExample>{}
+                    // <GDividerExample>{}
+                    // <GInputExample>{}
 
                 }
             }

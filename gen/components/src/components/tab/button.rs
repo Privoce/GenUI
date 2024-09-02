@@ -62,7 +62,7 @@ pub struct GTabButton {
     #[live]
     pub font_family: LiveDependency,
     #[live]
-    pub text: RcStringMut,
+    pub text: ArcStringMut,
     #[live]
     pub selected: bool,
     #[live]

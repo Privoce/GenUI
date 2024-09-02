@@ -77,7 +77,7 @@ pub struct GLink {
     transparent: bool,
     // text -----------------
     #[live]
-    pub text: RcStringMut,
+    pub text: ArcStringMut,
     #[live(10.0)]
     pub font_size: f64,
     #[live]

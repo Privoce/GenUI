@@ -11,6 +11,7 @@ license = "MIT"
 [dependencies]
 makepad-widgets = {path = "E:/Rust/try/makepad/makepad/rik/makepad/widgets"}
 rfd = "0.14.1"
+unicode-segmentation = "1.11.0"
 # nom = "7.1.3"
 # makepad-draw = { path = "E:/Rust/try/makepad/makepad/rik/makepad/draw", version = "0.6.0" }
 # makepad-derive-widget = {path = "./derive_widget", version="0.4.0"}

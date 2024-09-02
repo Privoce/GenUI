@@ -50,7 +50,7 @@ pub struct GBreadCrumbItem {
     #[live]
     pub font_family: LiveDependency,
     #[live]
-    pub text: RcStringMut,
+    pub text: ArcStringMut,
     #[live]
     pub text_walk: Walk,
     // icon -------------------

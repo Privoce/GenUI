@@ -39,7 +39,7 @@ pub struct GLabel {
     #[live]
     padding: Padding,
     #[live]
-    text: RcStringMut,
+    text: ArcStringMut,
 }
 
 #[derive(Clone, Debug, DefaultNone)]

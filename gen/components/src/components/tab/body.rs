@@ -15,7 +15,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GTabBody {
     #[live]
-    pub text: RcStringMut,
+    pub text: ArcStringMut,
     #[live]
     #[deref]
     pub deref_widget: Card,
