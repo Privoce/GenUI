@@ -26,7 +26,7 @@ live_design! {
     import crate::components::badges::*;
     import crate::components::bread_crumbs::*;
     import crate::components::tabs::*;
-    
+    import crate::components::icon_lib::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
     
     App = {{App}}{
@@ -47,188 +47,66 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        <GHLayout>{
-                            height: Fit,
-                            spacing: 6.0,
-                            <GToolButton>{
-                                button_type: Default,
-                            }
-                            <GToolButton>{
-                                button_type: Min,
-                            }
-                            <GToolButton>{
-                                button_type: Max,
-                            }
-                            <GToolButton>{
-                                button_type: FullScreen,
-                            }
-                            <GToolButton>{
-                                button_type: Left,
-                            }
-                            <GToolButton>{
-                                button_type: Right,
-                            }
-                            <GToolButton>{
-                                button_type: More,
-                            }
-                            <GToolButton>{
-                                button_type: Close,
-                            }
-                            <GToolButton>{
-                                button_type: Up,
-                            }
-                            <GToolButton>{
-                                button_type: Down,
-                            }
-                            <GToolButton>{
-                                button_type: Switch,
-                            }
-                            <GToolButton>{
-                                button_type: Exit,
-                            }
-                            <GToolButton>{
-                                button_type: Expand,
-                            }
-                            <GToolButton>{
-                                button_type: ExpandTop,
-                            }
-                            <GToolButton>{
-                                button_type: ExpandLeft,
-                            }
-                            <GToolButton>{
-                                button_type: ExpandRight,
-                            }
-                            <GToolButton>{
-                                button_type: ExpandBottom,
-                            }
-                            <GToolButton>{
-                                button_type: Add,
-                            }
-                            <GToolButton>{
-                                button_type: Delete,
-                            }
-                            
-                        }
+                        <GIconLibExample>{}
                         <GHLayout>{
                             spacing: 6.0,
                             height: Fit,
                             <GToolButton>{
-                                button_type: Correct,
+                                button_type: Split,
                             }
                             <GToolButton>{
-                                button_type: DeleteKey,
+                                button_type: Split2,
                             }
                             <GToolButton>{
-                                button_type: Fresh,
+                                button_type: Wifi,
                             }
                             <GToolButton>{
-                                button_type: Play,
+                                button_type: WifiNone,
                             }
                             <GToolButton>{
-                                button_type: Stop,
+                                button_type: AI,
                             }
                             <GToolButton>{
-                                button_type: Setting,
+                                button_type: VR,
                             }
                             <GToolButton>{
-                                button_type: Bind,
+                                button_type: Note,
                             }
                             <GToolButton>{
-                                button_type: Menu,
+                                button_type: Notice,
                             }
                             <GToolButton>{
-                                button_type: Emoji,
+                                button_type: NoticeNone,
                             }
                             <GToolButton>{
-                                button_type: Phone,
+                                button_type: Clock,
                             }
                             <GToolButton>{
-                                button_type: FullScreenExpand,
+                                button_type: Info,
                             }
                             <GToolButton>{
-                                button_type: Upload,
+                                button_type: Help,
                             }
                             <GToolButton>{
-                                button_type: Download,
+                                button_type: Warn,
                             }
                             <GToolButton>{
-                                button_type: Setting2,
+                                button_type: Poweroff,
                             }
                             <GToolButton>{
-                                button_type: Setting3,
+                                button_type: Light,
                             }
                             <GToolButton>{
-                                button_type: Home,
+                                button_type: Male,
                             }
                             <GToolButton>{
-                                button_type: GoOn,
+                                button_type: Female,
                             }
                             <GToolButton>{
-                                button_type: Hot,
+                                button_type: Picture,
                             }
                             <GToolButton>{
-                                button_type: Heart,
-                            }
-                        }
-                        <GHLayout>{
-                            spacing: 6.0,
-                            height: Fit,
-                            <GToolButton>{
-                                button_type: HeartBroken,
-                            }
-                            <GToolButton>{
-                                button_type: Dislike,
-                            }
-                            <GToolButton>{
-                                button_type: Rss,
-                            }
-                            <GToolButton>{
-                                button_type: Share,
-                            }
-                            <GToolButton>{
-                                button_type: ZoomIn,
-                            }
-                            <GToolButton>{
-                                button_type: ZoomOut,
-                            }
-                            <GToolButton>{
-                                button_type: Eye,
-                            }
-                            <GToolButton>{
-                                button_type: EyeClose,
-                            }
-                            <GToolButton>{
-                                button_type: Search,
-                            }
-                            <GToolButton>{
-                                button_type: Connect,
-                            }
-                            <GToolButton>{
-                                button_type: Disconnect,
-                            }
-                            <GToolButton>{
-                                button_type: Debug,
-                            }
-                            <GToolButton>{
-                                button_type: Code,
-                            }
-                            <GToolButton>{
-                                button_type: Test,
-                            }
-                            <GToolButton>{
-                                button_type: Open,
-                            }
-                            <GToolButton>{
-                                button_type: OpenLeft,
-                            }
-                            <GToolButton>{
-                                button_type: OpenRight,
-                            }
-                            <GToolButton>{
-                                button_type: OpenTop,
-                            }
-                            <GToolButton>{
-                                button_type: OpenBottom,
+                                button_type: System,
                             }
                         }
                     }
@@ -310,6 +188,7 @@ impl LiveRegister for App {
         crate::components::badges::live_design(cx);
         crate::components::bread_crumbs::live_design(cx);
         crate::components::tabs::live_design(cx);
+        crate::components::icon_lib::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }
