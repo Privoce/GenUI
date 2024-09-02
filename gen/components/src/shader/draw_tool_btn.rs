@@ -911,10 +911,10 @@ live_design! {
                 }
                 GToolButtonType::Test => {
                     let quarter_size = size * 0.25;
-                    let s = vec2(start_pos.x + quarter_size.x , end_pos.y - quarter_size.y * 1.5);
-                    let e = vec2(start_pos.x + quarter_size.x * 1.6, end_pos.y - quarter_size.y * 1.0);
-                    let c1 = vec2(start_pos.x + quarter_size.x * 0.8, end_pos.y - quarter_size.y * 0.72);
-                    sdf.move_to(center_x + quarter_size.x * 0.8, start_pos.y + quarter_size.y * 0.5);
+                    let s = vec2(start_pos.x + quarter_size.x * 0.76, end_pos.y - quarter_size.y * 1.1);
+                    let e = vec2(start_pos.x + quarter_size.x * 1.64, end_pos.y - quarter_size.y * 0.5);
+                    let c1 = vec2(start_pos.x + quarter_size.x * 0.6, end_pos.y - quarter_size.y * 0.1);
+                    sdf.move_to(center_x + quarter_size.x * 0.4, start_pos.y + quarter_size.y * 0.36);
                     sdf.line_to(s.x, s.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
                     sdf.move_to(s.x, s.y);
@@ -925,34 +925,82 @@ live_design! {
                         counter += 1.0;
                     }
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.line_to(center_x + quarter_size.x * 0.8 * 1.68, start_pos.y + quarter_size.y);
-                    sdf.line_to(center_x + quarter_size.x * 0.8, start_pos.y + quarter_size.y * 0.5);
+                    sdf.line_to(center_x + quarter_size.x * 0.8 * 1.68, start_pos.y + quarter_size.y * 0.84);
+                    sdf.line_to(center_x + quarter_size.x * 0.4, start_pos.y + quarter_size.y * 0.36);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.move_to(center_x, center_y - quarter_size.y * 0.6);
+                    sdf.move_to(center_x - quarter_size.x * 0.14, center_y - quarter_size.y * 0.6);
                     sdf.line_to(center_x + quarter_size.x * 0.9, center_y - quarter_size.y * 0.6);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                    sdf.rect(start_pos.x + quarter_size.x / 2.0, start_pos.y + quarter_size.x / 2.0, size.x - quarter_size.x, size.y- quarter_size.x);
+                    let s2 = vec2(center_x + quarter_size.x * 1.6, center_y + quarter_size.y * 0.46);
+                    let e2 = vec2(center_x + quarter_size.x * 1.6, center_y + quarter_size.y * 1.3);
+                    let c2 = vec2(center_x +quarter_size.x * 1.0, center_y + quarter_size.y * 1.22);
+                    let c3 = vec2(center_x + quarter_size.x * 2.2, center_y + quarter_size.y * 1.22);
+                    let counter2 = 0.0;
+                    sdf.move_to(s2.x, s2.y);
+                    for i in 0..100{
+                        let point = bezier2(s2, c2, e2, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
                     sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(s2.x, s2.y);
+                    let counter3 = 0.0;
+                    for i in 0..100{
+                        let point = bezier2(s2, c3, e2, counter3 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter3 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    
                 }
                 GToolButtonType::Open => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.3;
+                    sdf.circle(center_x, center_y, quarter_size.x);
+                    sdf.move_to(center_x - quarter_size.x, center_y);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.1, center_y);
+                    sdf.move_to(center_x + quarter_size.x, center_y);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.1, center_y);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::OpenLeft => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.3;
+                    sdf.circle(center_x + quarter_size.x * 0.4, center_y, quarter_size.x);
+                    sdf.move_to(center_x, center_y);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.2, center_y);
+                    sdf.line_to(center_x - quarter_size.x * 0.8, center_y - quarter_size.y * 0.6);
+                    sdf.move_to(start_pos.x + quarter_size.x * 0.2, center_y);
+                    sdf.line_to(center_x - quarter_size.x * 0.8, center_y + quarter_size.y * 0.6);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::OpenRight => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.3;
+                    sdf.circle(center_x - quarter_size.x * 0.4, center_y, quarter_size.x);
+                    sdf.move_to(center_x, center_y);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.2, center_y);
+                    sdf.line_to(center_x + quarter_size.x * 0.8, center_y - quarter_size.y * 0.6);
+                    sdf.move_to(end_pos.x - quarter_size.x * 0.2, center_y);
+                    sdf.line_to(center_x + quarter_size.x * 0.8, center_y + quarter_size.y * 0.6);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::OpenTop => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.3;
+                    sdf.circle(center_x, center_y + quarter_size.y * 0.4, quarter_size.x);
+                    sdf.move_to(center_x, center_y);
+                    sdf.line_to(center_x, start_pos.y + quarter_size.y * 0.2);
+                    sdf.line_to(center_x - quarter_size.x * 0.6, center_y - quarter_size.y * 0.8);
+                    sdf.move_to(center_x, start_pos.y + quarter_size.y * 0.2);
+                    sdf.line_to(center_x + quarter_size.x * 0.6, center_y - quarter_size.y * 0.8);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::OpenBottom => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.3;
+                    sdf.circle(center_x, center_y - quarter_size.y * 0.4, quarter_size.x);
+                    sdf.move_to(center_x, center_y);
+                    sdf.line_to(center_x, end_pos.y - quarter_size.y * 0.2);
+                    sdf.line_to(center_x - quarter_size.x * 0.6, center_y + quarter_size.y * 0.8);
+                    sdf.move_to(center_x, end_pos.y - quarter_size.y * 0.2);
+                    sdf.line_to(center_x + quarter_size.x * 0.6, center_y + quarter_size.y * 0.8);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Split => {
                     sdf.rect(start_pos.x, start_pos.y, size.x, size.y);

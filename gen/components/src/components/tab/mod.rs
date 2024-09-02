@@ -73,7 +73,7 @@ impl Widget for GTab {
 }
 
 impl LiveHook for GTab {
-    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(&mut self, _cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // let bg_color = get_color(self.theme, self.background_color, 500);
         // self.draw_tab.apply_over(cx, live!{
         //     background_color: (bg_color),

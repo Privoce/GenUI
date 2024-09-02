@@ -47,10 +47,6 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        <GInput>{
-                            width: 100.0,
-                            
-                        }
                         <GHLayout>{
                             height: Fit,
                             spacing: 6.0,
@@ -217,33 +213,21 @@ live_design! {
                                 button_type: Code,
                             }
                             <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
                                 button_type: Test,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: Open,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: OpenLeft,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: OpenRight,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: OpenTop,
                             }
                             <GToolButton>{
-                                height: 30.0,
-                                width: 30.0,
                                 button_type: OpenBottom,
                             }
                         }
