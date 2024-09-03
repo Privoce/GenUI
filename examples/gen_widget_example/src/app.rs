@@ -47,7 +47,7 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        <GIconLibExample>{}
+                        // <GIconLibExample>{}
                         <GHLayout>{
                             spacing: 6.0,
                             height: Fit,
@@ -76,13 +76,9 @@ live_design! {
                                 button_type: Notice,
                             }
                             <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
                                 button_type: NoticeNone,
                             }
                             <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
                                 button_type: Clock,
                             }
                             <GToolButton>{
@@ -91,6 +87,8 @@ live_design! {
                                 button_type: Info,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Help,
                             }
                             <GToolButton>{
@@ -103,6 +101,8 @@ live_design! {
                                 button_type: Light,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Male,
                             }
                             <GToolButton>{
