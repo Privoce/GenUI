@@ -82,16 +82,13 @@ live_design! {
                                 button_type: Clock,
                             }
                             <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
                                 button_type: Info,
                             }
                             <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
                                 button_type: Help,
                             }
                             <GToolButton>{
+
                                 button_type: Warn,
                             }
                             <GToolButton>{
@@ -106,12 +103,18 @@ live_design! {
                                 button_type: Male,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Female,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Picture,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: System,
                             }
                         }

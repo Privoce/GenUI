@@ -1251,29 +1251,63 @@ live_design! {
                 GToolButtonType::Info => {
                     let half_size = size * 0.5;
                     let quarter_size = half_size * 0.5;
+                    let r = stroke_width * 1.65;
                     sdf.circle(center_x, center_y, half_size.x);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                  
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.circle(center_x, center_y - quarter_size.y * 0.9 - r , r);
+                    sdf.fill(self.stroke_color());
+                    sdf.move_to(center_x - quarter_size.x * 0.25, center_y - quarter_size.y * 0.6);
+                    sdf.line_to(center_x, center_y - quarter_size.y * 0.6);
+                    sdf.line_to(center_x, center_y + quarter_size.y);
+                    sdf.move_to(center_x - quarter_size.x * 0.4, center_y + quarter_size.y);
+                    sdf.line_to(center_x + quarter_size.x * 0.4, center_y + quarter_size.y);
+                    sdf.stroke(self.stroke_color(), stroke_width * 1.2);
                 }
                 GToolButtonType::Help => {
                     let half_size = size * 0.5;
                     let quarter_size = half_size * 0.5;
+                    let r = stroke_width * 1.65;
                     sdf.circle(center_x, center_y, half_size.x);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                  
+                    sdf.circle(center_x, start_pos.x + quarter_size.y + half_size.y + r * 0.5, r);
+                    sdf.fill(self.stroke_color());
+                    let s = vec2(center_x - quarter_size.x * 0.6, center_y - quarter_size.y * 0.6);
+                    let e1 = vec2(center_x + quarter_size.x * 0.6, center_y - quarter_size.y * 0.6);
+                    let e2 = vec2(center_x, center_y);
+                    let c1_1 = vec2(s.x, start_pos.y + quarter_size.y * 0.5);
+                    let c1_2 = vec2(e1.x, start_pos.y + quarter_size.y * 0.5);
+                    let c2 = vec2(center_x + quarter_size.x * 0.5, center_y - quarter_size.y * 0.1);
+                    let counter1 = 0.0;
+                    sdf.move_to(s.x, s.y);
+                    for i in 0..100{
+                        let point = bezier3(s, c1_1, c1_2 ,e1, counter1 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter1 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width * 1.2);
+                    let counter2 = 0.0;
+                    sdf.move_to(e1.x, e1.y);
+                    for i in 0..100{
+                        let point = bezier2(e1, c2, e2, counter2 / 100.0);
+                        sdf.line_to(point.x, point.y);
+                        counter2 += 1.0;
+                    }
+                    sdf.stroke(self.stroke_color(), stroke_width * 1.2);
+                    sdf.move_to(e2.x, e2.y);
+                    sdf.line_to(center_x, center_y + quarter_size.y * 0.6);
+                    sdf.stroke(self.stroke_color(), stroke_width * 1.2);
                     sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 GToolButtonType::Warn => {
                     let half_size = size * 0.5;
                     let quarter_size = half_size * 0.5;
+                    let r = stroke_width * 1.65;
                     sdf.circle(center_x, center_y, half_size.x);
                     sdf.stroke(self.stroke_color(), stroke_width);
-                  
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.box(center_x - r * 0.8, start_pos.x + quarter_size.y * 0.5, r * 1.6, half_size.y, r * 0.25);
+                    sdf.circle(center_x, start_pos.x + quarter_size.y + half_size.y + r * 0.5, r);
+                    sdf.fill(self.stroke_color());
                 }
                 GToolButtonType::Poweroff => {
                     let half_size = size * 0.5;
