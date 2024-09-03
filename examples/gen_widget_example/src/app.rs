@@ -76,12 +76,18 @@ live_design! {
                                 button_type: Notice,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: NoticeNone,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Clock,
                             }
                             <GToolButton>{
+                                height: 60.0,
+                                width: 60.0,
                                 button_type: Info,
                             }
                             <GToolButton>{
