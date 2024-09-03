@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 live_design! {
-    DrawGIcon = {{DrawGIcon}}{
+    DrawGSvg = {{DrawGSvg}}{
         fn get_color(self) -> vec4 {
             return mix(
                 self.color,
@@ -14,7 +14,7 @@ live_design! {
 
 #[derive(Live, LiveHook, LiveRegister)]
 #[repr(C)]
-pub struct DrawGIcon {
+pub struct DrawGSvg {
     #[deref]
     pub draw_super: DrawIcon,
     #[live]
@@ -23,7 +23,7 @@ pub struct DrawGIcon {
     pub hover: f32,
 }
 
-impl DrawGIcon {
+impl DrawGSvg {
     pub fn set_src(&mut self, src: LiveDependency) -> () {
         self.svg_file = src;
     }

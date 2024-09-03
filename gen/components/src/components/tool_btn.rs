@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::shader::draw_tool_btn::{DrawGToolButton, GToolButtonType};
+use crate::shader::{draw_tool_btn::{DrawGToolButton, GToolButtonType}, icon_lib::{base::DrawGIconBase, types::base::Base}};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -12,11 +12,11 @@ live_design! {
 
 #[derive(Live, Widget)]
 pub struct GToolButton {
-    #[live(GToolButtonType::Default)]
-    pub button_type: GToolButtonType,
+    #[live(Base::Min)]
+    pub button_type: Base,
     #[redraw]
     #[live]
-    pub draw_tool_button: DrawGToolButton,
+    pub draw_tool_button: DrawGIconBase,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -40,7 +40,7 @@ impl LiveHook for GToolButton {
         });
 
         self.draw_tool_button
-            .apply_button_type(self.button_type.clone());
+            .apply_type(self.button_type.clone());
 
 
         self.draw_tool_button.redraw(cx);

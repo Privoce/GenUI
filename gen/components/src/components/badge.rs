@@ -1,4 +1,4 @@
-use crate::shader::draw_icon::DrawGIcon;
+use crate::shader::draw_icon::DrawGSvg;
 use crate::shader::draw_icon_pixel::DrawGIconPixel;
 use crate::utils::{get_font_family, DefaultTextStyle};
 use crate::{
@@ -103,7 +103,7 @@ pub struct GBadge {
     #[live(true)]
     grab_key_focus: bool,
     #[live]
-    draw_icon: DrawGIcon,
+    draw_icon: DrawGSvg,
     #[live]
     draw_close: DrawGIconPixel,
     #[live]

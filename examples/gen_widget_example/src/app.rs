@@ -51,72 +51,84 @@ live_design! {
                         <GHLayout>{
                             spacing: 6.0,
                             height: Fit,
-                            <GToolButton>{
-                                button_type: Split,
+                            <GIcon>{
+                                icon_type: Add,
                             }
-                            <GToolButton>{
-                                button_type: Split2,
-                            }
-                            <GToolButton>{
-                                button_type: Wifi,
-                            }
-                            <GToolButton>{
-                                button_type: WifiNone,
-                            }
-                            <GToolButton>{
-                                button_type: AI,
-                            }
-                            <GToolButton>{
-                                button_type: VR,
-                            }
-                            <GToolButton>{
-                                button_type: Note,
-                            }
-                            <GToolButton>{
-                                button_type: Notice,
-                            }
-                            <GToolButton>{
-                                button_type: NoticeNone,
-                            }
-                            <GToolButton>{
-                                button_type: Clock,
-                            }
-                            <GToolButton>{
-                                button_type: Info,
-                            }
-                            <GToolButton>{
-                                button_type: Help,
-                            }
-                            <GToolButton>{
+                            // <GToolButton>{
+                            //     button_type: Add,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Home,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Min,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Split,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Split2,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Wifi,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: WifiNone,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: AI,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: VR,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Note,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Notice,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: NoticeNone,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Clock,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Info,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Help,
+                            // }
+                            // <GToolButton>{
 
-                                button_type: Warn,
-                            }
-                            <GToolButton>{
-                                button_type: Poweroff,
-                            }
-                            <GToolButton>{
-                                button_type: Light,
-                            }
-                            <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
-                                button_type: Male,
-                            }
-                            <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
-                                button_type: Female,
-                            }
-                            <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
-                                button_type: Picture,
-                            }
-                            <GToolButton>{
-                                height: 60.0,
-                                width: 60.0,
-                                button_type: System,
-                            }
+                            //     button_type: Warn,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Poweroff,
+                            // }
+                            // <GToolButton>{
+                            //     button_type: Light,
+                            // }
+                            // <GToolButton>{
+                            //     height: 60.0,
+                            //     width: 60.0,
+                            //     button_type: Male,
+                            // }
+                            // <GToolButton>{
+                            //     height: 60.0,
+                            //     width: 60.0,
+                            //     button_type: Female,
+                            // }
+                            // <GToolButton>{
+                            //     height: 60.0,
+                            //     width: 60.0,
+                            //     button_type: Picture,
+                            // }
+                            // <GToolButton>{
+                            //     height: 60.0,
+                            //     width: 60.0,
+                            //     button_type: System,
+                            // }
                         }
                     }
                     // <GCollapse>{

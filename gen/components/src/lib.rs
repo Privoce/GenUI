@@ -12,6 +12,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::button::live_design(cx);
     crate::components::card::live_design(cx);
     crate::components::link::live_design(cx);
+    crate::components::svg::live_design(cx);
     crate::components::icon::live_design(cx);
     crate::components::radio::live_design(cx);
     crate::components::checkbox::live_design(cx);
@@ -52,6 +53,8 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_tab::live_design(cx);
     crate::shader::draw_tab_pane::live_design(cx);
     crate::shader::draw_tool_btn::live_design(cx);
+    crate::shader::icon_lib::live_design(cx);
+    crate::shader::icon_lib::base::live_design(cx);
     // export all the components
     crate::components::live_design(cx);
 }

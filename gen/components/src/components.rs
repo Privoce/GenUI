@@ -9,6 +9,7 @@ pub mod divider;
 pub mod drop_down;
 pub mod file_upload;
 pub mod icon;
+pub mod svg;
 pub mod image;
 pub mod input;
 pub mod label;
@@ -35,6 +36,7 @@ live_design! {
     import crate::components::checkbox::GCheckBoxBase;
     import crate::components::image::GImageBase;
     import crate::components::input::GInputBase;
+    import crate::components::svg::GSvgBase;
     import crate::components::divider::GDividerBase;
     import crate::components::shader::GShaderBase;
     import crate::components::popup::GPopupBase;
@@ -314,9 +316,13 @@ live_design! {
         height: 19.0,
         align: { x: 0.0, y: 0.0 }
     }
-    GIcon = <GIconBase>{
+    GSvg = <GSvgBase>{
         width: Fit,
         height: Fit,
+    }
+    GIcon = <GIconBase>{
+        width: 24.0,
+        height: 24.0,
     }
     GToolButton = <GToolButtonBase>{
         width: 24.0,
