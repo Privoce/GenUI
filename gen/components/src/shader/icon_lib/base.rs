@@ -264,12 +264,27 @@ live_design!{
                     sdf.fill(self.stroke_color());
                 }
                 Base::System => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    let r = quarter_size.x * 0.65;
+                    sdf.rect(start_pos.x + quarter_size.x * 0.2, start_pos.y + quarter_size.y * 0.2, r * 2.0, r * 2.0);
+                    sdf.rect(start_pos.x + quarter_size.x * 0.2, end_pos.y - quarter_size.y * 0.2 - r *2.0, r* 2.0, r* 2.0);
+                    sdf.rect(end_pos.x - quarter_size.x * 0.2 - r * 2.0, end_pos.y - quarter_size.y * 0.2 - r * 2.0, r* 2.0, r* 2.0);
+                    sdf.circle(end_pos.x - quarter_size.x * 0.2 - r, start_pos.y + quarter_size.y * 0.2 + r, r);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+
                 }
                 Base::Picture => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.25;
+                    sdf.rect(start_pos.x + quarter_size.x * 0.2, start_pos.y + quarter_size.x * 0.2, size.x - quarter_size.x * 0.2, size.y- quarter_size.x * 0.2);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.move_to(start_pos.x + quarter_size.x * 0.2, center_y + quarter_size.y * 1.0);
+                    sdf.line_to(center_x - quarter_size.x * 0.9, center_y + quarter_size.y * 0.45);
+                    sdf.line_to(center_x - quarter_size.x * 0.2, center_y + quarter_size.y * 0.9);
+                    sdf.line_to(center_x + quarter_size.x * 0.9, center_y + quarter_size.y * 0.1);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.2, center_y + quarter_size.y * 0.8);
+                    sdf.stroke(self.stroke_color(), stroke_width);
+                    sdf.circle(center_x - quarter_size.x * 0.2, center_y - quarter_size.y * 0.5, quarter_size.x * 0.46);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 Base::Eye => {
                     let quarter_size = size * 0.25;

@@ -6,196 +6,370 @@ live_design! {
     import gen_components::components::*;
 
     GIconLibExample = <ScrollYView>{
-        height: 200.0,
+        height: 300.0,
         width: Fill,
         spacing: 10.0,
         flow: Down,
-        // <GLabel>{
-        //     text: "GIconLib",
-        // }
-        <GHLayout>{
-            height: Fit,
-            spacing: 6.0,
-            <GToolButton>{
-                button_type: Default,
-            }
-            <GToolButton>{
-                button_type: Min,
-            }
-            <GToolButton>{
-                button_type: Max,
-            }
-            <GToolButton>{
-                button_type: FullScreen,
-            }
-            <GToolButton>{
-                button_type: Left,
-            }
-            <GToolButton>{
-                button_type: Right,
-            }
-            <GToolButton>{
-                button_type: More,
-            }
-            <GToolButton>{
-                button_type: Close,
-            }
-            <GToolButton>{
-                button_type: Up,
-            }
-            <GToolButton>{
-                button_type: Down,
-            }
-            <GToolButton>{
-                button_type: Switch,
-            }
-            <GToolButton>{
-                button_type: Exit,
-            }
-            <GToolButton>{
-                button_type: Expand,
-            }
-            <GToolButton>{
-                button_type: ExpandTop,
-            }
-            <GToolButton>{
-                button_type: ExpandLeft,
-            }
-            <GToolButton>{
-                button_type: ExpandRight,
-            }
-            <GToolButton>{
-                button_type: ExpandBottom,
-            }
-            <GToolButton>{
-                button_type: Add,
-            }
-            <GToolButton>{
-                button_type: Delete,
-            }
-            
+        <GLabel>{
+            text: "GIconLib",
         }
-        <GHLayout>{
-            spacing: 6.0,
+        <GDivider>{
             height: Fit,
-            <GToolButton>{
-                button_type: Correct,
-            }
-            <GToolButton>{
-                button_type: DeleteKey,
-            }
-            <GToolButton>{
-                button_type: Fresh,
-            }
-            <GToolButton>{
-                button_type: Play,
-            }
-            <GToolButton>{
-                button_type: Stop,
-            }
-            <GToolButton>{
-                button_type: Setting,
-            }
-            <GToolButton>{
-                button_type: Bind,
-            }
-            <GToolButton>{
-                button_type: Menu,
-            }
-            <GToolButton>{
-                button_type: Emoji,
-            }
-            <GToolButton>{
-                button_type: Phone,
-            }
-            <GToolButton>{
-                button_type: FullScreenExpand,
-            }
-            <GToolButton>{
-                button_type: Upload,
-            }
-            <GToolButton>{
-                button_type: Download,
-            }
-            <GToolButton>{
-                button_type: Setting2,
-            }
-            <GToolButton>{
-                button_type: Setting3,
-            }
-            <GToolButton>{
-                button_type: Home,
-            }
-            <GToolButton>{
-                button_type: GoOn,
-            }
-            <GToolButton>{
-                button_type: Hot,
-            }
-            <GToolButton>{
-                button_type: Heart,
+            <GCard>{
+                height:Fit,
+                width: Fit,
+                padding: {left: 16.0, right: 16.0,}
+                align: {x: 0.5}
+                <GLabel>{
+                    text: "Base",
+                }
             }
         }
-        <GHLayout>{
-            spacing: 6.0,
+        <GVLayout>{
             height: Fit,
-            <GToolButton>{
-                button_type: HeartBroken,
+            spacing: 8.0,
+            scroll_bars: <GScrollBars> {}
+            <GHLayout>{
+                height: Fit,
+                width: Fill,
+                <GVLayout>{
+                    height: Fit,
+                    spacing: 4.0,
+                    width: 110.0,
+                    align: {x: 0.5},
+                    <GIcon>{
+                        icon_type: Min,
+                    }
+                    <GLabel>{
+                        text: "Min",
+                    }
+                }
             }
-            <GToolButton>{
-                button_type: Dislike,
-            }
-            <GToolButton>{
-                button_type: Rss,
-            }
-            <GToolButton>{
-                button_type: Share,
-            }
-            <GToolButton>{
-                button_type: ZoomIn,
-            }
-            <GToolButton>{
-                button_type: ZoomOut,
-            }
-            <GToolButton>{
-                button_type: Eye,
-            }
-            <GToolButton>{
-                button_type: EyeClose,
-            }
-            <GToolButton>{
-                button_type: Search,
-            }
-            <GToolButton>{
-                button_type: Connect,
-            }
-            <GToolButton>{
-                button_type: Disconnect,
-            }
-            <GToolButton>{
-                button_type: Debug,
-            }
-            <GToolButton>{
-                button_type: Code,
-            }
-            <GToolButton>{
-                button_type: Test,
-            }
-            <GToolButton>{
-                button_type: Open,
-            }
-            <GToolButton>{
-                button_type: OpenLeft,
-            }
-            <GToolButton>{
-                button_type: OpenRight,
-            }
-            <GToolButton>{
-                button_type: OpenTop,
-            }
-            <GToolButton>{
-                button_type: OpenBottom,
-            }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Max,
+            //         }
+            //         <GLabel>{
+            //             text: "Max",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: FullScreen,
+            //         }
+            //         <GLabel>{
+            //             text: "FullScreen",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: FullScreenExpand,
+            //         }
+            //         <GLabel>{
+            //             text: "FullScreenExpand",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: More,
+            //         }
+            //         <GLabel>{
+            //             text: "More",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Close,
+            //         }
+            //         <GLabel>{
+            //             text: "Close",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Upload,
+            //         }
+            //         <GLabel>{
+            //             text: "Upload",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Download,
+            //         }
+            //         <GLabel>{
+            //             text: "Download",
+            //         }
+            //     }
+            // }
+            // <GHLayout>{
+            //     height: Fit,
+            //     width: Fill,
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Add,
+            //         }
+            //         <GLabel>{
+            //             text: "Add",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Delete,
+            //         }
+            //         <GLabel>{
+            //             text: "Delete",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: DeleteKey,
+            //         }
+            //         <GLabel>{
+            //             text: "DeleteKey",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Correct,
+            //         }
+            //         <GLabel>{
+            //             text: "Correct",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Fresh,
+            //         }
+            //         <GLabel>{
+            //             text: "Fresh",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Play,
+            //         }
+            //         <GLabel>{
+            //             text: "Play",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Stop,
+            //         }
+            //         <GLabel>{
+            //             text: "Stop",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: GoOn,
+            //         }
+            //         <GLabel>{
+            //             text: "GoOn",
+            //         }
+            //     }
+            // }
+            // <GHLayout>{
+            //     height: Fit,
+            //     width: Fill,
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Setting,
+            //         }
+            //         <GLabel>{
+            //             text: "Setting",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Setting2,
+            //         }
+            //         <GLabel>{
+            //             text: "Setting2",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Setting3,
+            //         }
+            //         <GLabel>{
+            //             text: "Setting3",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Home,
+            //         }
+            //         <GLabel>{
+            //             text: "Home",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: System,
+            //         }
+            //         <GLabel>{
+            //             text: "System",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Picture,
+            //         }
+            //         <GLabel>{
+            //             text: "Picture",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Eye,
+            //         }
+            //         <GLabel>{
+            //             text: "Eye",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: EyeClose,
+            //         }
+            //         <GLabel>{
+            //             text: "EyeClose",
+            //         }
+            //     }
+            // }
+            // <GHLayout>{
+            //     height: Fit,
+            //     width: Fill,
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Phone,
+            //         }
+            //         <GLabel>{
+            //             text: "Phone",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Light,
+            //         }
+            //         <GLabel>{
+            //             text: "Light",
+            //         }
+            //     }
+            //     <GVLayout>{
+            //         height: Fit,
+            //         spacing: 4.0,
+            //         width: 110.0,
+            //         align: {x: 0.5},
+            //         <GIcon>{
+            //             icon_type: Menu,
+            //         }
+            //         <GLabel>{
+            //             text: "Menu",
+            //         }
+            //     }  
+            // }
         }
         
     }

@@ -111,8 +111,8 @@ impl LiveHook for GLabel {
             live! {
                 color: (self.color),
                 text_style: {
-                    brightness: (self.brightness),
-                    curve: (self.curve),
+                    // brightness: (self.brightness),
+                    // curve: (self.curve),
                     line_spacing: (self.line_spacing),
                     top_drop: (self.top_drop),
                     font_size: (self.font_size),

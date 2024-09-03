@@ -18,7 +18,7 @@ live_design! {
             let half_size = size * 0.5;
 
             match self.icon_type{
-                GToolButtonType::Info => {
+                State::Info => {
                     let half_size = size * 0.5;
                     let quarter_size = half_size * 0.5;
                     let r = stroke_width * 1.65;
@@ -33,7 +33,7 @@ live_design! {
                     sdf.line_to(center_x + quarter_size.x * 0.4, center_y + quarter_size.y);
                     sdf.stroke(self.stroke_color(), stroke_width * 1.2);
                 }
-                GToolButtonType::Help => {
+                State::Help => {
                     let half_size = size * 0.5;
                     let quarter_size = half_size * 0.5;
                     let r = stroke_width * 1.65;
@@ -69,7 +69,7 @@ live_design! {
                     sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
-                GToolButtonType::Warn => {
+                State::Warn => {
                     let half_size = size * 0.5;
                     let quarter_size = half_size * 0.5;
                     let r = stroke_width * 1.65;
@@ -79,7 +79,7 @@ live_design! {
                     sdf.circle(center_x, start_pos.x + quarter_size.y + half_size.y + r * 0.5, r);
                     sdf.fill(self.stroke_color());
                 }
-                GToolButtonType::Wifi => {
+                State::Wifi => {
                     let quarter_size = size * 0.25;
                     let spacing = quarter_size.x * 0.46;
                     let c1 = vec2(center_x, end_pos.y - spacing * 1.4);
@@ -119,7 +119,7 @@ live_design! {
                     }
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
-                GToolButtonType::WifiNone => {
+                State::WifiNone => {
                     let quarter_size = size * 0.25;
                     let spacing = quarter_size.x * 0.46;
                     sdf.move_to(start_pos.x + quarter_size.x * 0.5, start_pos.y + quarter_size.y * 0.5);

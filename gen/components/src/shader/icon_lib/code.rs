@@ -98,14 +98,14 @@ live_design! {
                     let counter1 = 0.0;
                     sdf.move_to(s1.x, s1.y);
                     for i in 0..100{
-                        let point = bezier2(s1, c1, e, counter1 / 100.0);
+                        let point = self.bezier2(s1, c1, e, counter1 / 100.0);
                         sdf.line_to(point.x, point.y);
                         counter1 += 1.0;
                     }
                     let counter2 = 0.0;
                     sdf.move_to(s2.x, s2.y);
                     for i in 0..100{
-                        let point = bezier2(s2, c2, e, counter2 / 100.0);
+                        let point = self.bezier2(s2, c2, e, counter2 / 100.0);
                         sdf.line_to(point.x, point.y);
                         counter2 += 1.0;
                     }

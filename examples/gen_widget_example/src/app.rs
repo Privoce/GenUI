@@ -36,7 +36,7 @@ live_design! {
                 width: Fill,
                 height: Fill,
                 draw_bg: {color: #b},
-                window: {inner_size: vec2(600, 800)},
+                window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: All,
                     width: All,
@@ -47,22 +47,11 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        // <GIconLibExample>{}
+                        <GIconLibExample>{}
                         <GHLayout>{
                             spacing: 6.0,
                             height: Fit,
-                            <GIcon>{
-                                icon_type: Add,
-                            }
-                            <GIcon>{
-                                icon_type: Home,
-                            }
-                            <GIcon>{
-                                icon_type: Min,
-                            }
-                            <GIcon>{
-                                icon_type: Right,
-                            }
+                            
                             // <GToolButton>{
                             //     button_type: Add,
                             // }
