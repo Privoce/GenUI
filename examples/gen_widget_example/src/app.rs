@@ -54,6 +54,15 @@ live_design! {
                             <GIcon>{
                                 icon_type: Add,
                             }
+                            <GIcon>{
+                                icon_type: Home,
+                            }
+                            <GIcon>{
+                                icon_type: Min,
+                            }
+                            <GIcon>{
+                                icon_type: Right,
+                            }
                             // <GToolButton>{
                             //     button_type: Add,
                             // }

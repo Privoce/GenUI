@@ -374,6 +374,5 @@ pub struct DrawGIconBase {
 impl DrawGIconBase {
     pub fn apply_type(&mut self, ty: Base) {
         self.icon_type = ty;
-        dbg!(self.icon_type);
     }
 }

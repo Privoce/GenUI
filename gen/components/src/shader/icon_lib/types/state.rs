@@ -8,7 +8,7 @@ use super::IconType;
 pub enum State {
     #[pick]
     /// `i` (成功)
-    Info,
+    Info = shader_enum(1),
     /// `?` (帮助)
     Help,
     /// `⚠` (警告)

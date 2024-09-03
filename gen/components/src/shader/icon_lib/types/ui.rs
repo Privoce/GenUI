@@ -11,7 +11,7 @@ pub enum UI {
     /// |  > (退出)
     /// ---
     /// ```
-    Exit,
+    Exit = shader_enum(1),
     /// `<>` (展开)
     Expand,
     /// ```

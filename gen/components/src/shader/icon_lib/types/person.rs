@@ -7,7 +7,7 @@ use super::IconType;
 #[repr(u32)]
 pub enum Person {
     #[pick]
-    Male,
+    Male = shader_enum(1),
     Female,
 }
 

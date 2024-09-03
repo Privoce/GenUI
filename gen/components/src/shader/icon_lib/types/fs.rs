@@ -7,7 +7,7 @@ use super::IconType;
 #[repr(u32)]
 pub enum Fs {
     #[pick]
-    Note,
+    Note = shader_enum(1),
 }
 
 impl TryFrom<&IconType> for Fs {

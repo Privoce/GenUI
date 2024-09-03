@@ -7,7 +7,7 @@ use super::IconType;
 #[repr(u32)]
 pub enum Relation {
     #[pick]
-    Connect,
+    Connect = shader_enum(1),
     Disconnect,
 }
 

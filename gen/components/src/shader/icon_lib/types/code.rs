@@ -8,9 +8,10 @@ use super::IconType;
 pub enum Code {
     #[pick]
     /// `</>` 
-    Code,
+    Code = shader_enum(1),
     /// 试管图标
     Test,
+    Debug,
 }
 
 impl TryFrom<&IconType> for Code {
@@ -20,6 +21,7 @@ impl TryFrom<&IconType> for Code {
         match value {
             IconType::Code => Ok(Self::Code),
             IconType::Test => Ok(Self::Test),
+            IconType::Debug => Ok(Self::Debug),
             _ => Err(()),
         }
     }

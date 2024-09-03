@@ -8,7 +8,7 @@ use super::IconType;
 pub enum Arrow {
     #[pick]
     /// `<` (左箭头)
-    Left,
+    Left = shader_enum(1),
     /// `>` (右箭头)
     Right,
     /// `︿` (向上)

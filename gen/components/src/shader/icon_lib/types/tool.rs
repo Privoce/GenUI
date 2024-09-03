@@ -7,7 +7,7 @@ use super::IconType;
 #[repr(u32)]
 pub enum Tool {
     #[pick]
-    Search,
+    Search = shader_enum(1),
     ZoomIn,
     ZoomOut,
     Share,

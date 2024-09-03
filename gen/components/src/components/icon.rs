@@ -1,6 +1,10 @@
 use makepad_widgets::*;
 
-use crate::shader::icon_lib::{base::DrawGIconBase, types::{base::Base, DrawGIconType, IconType}};
+use crate::shader::icon_lib::{
+    arrow::DrawGIconArrow,
+    base::DrawGIconBase,
+    types::{arrow::Arrow, base::Base, DrawGIconType, IconType},
+};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -26,9 +30,11 @@ pub struct GIcon {
     #[layout]
     pub layout: Layout,
     #[live]
-    pub icon_base: DrawGIconBase,
+    icon_base: Option<DrawGIconBase>,
+    #[live]
+    icon_arrow: Option<DrawGIconArrow>,
     #[rust]
-    pub draw_type: Option<DrawGIconType>, 
+    pub draw_type: Option<DrawGIconType>,
 }
 
 impl Widget for GIcon {
@@ -36,11 +42,20 @@ impl Widget for GIcon {
         self.draw_icon.begin(cx, walk, self.layout);
         match self.draw_type.as_ref().unwrap() {
             crate::shader::icon_lib::types::DrawGIconType::Base => {
-                self.icon_base.begin(cx, walk, self.layout);
-                self.icon_base.end(cx);
-            },
-            crate::shader::icon_lib::types::DrawGIconType::Code => todo!(),
-            crate::shader::icon_lib::types::DrawGIconType::Arrow => todo!(),
+                self.icon_base
+                    .as_mut()
+                    .unwrap()
+                    .begin(cx, walk, self.layout);
+                self.icon_base.as_mut().unwrap().end(cx);
+            }
+            crate::shader::icon_lib::types::DrawGIconType::Code => {}
+            crate::shader::icon_lib::types::DrawGIconType::Arrow => {
+                self.icon_arrow
+                    .as_mut()
+                    .unwrap()
+                    .begin(cx, walk, self.layout);
+                self.icon_arrow.as_mut().unwrap().end(cx);
+            }
             crate::shader::icon_lib::types::DrawGIconType::Emoji => todo!(),
             crate::shader::icon_lib::types::DrawGIconType::Fs => todo!(),
             crate::shader::icon_lib::types::DrawGIconType::UI => todo!(),
@@ -58,20 +73,34 @@ impl Widget for GIcon {
 impl LiveHook for GIcon {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         let color = vec4(1.0, 1.0, 1.0, 1.0);
-        
+
         self.draw_type.replace(self.icon_type.to_draw_type());
         match self.draw_type.as_ref().unwrap() {
             crate::shader::icon_lib::types::DrawGIconType::Base => {
-                self.icon_base.apply_over(
+                self.icon_base.as_mut().unwrap().apply_over(
                     cx,
                     live! {
                         stroke_color: (color),
                     },
                 );
-                self.icon_base.apply_type(Base::try_from(&self.icon_type).unwrap());
-            },
+                self.icon_base
+                    .as_mut()
+                    .unwrap()
+                    .apply_type(Base::try_from(&self.icon_type).unwrap());
+            }
             crate::shader::icon_lib::types::DrawGIconType::Code => todo!(),
-            crate::shader::icon_lib::types::DrawGIconType::Arrow => todo!(),
+            crate::shader::icon_lib::types::DrawGIconType::Arrow => {
+                self.icon_arrow.as_mut().unwrap().apply_over(
+                    cx,
+                    live! {
+                        stroke_color: (color),
+                    },
+                );
+                self.icon_arrow
+                    .as_mut()
+                    .unwrap()
+                    .apply_type(Arrow::try_from(&self.icon_type).unwrap());
+            }
             crate::shader::icon_lib::types::DrawGIconType::Emoji => todo!(),
             crate::shader::icon_lib::types::DrawGIconType::Fs => todo!(),
             crate::shader::icon_lib::types::DrawGIconType::UI => todo!(),

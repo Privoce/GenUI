@@ -7,7 +7,7 @@ use super::IconType;
 #[repr(u32)]
 pub enum Time {
     #[pick]
-    Clock
+    Clock = shader_enum(1)
 }
 
 impl TryFrom<&IconType> for Time {

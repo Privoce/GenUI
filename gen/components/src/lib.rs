@@ -35,7 +35,6 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tab::live_design(cx);
     crate::components::file_upload::live_design(cx);
     crate::components::collapse::live_design(cx);
-    crate::components::tool_btn::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
     crate::shader::draw_card::live_design(cx);
@@ -52,9 +51,18 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_split::live_design(cx);
     crate::shader::draw_tab::live_design(cx);
     crate::shader::draw_tab_pane::live_design(cx);
-    crate::shader::draw_tool_btn::live_design(cx);
     crate::shader::icon_lib::live_design(cx);
     crate::shader::icon_lib::base::live_design(cx);
+    crate::shader::icon_lib::arrow::live_design(cx);
+    crate::shader::icon_lib::code::live_design(cx);
+    crate::shader::icon_lib::emoji::live_design(cx);
+    crate::shader::icon_lib::fs::live_design(cx);
+    crate::shader::icon_lib::person::live_design(cx);
+    crate::shader::icon_lib::relation::live_design(cx);
+    crate::shader::icon_lib::state::live_design(cx);
+    crate::shader::icon_lib::time::live_design(cx);
+    crate::shader::icon_lib::tool::live_design(cx);
+
     // export all the components
     crate::components::live_design(cx);
 }

@@ -7,7 +7,7 @@ use super::IconType;
 #[repr(u32)]
 pub enum Emoji {
     #[pick]
-    Emoji,
+    Emoji = shader_enum(1),
     Hot,
     Heart,
     HeartBroken,

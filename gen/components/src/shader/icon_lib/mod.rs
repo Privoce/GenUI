@@ -3,6 +3,12 @@ pub mod base;
 pub mod code;
 pub mod emoji;
 pub mod fs;
+pub mod person;
+pub mod relation;
+pub mod state;
+pub mod time;
+pub mod tool;
+pub mod ui;
 pub mod types;
 
 use makepad_widgets::*;
@@ -130,5 +136,3 @@ pub struct DrawGIcon {
 //         self.tool_button_type = tool_button_type;
 //     }
 // }
-
-
