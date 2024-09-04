@@ -8,7 +8,7 @@ live_design! {
         fn pixel(self) -> vec4{
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
             // use offset to control not overlap with border
-            let stroke_width = 1.2;
+            let stroke_width = self.stroke_width;
             let offset = stroke_width * 1.25;
             let start_pos = vec2(self.pos.x - self.border_width + offset, self.pos.y - self.border_width + offset);
             let end_pos = vec2(self.pos.x + self.rect_size.x - self.border_width - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - self.border_width - offset * 1.0);

@@ -23,7 +23,7 @@ pub mod shader;
 pub mod tab;
 pub mod toggle;
 pub mod collapse;
-
+pub mod tooltip;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -55,7 +55,7 @@ live_design! {
     import crate::components::tab::GTabBase;
     import crate::components::file_upload::GUploadBase;
     import crate::components::collapse::GCollapseBase;
-
+    import crate::components::tooltip::GToolTipBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -559,7 +559,7 @@ live_design! {
             width: 32.0,
         }
     }
-    
+    GToolTip = <GToolTipBase>{}
     GCollapse = <GCollapseBase>{
         height: Fit,
         width: Fill,

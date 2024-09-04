@@ -107,6 +107,7 @@ live_design! {
             );
         }
 
+        instance stroke_width: 1.2;
         fn pixel(self) -> vec4{
             return self.stroke_color();
         }
@@ -119,13 +120,13 @@ live_design! {
 pub struct DrawGIcon {
     #[deref]
     pub deref_draw: DrawQuad,
-    #[live(0.0_f32)]
+    #[live(0.0)]
     pub hover: f32,
     #[live]
     pub stroke_color: Vec4,
     #[live]
     pub hover_color: Vec4,
-    #[live(0.0_f32)]
+    #[live(0.0)]
     pub border_width: f32,
     #[live]
     pub border_color: Vec4,

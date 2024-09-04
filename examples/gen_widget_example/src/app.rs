@@ -47,6 +47,7 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
+                        
                         <GIconLibExample>{}
                         <GHLayout>{
                             spacing: 6.0,
