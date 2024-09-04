@@ -66,8 +66,6 @@ live_design! {
                     sdf.move_to(e2.x, e2.y);
                     sdf.line_to(center_x, center_y + quarter_size.y * 0.6);
                     sdf.stroke(self.stroke_color(), stroke_width * 1.2);
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 State::Warn => {
                     let half_size = size * 0.5;

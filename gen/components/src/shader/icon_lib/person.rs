@@ -19,12 +19,25 @@ live_design! {
 
             match self.icon_type{
                 Person::Male => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.36;
+                    sdf.circle(center_x - quarter_size.x * 0.4, center_y + quarter_size.y * 0.4, quarter_size.x);
+                    sdf.move_to(center_x + quarter_size.x * 0.1, center_y - quarter_size.y * 0.1);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.2, start_pos.y + quarter_size.y * 0.2);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.8, start_pos.y + quarter_size.y * 0.2);
+                    sdf.move_to(end_pos.x - quarter_size.x * 0.2, start_pos.y + quarter_size.y * 0.2);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.2, start_pos.y + quarter_size.y * 0.8);
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
                 Person::Female => {
-                    sdf.rect(start_pos.x, start_pos.y, size.x, size.y);
-                    sdf.fill(self.stroke_color());
+                    let quarter_size = size * 0.36;
+                    sdf.circle(center_x + quarter_size.x * 0.5, center_y - quarter_size.x * 0.5, quarter_size.x);
+                    sdf.move_to(center_x, center_y);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.2, end_pos.y - quarter_size.y * 0.2);
+                    
+                    sdf.move_to(center_x - quarter_size.x * 1.0, center_y + quarter_size.y * 0.2);
+                    sdf.line_to(center_x - quarter_size.x * 0.1, center_y + quarter_size.y * 1.0);
+                    
+                    sdf.stroke(self.stroke_color(), stroke_width);
                 }
             }
             return sdf.result;

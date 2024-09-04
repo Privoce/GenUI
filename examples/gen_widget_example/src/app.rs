@@ -44,10 +44,9 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     <GVLayout>{
-                        height: 300.0,
+                        height: 600.0,
                         spacing: 6.0,
                         width:Fill,
-                        
                         <GIconLibExample>{}
                         <GHLayout>{
                             spacing: 6.0,
@@ -209,6 +208,17 @@ impl LiveRegister for App {
         crate::components::bread_crumbs::live_design(cx);
         crate::components::tabs::live_design(cx);
         crate::components::icon_lib::live_design(cx);
+        crate::components::icon_lib::base::live_design(cx);
+        crate::components::icon_lib::arrow::live_design(cx);
+        crate::components::icon_lib::code::live_design(cx);
+        crate::components::icon_lib::emoji::live_design(cx);
+        crate::components::icon_lib::fs::live_design(cx);
+        crate::components::icon_lib::person::live_design(cx);
+        crate::components::icon_lib::relation::live_design(cx);
+        crate::components::icon_lib::state::live_design(cx);
+        crate::components::icon_lib::time::live_design(cx);
+        crate::components::icon_lib::tool::live_design(cx);
+        crate::components::icon_lib::ui::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

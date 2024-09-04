@@ -42,21 +42,21 @@ live_design!{
                 }
                 Base::FullScreenExpand => {
                     let quarter_size = size * 0.3;
-                    sdf.move_to(start_pos.x, start_pos.y + quarter_size.x);
-                    sdf.line_to(start_pos.x, start_pos.y);
-                    sdf.line_to(start_pos.x + quarter_size.x, start_pos.y);
+                    sdf.move_to(start_pos.x + quarter_size.x * 0.2, start_pos.y + quarter_size.x);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.2, start_pos.y + quarter_size.x * 0.2);
+                    sdf.line_to(start_pos.x + quarter_size.x, start_pos.y + quarter_size.x * 0.2);
                     // ------------------------------
-                    sdf.move_to(start_pos.x, end_pos.y - quarter_size.x);
-                    sdf.line_to(start_pos.x, end_pos.y);
-                    sdf.line_to(start_pos.x + quarter_size.x, end_pos.y);
+                    sdf.move_to(start_pos.x + quarter_size.x * 0.2, end_pos.y - quarter_size.x);
+                    sdf.line_to(start_pos.x + quarter_size.x * 0.2, end_pos.y - quarter_size.x * 0.2);
+                    sdf.line_to(start_pos.x + quarter_size.x, end_pos.y - quarter_size.x * 0.2);
                     // ------------------------------
-                    sdf.move_to(end_pos.x, end_pos.y - quarter_size.x);
-                    sdf.line_to(end_pos.x, end_pos.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, end_pos.y);
+                    sdf.move_to(end_pos.x - quarter_size.x * 0.2, end_pos.y - quarter_size.x );
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.2, end_pos.y - quarter_size.x * 0.2);
+                    sdf.line_to(end_pos.x - quarter_size.x, end_pos.y - quarter_size.x * 0.2);
                     // ------------------------------
-                    sdf.move_to(end_pos.x, start_pos.y + quarter_size.x);
-                    sdf.line_to(end_pos.x, start_pos.y);
-                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y);
+                    sdf.move_to(end_pos.x - quarter_size.x * 0.2, start_pos.y + quarter_size.x);
+                    sdf.line_to(end_pos.x - quarter_size.x * 0.2, start_pos.y + quarter_size.x * 0.2);
+                    sdf.line_to(end_pos.x - quarter_size.x, start_pos.y + quarter_size.x * 0.2);
                     sdf.stroke(self.stroke_color(), stroke_width);
                     sdf.rect(start_pos.x + quarter_size.x, start_pos.y + quarter_size.x, size.x - quarter_size.x * 2.0, size.y- quarter_size.x * 2.0);
                     sdf.stroke(self.stroke_color(), stroke_width);
@@ -364,10 +364,10 @@ live_design!{
                 }
                 Base::Menu => {
                     let quarter_size = size * 0.25;
-                    let h = stroke_width * 4.0;
-                    sdf.box(start_pos.x + quarter_size.x / 4.0, center_y - h / 2.0 * 4.0, size.x - quarter_size.x / 2.0, h, 0.6);
-                    sdf.box(start_pos.x + quarter_size.x / 4.0, center_y - h / 2.0, size.x - quarter_size.x / 2.0, h, 0.6);
-                    sdf.box(start_pos.x + quarter_size.x / 4.0, center_y + h * 1.0, size.x - quarter_size.x / 2.0, h, 0.6);
+                    let h = stroke_width * 2.0;
+                    sdf.box(start_pos.x + quarter_size.x / 4.0, center_y - h * 4.0, size.x - quarter_size.x / 2.0, h, 0.6);
+                    sdf.box(start_pos.x + quarter_size.x / 4.0, center_y - h , size.x - quarter_size.x / 2.0, h, 0.6);
+                    sdf.box(start_pos.x + quarter_size.x / 4.0, center_y + h * 2.0, size.x - quarter_size.x / 2.0, h, 0.6);
                     sdf.fill(self.stroke_color());
                 }
             }
