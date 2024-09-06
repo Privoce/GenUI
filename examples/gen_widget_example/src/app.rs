@@ -44,91 +44,42 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     <GVLayout>{
-                        height: 600.0,
+                        height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        <GIconLibExample>{}
-                        <GHLayout>{
-                            spacing: 6.0,
-                            height: Fit,
-                            
-                            // <GToolButton>{
-                            //     button_type: Add,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Home,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Min,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Split,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Split2,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Wifi,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: WifiNone,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: AI,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: VR,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Note,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Notice,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: NoticeNone,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Clock,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Info,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Help,
-                            // }
-                            // <GToolButton>{
+                        <GDropDown>{
 
-                            //     button_type: Warn,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Poweroff,
-                            // }
-                            // <GToolButton>{
-                            //     button_type: Light,
-                            // }
-                            // <GToolButton>{
-                            //     height: 60.0,
-                            //     width: 60.0,
-                            //     button_type: Male,
-                            // }
-                            // <GToolButton>{
-                            //     height: 60.0,
-                            //     width: 60.0,
-                            //     button_type: Female,
-                            // }
-                            // <GToolButton>{
-                            //     height: 60.0,
-                            //     width: 60.0,
-                            //     button_type: Picture,
-                            // }
-                            // <GToolButton>{
-                            //     height: 60.0,
-                            //     width: 60.0,
-                            //     button_type: System,
-                            // }
+                            height: Fit,
+                            width: Fit,
+                            trigger = <GButton>{text:"open"},
+                            popup :<GToolTip> {
+                                height: 150.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                    <GButton>{
+                                        theme: Dark,
+                                        text: "Options"
+                                    }
+                                    <View>{
+                                        show_bg: true,
+                                        draw_bg: {color: #f00},
+                                        height: 40.0,
+                                        width: 40.0,
+                                    }
+                                }
+                            }
                         }
+                        
                     }
+                    <GIconLibExample>{}
                     // <GCollapse>{
                     //     height: 100.0,
                     //     width: 300.0

@@ -23,7 +23,6 @@ pub mod shader;
 pub mod tab;
 pub mod toggle;
 pub mod collapse;
-pub mod tooltip;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -55,7 +54,7 @@ live_design! {
     import crate::components::tab::GTabBase;
     import crate::components::file_upload::GUploadBase;
     import crate::components::collapse::GCollapseBase;
-    import crate::components::tooltip::GToolTipBase;
+    
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -365,6 +364,55 @@ live_design! {
         width: Fill,
         container: <GPopupContainer>{}
     }
+    GToolTip = <GPopup>{
+        
+        draw_popup: {
+            fn pixel(self) -> vec4{
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                let spacing = 6.0;
+                let w = self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0);
+                let h = self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0);
+                let center = vec2((self.pos.x + w) * 0.5, (self.pos.y + h)  * 0.5);
+                match self.position{
+                    Position::Bottom => {
+                        sdf.box(
+                            self.inset.x + self.border_width,
+                            self.inset.y + self.border_width + spacing,
+                            w,
+                            h - spacing,
+                            max(1.0, self.border_radius)
+                        );
+
+                        sdf.move_to(center.x - spacing * 0.7, spacing);
+                        sdf.line_to(center.x, self.pos.y);
+                        sdf.line_to(center.x + spacing * 0.7, spacing);
+                        sdf.line_to(center.x - spacing * 0.7, spacing);
+
+                        sdf.fill(self.get_color());
+                    }
+                    Position::BottomLeft => {}
+                    Position::BottomRight => {}
+                    Position::Top => {}
+                    Position::TopLeft => {}
+                    Position::TopRight => {}
+                    Position::Left => {}
+                    Position::LeftTop => {}
+                    Position::LeftBottom => {}
+                    Position::Right => {}
+                    Position::RightTop => {}
+                    Position::RightBottom => {}
+                } 
+                // if self.transparent == 0.0 {
+                //     sdf.fill_keep(self.get_color());
+                // }
+                sdf.stroke(self.get_border_color(), self.border_width);
+                return sdf.result;
+            }
+        }
+        container: <GPopupContainer>{
+            transparent: true,
+        }
+    }
     GDropDown = <GDropDownBase>{
         height: Fit,
         width: Fit,
@@ -559,7 +607,6 @@ live_design! {
             width: 32.0,
         }
     }
-    GToolTip = <GToolTipBase>{}
     GCollapse = <GCollapseBase>{
         height: Fit,
         width: Fill,

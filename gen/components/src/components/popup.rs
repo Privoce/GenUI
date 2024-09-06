@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawCard,
+    shader::draw_popup::DrawGPopup,
     themes::{get_color, Themes},
 };
 
@@ -11,11 +11,42 @@ live_design! {
     GPopupContainerBase = {{GPopupContainer}} {}
     GPopupBase = {{GPopup}} {}
 }
-#[derive(Live, LiveHook, LiveRegister)]
+#[derive(Live, LiveRegister)]
 pub struct GPopupContainer {
     #[live]
     #[deref]
     pub super_widget: Card,
+}
+
+impl LiveHook for GPopupContainer{
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        // ----------------- background color -------------------------------------------
+        let bg_color = get_color(self.theme, self.background_color, 500);
+        // ------------------ hover color -----------------------------------------------
+        let hover_color = get_color(self.theme, self.hover_color, 400);
+        // ------------------ pressed color ---------------------------------------------
+        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        // ------------------ border color ----------------------------------------------
+        let border_color = get_color(self.theme, self.border_color, 800);
+        // ------------------ is transparent --------------------------------------------
+        let transparent = (self.transparent) as u8 as f32;
+        // ------------------ apply draw_popup --------------------------------------------
+        let border_width = self.border_width;
+        let border_radius = self.border_radius;
+        self.draw_card.apply_over(
+            cx,
+            live! {
+                background_color: (bg_color),
+                border_color: (border_color),
+                border_width: (border_width),
+                border_radius: (border_radius),
+                pressed_color: (pressed_color),
+                hover_color: (hover_color),
+                transparent: (transparent),
+            },
+        );
+        self.draw_card.redraw(cx);
+    }
 }
 
 impl GPopupContainer {
@@ -64,7 +95,7 @@ pub struct GPopup {
     pub animator_key: bool,
     // deref ---------------------
     #[live]
-    pub draw_card: DrawCard,
+    pub draw_popup: DrawGPopup,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -91,8 +122,8 @@ impl LiveHook for GPopup {
         let border_color = get_color(self.theme, self.border_color, 800);
         // ------------------ is transparent --------------------------------------------
         let transparent = (self.transparent) as u8 as f32;
-        // ------------------ apply draw_card --------------------------------------------
-        self.draw_card.apply_over(
+        // ------------------ apply draw_popup --------------------------------------------
+        self.draw_popup.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
@@ -104,13 +135,13 @@ impl LiveHook for GPopup {
                 transparent: (transparent),
             },
         );
-        self.draw_card.redraw(cx);
+        self.draw_popup.redraw(cx);
     }
 }
 
 impl GPopup {
     pub fn area(&self) -> Area {
-        self.draw_card.area()
+        self.draw_popup.area()
     }
     /// ## Get the popup container position
     /// if you need to get the position of the popup container, use this method
@@ -128,7 +159,7 @@ impl GPopup {
     /// }
     /// ```
     pub fn menu_contains_pos(&self, cx: &mut Cx, pos: DVec2) -> bool {
-        self.draw_card.area().clipped_rect(cx).contains(pos)
+        self.draw_popup.area().clipped_rect(cx).contains(pos)
     }
     /// ## Begin to draw popup
     /// this method is used to begin drawing the popup
@@ -136,17 +167,17 @@ impl GPopup {
         self.draw_list.begin_overlay_reuse(cx);
         cx.begin_pass_sized_turtle(Layout::flow_down());
 
-        self.draw_card.begin(cx, self.walk, self.layout);
+        self.draw_popup.begin(cx, self.walk, self.layout);
     }
     /// ## End to draw popup
     pub fn end(&mut self, cx: &mut Cx2d, _scope: &mut Scope, shift_area: Area, shift: DVec2) {
-        self.draw_card.end(cx);
+        self.draw_popup.end(cx);
         cx.end_pass_sized_turtle_with_shift(shift_area, shift);
         self.draw_list.end(cx);
     }
     pub fn redraw(&mut self, cx: &mut Cx) {
         self.draw_list.redraw(cx);
-        // self.draw_card.redraw(cx);
+        // self.draw_popup.redraw(cx);
     }
     /// ## Draw items
     pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope) {

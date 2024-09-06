@@ -35,7 +35,6 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tab::live_design(cx);
     crate::components::file_upload::live_design(cx);
     crate::components::collapse::live_design(cx);
-    crate::components::tooltip::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::icon_lib::live_design(cx);
     crate::shader::icon_lib::base::live_design(cx);
@@ -64,8 +63,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_split::live_design(cx);
     crate::shader::draw_tab::live_design(cx);
     crate::shader::draw_tab_pane::live_design(cx);
-    crate::shader::draw_tool_tip::live_design(cx);
-    
+    crate::shader::draw_popup::live_design(cx);
     // export all the components
     crate::components::live_design(cx);
 }
