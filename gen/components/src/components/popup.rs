@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_popup::DrawGPopup,
+    shader::{draw_popup::DrawGPopup, manual::PopupMode},
     themes::{get_color, Themes},
 };
 
@@ -18,7 +18,7 @@ pub struct GPopupContainer {
     pub super_widget: Card,
 }
 
-impl LiveHook for GPopupContainer{
+impl LiveHook for GPopupContainer {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 500);
@@ -50,6 +50,9 @@ impl LiveHook for GPopupContainer{
 }
 
 impl GPopupContainer {
+    pub fn area(&self) -> Area {
+        self.draw_card.area
+    }
     pub fn draw_item(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
         let _ = self.super_widget.draw_walk(cx, scope, self.walk);
     }
@@ -93,6 +96,8 @@ pub struct GPopup {
     pub cursor: Option<MouseCursor>,
     #[live(false)]
     pub animator_key: bool,
+    #[live]
+    pub mode: PopupMode,
     // deref ---------------------
     #[live]
     pub draw_popup: DrawGPopup,
@@ -161,6 +166,9 @@ impl GPopup {
     pub fn menu_contains_pos(&self, cx: &mut Cx, pos: DVec2) -> bool {
         self.draw_popup.area().clipped_rect(cx).contains(pos)
     }
+    pub fn container_contains_pos(&self, cx: &mut Cx, pos: DVec2) -> bool {
+        self.container.area().clipped_rect(cx).contains(pos)
+    }
     /// ## Begin to draw popup
     /// this method is used to begin drawing the popup
     pub fn begin(&mut self, cx: &mut Cx2d) {
@@ -182,6 +190,9 @@ impl GPopup {
     /// ## Draw items
     pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
         self.container.draw_item(cx, scope);
+    }
+    pub fn container_area(&self) -> Area {
+        self.container.area()
     }
     pub fn handle_event_with(
         &mut self,

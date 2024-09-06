@@ -23,6 +23,7 @@ pub mod shader;
 pub mod tab;
 pub mod toggle;
 pub mod collapse;
+pub mod table;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -360,12 +361,13 @@ live_design! {
         width: Fill,
     }
     GPopup = <GPopupBase>{
+        mode: Popup,
         height: Fill,
         width: Fill,
         container: <GPopupContainer>{}
     }
     GToolTip = <GPopup>{
-        
+        mode: ToolTip,
         draw_popup: {
             fn pixel(self) -> vec4{
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
@@ -411,6 +413,26 @@ live_design! {
         }
         container: <GPopupContainer>{
             transparent: true,
+        }
+    }
+    GDialog = <GPopup>{
+        align: <ALIGN_CENTER_WALK>{}
+        mode: Dialog,
+        height: All,
+        width: All,
+        theme: Dark,
+        draw_popup: {
+            // this is a mask
+            fn pixel(self) -> vec4{
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                sdf.rect(self.pos.x, self.pos.y, self.rect_size.x, self.rect_size.y);
+                let color = self.get_color();
+                sdf.fill(vec4(color.r, color.g, color.b, 0.4));
+                return sdf.result;
+            }
+        }
+        container: <GPopupContainer>{
+
         }
     }
     GDropDown = <GDropDownBase>{
@@ -601,7 +623,7 @@ live_design! {
         height: 100.0,
         width: Fill,
         align: <ALIGN_CENTER_WALK>{},
-        icon: <GIcon>{
+        icon: <GSvg>{
             src: dep("crate://self/resources/icons/cloud_upload.svg"),
             height: 32.0,
             width: 32.0,

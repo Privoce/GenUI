@@ -11,25 +11,25 @@ live_design! {
         spacing: 10.0,
         flow: Down,
         <GLabel>{
-            text: "GIcon",
+            text: "GSvg",
         }
-        <GIcon>{
+        <GSvg>{
             cursor: Help,
             src: dep("crate://self/resources/lightning.svg"),
         }
-        <GIcon>{
+        <GSvg>{
             theme: Dark,
             src: dep("crate://self/resources/config.svg"),
         }
-        <GIcon>{
+        <GSvg>{
             theme: Error,
             src: dep("crate://self/resources/lightning.svg"),
         }
-        <GIcon>{
+        <GSvg>{
             theme: Warning,
             src: dep("crate://self/resources/lightning.svg"),
         }
-        <GIcon>{
+        <GSvg>{
             height: 60,
             width: 160,
             cursor: Help,

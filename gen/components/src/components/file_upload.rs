@@ -5,7 +5,7 @@ use rfd::FileDialog;
 
 use crate::shader::draw_card::DrawCard;
 
-use super::icon::GIcon;
+use super::svg::GSvg;
 
 live_design! {
     GUploadBase =  {{GUpload}}{}
@@ -20,7 +20,7 @@ pub struct GUpload {
     #[rust]
     pub selected: Vec<PathBuf>,
     #[live]
-    pub icon: GIcon,
+    pub icon: GSvg,
     #[live]
     pub filters: Vec<String>,
     #[redraw]

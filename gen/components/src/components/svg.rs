@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{shader::draw_icon::DrawGSvg, themes::{get_color, Themes}, utils::set_cursor};
+use crate::{shader::draw_svg::DrawGSvg, themes::{get_color, Themes}, utils::set_cursor};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -129,8 +129,8 @@ impl LiveHook for GSvg {
             live! {
                 hover_color: (hover_color),
                 color: (color),
-                brightness: (self.brightness),
-                curve: (self.curve),
+                // brightness: (self.brightness),
+                // curve: (self.curve),
                 linearize: (self.linearize),
                 scale: (self.scale),
                 draw_depth: (self.draw_depth),

@@ -4,7 +4,7 @@ use icon_atlas::RefCell;
 
 use makepad_widgets::*;
 
-use crate::shader::manual::Position;
+use crate::shader::manual::{PopupMode, Position};
 
 use super::{card::Card, popup::GPopup};
 
@@ -14,6 +14,8 @@ live_design! {
 
 #[derive(Live, Widget)]
 pub struct GDropDown {
+    #[live]
+    pub mode: PopupMode,
     #[deref]
     #[live]
     card: Card,
@@ -75,17 +77,26 @@ impl Widget for GDropDown {
             let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
             popup_menu.begin(cx);
 
-            match self.position {
-                Position::Bottom => {
-                    let area = self.draw_card.area().rect(cx);
-                    let shift = DVec2 {
-                        x: 0.0,
-                        y: area.size.y,
-                    };
-                    popup_menu.draw_container(cx, scope);
-                    popup_menu.end(cx, scope, self.draw_card.area(), shift);
+            if let PopupMode::Dialog = self.mode {
+                let area = self.draw_card.area();
+                let mut rect = area.rect(cx);
+                rect.pos = DVec2::default();
+                area.set_rect(cx, &rect);
+                popup_menu.draw_container(cx, scope);
+                popup_menu.end(cx, scope, area, DVec2::default());
+            } else {
+                match self.position {
+                    Position::Bottom => {
+                        let area = self.draw_card.area().rect(cx);
+                        let shift = DVec2 {
+                            x: 0.0,
+                            y: area.size.y,
+                        };
+                        popup_menu.draw_container(cx, scope);
+                        popup_menu.end(cx, scope, self.draw_card.area(), shift);
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
         }
 
@@ -98,14 +109,27 @@ impl Widget for GDropDown {
             let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
             popup_menu.handle_event_with(cx, event, scope, self.draw_card.area());
             if let Event::MouseDown(e) = event {
-                if !popup_menu.menu_contains_pos(cx, e.abs) {
-                    self.close(cx);
-                    self.animator_play(cx, id!(hover.off));
-                    return;
+                // if !popup_menu.menu_contains_pos(cx, e.abs) {
+                //     self.close(cx);
+                //     self.animator_play(cx, id!(hover.off));
+                //     return;
+                // }
+                if let PopupMode::Dialog = self.mode{
+                    if !popup_menu.container_contains_pos(cx, e.abs){
+                        self.close(cx);
+                        self.animator_play(cx, id!(hover.off));
+                        return;
+                    }
+                }else{
+                    if !popup_menu.menu_contains_pos(cx, e.abs) {
+                        self.close(cx);
+                        self.animator_play(cx, id!(hover.off));
+                        return;
+                    }
                 }
             }
         }
-
+        
         match event.hits_with_sweep_area(cx, self.draw_card.area(), self.draw_card.area()) {
             Hit::KeyFocus(_) => {
                 // self.animator_play(cx, id!(focus.on));

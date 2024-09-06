@@ -1,4 +1,4 @@
-use crate::shader::draw_icon::DrawGSvg;
+use crate::shader::draw_svg::DrawGSvg;
 use crate::shader::draw_icon_pixel::DrawGIconPixel;
 use crate::utils::{get_font_family, DefaultTextStyle};
 use crate::{

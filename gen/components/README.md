@@ -18,21 +18,19 @@
 - [x] DropDown
 - [x] Toggle
 - [x] Collapse
-- [ ] ToolTip
+- [x] ToolTip
 - [x] Progress
 - [x] Tab
 - [ ] Table
-- [ ] Dialog
+- [x] Dialog
 - [x] Select
 - [x] Splitter
 - [x] FileUpload
 - [x] Divide
 - [x] State
 - [x] BreadCrumb
-- [ ] Pagination
-- [ ] Metric
-- [ ] Menu
 - [x] ScrollBar(s)
+- [x] icon_lib
 
 ## todo
 
