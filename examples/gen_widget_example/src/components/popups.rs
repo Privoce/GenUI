@@ -44,7 +44,7 @@ live_design! {
             }
         }
         <GDropDown>{
-
+            mode: ToolTip,
             height: Fit,
             width: Fit,
             trigger = <GButton>{text:"open"},
@@ -54,6 +54,34 @@ live_design! {
                 container: {
                     height: Fill,
                     width: Fill,
+                    flow: Down,
+                    spacing: 10.0,
+                    padding: 10.0,
+                    <GLabel>{
+                        text:"This is a popup",
+                    }
+                    <GButton>{
+                        theme: Dark,
+                        text: "Options"
+                    }
+                    <View>{
+                        show_bg: true,
+                        draw_bg: {color: #f00},
+                        height: 40.0,
+                        width: 40.0,
+                    }
+                }
+            }
+        }
+        <GDropDown>{
+            mode: Dialog,
+            height: Fit,
+            width: Fit,
+            trigger = <GButton>{text:"open"},
+            popup :<GDialog> {
+                container: {
+                    height: 200.0,
+                    width: 300.0,
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,

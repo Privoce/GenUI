@@ -5,16 +5,16 @@ use crate::shader::draw_card::DrawCard;
 use super::cell::GTableCell;
 
 live_design!{
-    GTableRowBase = {{GTableRow}}{
-        flow: Right,
+    GTableColumnBase = {{GTableColumn}}{
+        flow: Down,
     }
 }
 
 #[derive(Live, Widget)]
-pub struct GTableRow{
+pub struct GTableColumn{
     #[redraw]
     #[live]
-    pub draw_table_row: DrawCard,
+    pub draw_table_column: DrawCard,
     #[walk]
     pub walk : Walk,
     #[layout]
@@ -23,17 +23,17 @@ pub struct GTableRow{
     pub children: ComponentMap<LiveId, GTableCell>,
 }
 
-impl Widget for GTableRow{
+impl Widget for GTableColumn{
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.draw_table_row.begin(cx, walk, self.layout);
+        self.draw_table_column.begin(cx, walk, self.layout);
 
        
-        self.draw_table_row.end(cx);
+        self.draw_table_column.end(cx);
 
         DrawStep::done()
     }
 }
 
-impl LiveHook for GTableRow {
+impl LiveHook for GTableColumn {
     
 }

@@ -43,81 +43,61 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <TextInput>{}
+                    
                     <GVLayout>{
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        <GDropDown>{
-                            mode: Dialog,
-                            height: Fit,
-                            width: Fit,
-                            trigger = <GButton>{text:"open"},
-                            popup :<GDialog> {
-                                container: {
-                                    height: 200.0,
-                                    width: 300.0,
-                                    flow: Down,
-                                    spacing: 10.0,
-                                    padding: 10.0,
-                                    <GLabel>{
-                                        text:"This is a popup",
-                                    }
-                                    <GButton>{
-                                        theme: Dark,
-                                        text: "Options"
-                                    }
-                                    <View>{
-                                        show_bg: true,
-                                        draw_bg: {color: #f00},
-                                        height: 40.0,
-                                        width: 40.0,
-                                    }
-                                }
+                        <GTCell>{
+                            <GLabel>{
+                                text: "Table Cell",
+                            }
+                            <GButton>{
+                                text: "table cell btn",
                             }
                         }
                         
                     }
-                    <GIconLibExample>{}
-                    <GCollapse>{
-                        height: 100.0,
-                        width: 300.0
-                    }
-                    <GUpload>{
+                    // <GIconLibExample>{}
+                    // <GCollapse>{
+                    //     height: 100.0,
+                    //     width: 300.0
+                    // }
+                    // <GUpload>{
 
-                    }
-                    <GCard>{
-                        width: 200.0,
-                        height: 200.0,
-                        <GSplitter>{
+                    // }
+                    // <GCard>{
+                    //     width: 200.0,
+                    //     height: 200.0,
+                    //     <GSplitter>{
                         
-                        }
-                    }
-                    <GTabsExample>{}
-                    <GBreadCrumbExample>{}
-                    <GBadgeExample>{}
-                    <GStatesExample>{}
-                    // // loading pass, test ok
-                    // // <GLoadingExample>{}
-                    <GProgressExample>{}
-                    <GToggleExample>{}
+                    //     }
+                    // }
+                    // <GTabsExample>{}
+                    // <GBreadCrumbExample>{}
+                    // <GBadgeExample>{}
+                    // <GStatesExample>{}
+                    // // // loading pass, test ok
+                    // // // <GLoadingExample>{}
+                    // <GProgressExample>{}
+                    // <GToggleExample>{}
 
-                    <GPopupExample>{}
-                    // <GShaderExample>{}
-                    // <GSelectExample>{}
-                    <GLabelExample>{}
+                    // <GPopupExample>{}
+                    // // <GShaderExample>{}
+                    // // <GSelectExample>{}
+                    // <GLabelExample>{}
 
-                    <GButtonExample>{}
-                    <GCardExample>{}
-                    <GHLayoutExample>{}
-                    <GVLayoutExample>{}
-                    <GLinkExample>{}
-                    <GRadioExample>{}
-                    <GCheckBoxExample>{}
-                    // <GIconExample>{}
-                    <GImageExample>{}
-                    <GDividerExample>{}
-                    <GInputExample>{}
+                    // <GButtonExample>{}
+                    // <GCardExample>{}
+                    // <GHLayoutExample>{}
+                    // <GVLayoutExample>{}
+                    // <GLinkExample>{}
+                    // <GRadioExample>{}
+                    // <GCheckBoxExample>{}
+                    // // <GIconExample>{}
+                    // <GImageExample>{}
+                    // <GDividerExample>{}
+                    // <GInputExample>{}
 
                 }
             }
