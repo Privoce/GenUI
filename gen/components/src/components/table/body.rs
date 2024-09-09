@@ -10,11 +10,12 @@ use crate::{
 
 live_design! {
     GTableBodyBase = {{GTableBody}}{
-        transparent: true,
-        border_width: 0.0,
-        border_radius: 0.0,
+        // transparent: true,
+        // border_width: 0.0,
+        // border_radius: 0.0,
         padding: 0.0,
         margin: 0.0,
+        flow: Down,
     }
 }
 

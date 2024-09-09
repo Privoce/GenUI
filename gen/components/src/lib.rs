@@ -38,6 +38,8 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::table::cell::live_design(cx);
     crate::components::table::row::live_design(cx);
     crate::components::table::body::live_design(cx);
+    crate::components::table::header::live_design(cx);
+    crate::components::table::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::icon_lib::live_design(cx);
     crate::shader::icon_lib::base::live_design(cx);

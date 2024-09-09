@@ -48,29 +48,61 @@ live_design! {
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        <GTBody>{
-                            <GTRow>{
-                                height: 60.0,
+                        
+                        <GTable>{
+                            height: Fit,
+                            width: Fill,
+                            body: <GTBody>{
+                                height: 120.0,
                                 width: Fill,
-                                <GTCell>{
-                                    height: Fill,
-                                    width: 160.0,
-                                    <GLabel>{
-                                        text: "Table column 1",
-                                    }  
-                                }
-                                <GTCell>{
-                                    height: Fill,
-                                    width: 160.0,
-                                    <GLabel>{
-                                        text: "Table column 2",
+                                <GTRow>{
+                                    height: 60.0,
+                                    width: Fill,
+                                    <GTCell>{
+                                        height: Fill,
+                                        width: 160.0,
+                                        <GLabel>{
+                                            text: "Table column 1-1",
+                                        }  
+                                    }
+                                    <GTCell>{
+                                        height: Fill,
+                                        width: 160.0,
+                                        <GLabel>{
+                                            text: "Table column 1-2",
+                                        }
+                                    }
+                                    <GTCell>{
+                                        height: Fill,
+                                        width: 160.0,
+                                        <GLabel>{
+                                            text: "Table column 1-3",
+                                        }
                                     }
                                 }
-                                <GTCell>{
-                                    height: Fill,
-                                    width: 160.0,
-                                    <GLabel>{
-                                        text: "Table column 3",
+                                <GTRow>{
+                                    height: 60.0,
+                                    width: Fill,
+                                    <GTCell>{
+                                        height: Fill,
+                                        width: 160.0,
+                                        <GLabel>{
+                                            text: "Table column 2-1",
+                                        }  
+                                    }
+                                    <GTCell>{
+                                        height: Fill,
+                                        width: 160.0,
+                                        <GLabel>{
+                                            text: "Table column 2-2",
+                                        }
+                                    }
+                                    <GTCell>{
+                                        height: Fill,
+                                        width: 160.0,
+                                        <GLabel>{
+                                            text: "Table column 2-3",
+                                        }
                                     }
                                 }
                             }

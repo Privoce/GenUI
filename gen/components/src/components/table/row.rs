@@ -6,7 +6,6 @@ use super::cell::{GTableCellRef, GTableCellWidgetRefExt};
 
 live_design! {
     GTableRowBase = {{GTableRow}}{
-        flow: Right,
     }
 }
 
