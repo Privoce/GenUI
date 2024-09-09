@@ -56,6 +56,8 @@ live_design! {
     import crate::components::file_upload::GUploadBase;
     import crate::components::collapse::GCollapseBase;
     import crate::components::table::cell::GTableCellBase;    
+    import crate::components::table::row::GTableRowBase;
+    import crate::components::table::body::GTableBodyBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -679,6 +681,18 @@ live_design! {
         }
     }
     GTCell = <GTableCellBase>{
-        
+        align: <ALIGN_CENTER_WALK>{}
+    }
+    GTRow = <GTableRowBase>{
+        width: Fill,
+        height: 36.0,
+        align: <ALIGN_LEFT_WALK>{}
+    }
+    GTBody = <GTableBodyBase>{
+        height: Fit,
+        width: Fill,
+        align: {
+            x: 0.0, y: 0.0
+        }
     }
 }
