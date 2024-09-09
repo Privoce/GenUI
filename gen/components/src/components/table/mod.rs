@@ -4,7 +4,9 @@ pub mod column;
 pub mod footer;
 pub mod header;
 pub mod row;
+mod register;
 
+pub use register::register;
 use body::GTableBody;
 use header::{GTableHeader, GTableHeaderRef};
 use makepad_widgets::*;

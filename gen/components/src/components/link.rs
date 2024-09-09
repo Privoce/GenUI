@@ -1,7 +1,7 @@
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
-use crate::themes::{get_color, Themes};
-use crate::utils::{get_font_family, set_cursor};
+use crate::themes::Themes;
+use crate::utils::{get_font_family, set_cursor, BoolToF32, ThemeColor};
 use makepad_widgets::*;
 
 live_design! {
@@ -211,20 +211,20 @@ impl Widget for GLink {
 impl LiveHook for GLink {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
-        let underline_color = get_color(self.theme, self.underline_color, 500);
+        let border_color = self.border_color.get(self.theme, 800);
+        let underline_color = self.underline_color.get(self.theme, 500);
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.color, 500);
+        let font_color = self.color.get(self.theme, 500);
         // ------------------ is transparent --------------------------------------------
-        let transparent = (self.transparent) as u8 as f32;
+        let transparent = self.transparent.to_f32();
         // ------------------ underline -------------------------------------------------
-        let underline = (self.underline) as u8 as f32;
+        let underline = self.underline.to_f32();
         // ------------------ round -----------------------------------------------------
         if self.round {
             self.border_radius = match self.walk.height {

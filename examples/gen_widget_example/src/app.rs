@@ -35,7 +35,7 @@ live_design! {
                 show_bg: true,
                 width: Fill,
                 height: Fill,
-                draw_bg: {color: #b},
+                draw_bg: {color: #222222},
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: All,
@@ -43,72 +43,15 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    
+                    // <GIconLibExample>{}
                     <GVLayout>{
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
                         
-                        <GTable>{
-                            height: Fit,
-                            width: Fill,
-                            body: <GTBody>{
-                                height: 120.0,
-                                width: Fill,
-                                <GTRow>{
-                                    height: 60.0,
-                                    width: Fill,
-                                    <GTCell>{
-                                        height: Fill,
-                                        width: 160.0,
-                                        <GLabel>{
-                                            text: "Table column 1-1",
-                                        }  
-                                    }
-                                    <GTCell>{
-                                        height: Fill,
-                                        width: 160.0,
-                                        <GLabel>{
-                                            text: "Table column 1-2",
-                                        }
-                                    }
-                                    <GTCell>{
-                                        height: Fill,
-                                        width: 160.0,
-                                        <GLabel>{
-                                            text: "Table column 1-3",
-                                        }
-                                    }
-                                }
-                                <GTRow>{
-                                    height: 60.0,
-                                    width: Fill,
-                                    <GTCell>{
-                                        height: Fill,
-                                        width: 160.0,
-                                        <GLabel>{
-                                            text: "Table column 2-1",
-                                        }  
-                                    }
-                                    <GTCell>{
-                                        height: Fill,
-                                        width: 160.0,
-                                        <GLabel>{
-                                            text: "Table column 2-2",
-                                        }
-                                    }
-                                    <GTCell>{
-                                        height: Fill,
-                                        width: 160.0,
-                                        <GLabel>{
-                                            text: "Table column 2-3",
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        
                     }
-                    // <GIconLibExample>{}
+                    
                     // <GCollapse>{
                     //     height: 100.0,
                     //     width: 300.0

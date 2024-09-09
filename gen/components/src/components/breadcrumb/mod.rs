@@ -1,14 +1,9 @@
 pub mod item;
 
-use item::{GBreadCrumbItem, GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
+use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
 use makepad_widgets::*;
-use shader::draw_text::TextWrap;
 
-use crate::{
-    shader::{draw_card::DrawCard, draw_icon_pixel::DrawGIconPixel, draw_split::GSplitType},
-    themes::{get_color, Themes},
-    utils::{get_font_family, DefaultTextStyle},
-};
+use crate::{shader::draw_card::DrawCard, themes::Themes, utils::ThemeColor};
 
 use super::image::GImage;
 
@@ -113,16 +108,16 @@ impl Widget for GBreadCrumb {
 impl LiveHook for GBreadCrumb {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ------------------ font ------------------------------------------------------
-        let icon_color = get_color(self.theme, self.color, 100);
-        let icon_hover_color = get_color(self.theme, self.color, 50);
+        let _icon_color = self.color.get(self.theme, 100);
+        let _icon_hover_color = self.color.get(self.theme, 50);
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 200);
+        let bg_color = self.background_color.get(self.theme, 200);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // self.draw_text.apply_over(
         //     cx,
         //     live! {

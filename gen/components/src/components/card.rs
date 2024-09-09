@@ -4,8 +4,8 @@ use makepad_widgets::*;
 
 use crate::{
     shader::draw_card::DrawCard,
-    themes::{get_color, Themes},
-    utils::set_cursor,
+    themes::Themes,
+    utils::{set_cursor, BoolToF32, ThemeColor},
 };
 
 live_design! {
@@ -135,15 +135,15 @@ impl LiveHook for Card {
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // ------------------ is transparent --------------------------------------------
-        let transparent = (self.transparent) as u8 as f32;
+        let transparent = self.transparent.to_f32();
         // ------------------ check scroll bar -------------------------------------------
         if self.scroll_bars.is_some() {
             if self.scroll_bars_obj.is_none() {
@@ -563,6 +563,10 @@ impl WidgetNode for Card {
         for child in self.children.values_mut() {
             child.redraw(cx);
         }
+    }
+
+    fn area(&self) -> Area {
+        self.draw_card.area()
     }
 }
 

@@ -291,24 +291,24 @@ impl GTabButton {
 
         // ------------------ font ------------------------------------------------------
         let font_color = select_color(
-            get_color(self.theme, self.color, plain_color(100, 600)),
+            get_color(self.theme, self.color.as_ref(), plain_color(100, 600)),
             "#667085",
         );
         let text_style = DefaultTextStyle::default();
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, plain_color(500, 600));
+        let bg_color = get_color(self.theme, self.background_color.as_ref(), plain_color(500, 600));
         let msg_bg_color = select_color(
-            get_color(self.theme, self.background_color, plain_color(600, 100)),
+            get_color(self.theme, self.background_color.as_ref(), plain_color(600, 100)),
             "#ECEFF3",
         );
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, plain_color(400, 600));
+        let hover_color = get_color(self.theme, self.hover_color.as_ref(), plain_color(400, 600));
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, plain_color(600, 600));
+        let pressed_color = get_color(self.theme, self.pressed_color.as_ref(), plain_color(600, 600));
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, plain_color(800, 600));
+        let border_color = get_color(self.theme, self.border_color.as_ref(), plain_color(800, 600));
         let icon_color = select_color(
-            get_color(self.theme, self.icon_color, plain_color(100, 600)),
+            get_color(self.theme, self.icon_color.as_ref(), plain_color(100, 600)),
             "#667085",
         );
 

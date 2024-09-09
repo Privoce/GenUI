@@ -2,8 +2,8 @@ use makepad_widgets::*;
 
 use crate::{
     shader::draw_radio::{DrawGRadio, GChooseType},
-    themes::{get_color, Themes},
-    utils::set_cursor,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
 };
 
 live_design! {
@@ -133,15 +133,15 @@ impl Widget for GRadio {
 impl LiveHook for GRadio {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 50);
+        let bg_color = self.background_color.get(self.theme, 50);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 100);
+        let hover_color = self.hover_color.get(self.theme, 100);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 600);
+        let border_color = self.border_color.get(self.theme, 600);
         // ------------------ focus color -----------------------------------------------
-        let focus_color = get_color(self.theme, self.focus_color, 600);
+        let focus_color = self.focus_color.get(self.theme, 600);
         // ------------------ selected color ---------------------------------------------
-        let selected_color = get_color(self.theme, self.selected_color, 600);
+        let selected_color = self.selected_color.get(self.theme, 600);
         // ------------------ apply to draw_radio ----------------------------------------
         self.draw_radio.apply_over(
             cx,

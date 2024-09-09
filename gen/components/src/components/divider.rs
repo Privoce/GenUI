@@ -1,6 +1,6 @@
 use crate::shader::draw_divider::DrawGDivider;
-use crate::themes::{get_color, Themes};
-use crate::utils::set_cursor;
+use crate::themes::Themes;
+use crate::utils::{set_cursor, ThemeColor};
 
 use makepad_widgets::*;
 // GDivider component
@@ -115,13 +115,9 @@ impl Widget for GDivider {
                 return DrawStep::done();
             }
             self.defer_walks.clear();
-            
-            
 
             // begin draw the card
-            let _ = self
-                .draw_divider
-                .begin(cx, walk, self.layout);
+            let _ = self.draw_divider.begin(cx, walk, self.layout);
         }
 
         // loop handle the inner children
@@ -173,7 +169,6 @@ impl Widget for GDivider {
         if self.animator_handle_event(cx, event).must_redraw() {
             self.redraw(cx);
         }
-       
 
         match &self.event_order {
             EventOrder::Down => {
@@ -260,7 +255,6 @@ impl Widget for GDivider {
 }
 
 impl WidgetNode for GDivider {
-    
     fn find_widgets(&self, path: &[LiveId], cached: WidgetCache, results: &mut WidgetSet) {
         for child in self.children.values() {
             child.find_widgets(path, cached, results);
@@ -277,8 +271,8 @@ impl WidgetNode for GDivider {
             child.redraw(cx);
         }
     }
-    
-    fn uid_to_widget(&self, uid:WidgetUid)->WidgetRef {
+
+    fn uid_to_widget(&self, uid: WidgetUid) -> WidgetRef {
         for child in self.children.values() {
             let x = child.uid_to_widget(uid);
             if !x.is_empty() {
@@ -287,19 +281,29 @@ impl WidgetNode for GDivider {
         }
         WidgetRef::empty()
     }
+
+    fn area(&self) -> Area {
+        self.draw_divider.area
+    }
 }
 
 impl LiveHook for GDivider {
-    fn before_apply(&mut self, _cx: &mut Cx, apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn before_apply(
+        &mut self,
+        _cx: &mut Cx,
+        apply: &mut Apply,
+        _index: usize,
+        _nodes: &[LiveNode],
+    ) {
         if let ApplyFrom::UpdateFromDoc { .. } = apply.from {
             self.draw_order.clear();
         }
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.color, 300);
+        let bg_color = self.color.get(self.theme, 300);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 200);
+        let hover_color = self.hover_color.get(self.theme, 200);
         // ------------------ apply draw_divider --------------------------------------------
         self.draw_divider.apply_over(
             cx,

@@ -2,8 +2,8 @@ use makepad_widgets::*;
 
 use crate::{
     shader::draw_progress::{DrawGProgress, GProgressType},
-    themes::{get_color, Themes},
-    utils::set_cursor,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
 };
 
 live_design! {
@@ -160,7 +160,7 @@ impl Widget for GProgress {
                                     ProgressAction::Slide(self.to_external()),
                                 );
                             }
-                        },
+                        }
                     }
                 }
             }
@@ -198,15 +198,15 @@ impl Widget for GProgress {
 impl LiveHook for GProgress {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 100);
+        let bg_color = self.background_color.get(self.theme, 100);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 100);
+        let hover_color = self.hover_color.get(self.theme, 100);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 100);
+        let border_color = self.border_color.get(self.theme, 100);
         // ------------------ stroke color ----------------------------------------------
-        let stroke_color = get_color(self.theme, self.stroke_color, 600);
+        let stroke_color = self.stroke_color.get(self.theme, 600);
         // ------------------ stroke hover color ----------------------------------------
-        let stroke_hover_color = get_color(self.theme, self.stroke_hover_color, 500);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 500);
         // ------------------ apply to draw_progress ----------------------------------------
         self.draw_progress.apply_over(
             cx,

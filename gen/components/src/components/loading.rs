@@ -1,14 +1,17 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::{draw_card::DrawCard, draw_loading::{DrawGLoading, GLoadingType}},
-    themes::{get_color, Themes},
+    shader::{
+        draw_card::DrawCard,
+        draw_loading::{DrawGLoading, GLoadingType},
+    },
+    themes::Themes,
+    utils::ThemeColor,
 };
-
 
 live_design! {
     GLoadingBase = {{GLoading}}{
-        
+
     }
 }
 
@@ -37,7 +40,6 @@ pub struct GLoading {
     pub time: f32,
     #[rust]
     next_frame: NextFrame,
-    
 }
 
 impl Widget for GLoading {
@@ -56,13 +58,12 @@ impl Widget for GLoading {
             self.next_frame = cx.new_next_frame();
         }
     }
-    
 }
 
 impl LiveHook for GLoading {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ------------------ hover color -----------------------------------------------
-        let loading_color = get_color(self.theme, self.loading_color, 600);
+        let loading_color = self.loading_color.get(self.theme, 600);
 
         // ------------------ apply to draw_loading_wrap ----------------------------------------
         self.draw_loading.apply_over(
@@ -71,7 +72,8 @@ impl LiveHook for GLoading {
                 background_color: (loading_color),
             },
         );
-        self.draw_loading.apply_loading_type(self.loading_type.clone());
+        self.draw_loading
+            .apply_loading_type(self.loading_type.clone());
         self.draw_loading_wrap.redraw(cx);
     }
     fn after_new_from_doc(&mut self, cx: &mut Cx) {

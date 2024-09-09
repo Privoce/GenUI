@@ -2,8 +2,8 @@ use makepad_widgets::*;
 
 use crate::{
     shader::{draw_check_box::DrawGCheckBox, draw_radio::GChooseType},
-    themes::{get_color, Themes},
-    utils::set_cursor,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
 };
 
 live_design! {
@@ -151,17 +151,17 @@ impl Widget for GCheckBox {
 impl LiveHook for GCheckBox {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 50);
+        let bg_color = self.background_color.get(self.theme, 50);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 100);
+        let hover_color = self.hover_color.get(self.theme, 100);
         // ------------------ selected color ---------------------------------------------
-        let selected_color = get_color(self.theme, self.selected_color, 50);
+        let selected_color = self.selected_color.get(self.theme, 50);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 600);
+        let border_color = self.border_color.get(self.theme, 600);
         // ------------------ stroke color ---------------------------------------------
-        let stroke_color = get_color(self.theme, self.stroke_color, 600);
+        let stroke_color = self.stroke_color.get(self.theme, 600);
         // ------------------ stroke hover color ---------------------------------------
-        let stroke_hover_color = get_color(self.theme, self.stroke_hover_color, 600);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 600);
         // ------------------ apply to draw_check ----------------------------------------
         self.draw_check.apply_over(
             cx,
@@ -186,7 +186,8 @@ impl LiveHook for GCheckBox {
 
 impl GCheckBox {
     pub fn changed(&self, actions: &Actions) -> Option<(bool, String)> {
-        if let GCheckBoxEvent::Changed(changed) = actions.find_widget_action_cast(self.widget_uid()) {
+        if let GCheckBoxEvent::Changed(changed) = actions.find_widget_action_cast(self.widget_uid())
+        {
             return Some(changed);
         }
         None

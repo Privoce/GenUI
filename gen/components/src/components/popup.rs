@@ -2,7 +2,8 @@ use makepad_widgets::*;
 
 use crate::{
     shader::{draw_popup::DrawGPopup, manual::PopupMode},
-    themes::{get_color, Themes},
+    themes::Themes,
+    utils::{BoolToF32, ThemeColor},
 };
 
 use super::card::Card;
@@ -21,15 +22,15 @@ pub struct GPopupContainer {
 impl LiveHook for GPopupContainer {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // ------------------ is transparent --------------------------------------------
-        let transparent = (self.transparent) as u8 as f32;
+        let transparent = self.transparent.to_f32();
         // ------------------ apply draw_popup --------------------------------------------
         let border_width = self.border_width;
         let border_radius = self.border_radius;
@@ -118,15 +119,15 @@ pub struct GPopup {
 impl LiveHook for GPopup {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // ------------------ is transparent --------------------------------------------
-        let transparent = (self.transparent) as u8 as f32;
+        let transparent = self.transparent.to_f32();
         // ------------------ apply draw_popup --------------------------------------------
         self.draw_popup.apply_over(
             cx,

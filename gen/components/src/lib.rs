@@ -8,7 +8,8 @@ pub mod utils;
 
 pub fn live_design(cx: &mut Cx) {
     // components ---------------------------------------------
-    crate::components::label::live_design(cx);
+    // crate::components::label::live_design(cx);
+    crate::components::label::register(cx);
     crate::components::button::live_design(cx);
     crate::components::card::live_design(cx);
     crate::components::link::live_design(cx);
@@ -35,11 +36,12 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tab::live_design(cx);
     crate::components::file_upload::live_design(cx);
     crate::components::collapse::live_design(cx);
-    crate::components::table::cell::live_design(cx);
-    crate::components::table::row::live_design(cx);
-    crate::components::table::body::live_design(cx);
-    crate::components::table::header::live_design(cx);
-    crate::components::table::live_design(cx);
+    // crate::components::table::cell::live_design(cx);
+    // crate::components::table::row::live_design(cx);
+    // crate::components::table::body::live_design(cx);
+    // crate::components::table::header::live_design(cx);
+    // crate::components::table::live_design(cx);
+    crate::components::table::register(cx);
     // shader -------------------------------------------------
     crate::shader::icon_lib::live_design(cx);
     crate::shader::icon_lib::base::live_design(cx);

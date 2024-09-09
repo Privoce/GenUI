@@ -6,8 +6,8 @@ use crate::{
         draw_card::DrawCard,
         draw_split::{DrawGSplit, GSplitType},
     },
-    themes::{get_color, Themes},
-    utils::get_font_family,
+    themes::Themes,
+    utils::{get_font_family, ThemeColor},
 };
 
 live_design! {
@@ -92,7 +92,7 @@ impl Widget for GBreadCrumbItem {
         self.icon_walk.abs_pos = walk.abs_pos;
         self.icon_walk.height = Size::Fill;
         self.icon_walk.width = Size::Fixed(self.font_size * 1.5);
-        self.icon_walk.margin = Margin{
+        self.icon_walk.margin = Margin {
             left: 0.0,
             top: self.font_size * 0.7,
             right: 0.0,
@@ -105,7 +105,7 @@ impl Widget for GBreadCrumbItem {
         self.draw_text.text_style.font = font;
         self.draw_text
             .draw_walk(cx, self.text_walk, Align::default(), self.text.as_ref());
-        
+
         self.draw_item.end(cx);
         DrawStep::done()
     }
@@ -124,9 +124,9 @@ impl Widget for GBreadCrumbItem {
 impl LiveHook for GBreadCrumbItem {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.color, 600);
+        let font_color = self.color.get(self.theme, 600);
         // ------------------icon color -----------------------------------------------
-        let icon_color = get_color(self.theme, self.icon_color, 500);
+        let icon_color = self.icon_color.get(self.theme, 500);
 
         self.draw_split.apply_over(
             cx,

@@ -1,8 +1,5 @@
-use crate::utils::{get_font_family, set_cursor};
-use crate::{
-    shader::draw_card::DrawCard,
-    themes::{get_color, Themes},
-};
+use crate::utils::{get_font_family, set_cursor, ThemeColor};
+use crate::{shader::draw_card::DrawCard, themes::Themes};
 use makepad_widgets::*;
 
 live_design! {
@@ -191,15 +188,15 @@ impl Widget for GButton {
 impl LiveHook for GButton {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.color, 100);
+        let font_color = self.color.get(self.theme, 100);
         // ------------------ round -----------------------------------------------------
         if self.round {
             self.border_radius = match self.walk.height {

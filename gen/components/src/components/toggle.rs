@@ -1,6 +1,10 @@
 use makepad_widgets::*;
 
-use crate::{shader::draw_toggle::DrawGToggle, themes::{get_color, Themes}, utils::set_cursor};
+use crate::{
+    shader::draw_toggle::DrawGToggle,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
+};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -87,7 +91,6 @@ pub enum GToggleEvent {
     None,
 }
 
-
 impl Widget for GToggle {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         self.draw_toggle.draw_walk(cx, walk);
@@ -134,17 +137,17 @@ impl Widget for GToggle {
 impl LiveHook for GToggle {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ selected color ---------------------------------------------
-        let selected_color = get_color(self.theme, self.selected_color, 500);
+        let selected_color = self.selected_color.get(self.theme, 500);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 600);
+        let border_color = self.border_color.get(self.theme, 600);
         // ------------------ stroke color ---------------------------------------------
-        let stroke_color = get_color(self.theme, self.stroke_color, 50);
+        let stroke_color = self.stroke_color.get(self.theme, 50);
         // ------------------ stroke hover color ---------------------------------------
-        let stroke_hover_color = get_color(self.theme, self.stroke_hover_color, 600);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 600);
         // ------------------ apply to draw_toggle ----------------------------------------
         self.draw_toggle.apply_over(
             cx,

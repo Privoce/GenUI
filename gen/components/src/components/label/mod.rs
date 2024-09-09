@@ -1,21 +1,53 @@
+//! # Label component
+//! A component that displays text.
+//! ## Props
+//! - theme: Themes, default `Primary`
+//! - color: text color
+//! - font_size: font size, default `9.0`
+//! - brightness: font brightness, default `1.0` (unused)
+//! - curve: font curve, default `0.5` (unused)
+//! - line_spacing: line spacing, default `1.5`
+//! - top_drop: top drop, default `0.0`
+//! - height_factor: height factor, default `0.0`
+//! - wrap: text wrap, default `Word`
+//! - font_family: font family
+//! - visible: is current component visible, default `true`
+//! - align: text align, default `Align{x: 0.0, y: 0.0}`
+//! - padding: text padding, default `0.0`
+//! - text: text content
+//! ## Events
+//! None
+//! ## Example
+//! See [label example](https://privoce.github.io/GenUI.github.io/gen/makepad/components/label.html)
+mod register;
+
+pub use register::register;
+
+use crate::{
+    themes::Themes,
+    utils::{get_font_family, ThemeColor},
+};
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
-use crate::utils::get_font_family;
-
 live_design! {
     GLabelBase = {{GLabel}}{}
 }
 
+/// ## GLabel component
+/// A component that displays text.
+/// This component has no events. If you need add event on this component, you should wrap a card outside
 #[derive(Live, Widget)]
 pub struct GLabel {
     #[live]
-    pub color: Vec4,
+    pub theme: Themes,
+    #[live]
+    pub color: Option<Vec4>,
     #[live(9.0)]
     pub font_size: f64,
-    #[live(1.0)]
-    pub brightness: f32,
-    #[live(0.5)]
-    pub curve: f32,
+    // #[live(1.0)]
+    // pub brightness: f32,
+    // #[live(0.5)]
+    // pub curve: f32,
     #[live(1.5)]
     pub line_spacing: f64,
     #[live(0.0)]
@@ -42,14 +74,6 @@ pub struct GLabel {
     text: ArcStringMut,
 }
 
-#[derive(Clone, Debug, DefaultNone)]
-pub enum LabelEvent {
-    Hover,
-    HoverOut,
-    Clicked,
-    None,
-}
-
 impl Widget for GLabel {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
@@ -58,8 +82,8 @@ impl Widget for GLabel {
         let font = get_font_family(&self.font_family, cx);
 
         self.draw_text.text_style.font = font;
-        
-        let mut padding  =self.padding;
+
+        let mut padding = self.padding;
         padding.top += 2.0;
         self.draw_text.draw_walk(
             cx,
@@ -69,24 +93,6 @@ impl Widget for GLabel {
         );
 
         DrawStep::done()
-    }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let hit = event.hits(cx, self.area());
-        self.handle_widget_event(cx, event, scope, hit)
-    }
-    fn handle_event_with(
-        &mut self,
-        cx: &mut Cx,
-        event: &Event,
-        scope: &mut Scope,
-        sweep_area: Area,
-    ) {
-        let hit = event.hits_with_options(
-            cx,
-            self.area(),
-            HitOptions::new().with_sweep_area(sweep_area),
-        );
-        self.handle_widget_event(cx, event, scope, hit)
     }
     /// copy label text
     fn text(&self) -> String {
@@ -106,10 +112,12 @@ impl Widget for GLabel {
 
 impl LiveHook for GLabel {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        let color = self.color.get(self.theme, 800);
+
         self.draw_text.apply_over(
             cx,
             live! {
-                color: (self.color),
+                color: (color),
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
@@ -122,37 +130,11 @@ impl LiveHook for GLabel {
         );
         self.draw_text.wrap = self.wrap.clone();
         self.draw_text.redraw(cx);
-
     }
 }
 
 impl GLabel {
     pub fn area(&self) -> Area {
         self.draw_text.area()
-    }
-    pub fn handle_widget_event(
-        &mut self,
-        cx: &mut Cx,
-        _event: &Event,
-        scope: &mut Scope,
-        hit: Hit,
-        
-    ){
-        let uid = self.widget_uid();
-
-        match hit {
-            Hit::FingerHoverIn(_) => {
-                cx.widget_action(uid, &scope.path, LabelEvent::Hover);
-            }
-            Hit::FingerHoverOut(_) => {
-                cx.widget_action(uid, &scope.path, LabelEvent::HoverOut);
-            }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, LabelEvent::Clicked);
-                }
-            }
-            _ => (),
-        }
     }
 }

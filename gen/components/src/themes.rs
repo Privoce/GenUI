@@ -225,10 +225,9 @@ pub fn hex_to_vec4(hex: &str) -> Vec4 {
 }
 
 /// v: color value, range: `[25, 50, 100 ,200, 300, 400, 500, 600, 700, 800, 900]`
-pub fn get_color(theme: Themes,color: Option<Vec4>, v: u32) -> Vec4{
-
+pub fn get_color(theme: Themes, color: Option<&Vec4>, v: u32) -> Vec4 {
     return if let Some(target) = color {
-       target
+        target.clone()
     } else {
         match theme {
             Themes::Dark => ThemeDark::v(v),
@@ -237,17 +236,14 @@ pub fn get_color(theme: Themes,color: Option<Vec4>, v: u32) -> Vec4{
             Themes::Warning => ThemeWarning::v(v),
             Themes::Success => ThemeSuccess::v(v),
         }
-    }
+    };
 }
 
 #[cfg(test)]
-mod test_themes{
+mod test_themes {
     use crate::themes::hex_to_vec4;
-
-    use super::ThemeColorValue;
-
     #[test]
-    fn v4(){
+    fn v4() {
         let v = hex_to_vec4("#F4F4F6");
         dbg!(v);
     }

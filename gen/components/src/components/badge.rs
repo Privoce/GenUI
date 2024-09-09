@@ -1,10 +1,7 @@
-use crate::shader::draw_svg::DrawGSvg;
 use crate::shader::draw_icon_pixel::DrawGIconPixel;
-use crate::utils::{get_font_family, DefaultTextStyle};
-use crate::{
-    shader::draw_card::DrawCard,
-    themes::{get_color, Themes},
-};
+use crate::shader::draw_svg::DrawGSvg;
+use crate::utils::{get_font_family, DefaultTextStyle, ThemeColor};
+use crate::{shader::draw_card::DrawCard, themes::Themes};
 use makepad_widgets::*;
 
 live_design! {
@@ -16,7 +13,7 @@ live_design! {
             width: Fit,
         }
         cursor: Hand,
-        
+
         draw_text: {
             instance hover: 0.0,
             instance pressed: 0.0,
@@ -162,18 +159,18 @@ impl Widget for GBadge {
 impl LiveHook for GBadge {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
+        let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.color, 100);
+        let font_color = self.color.get(self.theme, 100);
         // ------------------icon color -----------------------------------------------
-        let icon_color = get_color(self.theme, self.icon_color, 100);
-        let icon_hover_color = get_color(self.theme, self.icon_hover_color, 50);
+        let icon_color = self.icon_color.get(self.theme, 100);
+        let icon_hover_color = self.icon_hover_color.get(self.theme, 50);
         // ------------------ round -----------------------------------------------------
 
         if self.round {
@@ -234,7 +231,7 @@ impl LiveHook for GBadge {
                 },
             },
         );
-        
+
         if self.closeable {
             // self.draw_close.apply_over(
             //     cx,
@@ -260,7 +257,7 @@ impl LiveHook for GBadge {
             );
             self.draw_close.redraw(cx);
         }
-        
+
         self.draw_badge.redraw(cx);
         self.draw_text.redraw(cx);
         self.draw_icon.redraw(cx);

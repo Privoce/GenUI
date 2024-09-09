@@ -7,8 +7,8 @@ use unicode_segmentation::{GraphemeCursor, UnicodeSegmentation};
 
 use crate::{
     shader::{draw_card::DrawCard, draw_text::DrawGText},
-    themes::{get_color, Themes},
-    utils::get_font_family,
+    themes::Themes,
+    utils::{get_font_family, BoolToF32, ThemeColor},
 };
 
 live_design! {
@@ -265,7 +265,7 @@ impl Widget for GInput {
             },
             Layout::flow_right(),
         );
-        
+
         // Draw text
         if self.text.is_empty() {
             self.draw_text.empty = 1.0;
@@ -276,7 +276,7 @@ impl Widget for GInput {
             self.draw_text
                 .draw_walk(cx, Walk::fit(), self.label_align, &self.text);
         }
-       
+
         // let padded_rect = cx.turtle().padded_rect();
         // Draw selection
         let rects = self.draw_text.selected_rects(
@@ -303,9 +303,9 @@ impl Widget for GInput {
             );
         }
         // dbg!(self.scroll_bars.get_viewport_rect(cx));
-        
+
         self.scroll_bars.set_scroll_x(cx, last_pos.x);
-       
+
         // dbg!(self.scroll_bars.get_scroll_pos());
         self.scroll_bars.end(cx);
         // Draw cursor
@@ -326,9 +326,7 @@ impl Widget for GInput {
         cursor_position.y = last_pos.y;
         // dbg!(&cursor_position);
         // self.scroll_bars.set_scroll_pos(cx, cursor_position);
-        
 
-       
         self.draw_cursor.draw_abs(
             cx,
             Rect {
@@ -336,8 +334,7 @@ impl Widget for GInput {
                 size: dvec2(self.cursor_width, cursor_height),
             },
         );
-       
-        
+
         self.draw_input.end(cx);
 
         if cx.has_key_focus(self.draw_input.area()) {
@@ -709,17 +706,17 @@ impl Widget for GInput {
 impl LiveHook for GInput {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 25);
+        let bg_color = self.background_color.get(self.theme, 25);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
+        let border_color = self.border_color.get(self.theme, 800);
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.color, 800);
+        let font_color = self.color.get(self.theme, 800);
         // ---------------------- is empty ------------------------------------------------
-        let empty = self.text.len().eq(&0) as u8 as f32;
+        let empty = self.text.len().eq(&0).to_f32();
         // ---------------------- select color ------------------------------------------
         let mut select_color = font_color.clone();
         select_color.w = 0.5;

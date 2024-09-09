@@ -1,6 +1,10 @@
 use makepad_widgets::*;
 
-use crate::{shader::draw_svg::DrawGSvg, themes::{get_color, Themes}, utils::set_cursor};
+use crate::{
+    shader::draw_svg::DrawGSvg,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
+};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -84,7 +88,7 @@ impl Widget for GSvg {
             return DrawStep::done();
         }
         self.draw_icon.draw_walk(cx, walk);
-      
+
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
@@ -120,9 +124,9 @@ impl Widget for GSvg {
 impl LiveHook for GSvg {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
+        let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ color -----------------------------------------------
-        let color = get_color(self.theme, self.color, 500);
+        let color = self.color.get(self.theme, 500);
 
         self.draw_icon.apply_over(
             cx,
