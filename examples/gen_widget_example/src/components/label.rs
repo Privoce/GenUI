@@ -9,24 +9,29 @@ live_design! {
         height: 100.0,
         width: Fill,
         spacing: 10.0,
+        flow: Down,
         <Label>{
             text: "GLabel"
         }
-        <GLabel>{
-            text: "Hello, world! This is a long message, but I use wrap Word to wrap it!",
-            height: 48.0,
-            width: 120.0,
-            wrap: Word,
-            brightness: 1.5,
-            margin: {left: 12.0},
-        }
-        <GLabel>{
-            text: "bold, test bold!!",
-            font_size: 12.0,
-            padding: 16.0,
-            color: #FF0000,
-            // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
-            font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
+        <GHLayout>{
+            height: Fit,
+            width: Fill,
+            spacing: 10.0,
+            <GLabel>{
+                text: "Hello, world! This is a long message, but I use wrap Word to wrap it!",
+                height: Fit,
+                width: 120.0,
+                wrap: Word,
+                margin: {left: 12.0},
+            }
+            <GLabel>{
+                text: "test another font family!!",
+                font_size: 12.0,
+                padding: 16.0,
+                color: #FF0000,
+                // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
+                font_family: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf"),
+            }
         }
     }
 }

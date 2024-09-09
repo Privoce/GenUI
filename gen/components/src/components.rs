@@ -134,8 +134,7 @@ live_design! {
     COLOR_SUCCESS_800 = #05603A;
     COLOR_SUCCESS_900 = #054F31;
     // -------- font-family ------------------------------------
-    FONT_FAMILY = dep("crate://self/resources/font/GoNotoKurrent-Regular.ttf");
-    FONT_FAMILY_BOLD = dep("crate://self/resources/font/GoNotoKurrent-Bold.ttf");
+    FONT_FAMILY = dep("crate://self/resources/font/IBMPlexSans-Text.ttf");
     FONT_SIZE = 10.0;
     FONT_SIZE_SMALL = 9.0;
     // padding -----------------------------------------------------
@@ -154,7 +153,6 @@ live_design! {
         height: Fit,
         color: (COLOR_WHITE),
         font_family: (FONT_FAMILY),
-        brightness: 1.0,
         top_drop: 1.0,
         line_spacing: 1.5,
         font_size: (FONT_SIZE),
