@@ -7,25 +7,26 @@ live_design! {
 
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
             let offset = 0.5;
-            let split_size = vec2(self.rect_size.x * 0.5, self.rect_size.y * 0.5);
+            let center = vec2(self.rect_size.x * 0.5, self.rect_size.y * 0.5);
+            let q_size = self.rect_size.x * 0.25;
             match self.split_type {
                 GSplitType::Spliter => {
                     // draw a `/` icon as a split
-                    sdf.move_to(split_size.x - offset, 0.0);
-                    sdf.line_to(offset, split_size.y);
+                    sdf.move_to(center.x + q_size, self.pos.y);
+                    sdf.line_to(center.x - q_size, self.pos.y + self.rect_size.y);
                     sdf.stroke(self.color, 1.2);
                 }
                 GSplitType::Arrow => {
                     // draw a `>` icon as a split
-                    sdf.move_to(offset, offset);
-                    sdf.line_to(split_size.x * 0.66, split_size.y * 0.5);
-                    sdf.line_to(offset, split_size.y);
+                    sdf.move_to(q_size, self.pos.y);
+                    sdf.line_to(self.rect_size.x - q_size, center.y);
+                    sdf.line_to(q_size, self.pos.y + self.rect_size.y);
                     sdf.stroke(self.color, 1.2);
                 }
                 GSplitType::Line => {
                     // draw a `|` icon as a split
-                    sdf.move_to(split_size.x * 0.5, 0.0);
-                    sdf.line_to(split_size.x * 0.5, split_size.y);
+                    sdf.move_to(center.x, 0.0);
+                    sdf.line_to(center.x, self.pos.y + self.rect_size.y);
                     sdf.stroke(self.color, 1.2);
                 }
             }

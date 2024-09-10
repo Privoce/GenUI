@@ -21,6 +21,7 @@ live_design! {
                 height: 30.0,
                 spacing: 10.0,
                 <GBreadCrumbItem>{
+                    theme: Error,
                     text: "Spliter",
                 }
                 <GBreadCrumbItem>{

@@ -1,11 +1,13 @@
 pub mod item;
+mod register;
+pub use register::register;
 
 use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
 use makepad_widgets::*;
 
 use crate::{shader::draw_card::DrawCard, themes::Themes, utils::ThemeColor};
 
-use super::image::GImage;
+use super::{icon::GIcon, image::GImage};
 
 live_design! {
     GBreadCrumbBase = {{GBreadCrumb}}{
@@ -62,7 +64,7 @@ pub struct GBreadCrumb {
     #[live]
     pub draw_bread_crumb: DrawCard,
     #[live]
-    pub draw_icon: GImage,
+    pub draw_icon: GIcon,
     #[live]
     pub crumb_item: Option<LivePtr>,
     #[rust]

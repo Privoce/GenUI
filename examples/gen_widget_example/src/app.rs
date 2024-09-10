@@ -43,18 +43,16 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    
-                    // <GLinkExample>{}
+                    <GBreadCrumbExample>{}
+                    <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    <GButtonExample>{}
+                    // <GButtonExample>{}
                     // <GLabelExample>{}
                     <GVLayout>{
                         height: 300.0,
                         spacing: 6.0,
                         width:Fill,
-                        
-                        
                     }
                     
                     // <GCollapse>{
@@ -72,7 +70,7 @@ live_design! {
                     //     }
                     // }
                     // <GTabsExample>{}
-                    // <GBreadCrumbExample>{}
+                    // 
                     // <GBadgeExample>{}
                     // <GStatesExample>{}
                     // // // loading pass, test ok

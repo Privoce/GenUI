@@ -12,7 +12,8 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::link::register(cx);
     crate::components::svg::register(cx);
     crate::components::icon::register(cx);
-    crate::components::button::live_design(cx);
+    crate::components::button::register(cx);
+    // crate::components::button::live_design(cx);
     crate::components::card::live_design(cx);
     crate::components::radio::live_design(cx);
     crate::components::checkbox::live_design(cx);

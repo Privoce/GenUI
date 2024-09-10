@@ -2,27 +2,60 @@ use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 
 use crate::{
-    shader::{
-        draw_card::DrawCard,
-        draw_split::{DrawGSplit, GSplitType},
-    },
+    set_text_and_visible_fn,
+    shader::{draw_split::{DrawGSplit, GSplitType}, draw_text::DrawGText},
     themes::Themes,
-    utils::{get_font_family, ThemeColor},
+    utils::{get_font_family, set_cursor, ThemeColor},
 };
 
 live_design! {
     import makepad_draw::shader::std::*;
-    ALIGN_CENTER_WALK = {x: 0.5, y: 0.5};
+    GLOBAL_DURATION = 0.25,
     GBreadCrumbItemBase = {{GBreadCrumbItem}}{
-        height: Fit,
-        width: Fit,
+        spacing: 4.0,
         flow: Right,
         padding: 0,
         text_walk: {
             height: Fit,
-            width: Fit,
-            margin: 0,
+            width: Fit
         },
+        icon_walk: {
+            height: 14.0,
+            width: 14.0,
+        }
+        draw_item: {
+            fn pixel(self) -> vec4{
+                return vec4(0.0);
+            }
+        },
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_text: {pressed: 0.0, hover: 0.0}
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                    }
+                }
+
+                pressed = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -33,12 +66,16 @@ pub struct GBreadCrumbItem {
     // text -------------------
     #[live]
     pub color: Option<Vec4>,
+    #[live]
+    pub text_hover_color: Option<Vec4>,
+    #[live]
+    pub text_pressed_color: Option<Vec4>,
     #[live(9.0)]
     pub font_size: f64,
-    #[live(1.0)]
-    pub brightness: f32,
-    #[live(0.5)]
-    pub curve: f32,
+    // #[live(1.0)]
+    // pub brightness: f32,
+    // #[live(0.5)]
+    // pub curve: f32,
     // #[live(1.5)]
     // pub line_spacing: f64,
     #[live(0.0)]
@@ -72,32 +109,43 @@ pub struct GBreadCrumbItem {
     pub split_type: GSplitType,
     // deref -------------------
     #[live]
-    pub draw_text: DrawText,
+    pub draw_text: DrawGText,
     #[live]
     pub draw_split: DrawGSplit,
     #[redraw]
     #[live]
-    pub draw_item: DrawCard,
+    pub draw_item: DrawQuad,
     #[walk]
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
+    #[live(true)]
+    pub grab_key_focus: bool,
+    // animator -----------------
+    #[live(true)]
+    pub animation_open: bool,
+    #[animator]
+    pub animator: Animator,
+    #[live(true)]
+    pub visible: bool,
+    #[live(Some(MouseCursor::Hand))]
+    pub cursor: Option<MouseCursor>,
+}
+
+#[derive(Clone, Debug, DefaultNone)]
+pub enum GBreadCrumbItemEvent {
+    Hover(KeyModifiers),
+    Clicked(KeyModifiers),
+    None,
 }
 
 impl Widget for GBreadCrumbItem {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, mut walk: Walk) -> DrawStep {
-        walk.height = Size::Fixed(self.font_size * 2.8);
-        self.draw_item.begin(cx, walk, self.layout);
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
 
-        self.icon_walk.abs_pos = walk.abs_pos;
-        self.icon_walk.height = Size::Fill;
-        self.icon_walk.width = Size::Fixed(self.font_size * 1.5);
-        self.icon_walk.margin = Margin {
-            left: 0.0,
-            top: self.font_size * 0.7,
-            right: 0.0,
-            bottom: 0.0,
-        };
+        self.draw_item.begin(cx, walk, self.layout);
 
         self.draw_split.draw_walk(cx, self.icon_walk);
         let font = get_font_family(&self.font_family, cx);
@@ -109,24 +157,50 @@ impl Widget for GBreadCrumbItem {
         self.draw_item.end(cx);
         DrawStep::done()
     }
-    fn text(&self) -> String {
-        self.text.as_ref().to_string()
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
+
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
-    fn set_text(&mut self, v: &str) {
-        self.text.as_mut_empty().push_str(v);
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
+        self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
-    fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-        self.redraw(cx)
-    }
+    set_text_and_visible_fn!();
+    // fn text(&self) -> String {
+    //     self.text.as_ref().to_string()
+    // }
+    // fn set_text(&mut self, v: &str) {
+    //     self.text.as_mut_empty().push_str(v);
+    // }
+    // fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
+    //     self.text.as_mut_empty().push_str(v);
+    //     self.redraw(cx)
+    // }
 }
 
 impl LiveHook for GBreadCrumbItem {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ------------------ font ------------------------------------------------------
-        let font_color = self.color.get(self.theme, 600);
+        let font_color = self.color.get(self.theme, 100);
+        let text_hover_color = self.text_hover_color.get(self.theme, 50);
+        let text_pressed_color = self.text_pressed_color.get(self.theme, 200);
         // ------------------icon color -----------------------------------------------
-        let icon_color = self.icon_color.get(self.theme, 500);
+        let icon_color = self.icon_color.get(self.theme, 100);
 
         self.draw_split.apply_over(
             cx,
@@ -144,9 +218,11 @@ impl LiveHook for GBreadCrumbItem {
             cx,
             live! {
                 color: (font_color),
+                hover_color: (text_hover_color),
+                pressed_color: (text_pressed_color),
                 text_style: {
-                    brightness: (self.brightness),
-                    curve: (self.curve),
+                    // brightness: (self.brightness),
+                    // curve: (self.curve),
                     line_spacing: (self.layout.line_spacing),
                     top_drop: (self.top_drop),
                     font_size: (self.font_size),
@@ -160,11 +236,105 @@ impl LiveHook for GBreadCrumbItem {
     }
 }
 
+impl GBreadCrumbItem {
+    pub fn area(&self) -> Area {
+        self.draw_item.area
+    }
+    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let GBreadCrumbItemEvent::Clicked(e) =
+            actions.find_widget_action(self.widget_uid()).cast()
+        {
+            Some(e)
+        } else {
+            None
+        }
+    }
+    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let GBreadCrumbItemEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast()
+        {
+            Some(e)
+        } else {
+            None
+        }
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_item.redraw(cx);
+            }
+        }
+        match hit {
+            Hit::FingerDown(_) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }
+                self.animator_play(cx, id!(hover.pressed));
+            }
+            Hit::FingerHoverIn(h) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.animator_play(cx, id!(hover.on));
+                cx.widget_action(uid, &scope.path, GBreadCrumbItemEvent::Hover(h.modifiers));
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GBreadCrumbItemEvent::Clicked(f_up.modifiers),
+                    );
+
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => (),
+        }
+    }
+}
+
 impl GBreadCrumbItemRef {
     pub fn as_origin(&self) -> Option<std::cell::Ref<GBreadCrumbItem>> {
         self.borrow()
     }
     pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<GBreadCrumbItem>> {
         self.borrow_mut()
+    }
+    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.clicked(actions);
+        }
+        None
+    }
+    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.hover(actions);
+        }
+        None
+    }
+}
+
+impl GBreadCrumbItemSet {
+    pub fn clicked(&self, actions: &Actions) -> bool {
+        self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        self.iter().any(|c_ref| c_ref.hover(actions).is_some())
     }
 }

@@ -105,15 +105,15 @@ impl Widget for GButton {
     ) {
         let hit = event.hits_with_options(
             cx,
-            self.draw_button.area(),
+            self.area(),
             HitOptions::new().with_sweep_area(sweep_area),
         );
 
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let focus_area = self.draw_button.area();
-        let hit = event.hits(cx, self.draw_button.area());
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {

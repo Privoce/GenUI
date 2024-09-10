@@ -92,6 +92,10 @@ pub struct GLink {
     #[live]
     pub color: Option<Vec4>,
     #[live]
+    pub text_hover_color: Option<Vec4>,
+    #[live]
+    pub text_pressed_color: Option<Vec4>,
+    #[live]
     pub font_family: LiveDependency,
     #[live]
     pub cursor: Option<MouseCursor>,
@@ -193,8 +197,10 @@ impl LiveHook for GLink {
         let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
+        let text_hover_color = self.text_hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
         let pressed_color = self.pressed_color.get(self.theme, 600);
+        let text_pressed_color = self.text_pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
         // ------------------ underline color ------------------------------------------
@@ -241,8 +247,8 @@ impl LiveHook for GLink {
             cx,
             live! {
                 color: (font_color),
-                hover_color: (hover_color),
-                pressed_color: (pressed_color),
+                hover_color: (text_hover_color),
+                pressed_color: (text_pressed_color),
                 text_style: {
                     font_size: (self.font_size),
                 },

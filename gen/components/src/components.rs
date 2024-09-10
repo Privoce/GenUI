@@ -514,18 +514,26 @@ live_design! {
         }
     }
     GBreadCrumbItem = <GBreadCrumbItemBase>{
+        height: 24.0,
+        width: Fit,
         font_size: (FONT_SIZE),
-        align: <ALIGN_CENTER_WALK>{},
+        align: {
+            x: 0.0,
+            y: 0.5
+        },
     }
     GBreadCrumb = <GBreadCrumbBase>{
-        height: 32.0,
+        height: 24.0,
         width: Fill,
-        padding: 8.0,
+        padding: 6.0,
         spacing: 8.0,
         align: <ALIGN_LEFT_WALK>{},
         font_size: (FONT_SIZE),
-        draw_icon: <GImage>{
-            src: dep("crate://self/resources/icons/home.png"),
+        draw_icon: <GIcon>{
+            theme: Dark,
+            height: 14.0,
+            width: 14.0,
+            icon_type: Home,
         },
         crumb_item: <GBreadCrumbItem>{}
     }
