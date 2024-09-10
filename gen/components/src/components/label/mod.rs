@@ -1,20 +1,24 @@
 //! # Label component
 //! A component that displays text.
 //! ## Props
-//! - theme: Themes, default `Primary`
-//! - color: text color
-//! - font_size: font size, default `9.0`
-//! - brightness: font brightness, default `1.0` (unused)
-//! - curve: font curve, default `0.5` (unused)
-//! - line_spacing: line spacing, default `1.5`
-//! - top_drop: top drop, default `0.0`
-//! - height_factor: height factor, default `0.0`
-//! - wrap: text wrap, default `Word`
-//! - font_family: font family
-//! - visible: is current component visible, default `true`
-//! - align: text align, default `Align{x: 0.0, y: 0.0}`
-//! - padding: text padding, default `0.0`
-//! - text: text content
+//! |decorate|name|type|description|
+//! |--|--|--|--|
+//! |live|color|`Vec4`|The color of the label.|
+//! |live|font_size|`f64`|The size of the font used in the label.|
+//! |live|brightness(unused)|`f32`|The brightness level of the text.|
+//! |live|curve(unused)|`f32`|The curve factor of the text.|
+//! |live|line_spacing|`f64`|The line spacing of the text.|
+//! |live|top_drop|`f64`|The top drop of the text.|
+//! |live|height_factor|`f64`|The height factor of the text.|
+//! |live|wrap|`TextWrap`|The text wrapping mode.|
+//! |live|font_family|`LiveDependency`|The font family of the text.|
+//! |live|visible|`bool`|Whether the label is visible.|
+//! |deref|draw_text|`DrawText`|The `DrawText` component used for drawing the text.|
+//! |walk|height|`Size`|The height of the label|
+//! |walk|width|`Size`|The width of the label|
+//! |live|align|`Align`|The alignment of the text.|
+//! |live|padding|`Padding`|The padding around the text. default `0.0`|
+//! |live|text|`ArcStringMut`|The content of the label.|
 //! ## Events
 //! None
 //! ## Example
@@ -24,6 +28,7 @@ mod register;
 pub use register::register;
 
 use crate::{
+    set_text_and_visible_fn,
     themes::Themes,
     utils::{get_font_family, ThemeColor},
 };
@@ -63,15 +68,15 @@ pub struct GLabel {
     // deref ---------------------
     #[redraw]
     #[live]
-    draw_text: DrawText,
+    pub draw_text: DrawText,
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[live]
-    align: Align,
+    pub align: Align,
     #[live]
-    padding: Padding,
+    pub padding: Padding,
     #[live]
-    text: ArcStringMut,
+    pub text: ArcStringMut,
 }
 
 impl Widget for GLabel {
@@ -83,8 +88,8 @@ impl Widget for GLabel {
 
         self.draw_text.text_style.font = font;
 
-        let mut padding = self.padding;
-        padding.top += 2.0;
+        let padding = self.padding;
+
         self.draw_text.draw_walk(
             cx,
             walk.with_add_padding(padding),
@@ -94,24 +99,29 @@ impl Widget for GLabel {
 
         DrawStep::done()
     }
-    /// copy label text
-    fn text(&self) -> String {
-        self.text.as_ref().to_string()
-    }
-    fn set_text(&mut self, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-    }
-    fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-        self.redraw(cx)
-    }
-    fn is_visible(&self) -> bool {
-        self.visible
-    }
+    set_text_and_visible_fn!();
+    ///// copy label text
+    // fn text(&self) -> String {
+    //     self.text.as_ref().to_string()
+    // }
+    // fn set_text(&mut self, v: &str) {
+    //     self.text.as_mut_empty().push_str(v);
+    // }
+    // fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
+    //     self.text.as_mut_empty().push_str(v);
+    //     self.redraw(cx)
+    // }
+    // fn is_visible(&self) -> bool {
+    //     self.visible
+    // }
 }
 
 impl LiveHook for GLabel {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible{
+            return;
+        }
+
         let color = self.color.get(self.theme, 800);
 
         self.draw_text.apply_over(

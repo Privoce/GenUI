@@ -36,6 +36,9 @@ live_design! {
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Min,
+                        cursor: Hand,
+                        hover_color: #F00,
+                        animation_open: true,
                     }
                     <GLabel>{
                         text: "Min",

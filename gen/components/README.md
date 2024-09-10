@@ -21,7 +21,7 @@
 - [x] ToolTip
 - [x] Progress
 - [x] Tab
-- [ ] Table
+- [x] Table
 - [x] Dialog
 - [x] Select
 - [x] Splitter
@@ -31,6 +31,10 @@
 - [x] BreadCrumb
 - [x] ScrollBar(s)
 - [x] icon_lib
+
+# GEN Components (Super)
+
+- [ ] Metric
 
 ## todo
 

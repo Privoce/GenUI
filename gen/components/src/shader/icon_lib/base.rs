@@ -10,8 +10,8 @@ live_design!{
             // use offset to control not overlap with border
             let stroke_width = self.stroke_width;
             let offset = stroke_width * 1.25;
-            let start_pos = vec2(self.pos.x - self.border_width + offset, self.pos.y - self.border_width + offset);
-            let end_pos = vec2(self.pos.x + self.rect_size.x - self.border_width - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - self.border_width - offset * 1.0);
+            let start_pos = vec2(self.pos.x + offset, self.pos.y + offset);
+            let end_pos = vec2(self.pos.x + self.rect_size.x - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - offset * 1.0);
             let size = end_pos - start_pos;
             let center_y = self.rect_size.y * 0.5;
             let center_x = self.rect_size.x * 0.5;

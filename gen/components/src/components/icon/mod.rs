@@ -1,29 +1,82 @@
-use makepad_widgets::*;
+mod register;
 
-use crate::shader::icon_lib::{
-    arrow::DrawGIconArrow,
-    base::DrawGIconBase,
-    code::DrawGIconCode,
-    emoji::DrawGIconEmoji,
-    fs::DrawGIconFs,
-    person::DrawGIconPerson,
-    relation::DrawGIconRelation,
-    state::DrawGIconState,
-    time::DrawGIconTime,
-    tool::DrawGIconTool,
-    types::{
-        arrow::Arrow, base::Base, code::Code, emoji::Emoji, fs::Fs, person::Person, relation::Relation, state::State, time::Time, tool::Tool, ui::UI, DrawGIconType, IconType
+use makepad_widgets::*;
+pub use register::register;
+
+use crate::{
+    shader::icon_lib::{
+        arrow::DrawGIconArrow,
+        base::DrawGIconBase,
+        code::DrawGIconCode,
+        emoji::DrawGIconEmoji,
+        fs::DrawGIconFs,
+        person::DrawGIconPerson,
+        relation::DrawGIconRelation,
+        state::DrawGIconState,
+        time::DrawGIconTime,
+        tool::DrawGIconTool,
+        types::{
+            arrow::Arrow, base::Base, code::Code, emoji::Emoji, fs::Fs, person::Person,
+            relation::Relation, state::State, time::Time, tool::Tool, ui::UI, DrawGIconType,
+            IconType,
+        },
+        ui::DrawGIconUI,
     },
-    ui::DrawGIconUI,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
 };
 
 live_design! {
     import makepad_draw::shader::std::*;
-
+    GLOBAL_DURATION = 0.25
     GIconBase = {{GIcon}}{
         draw_icon: {
+            instance hover: 0.0,
             fn pixel(self) -> vec4{
                 return vec4(0.0);
+            }
+        },
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_icon: {hover: 0.0},
+                        icon_base: {hover: 0.0},
+                        icon_arrow: {hover: 0.0},
+                        icon_code: {hover: 0.0},
+                        icon_emoji: {hover: 0.0},
+                        icon_fs: {hover: 0.0},
+                        icon_ui: {hover: 0.0},
+                        icon_person: {hover: 0.0},
+                        icon_relation: {hover: 0.0},
+                        icon_state: {hover: 0.0},
+                        icon_time: {hover: 0.0},
+                        icon_tool: {hover: 0.0},
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_icon: {hover: [{time: 0.0, value: 1.0}],}
+                        icon_base: {hover: 1.0},
+                        icon_arrow: {hover: 1.0},
+                        icon_code: {hover: 1.0},
+                        icon_emoji: {hover: 1.0},
+                        icon_fs: {hover: 1.0},
+                        icon_ui: {hover: 1.0},
+                        icon_person: {hover: 1.0},
+                        icon_relation: {hover: 1.0},
+                        icon_state: {hover: 1.0},
+                        icon_time: {hover: 1.0},
+                        icon_tool: {hover: 1.0},
+                    }
+                }
             }
         }
     }
@@ -32,7 +85,22 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GIcon {
     #[live]
-    pub icon_type: IconType,
+    pub theme: Themes,
+    #[live]
+    pub stroke_color: Option<Vec4>,
+    #[live]
+    pub hover_color: Option<Vec4>,
+    #[live(1.0)]
+    pub stroke_width: f32,
+    #[live]
+    pub cursor: Option<MouseCursor>,
+    #[live(true)]
+    grab_key_focus: bool,
+    #[live(false)]
+    pub animation_open: bool,
+    #[animator]
+    pub animator: Animator,
+    // redraw -------------------------------------
     #[redraw]
     #[live]
     pub draw_icon: DrawQuad,
@@ -40,6 +108,7 @@ pub struct GIcon {
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
+    // icon lib draw shader ------------------------
     #[live]
     icon_base: Option<DrawGIconBase>,
     #[live]
@@ -62,9 +131,12 @@ pub struct GIcon {
     icon_time: Option<DrawGIconTime>,
     #[live]
     icon_tool: Option<DrawGIconTool>,
-
+    // draw icon type ------------------------------
     #[rust]
     pub draw_type: Option<DrawGIconType>,
+    // icon type -----------------------------------
+    #[live]
+    pub icon_type: IconType,
 }
 
 impl Widget for GIcon {
@@ -146,11 +218,33 @@ impl Widget for GIcon {
         self.draw_icon.end(cx);
         DrawStep::done()
     }
+
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
+
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
+        self.handle_widget_event(cx, event, scope, hit, focus_area)
+    }
 }
 
 impl LiveHook for GIcon {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        let color = vec4(1.0, 1.0, 1.0, 1.0);
+        let color = self.stroke_color.get(self.theme, 200);
+        let hover_color = self.hover_color.get(self.theme, 100);
 
         self.draw_type.replace(self.icon_type.to_draw_type());
         match self.draw_type.as_ref().unwrap() {
@@ -159,6 +253,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_base
@@ -171,6 +267,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_code
@@ -183,6 +281,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_arrow
@@ -195,6 +295,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_emoji
@@ -207,6 +309,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_fs
@@ -219,6 +323,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_ui
@@ -231,6 +337,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_person
@@ -243,6 +351,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_relation
@@ -255,6 +365,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_state
@@ -267,6 +379,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_time
@@ -279,6 +393,8 @@ impl LiveHook for GIcon {
                     cx,
                     live! {
                         stroke_color: (color),
+                        stroke_width: (self.stroke_width),
+                        hover_color: (hover_color),
                     },
                 );
                 self.icon_tool
@@ -289,5 +405,64 @@ impl LiveHook for GIcon {
         }
 
         self.draw_icon.redraw(cx);
+    }
+}
+
+#[derive(Clone, Debug, DefaultNone)]
+pub enum GIconEvent {
+    Hover(KeyModifiers),
+    Clicked(KeyModifiers),
+    None,
+}
+
+impl GIcon {
+    pub fn area(&self) -> Area{
+        self.draw_icon.area
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_icon.redraw(cx);
+            }
+        }
+
+        match hit {
+            Hit::FingerDown(_) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }                
+                // self.animator_play(cx, id!(hover.pressed));
+            }
+            Hit::FingerHoverIn(h) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.animator_play(cx, id!(hover.on));
+                cx.widget_action(uid, &scope.path, GIconEvent::Hover(h.modifiers));
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(uid, &scope.path, GIconEvent::Clicked(f_up.modifiers));
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => (),
+        }
     }
 }

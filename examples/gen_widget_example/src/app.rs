@@ -43,8 +43,9 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GIconLibExample>{}
+                    // <GButtonExample>{}
                     <GLabelExample>{}
-                    // <GIconLibExample>{}
                     <GVLayout>{
                         height: 300.0,
                         spacing: 6.0,
@@ -81,7 +82,7 @@ live_design! {
                     // // <GSelectExample>{}
                     
 
-                    // <GButtonExample>{}
+                    
                     // <GCardExample>{}
                     // <GHLayoutExample>{}
                     // <GVLayoutExample>{}

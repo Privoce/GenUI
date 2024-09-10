@@ -1,3 +1,7 @@
+mod register;
+
+pub use register::register;
+
 use crate::utils::{get_font_family, set_cursor, ThemeColor};
 use crate::{shader::draw_card::DrawCard, themes::Themes};
 use makepad_widgets::*;
@@ -54,7 +58,7 @@ live_design! {
                     apply: {
                         draw_button: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
                         // draw_icon: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
-                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}]}
                     }
                 }
 
@@ -80,7 +84,11 @@ pub struct GButton {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
+    pub text_hover_color: Option<Vec4>,
+    #[live]
     pub pressed_color: Option<Vec4>,
+    #[live]
+    pub text_pressed_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]

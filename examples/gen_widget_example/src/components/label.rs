@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
 
     GLabelExample = <ScrollYView>{
-        height: 100.0,
+        height: 120.0,
         width: Fill,
         spacing: 10.0,
         flow: Down,

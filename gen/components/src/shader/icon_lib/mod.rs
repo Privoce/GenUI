@@ -8,8 +8,8 @@ pub mod relation;
 pub mod state;
 pub mod time;
 pub mod tool;
-pub mod ui;
 pub mod types;
+pub mod ui;
 
 use makepad_widgets::*;
 
@@ -126,14 +126,8 @@ pub struct DrawGIcon {
     pub stroke_color: Vec4,
     #[live]
     pub hover_color: Vec4,
-    #[live(0.0)]
-    pub border_width: f32,
     #[live]
     pub border_color: Vec4,
+    #[live(0.0)]
+    pub border_width: f32,
 }
-
-// impl DrawGToolButton {
-//     pub fn apply_button_type(&mut self, tool_button_type: GToolButtonType) {
-//         self.tool_button_type = tool_button_type;
-//     }
-// }
