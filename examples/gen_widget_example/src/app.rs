@@ -43,11 +43,12 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GLinkExample>{}
+                    
+                    // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    // <GButtonExample>{}
-                    <GLabelExample>{}
+                    <GButtonExample>{}
+                    // <GLabelExample>{}
                     <GVLayout>{
                         height: 300.0,
                         spacing: 6.0,

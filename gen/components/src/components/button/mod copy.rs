@@ -2,7 +2,7 @@ mod register;
 
 pub use register::register;
 
-use crate::utils::{set_cursor, ThemeColor};
+use crate::utils::{get_font_family, set_cursor, ThemeColor};
 use crate::{shader::draw_card::DrawCard, themes::Themes};
 use makepad_widgets::*;
 
@@ -11,7 +11,33 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GButtonBase = {{GButton}}{
+        height: Fit,
+        width: Fit,
+        text_walk: {
+            height: Fit,
+            width: Fit,
+        }
         cursor: Hand,
+        draw_text: {
+            instance hover: 0.0,
+            instance pressed: 0.0,
+
+            fn get_color(self) -> vec4 {
+                let hover_color = self.color - vec4(0.0, 0.0, 0.0, 0.1);
+                let pressed_color = self.color - vec4(0.0, 0.0, 0.0, 0.2);
+
+                return mix(
+                    mix(
+                        self.color,
+                        hover_color,
+                        self.hover
+                    ),
+                    pressed_color,
+                    self.pressed
+                )
+            }
+        }
+
         animator: {
             hover = {
                 default: off,
@@ -19,6 +45,8 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_button: {pressed: 0.0, hover: 0.0}
+                        // draw_icon: {pressed: 0.0, hover: 0.0}
+                        draw_text: {pressed: 0.0, hover: 0.0}
                     }
                 }
 
@@ -29,6 +57,8 @@ live_design! {
                     }
                     apply: {
                         draw_button: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        // draw_icon: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}]}
                     }
                 }
 
@@ -36,6 +66,8 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_button: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        // draw_icon: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
                     }
                 }
             }
@@ -52,43 +84,56 @@ pub struct GButton {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
+    pub text_hover_color: Option<Vec4>,
+    #[live]
     pub pressed_color: Option<Vec4>,
+    #[live]
+    pub text_pressed_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
     pub border_width: f32,
     #[live(4.0)]
     pub border_radius: f32,
+    #[live(false)]
+    pub round: bool,
+    // text -----------------
+    #[live]
+    pub text: ArcStringMut,
+    #[live(10.0)]
+    pub font_size: f64,
+    #[live]
+    pub color: Option<Vec4>,
+    #[live]
+    pub font_family: LiveDependency,
     #[live]
     pub cursor: Option<MouseCursor>,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
-    // ---------------------------
-    #[find]
-    #[redraw]
+    // define area -----------------
     #[live]
-    pub slot: WidgetRef,
+    draw_text: DrawText,
+    #[live]
+    text_walk: Walk,
     #[live(true)]
-    pub grab_key_focus: bool,
+    grab_key_focus: bool,
     // animator -----------------
-    #[live(true)]
-    pub animation_open: bool,
     #[animator]
-    pub animator: Animator,
+    animator: Animator,
     // deref -----------------
     #[redraw]
     #[live]
-    pub draw_button: DrawCard,
+    draw_button: DrawCard,
     #[walk]
-    pub walk: Walk,
+    walk: Walk,
     #[layout]
-    pub layout: Layout,
+    layout: Layout,
 }
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GButtonEvent {
-    Hover(KeyModifiers),
+    Hovered(KeyModifiers),
     Clicked(KeyModifiers),
     Released(KeyModifiers),
     Pressed(KeyModifiers),
@@ -116,18 +161,32 @@ impl Widget for GButton {
         let hit = event.hits(cx, self.draw_button.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
+        let font = get_font_family(&self.font_family, cx);
+        self.draw_text.text_style.font = font;
 
         let _ = self.draw_button.begin(cx, walk, self.layout);
 
-        let slot_walk = self.slot.walk(cx);
-        let _ = self.slot.draw_walk(cx, scope, slot_walk);
+        let _ = self
+            .draw_text
+            .draw_walk(cx, self.text_walk, Align::default(), self.text.as_ref());
 
         self.draw_button.end(cx);
         DrawStep::done()
+    }
+
+    fn text(&self) -> String {
+        self.text.as_ref().to_string()
+    }
+    fn set_text(&mut self, v: &str) {
+        self.text.as_mut_empty().push_str(v);
+    }
+    fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
+        self.text.as_mut_empty().push_str(v);
+        self.redraw(cx)
     }
     fn is_visible(&self) -> bool {
         self.visible
@@ -136,9 +195,6 @@ impl Widget for GButton {
 
 impl LiveHook for GButton {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible{
-            return;
-        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
@@ -147,7 +203,36 @@ impl LiveHook for GButton {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
+        // ------------------ font ------------------------------------------------------
+        let font_color = self.color.get(self.theme, 100);
+        // ------------------ round -----------------------------------------------------
+        if self.round {
+            self.border_radius = match self.walk.height {
+                Size::Fixed(h) => (h * 0.25) as f32,
+                Size::Fit => {
+                    ((self.draw_text.text_style.font_size
+                        + self.layout.padding.top
+                        + self.layout.padding.bottom)
+                        * 0.25) as f32
+                }
+                _ => panic!("round only support fixed and fit"),
+            };
+        }
         // apply over props to draw_button ----------------------------------------------
+        // ⚠️⚠️⚠️ attention! ⚠️⚠️⚠️ self.apply_over may cause a stack overflow
+        // self.apply_over(
+        //     cx,
+        //     live! {
+        //         // show_bg: true,
+        //         draw_text: {
+        //             color: (font_color),
+        //             text_style: {
+        //                 font_size: (self.font_size),
+        //             },
+        //         }
+        //     },
+        // );
+        // self.redraw(cx);
         self.draw_button.apply_over(
             cx,
             live! {
@@ -159,7 +244,17 @@ impl LiveHook for GButton {
                 hover_color: (hover_color),
             },
         );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                color: (font_color),
+                text_style: {
+                    font_size: (self.font_size),
+                },
+            },
+        );
         self.draw_button.redraw(cx);
+        self.draw_text.redraw(cx);
     }
 }
 
@@ -185,15 +280,12 @@ impl GButton {
             false
         }
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let GButtonEvent::Hover(_) = actions.find_widget_action(self.widget_uid()).cast() {
+    pub fn hovered(&self, actions: &Actions) -> bool {
+        if let GButtonEvent::Hovered(_) = actions.find_widget_action(self.widget_uid()).cast() {
             true
         } else {
             false
         }
-    }
-    pub fn area(&self) -> Area {
-        self.draw_button.area
     }
     pub fn handle_widget_event(
         &mut self,
@@ -205,10 +297,8 @@ impl GButton {
     ) {
         let uid = self.widget_uid();
 
-        if self.animation_open{
-            if self.animator_handle_event(cx, event).must_redraw() {
-                self.draw_button.redraw(cx);
-            }
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.draw_button.redraw(cx);
         }
         match hit {
             Hit::FingerDown(f_down) => {
@@ -221,7 +311,7 @@ impl GButton {
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GButtonEvent::Hover(h.modifiers));
+                cx.widget_action(uid, &scope.path, GButtonEvent::Hovered(h.modifiers));
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
@@ -264,9 +354,9 @@ impl GButtonRef {
         }
         false
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
+    pub fn hovered(&self, actions: &Actions) -> bool {
         if let Some(btn_ref) = self.borrow() {
-            return btn_ref.hover(actions);
+            return btn_ref.hovered(actions);
         }
         false
     }
@@ -288,7 +378,7 @@ impl GButtonSet {
     pub fn released(&self, actions: &Actions) -> bool {
         self.iter().any(|btn_ref| btn_ref.released(actions))
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.hover(actions))
+    pub fn hovered(&self, actions: &Actions) -> bool {
+        self.iter().any(|btn_ref| btn_ref.hovered(actions))
     }
 }

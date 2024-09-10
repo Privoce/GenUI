@@ -169,11 +169,14 @@ live_design! {
     // if you wanna add some other components like icon, you can create a new component use CardBase
     // CardBase can help you create a wonderful button quickly and easily
     GButton = <GButtonBase>{
+        height: Fit,
+        width: Fit,
         theme: Primary,
-        text: " ",
         padding: <GLOBAL_PADDING>{}
-        font_size: (FONT_SIZE),
         align: <ALIGN_CENTER_WALK>{},
+        slot: <GLabel>{
+            text: "GButton"
+        }
     }
     // ## GCard
     // A card component that you can use to wrap other components

@@ -94,7 +94,7 @@ pub struct GIcon {
     pub stroke_width: f32,
     #[live]
     pub cursor: Option<MouseCursor>,
-    #[live]
+    #[live(true)]
     pub visible: bool,
     #[live(true)]
     pub grab_key_focus: bool,
