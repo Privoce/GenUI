@@ -95,7 +95,7 @@ pub struct GIcon {
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live(true)]
-    grab_key_focus: bool,
+    pub grab_key_focus: bool,
     #[live(false)]
     pub animation_open: bool,
     #[animator]
@@ -137,6 +137,13 @@ pub struct GIcon {
     // icon type -----------------------------------
     #[live]
     pub icon_type: IconType,
+}
+
+#[derive(Clone, Debug, DefaultNone)]
+pub enum GIconEvent {
+    Hover(KeyModifiers),
+    Clicked(KeyModifiers),
+    None,
 }
 
 impl Widget for GIcon {
@@ -408,12 +415,6 @@ impl LiveHook for GIcon {
     }
 }
 
-#[derive(Clone, Debug, DefaultNone)]
-pub enum GIconEvent {
-    Hover(KeyModifiers),
-    Clicked(KeyModifiers),
-    None,
-}
 
 impl GIcon {
     pub fn area(&self) -> Area{

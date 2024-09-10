@@ -1,3 +1,7 @@
+mod register;
+
+pub use register::register;
+
 use makepad_widgets::*;
 
 use crate::{
@@ -17,7 +21,7 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_icon: {hover: 0.0}
+                        draw_svg: {hover: 0.0}
                     }
                 }
 
@@ -26,7 +30,7 @@ live_design! {
                         all: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_icon: { hover: [{time: 0.0, value: 1.0}],}
+                        draw_svg: { hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
             }
@@ -37,7 +41,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GSvg {
     #[live]
-    theme: Themes,
+    pub theme: Themes,
     #[live(1.0)]
     pub brightness: f32,
     #[live(0.6)]
@@ -47,8 +51,8 @@ pub struct GSvg {
     #[live]
     pub src: LiveDependency,
     /// svg path command (todo!)
-    #[live]
-    pub command: Option<String>,
+    // #[live]
+    // pub command: Option<String>,
     #[live(1.0)]
     pub scale: f64,
     #[live]
@@ -59,16 +63,20 @@ pub struct GSvg {
     pub hover_color: Option<Vec4>,
     #[live]
     pub cursor: Option<MouseCursor>,
+    #[live(true)]
+    pub grab_key_focus: bool,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
     // animator -----------------
+    #[live(false)]
+    pub animation_open: bool,
     #[animator]
     animator: Animator,
     // deref -----------------
     #[redraw]
     #[live]
-    draw_icon: DrawGSvg,
+    draw_svg: DrawGSvg,
     #[walk]
     walk: Walk,
     #[layout]
@@ -87,14 +95,84 @@ impl Widget for GSvg {
         if !self.visible {
             return DrawStep::done();
         }
-        self.draw_icon.draw_walk(cx, walk);
+        self.draw_svg.draw_walk(cx, walk);
 
         DrawStep::done()
     }
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
+
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+    }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
+        self.handle_widget_event(cx, event, scope, hit, focus_area)
+    }
+}
+
+impl LiveHook for GSvg {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        // ------------------ hover color -----------------------------------------------
+        let hover_color = self.hover_color.get(self.theme, 400);
+        // ------------------ color -----------------------------------------------
+        let color = self.color.get(self.theme, 500);
+
+        self.draw_svg.apply_over(
+            cx,
+            live! {
+                hover_color: (hover_color),
+                color: (color),
+                brightness: (self.brightness),
+                curve: (self.curve),
+                linearize: (self.linearize),
+                scale: (self.scale),
+                draw_depth: (self.draw_depth),
+            },
+        );
+
+        self.draw_svg.set_src(self.src.clone());
+
+        self.draw_svg.redraw(cx);
+    }
+}
+
+impl GSvg {
+    pub fn area(&self) -> Area{
+        self.draw_svg.area
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
         let uid = self.widget_uid();
 
-        match event.hits(cx, self.draw_icon.area()) {
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_svg.redraw(cx);
+            }
+        }
+
+        match hit {
+            Hit::FingerDown(_) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }                
+            }
             Hit::FingerHoverIn(_) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
@@ -106,7 +184,6 @@ impl Widget for GSvg {
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
                     cx.widget_action(uid, &scope.path, GSvgEvent::Clicked);
-
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
@@ -118,31 +195,5 @@ impl Widget for GSvg {
             }
             _ => (),
         }
-    }
-}
-
-impl LiveHook for GSvg {
-    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ color -----------------------------------------------
-        let color = self.color.get(self.theme, 500);
-
-        self.draw_icon.apply_over(
-            cx,
-            live! {
-                hover_color: (hover_color),
-                color: (color),
-                // brightness: (self.brightness),
-                // curve: (self.curve),
-                linearize: (self.linearize),
-                scale: (self.scale),
-                draw_depth: (self.draw_depth),
-            },
-        );
-
-        self.draw_icon.set_src(self.src.clone());
-
-        self.draw_icon.redraw(cx);
     }
 }

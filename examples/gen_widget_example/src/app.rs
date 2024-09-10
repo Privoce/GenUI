@@ -43,7 +43,8 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GIconLibExample>{}
+                    <GSvgExample>{}
+                    // <GIconLibExample>{}
                     // <GButtonExample>{}
                     <GLabelExample>{}
                     <GVLayout>{
@@ -89,7 +90,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}
-                    // // <GIconExample>{}
+                    // 
                     // <GImageExample>{}
                     // <GDividerExample>{}
                     // <GInputExample>{}

@@ -1,3 +1,7 @@
+mod register;
+
+pub use register::register;
+
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
 use crate::themes::Themes;
