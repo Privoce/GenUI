@@ -2,6 +2,7 @@ mod register;
 
 pub use register::register;
 
+use crate::set_text_and_visible_fn;
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
 use crate::themes::Themes;
@@ -71,6 +72,10 @@ pub struct GLink {
     pub underline: bool,
     #[live]
     pub underline_color: Option<Vec4>,
+    #[live]
+    pub underline_hover_color: Option<Vec4>,
+    #[live]
+    pub underline_pressed_color: Option<Vec4>,
     #[live(1.0)]
     pub underline_width: f32,
     #[live(4.0)]
@@ -78,7 +83,7 @@ pub struct GLink {
     #[live(false)]
     pub round: bool,
     #[live(true)]
-    transparent: bool,
+    pub background_visible: bool,
     // text -----------------
     #[live]
     pub text: ArcStringMut,
@@ -92,31 +97,32 @@ pub struct GLink {
     pub cursor: Option<MouseCursor>,
     // href -------------------
     #[live]
-    href: Option<String>,
+    pub href: Option<String>,
     #[live]
-    link_type: LinkType,
+    pub link_type: LinkType,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
     // define area -----------------
     #[live]
-    draw_text: DrawGText,
-    // draw_text: DrawText,
+    pub draw_text: DrawGText,
     #[live]
-    text_walk: Walk,
+    pub text_walk: Walk,
     #[live(true)]
-    grab_key_focus: bool,
+    pub grab_key_focus: bool,
     // animator -----------------
+    #[live(true)]
+    pub animation_open: bool,
     #[animator]
-    animator: Animator,
+    pub animator: Animator,
     // deref -----------------
     #[redraw]
     #[live]
-    draw_link: DrawGLink,
+    pub draw_link: DrawGLink,
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[layout]
-    layout: Layout,
+    pub layout: Layout,
 }
 
 #[derive(Copy, Clone, Live, LiveHook, Debug)]
@@ -129,7 +135,7 @@ pub enum LinkType {
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GLinkEvent {
-    Hovered(KeyModifiers),
+    Hover(KeyModifiers),
     /// clicked(key_modifiers, href, link_type)
     Clicked((KeyModifiers, Option<String>, LinkType)),
     Released(KeyModifiers),
@@ -138,47 +144,25 @@ pub enum GLinkEvent {
 }
 
 impl Widget for GLink {
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
+
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+    }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let uid = self.widget_uid();
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.draw_link.redraw(cx);
-        }
-        match event.hits(cx, self.draw_link.area()) {
-            Hit::FingerDown(f_down) => {
-                if self.grab_key_focus {
-                    cx.set_key_focus(self.draw_link.area());
-                }
-                cx.widget_action(uid, &scope.path, GLinkEvent::Pressed(f_down.modifiers));
-                self.animator_play(cx, id!(hover.pressed));
-            }
-            Hit::FingerHoverIn(h) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GLinkEvent::Hovered(h.modifiers));
-            }
-            Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
-            }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GLinkEvent::Clicked((f_up.modifiers, self.href.clone(), self.link_type)),
-                    );
-                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
-                    if f_up.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
-                    } else {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                } else {
-                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
-                    self.animator_play(cx, id!(hover.off));
-                }
-            }
-            _ => (),
-        }
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
+        self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
@@ -197,23 +181,14 @@ impl Widget for GLink {
         DrawStep::done()
     }
 
-    fn text(&self) -> String {
-        self.text.as_ref().to_string()
-    }
-    fn set_text(&mut self, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-    }
-    fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-        self.redraw(cx)
-    }
-    fn is_visible(&self) -> bool {
-        self.visible
-    }
+    set_text_and_visible_fn!();
 }
 
 impl LiveHook for GLink {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
@@ -222,11 +197,14 @@ impl LiveHook for GLink {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
+        // ------------------ underline color ------------------------------------------
         let underline_color = self.underline_color.get(self.theme, 500);
+        let underline_hover_color = self.underline_hover_color.get(self.theme, 400);
+        let underline_pressed_color = self.underline_pressed_color.get(self.theme, 600);
         // ------------------ font ------------------------------------------------------
         let font_color = self.color.get(self.theme, 500);
-        // ------------------ is transparent --------------------------------------------
-        let transparent = self.transparent.to_f32();
+        // ------------------ is background_visible -------------------------------------
+        let background_visible = self.background_visible.to_f32();
         // ------------------ underline -------------------------------------------------
         let underline = self.underline.to_f32();
         // ------------------ round -----------------------------------------------------
@@ -251,10 +229,12 @@ impl LiveHook for GLink {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                transparent: (transparent),
+                background_visible: (background_visible),
                 underline: (underline),
                 underline_color: (underline_color),
                 underline_width: (self.underline_width),
+                underline_hover_color: (underline_hover_color),
+                underline_pressed_color: (underline_pressed_color)
             },
         );
         self.draw_text.apply_over(
@@ -295,11 +275,66 @@ impl GLink {
             false
         }
     }
-    pub fn hovered(&self, actions: &Actions) -> bool {
-        if let GLinkEvent::Hovered(_) = actions.find_widget_action(self.widget_uid()).cast() {
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let GLinkEvent::Hover(_) = actions.find_widget_action(self.widget_uid()).cast() {
             true
         } else {
             false
+        }
+    }
+    pub fn area(&self) -> Area {
+        self.draw_link.area
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_link.redraw(cx);
+            }
+        }
+
+        match hit {
+            Hit::FingerDown(f_down) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }
+                cx.widget_action(uid, &scope.path, GLinkEvent::Pressed(f_down.modifiers));
+                self.animator_play(cx, id!(hover.pressed));
+            }
+            Hit::FingerHoverIn(h) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.animator_play(cx, id!(hover.on));
+                cx.widget_action(uid, &scope.path, GLinkEvent::Hover(h.modifiers));
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GLinkEvent::Clicked((f_up.modifiers, self.href.clone(), self.link_type)),
+                    );
+                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => (),
         }
     }
 }
@@ -323,9 +358,9 @@ impl GLinkRef {
         }
         false
     }
-    pub fn hovered(&self, actions: &Actions) -> bool {
+    pub fn hover(&self, actions: &Actions) -> bool {
         if let Some(btn_ref) = self.borrow() {
-            return btn_ref.hovered(actions);
+            return btn_ref.hover(actions);
         }
         false
     }
@@ -342,7 +377,7 @@ impl GLinkSet {
     pub fn released(&self, actions: &Actions) -> bool {
         self.iter().any(|btn_ref| btn_ref.released(actions))
     }
-    pub fn hovered(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.hovered(actions))
+    pub fn hover(&self, actions: &Actions) -> bool {
+        self.iter().any(|btn_ref| btn_ref.hover(actions))
     }
 }

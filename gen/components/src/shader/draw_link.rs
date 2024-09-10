@@ -11,10 +11,10 @@ live_design!{
             return mix(
                 mix(
                     self.underline_color,
-                    self.hover_color,
+                    self.underline_hover_color,
                     self.hover
                 ),
-                self.pressed_color,
+                self.underline_pressed_color,
                 self.pressed
             )
         }
@@ -35,11 +35,10 @@ live_design!{
             return self.border_color
         }
 
-
         fn pixel(self) -> vec4 {
             let sdf = Sdf2d::viewport(self.pos * self.rect_size)
 
-            if self.transparent == 0.0 {
+            if self.background_visible == 0.0 {
                 sdf.box(
                     self.inset.x + 0.0,
                     self.inset.y + 0.0,
@@ -68,10 +67,12 @@ pub struct DrawGLink{
     #[live] pub background_color: Vec4,
     #[live(1.0)] pub underline: f32,
     #[live] pub underline_color: Vec4,
+    #[live] pub underline_hover_color: Vec4,
+    #[live] pub underline_pressed_color: Vec4,
     #[live(1.0)] pub underline_width: f32,
     #[live] pub hover_color: Vec4,
     #[live] pub pressed_color: Vec4,
-    #[live] pub transparent: f32,
+    #[live] pub background_visible: f32,
     #[live] pub border_color: Vec4,
     #[live(4.0)] pub border_radius: f32,
 }

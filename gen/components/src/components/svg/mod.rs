@@ -119,10 +119,16 @@ impl Widget for GSvg {
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GSvg {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ color -----------------------------------------------
@@ -148,7 +154,21 @@ impl LiveHook for GSvg {
 }
 
 impl GSvg {
-    pub fn area(&self) -> Area{
+    pub fn clicked(&self, actions: &Actions) -> bool {
+        if let GSvgEvent::Clicked = actions.find_widget_action(self.widget_uid()).cast() {
+            true
+        } else {
+            false
+        }
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let GSvgEvent::Hover = actions.find_widget_action(self.widget_uid()).cast() {
+            true
+        } else {
+            false
+        }
+    }
+    pub fn area(&self) -> Area {
         self.draw_svg.area
     }
     pub fn handle_widget_event(
@@ -171,7 +191,7 @@ impl GSvg {
             Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
-                }                
+                }
             }
             Hit::FingerHoverIn(_) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
@@ -195,5 +215,29 @@ impl GSvg {
             }
             _ => (),
         }
+    }
+}
+
+impl GSvgRef {
+    pub fn clicked(&self, actions: &Actions) -> bool {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.clicked(actions);
+        }
+        false
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.hover(actions);
+        }
+        false
+    }
+}
+
+impl GSvgSet {
+    pub fn clicked(&self, actions: &Actions) -> bool {
+        self.iter().any(|c_ref| c_ref.clicked(actions))
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        self.iter().any(|c_ref| c_ref.hover(actions))
     }
 }

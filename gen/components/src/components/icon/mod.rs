@@ -94,6 +94,8 @@ pub struct GIcon {
     pub stroke_width: f32,
     #[live]
     pub cursor: Option<MouseCursor>,
+    #[live]
+    pub visible: bool,
     #[live(true)]
     pub grab_key_focus: bool,
     #[live(false)]
@@ -148,6 +150,10 @@ pub enum GIconEvent {
 
 impl Widget for GIcon {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
+
         self.draw_icon.begin(cx, walk, self.layout);
         match self.draw_type.as_ref().unwrap() {
             crate::shader::icon_lib::types::DrawGIconType::Base => {
@@ -246,10 +252,17 @@ impl Widget for GIcon {
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GIcon {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
+
         let color = self.stroke_color.get(self.theme, 200);
         let hover_color = self.hover_color.get(self.theme, 100);
 
@@ -415,9 +428,22 @@ impl LiveHook for GIcon {
     }
 }
 
-
 impl GIcon {
-    pub fn area(&self) -> Area{
+    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let GIconEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
+            Some(e)
+        } else {
+            None
+        }
+    }
+    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let GIconEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast() {
+            Some(e)
+        } else {
+            None
+        }
+    }
+    pub fn area(&self) -> Area {
         self.draw_icon.area
     }
     pub fn handle_widget_event(
@@ -440,7 +466,7 @@ impl GIcon {
             Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
-                }                
+                }
                 // self.animator_play(cx, id!(hover.pressed));
             }
             Hit::FingerHoverIn(h) => {
@@ -465,5 +491,29 @@ impl GIcon {
             }
             _ => (),
         }
+    }
+}
+
+impl GIconRef {
+    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.clicked(actions);
+        }
+        None
+    }
+    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.hover(actions);
+        }
+        None
+    }
+}
+
+impl GIconSet {
+    pub fn clicked(&self, actions: &Actions) -> bool {
+        self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        self.iter().any(|c_ref| c_ref.hover(actions).is_some())
     }
 }
