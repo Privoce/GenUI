@@ -8,7 +8,7 @@ use crate::{
         draw_text::DrawGText,
     },
     themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor},
+    utils::{get_font_family, set_cursor, ThemeColor}, widget_origin_fn,
 };
 
 use super::event::{GBreadCrumbEventItemParam, GBreadCrumbItemEvent};
@@ -315,15 +315,43 @@ impl GBreadCrumbItem {
             _ => (),
         }
     }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 1.0
+            },
+        );
+    }
 }
 
 impl GBreadCrumbItemRef {
-    pub fn as_origin(&self) -> Option<std::cell::Ref<GBreadCrumbItem>> {
-        self.borrow()
-    }
-    pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<GBreadCrumbItem>> {
-        self.borrow_mut()
-    }
+    widget_origin_fn!(GBreadCrumbItem);
+    // pub fn as_origin(&self) -> Option<std::cell::Ref<GBreadCrumbItem>> {
+    //     self.borrow()
+    // }
+    // pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<GBreadCrumbItem>> {
+    //     self.borrow_mut()
+    // }
     pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
         if let Some(c_ref) = self.borrow() {
             return c_ref.clicked(actions);
@@ -335,6 +363,15 @@ impl GBreadCrumbItemRef {
             return c_ref.hover(actions);
         }
         None
+    }
+    pub fn animate_hover_on(&self, cx: &mut Cx) -> () {
+        self.borrow_mut().unwrap().animate_hover_on(cx);
+    }
+    pub fn animate_hover_off(&self, cx: &mut Cx) -> () {
+        self.borrow_mut().unwrap().animate_hover_off(cx);
+    }
+    pub fn animate_pressed(&self, cx: &mut Cx) -> () {
+        self.borrow_mut().unwrap().animate_pressed(cx);
     }
 }
 

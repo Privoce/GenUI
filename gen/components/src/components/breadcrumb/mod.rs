@@ -23,60 +23,7 @@ live_design! {
             width: 20.0,
             margin: 0,
         },
-        animator: {
-            hover = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 0.0},
-                            icon_base: {hover: 0.0},
-                            icon_arrow: {hover: 0.0},
-                            icon_code: {hover: 0.0},
-                            icon_emoji: {hover: 0.0},
-                            icon_fs: {hover: 0.0},
-                            icon_ui: {hover: 0.0},
-                            icon_person: {hover: 0.0},
-                            icon_relation: {hover: 0.0},
-                            icon_state: {hover: 0.0},
-                            icon_time: {hover: 0.0},
-                            icon_tool: {hover: 0.0},
-                        }
-                    }
-                }
 
-                on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 1.0},
-                            icon_base: {hover: 1.0},
-                            icon_arrow: {hover: 1.0},
-                            icon_code: {hover: 1.0},
-                            icon_emoji: {hover: 1.0},
-                            icon_fs: {hover: 1.0},
-                            icon_ui: {hover: 1.0},
-                            icon_person: {hover: 1.0},
-                            icon_relation: {hover: 1.0},
-                            icon_state: {hover: 1.0},
-                            icon_time: {hover: 1.0},
-                            icon_tool: {hover: 1.0},
-                        }
-                    }
-                }
-
-                // pressed = {
-                //     from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                //     apply: {
-                //         draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
-                //     }
-                // }
-            }
-        }
     }
 }
 
@@ -183,26 +130,8 @@ impl Widget for GBreadCrumb {
         self.draw_bread_crumb.end(cx);
         DrawStep::done()
     }
-    fn handle_event_with(
-        &mut self,
-        cx: &mut Cx,
-        event: &Event,
-        scope: &mut Scope,
-        sweep_area: Area,
-    ) {
-        let hit = event.hits_with_options(
-            cx,
-            self.area(),
-            HitOptions::new().with_sweep_area(sweep_area),
-        );
 
-        self.handle_widget_event(cx, event, scope, hit, sweep_area)
-    }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        // let focus_area = self.area();
-        // let hit = event.hits(cx, self.area());
-        // self.handle_widget_event(cx, event, scope, hit, focus_area)
-
         let uid = self.widget_uid();
 
         if self.animation_open {
@@ -241,11 +170,59 @@ impl Widget for GBreadCrumb {
             _ => {}
         }
 
-        if let Event::Actions(actions) = event {
-            for (index, (id, c_ref)) in self.crumb_items.iter().enumerate() {
-                if c_ref.clicked(actions).is_some() {
-                    dbg!("clicked");
+        for (index, (_id, c_ref)) in self.crumb_items.clone().iter_mut().enumerate() {
+            match event.hits(cx, c_ref.area()) {
+                Hit::FingerDown(_) => {
+                    if self.grab_key_focus {
+                        cx.set_key_focus(c_ref.area());
+                    }
                 }
+                Hit::FingerHoverIn(f_in) => {
+                    // self.animator_play(cx, id!(hover.on));
+                    let _ = set_cursor(cx, c_ref.as_origin().unwrap().cursor.as_ref());
+                    // c_ref.as_origin_mut().unwrap().draw_text.apply_over(cx, live!{
+                    //     hover: 1.0
+                    // });
+                    c_ref.animate_hover_on(cx);
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GBreadCrumbEvent::Hover(GBreadCrumbEventParam {
+                            index,
+                            item: c_ref.text(),
+                            key_modifiers: f_in.modifiers,
+                        }),
+                    );
+                }
+                Hit::FingerHoverOut(_) => {
+                    c_ref.animate_hover_off(cx);
+                    // self.animator_play(cx, id!(hover.off));
+                }
+                Hit::FingerUp(f_up) => {
+                    if f_up.is_over {
+                        cx.widget_action(
+                            uid,
+                            &scope.path,
+                            GBreadCrumbEvent::Clicked(GBreadCrumbEventParam {
+                                index,
+                                item: c_ref.text(),
+                                key_modifiers: f_up.modifiers,
+                            }),
+                        );
+
+                        if f_up.device.has_hovers() {
+                            // self.animator_play(cx, id!(hover.on));
+                            c_ref.animate_hover_on(cx);
+                        } else {
+                            // self.animator_play(cx, id!(hover.off));
+                            c_ref.animate_hover_off(cx);
+                        }
+                    } else {
+                        // self.animator_play(cx, id!(hover.off));
+                        c_ref.animate_hover_off(cx);
+                    }
+                }
+                _ => {}
             }
         }
     }
@@ -294,61 +271,6 @@ impl GBreadCrumb {
     }
     pub fn icon_area(&self) -> Area {
         self.icon.area()
-    }
-    pub fn handle_widget_event(
-        &mut self,
-        cx: &mut Cx,
-        event: &Event,
-        scope: &mut Scope,
-        hit: Hit,
-        focus_area: Area,
-    ) {
-        let uid = self.widget_uid();
-
-        if self.animation_open {
-            if self.animator_handle_event(cx, event).must_redraw() {
-                self.draw_bread_crumb.redraw(cx);
-            }
-        }
-
-        // match hit {
-        //     Hit::FingerDown(_) => {
-        //         if self.grab_key_focus {
-        //             cx.set_key_focus(focus_area);
-        //         }
-        //         self.animator_play(cx, id!(hover.pressed));
-        //     }
-        //     Hit::FingerHoverIn(h) => {
-        //         let _ = set_cursor(cx, self.cursor.as_ref());
-        //         self.animator_play(cx, id!(hover.on));
-        //         cx.widget_action(uid, &scope.path, GBreadCrumbEvent::Hover(GBreadCrumbEventParam{
-        //             index: todo!(),
-        //             item: todo!(),
-        //             key_modifiers: h.modifiers,
-        //         }));
-        //     }
-        //     Hit::FingerHoverOut(_) => {
-        //         self.animator_play(cx, id!(hover.off));
-        //     }
-        //     Hit::FingerUp(f_up) => {
-        //         if f_up.is_over {
-        //             cx.widget_action(
-        //                 uid,
-        //                 &scope.path,
-        //                 GBreadCrumbEvent::Clicked(f_up.modifiers),
-        //             );
-
-        //             if f_up.device.has_hovers() {
-        //                 self.animator_play(cx, id!(hover.on));
-        //             } else {
-        //                 self.animator_play(cx, id!(hover.off));
-        //             }
-        //         } else {
-        //             self.animator_play(cx, id!(hover.off));
-        //         }
-        //     }
-        //     _ => (),
-        // }
     }
 }
 

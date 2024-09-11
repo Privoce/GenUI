@@ -44,3 +44,15 @@ macro_rules! set_text_and_visible_fn {
         }
     };
 }
+
+#[macro_export]
+macro_rules! widget_origin_fn {
+    ($T: ty) => {
+        pub fn as_origin(&self) -> Option<std::cell::Ref<$T>> {
+            self.borrow()
+        }
+        pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<$T>> {
+            self.borrow_mut()
+        }
+    };
+}
