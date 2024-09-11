@@ -2,13 +2,10 @@ use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 
 use crate::{
-    set_text_and_visible_fn,
-    shader::{
+    animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, shader::{
         draw_split::{DrawGSplit, GSplitType},
         draw_text::DrawGText,
-    },
-    themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor}, widget_origin_fn,
+    }, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor}, widget_origin_fn
 };
 
 use super::event::{GBreadCrumbEventItemParam, GBreadCrumbItemEvent};
@@ -238,23 +235,27 @@ impl GBreadCrumbItem {
     pub fn area(&self) -> Area {
         self.draw_item.area
     }
-    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-        if let GBreadCrumbItemEvent::Clicked(e) =
-            actions.find_widget_action(self.widget_uid()).cast()
-        {
-            Some(e)
-        } else {
-            None
-        }
+    event_option!{
+        clicked : GBreadCrumbItemEvent => GBreadCrumbEventItemParam,
+        hover : GBreadCrumbItemEvent => GBreadCrumbEventItemParam
     }
-    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-        if let GBreadCrumbItemEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast()
-        {
-            Some(e)
-        } else {
-            None
-        }
-    }
+    // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+    //     if let GBreadCrumbItemEvent::Clicked(e) =
+    //         actions.find_widget_action(self.widget_uid()).cast()
+    //     {
+    //         Some(e)
+    //     } else {
+    //         None
+    //     }
+    // }
+    // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+    //     if let GBreadCrumbItemEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast()
+    //     {
+    //         Some(e)
+    //     } else {
+    //         None
+    //     }
+    // }
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
@@ -346,40 +347,47 @@ impl GBreadCrumbItem {
 
 impl GBreadCrumbItemRef {
     widget_origin_fn!(GBreadCrumbItem);
-    // pub fn as_origin(&self) -> Option<std::cell::Ref<GBreadCrumbItem>> {
-    //     self.borrow()
+    ref_event_option!{
+        clicked => GBreadCrumbEventItemParam,
+        hover => GBreadCrumbEventItemParam
+    }
+    animatie_fn!{
+        animate_hover_on,
+        animate_hover_off,
+        animate_pressed
+    }
+    // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+    //     if let Some(c_ref) = self.borrow() {
+    //         return c_ref.clicked(actions);
+    //     }
+    //     None
     // }
-    // pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<GBreadCrumbItem>> {
-    //     self.borrow_mut()
+    // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+    //     if let Some(c_ref) = self.borrow() {
+    //         return c_ref.hover(actions);
+    //     }
+    //     None
     // }
-    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.clicked(actions);
-        }
-        None
-    }
-    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.hover(actions);
-        }
-        None
-    }
-    pub fn animate_hover_on(&self, cx: &mut Cx) -> () {
-        self.borrow_mut().unwrap().animate_hover_on(cx);
-    }
-    pub fn animate_hover_off(&self, cx: &mut Cx) -> () {
-        self.borrow_mut().unwrap().animate_hover_off(cx);
-    }
-    pub fn animate_pressed(&self, cx: &mut Cx) -> () {
-        self.borrow_mut().unwrap().animate_pressed(cx);
-    }
+    // pub fn animate_hover_on(&self, cx: &mut Cx) -> () {
+    //     self.borrow_mut().unwrap().animate_hover_on(cx);
+    // }
+    // pub fn animate_hover_off(&self, cx: &mut Cx) -> () {
+    //     self.borrow_mut().unwrap().animate_hover_off(cx);
+    // }
+    // pub fn animate_pressed(&self, cx: &mut Cx) -> () {
+    //     self.borrow_mut().unwrap().animate_pressed(cx);
+    // }
 }
 
 impl GBreadCrumbItemSet {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
+    set_event!{
+       clicked,
+       hover
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        self.iter().any(|c_ref| c_ref.hover(actions).is_some())
-    }
+    // pub fn clicked(&self, actions: &Actions) -> bool {
+    //     self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
+    // }
+    // pub fn hover(&self, actions: &Actions) -> bool {
+    //     self.iter().any(|c_ref| c_ref.hover(actions).is_some())
+    // }
 }

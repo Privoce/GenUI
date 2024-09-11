@@ -1,7 +1,6 @@
 use makepad_widgets::Cx;
 
 pub mod components;
-pub mod macros;
 pub mod shader;
 pub mod themes;
 pub mod utils;

@@ -11,6 +11,7 @@ use crate::{
     shader::draw_card::DrawCard,
     themes::Themes,
     utils::{set_cursor, ThemeColor},
+    widget_origin_fn,
 };
 
 use super::icon::GIcon;
@@ -23,7 +24,59 @@ live_design! {
             width: 20.0,
             margin: 0,
         },
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        icon: {
+                            draw_icon: {hover: 0.0},
+                            icon_base: {hover: 0.0},
+                            icon_arrow: {hover: 0.0},
+                            icon_code: {hover: 0.0},
+                            icon_emoji: {hover: 0.0},
+                            icon_fs: {hover: 0.0},
+                            icon_ui: {hover: 0.0},
+                            icon_person: {hover: 0.0},
+                            icon_relation: {hover: 0.0},
+                            icon_state: {hover: 0.0},
+                            icon_time: {hover: 0.0},
+                            icon_tool: {hover: 0.0},
+                        },
+                        crumb_item: {
+                            draw_text: {pressed: [{time: 0.0, value: 0.0}], hover: 0.0,}
+                        }
+                    }
+                }
 
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        icon: {
+                            draw_icon: {hover: 1.0},
+                            icon_base: {hover: 1.0},
+                            icon_arrow: {hover: 1.0},
+                            icon_code: {hover: 1.0},
+                            icon_emoji: {hover: 1.0},
+                            icon_fs: {hover: 1.0},
+                            icon_ui: {hover: 1.0},
+                            icon_person: {hover: 1.0},
+                            icon_relation: {hover: 1.0},
+                            icon_state: {hover: 1.0},
+                            icon_time: {hover: 1.0},
+                            icon_tool: {hover: 1.0},
+                        },
+                        crumb_item: {
+                            draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -272,13 +325,47 @@ impl GBreadCrumb {
     pub fn icon_area(&self) -> Area {
         self.icon.area()
     }
+    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+        if let GBreadCrumbEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
+            Some(e)
+        } else {
+            None
+        }
+    }
+    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+        if let GBreadCrumbEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast() {
+            Some(e)
+        } else {
+            None
+        }
+    }
+    pub fn to_home(&self, actions: &Actions) -> bool {
+        if let GBreadCrumbEvent::ToHome = actions.find_widget_action(self.widget_uid()).cast() {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl GBreadCrumbRef {
-    pub fn as_origin(&self) -> Option<std::cell::Ref<GBreadCrumb>> {
-        self.borrow()
+    widget_origin_fn!(GBreadCrumb);
+    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.clicked(actions);
+        }
+        None
     }
-    pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<GBreadCrumb>> {
-        self.borrow_mut()
+    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.hover(actions);
+        }
+        None
+    }
+    pub fn to_home(&self, actions: &Actions) -> bool {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.to_home(actions);
+        }
+        false
     }
 }

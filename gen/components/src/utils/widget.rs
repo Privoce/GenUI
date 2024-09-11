@@ -56,3 +56,100 @@ macro_rules! widget_origin_fn {
         }
     };
 }
+
+/// # Generate Ref Event Function
+///```rust
+/// impl GBreadCrumbItemRef {
+/// 
+///     ref_event_option!{
+///         clicked => GBreadCrumbEventItemParam,
+///         hover => GBreadCrumbEventItemParam
+///     }
+///     // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+///     //     if let Some(c_ref) = self.borrow() {
+///     //         return c_ref.clicked(actions);
+///     //     }
+///     //     None
+///     // }
+///     // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+///     //     if let Some(c_ref) = self.borrow() {
+///     //         return c_ref.hover(actions);
+///     //     }
+///     //     None
+///     // }
+/// }
+/// ```
+#[macro_export]
+macro_rules! ref_event_option {
+    ($($event_fn: ident => $return: ty),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> Option<$return> {
+                if let Some(c_ref) = self.borrow() {
+                    return c_ref.$event_fn(actions);
+                }
+                None
+            }
+        )*
+    };
+}
+
+///```rust
+/// impl GBreadCrumbItemRef {
+///     ref_event_bool!{
+///         clicked
+///     }
+/// }
+/// ```
+#[macro_export]
+macro_rules! ref_event_bool {
+    ($($event_fn: ident),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> bool {
+                if let Some(c_ref) = self.borrow() {
+                    return c_ref.$event_fn(actions);
+                }
+                false
+            }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! set_event {
+    ($($event_fn: ident),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> bool {
+                self.iter().any(|c_ref| c_ref.$event_fn(actions).is_some())
+            }
+        )*
+    };
+}
+
+
+#[macro_export]
+macro_rules! event_option {
+    ($($event_fn: ident : $event: ident => $return: ty),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> Option<$return> {
+                if let $event::Clicked(e) =
+                    actions.find_widget_action(self.widget_uid()).cast()
+                {
+                    Some(e)
+                } else {
+                    None
+                }
+            }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! animatie_fn{
+    ($($an_fn: ident),*) => {
+        $(
+            pub fn $an_fn(&self, cx: &mut Cx) -> () {
+                self.borrow_mut().unwrap().$an_fn(cx);
+            }
+        )*
+    };
+}

@@ -540,66 +540,6 @@ live_design! {
         crumb_item: <GBreadCrumbItem>{
             theme: Error,
         }
-        animator: {
-            hover = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 0.0},
-                            icon_base: {hover: 0.0},
-                            icon_arrow: {hover: 0.0},
-                            icon_code: {hover: 0.0},
-                            icon_emoji: {hover: 0.0},
-                            icon_fs: {hover: 0.0},
-                            icon_ui: {hover: 0.0},
-                            icon_person: {hover: 0.0},
-                            icon_relation: {hover: 0.0},
-                            icon_state: {hover: 0.0},
-                            icon_time: {hover: 0.0},
-                            icon_tool: {hover: 0.0},
-                        },
-                        crumb_item: {
-                            draw_text: {pressed: [{time: 0.0, value: 0.0}], hover: 0.0,}
-                        }
-                    }
-                }
-
-                on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 1.0},
-                            icon_base: {hover: 1.0},
-                            icon_arrow: {hover: 1.0},
-                            icon_code: {hover: 1.0},
-                            icon_emoji: {hover: 1.0},
-                            icon_fs: {hover: 1.0},
-                            icon_ui: {hover: 1.0},
-                            icon_person: {hover: 1.0},
-                            icon_relation: {hover: 1.0},
-                            icon_state: {hover: 1.0},
-                            icon_time: {hover: 1.0},
-                            icon_tool: {hover: 1.0},
-                        },
-                        crumb_item: {
-                            draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
-                        }
-                    }
-                }
-
-                // pressed = {
-                //     from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                //     apply: {
-                //         draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
-                //     }
-                // }
-            }
-        }
     }
     GTabButton = <GTabButtonBase>{
         height: Fit,
