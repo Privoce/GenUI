@@ -4,7 +4,7 @@ use makepad_widgets::*;
 pub use register::register;
 
 use crate::{
-    shader::icon_lib::{
+    animatie_fn, event_option, ref_event_option, set_event, shader::icon_lib::{
         arrow::DrawGIconArrow,
         base::DrawGIconBase,
         code::DrawGIconCode,
@@ -21,9 +21,7 @@ use crate::{
             IconType,
         },
         ui::DrawGIconUI,
-    },
-    themes::Themes,
-    utils::{set_cursor, ThemeColor},
+    }, themes::Themes, utils::{set_cursor, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -429,22 +427,28 @@ impl LiveHook for GIcon {
 }
 
 impl GIcon {
-    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
-        if let GIconEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
-            Some(e)
-        } else {
-            None
-        }
+    widget_area! {
+        area, draw_icon
     }
-    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
-        if let GIconEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast() {
-            Some(e)
-        } else {
-            None
-        }
+    event_option! {
+        clicked : GIconEvent::Clicked => KeyModifiers,
+        hover : GIconEvent::Hover => KeyModifiers
     }
-    pub fn area(&self) -> Area {
-        self.draw_icon.area
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
     }
     pub fn handle_widget_event(
         &mut self,
@@ -495,25 +499,19 @@ impl GIcon {
 }
 
 impl GIconRef {
-    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.clicked(actions);
-        }
-        None
+    ref_event_option! {
+        clicked => KeyModifiers,
+        hover => KeyModifiers
     }
-    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.hover(actions);
-        }
-        None
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off
     }
 }
 
 impl GIconSet {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        self.iter().any(|c_ref| c_ref.hover(actions).is_some())
+    set_event! {
+        clicked,
+        hover
     }
 }

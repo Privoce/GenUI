@@ -43,8 +43,8 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GBreadCrumbExample>{}
-                    <GLinkExample>{}
+                    // <GBreadCrumbExample>{}
+                    // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
                     // <GButtonExample>{}
