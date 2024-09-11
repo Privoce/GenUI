@@ -3,6 +3,7 @@ mod register;
 pub use register::register;
 
 use crate::utils::{set_cursor, ThemeColor};
+use crate::{animatie_fn, event_option, ref_event_option, set_event, widget_area};
 use crate::{shader::draw_card::DrawCard, themes::Themes};
 use makepad_widgets::*;
 
@@ -11,7 +12,10 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GButtonBase = {{GButton}}{
+        clip_x: false,
+        clip_y: false,
         cursor: Hand,
+        shadow_offset: vec2(0.0, 2.0),
         animator: {
             hover = {
                 default: off,
@@ -54,10 +58,18 @@ pub struct GButton {
     #[live]
     pub pressed_color: Option<Vec4>,
     #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(4.8)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
+    #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
     pub border_width: f32,
-    #[live(4.0)]
+    #[live(2.0)]
     pub border_radius: f32,
     #[live]
     pub cursor: Option<MouseCursor>,
@@ -136,7 +148,7 @@ impl Widget for GButton {
 
 impl LiveHook for GButton {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible{
+        if !self.visible {
             return;
         }
         // ----------------- background color -------------------------------------------
@@ -146,7 +158,8 @@ impl LiveHook for GButton {
         // ------------------ pressed color ---------------------------------------------
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 800);
+        let border_color = self.border_color.get(self.theme, 600);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
         // apply over props to draw_button ----------------------------------------------
         self.draw_button.apply_over(
             cx,
@@ -157,6 +170,10 @@ impl LiveHook for GButton {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
             },
         );
         self.draw_button.redraw(cx);
@@ -164,36 +181,14 @@ impl LiveHook for GButton {
 }
 
 impl GButton {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        if let GButtonEvent::Clicked(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
+    widget_area! {
+        area, draw_button
     }
-    pub fn pressed(&self, actions: &Actions) -> bool {
-        if let GButtonEvent::Pressed(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
-    }
-    pub fn released(&self, actions: &Actions) -> bool {
-        if let GButtonEvent::Released(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let GButtonEvent::Hover(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
-    }
-    pub fn area(&self) -> Area {
-        self.draw_button.area
+    event_option! {
+        clicked: GButtonEvent::Clicked => KeyModifiers,
+        pressed: GButtonEvent::Pressed => KeyModifiers,
+        released: GButtonEvent::Released => KeyModifiers,
+        hover: GButtonEvent::Hover => KeyModifiers
     }
     pub fn handle_widget_event(
         &mut self,
@@ -205,7 +200,7 @@ impl GButton {
     ) {
         let uid = self.widget_uid();
 
-        if self.animation_open{
+        if self.animation_open {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_button.redraw(cx);
             }
@@ -243,52 +238,62 @@ impl GButton {
             _ => (),
         }
     }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_button.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_button.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+        self.draw_button.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 1.0
+            },
+        );
+    }
 }
 
 impl GButtonRef {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.clicked(actions);
-        }
-        false
+    ref_event_option! {
+        clicked => KeyModifiers,
+        released => KeyModifiers,
+        pressed => KeyModifiers,
+        hover => KeyModifiers
     }
-    pub fn released(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.released(actions);
-        }
-        false
-    }
-    pub fn pressed(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.pressed(actions);
-        }
-        false
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.hover(actions);
-        }
-        false
-    }
+
     pub fn area(&self) -> Area {
         if let Some(btn_ref) = self.borrow() {
-            return btn_ref.draw_button.area();
+            return btn_ref.area();
         }
         Area::Empty
+    }
+
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off,
+        animate_pressed
     }
 }
 
 impl GButtonSet {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.clicked(actions))
-    }
-    pub fn pressed(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.pressed(actions))
-    }
-    pub fn released(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.released(actions))
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.hover(actions))
+    set_event! {
+        clicked,
+        released,
+        pressed,
+        hover
     }
 }

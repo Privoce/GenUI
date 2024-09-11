@@ -35,7 +35,7 @@ live_design! {
                 show_bg: true,
                 width: Fill,
                 height: Fill,
-                draw_bg: {color: #222222},
+                draw_bg: {color: #2},
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: All,
@@ -47,13 +47,13 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    // <GButtonExample>{}
+                    <GButtonExample>{}
                     // <GLabelExample>{}
-                    <GVLayout>{
-                        height: 300.0,
-                        spacing: 6.0,
-                        width:Fill,
-                    }
+                    // <GVLayout>{
+                    //     height: 300.0,
+                    //     spacing: 6.0,
+                    //     width:Fill,
+                    // }
                     
                     // <GCollapse>{
                     //     height: 100.0,
