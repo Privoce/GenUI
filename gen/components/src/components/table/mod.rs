@@ -11,7 +11,7 @@ use body::GTableBody;
 use header::{GTableHeader, GTableHeaderRef};
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawCard;
+use crate::shader::draw_card::DrawGCard;
 
 live_design! {
     GTableBase = {{GTable}}{
@@ -40,7 +40,7 @@ pub struct GTable {
     pub visible: bool,
     #[redraw]
     #[live]
-    pub draw_table: DrawCard,
+    pub draw_table: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]

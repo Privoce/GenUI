@@ -43,26 +43,31 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GCard>{
-                        theme: Dark,
-                        height: 100.0,
-                        width: 300.0,
-                        flow: Down,
-                        align: {x: 0.5, y: 0.5},
-                        <GUpload>{
-                            height: 70.0,
-                        }
-                        <GLabel>{
-                            height: Fit,
-                            text: "Upload!",
-                        }
-                    }
+                    <GCardExample>{}
+                    <GHLayoutExample>{}
+                    <GVLayoutExample>{}
+                    <GTagExample>{}
+                    // <GCard>{
+                    //     theme: Dark,
+                    //     height: 100.0,
+                    //     width: 300.0,
+                    //     flow: Down,
+                    //     align: {x: 0.5, y: 0.5},
+                    //     <GUpload>{
+                    //         height: 70.0,
+                    //     }
+                    //     <GLabel>{
+                    //         height: Fit,
+                    //         text: "Upload!",
+                    //     }
+                    // }
                     // <GBreadCrumbExample>{}
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
                     // <GButtonExample>{}
                     // <GLabelExample>{}
+                    // --------------------------------
                     // <GVLayout>{
                     //     height: 300.0,
                     //     spacing: 6.0,
@@ -83,7 +88,7 @@ live_design! {
                     // }
                     // <GTabsExample>{}
                     // 
-                    // <GBadgeExample>{}
+                    // 
                     // <GStatesExample>{}
                     // // // loading pass, test ok
                     // // // <GLoadingExample>{}
@@ -96,9 +101,7 @@ live_design! {
                     
 
                     
-                    // <GCardExample>{}
-                    // <GHLayoutExample>{}
-                    // <GVLayoutExample>{}
+                    
                     // 
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}

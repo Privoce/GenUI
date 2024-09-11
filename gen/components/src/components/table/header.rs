@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::components::card::Card;
+use crate::components::card::GCard;
 
 live_design! {
     GTableHeaderBase = {{GTableHeader}}{
@@ -16,7 +16,7 @@ live_design! {
 pub struct GTableHeader {
     #[live]
     #[deref]
-    pub deref_widget: Card,
+    pub deref_widget: GCard,
 }
 
 impl Widget for GTableHeader {

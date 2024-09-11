@@ -5,39 +5,40 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*; 
     import gen_components::components::*;
 
-    GBadgeExample = <ScrollYView>{
+    GTagExample = <ScrollYView>{
         height: 200.0,
         width: Fill,
         flow: Down,
         spacing: 10.0,
         <Label>{
-            text: "GBadge",
+            text: "GTag",
         }
         <GVLayout>{
             spacing: 6.0,
             height: 100.0,
             width: Fill,
-            <GBadge>{
+            <GTag>{
                 text: "badget!",
+                spread_radius: 4.0,
             }
-            <GBadge>{
+            <GTag>{
                 round: true,
                 theme: Success,
                 text: "badge tag1",
             }
             <GHLayout>{
                 spacing: 6.0,
-                <GBadge>{
+                <GTag>{
                     theme: Dark,
                     src: dep("crate://self/resources/config.svg"),
                     text: "other",
                 }
-                <GBadge>{
+                <GTag>{
                     theme: Error,
                     text: "closeable",
                     closeable: true
                 }
-                <GBadge>{
+                <GTag>{
                     theme: Warning,
                     round: true,
                     text: "icon-close-round",

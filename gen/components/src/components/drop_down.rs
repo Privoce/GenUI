@@ -6,7 +6,7 @@ use makepad_widgets::*;
 
 use crate::shader::manual::{PopupMode, Position};
 
-use super::{card::Card, popup::GPopup};
+use super::{card::GCard, popup::GPopup};
 
 live_design! {
     GDropDownBase = {{GDropDown}} {}
@@ -18,7 +18,7 @@ pub struct GDropDown {
     pub mode: PopupMode,
     #[deref]
     #[live]
-    card: Card,
+    card: GCard,
     #[live]
     popup: Option<LivePtr>,
     #[live]

@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawCard;
+use crate::shader::draw_card::DrawGCard;
 
 live_design! {
     GCollapseBase = {{GCollapse}}{}
@@ -18,7 +18,7 @@ pub struct GCollapse {
     pub body: WidgetRef,
     #[redraw]
     #[live]
-    pub draw_collapse: DrawCard,
+    pub draw_collapse: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]

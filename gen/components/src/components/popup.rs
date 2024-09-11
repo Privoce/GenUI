@@ -6,7 +6,7 @@ use crate::{
     utils::{BoolToF32, ThemeColor},
 };
 
-use super::card::Card;
+use super::card::GCard;
 
 live_design! {
     GPopupContainerBase = {{GPopupContainer}} {}
@@ -16,7 +16,7 @@ live_design! {
 pub struct GPopupContainer {
     #[live]
     #[deref]
-    pub super_widget: Card,
+    pub super_widget: GCard,
 }
 
 impl LiveHook for GPopupContainer {

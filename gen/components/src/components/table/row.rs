@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::DrawState, shader::draw_card::DrawCard};
+use crate::{components::card::DrawState, shader::draw_card::DrawGCard};
 
 use super::cell::{GTableCellRef, GTableCellWidgetRefExt};
 
@@ -15,7 +15,7 @@ pub struct GTableRow {
     pub draw_order: Vec<LiveId>,
     #[redraw]
     #[live]
-    pub draw_table_row: DrawCard,
+    pub draw_table_row: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]

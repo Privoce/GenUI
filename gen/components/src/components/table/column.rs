@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawCard;
+use crate::shader::draw_card::DrawGCard;
 
 use super::cell::GTableCell;
 
@@ -20,7 +20,7 @@ pub struct GTableColumn {
     pub data: Vec<String>,
     #[redraw]
     #[live]
-    pub draw_table_column: DrawCard,
+    pub draw_table_column: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]

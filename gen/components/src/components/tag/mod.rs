@@ -1,11 +1,20 @@
+mod register;
+
+pub use register::register;
+
 use crate::shader::draw_icon_pixel::DrawGIconPixel;
 use crate::shader::draw_svg::DrawGSvg;
+use crate::shader::draw_text::DrawGText;
 use crate::utils::{get_font_family, DefaultTextStyle, ThemeColor};
-use crate::{shader::draw_card::DrawCard, themes::Themes};
+use crate::{shader::draw_card::DrawGCard, themes::Themes};
 use makepad_widgets::*;
 
 live_design! {
-    GBadgeBase = {{GBadge}}{
+    import makepad_draw::shader::std::*;
+    GTagBase = {{GTag}}{
+        clip_x: false,
+        clip_y: false,
+        shadow_offset: vec2(0.0, 2.0),
         height: Fit,
         width: Fit,
         text_walk: {
@@ -13,37 +22,28 @@ live_design! {
             width: Fit,
         }
         cursor: Hand,
-
-        draw_text: {
-            instance hover: 0.0,
-            instance pressed: 0.0,
-
-            fn get_color(self) -> vec4 {
-                let hover_color = self.color - vec4(0.0, 0.0, 0.0, 0.1);
-                let pressed_color = self.color - vec4(0.0, 0.0, 0.0, 0.2);
-
-                return mix(
-                    mix(
-                        self.color,
-                        hover_color,
-                        self.hover
-                    ),
-                    pressed_color,
-                    self.pressed
-                )
-            }
-        },
         icon_walk: {
             margin: 0,
         },
         icon_layout: {
             padding: 0,
+        },
+        draw_close: {
+            fn pixel(self) -> vec4{
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                sdf.move_to(self.pos.x + 0.5, self.pos.y + 0.5);
+                sdf.line_to(self.rect_size.x - 0.5, self.rect_size.y - 0.5);
+                sdf.move_to(self.rect_size.x - 0.5, self.pos.y - 0.5);
+                sdf.line_to(self.pos.x + 0.5, self.rect_size.y - 0.5);
+                sdf.stroke(self.color, 1.2);
+                return sdf.result;
+            }
         }
     }
 }
 
 #[derive(Live, Widget)]
-pub struct GBadge {
+pub struct GTag {
     #[live]
     pub theme: Themes,
     #[live]
@@ -60,6 +60,14 @@ pub struct GBadge {
     pub border_width: f32,
     #[live(2.0)]
     pub border_radius: f32,
+    #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(4.0)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
     #[live(false)]
     pub round: bool,
     // text -----------------
@@ -94,7 +102,7 @@ pub struct GBadge {
     pub visible: bool,
     // define area -----------------
     #[live]
-    draw_text: DrawText,
+    draw_text: DrawGText,
     #[live]
     text_walk: Walk,
     #[live(true)]
@@ -110,14 +118,14 @@ pub struct GBadge {
     // deref -----------------
     #[redraw]
     #[live]
-    draw_badge: DrawCard,
+    draw_badge: DrawGCard,
     #[walk]
     walk: Walk,
     #[layout]
     layout: Layout,
 }
 
-impl Widget for GBadge {
+impl Widget for GTag {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
@@ -127,7 +135,7 @@ impl Widget for GBadge {
 
         self.icon_walk.height = Size::Fixed(self.font_size);
         self.icon_walk.width = Size::Fixed(self.font_size);
-        self.text_walk.margin.top = self.font_size / 4.0;
+        // self.text_walk.margin.top = self.font_size / 4.0;
         let _ = self.draw_badge.begin(cx, walk, self.layout);
         let _ = self.draw_icon.draw_walk(cx, self.icon_walk);
 
@@ -156,10 +164,11 @@ impl Widget for GBadge {
     }
 }
 
-impl LiveHook for GBadge {
+impl LiveHook for GTag {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
@@ -200,6 +209,10 @@ impl LiveHook for GBadge {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
             },
         );
         self.draw_icon.apply_over(
@@ -223,8 +236,8 @@ impl LiveHook for GBadge {
                 color: (font_color),
                 text_style: {
                     font_size: (self.font_size),
-                    brightness: (default_text_style.brightness),
-                    curve: (default_text_style.curve),
+                    // brightness: (default_text_style.brightness),
+                    // curve: (default_text_style.curve),
                     line_spacing: (default_text_style.line_spacing),
                     top_drop: (default_text_style.top_drop),
                     height_factor: (default_text_style.height_factor),
@@ -233,18 +246,6 @@ impl LiveHook for GBadge {
         );
 
         if self.closeable {
-            // self.draw_close.apply_over(
-            //     cx,
-            //     live! {
-            //         hover_color: (icon_hover_color),
-            //         color: (icon_color),
-            //         brightness: (self.icon_brightness),
-            //         curve: (self.icon_curve),
-            //         linearize: (self.icon_linearize),
-            //         scale: (self.icon_scale),
-            //         draw_depth: (self.icon_draw_depth),
-            //     },
-            // );
             self.draw_close.apply_over(
                 cx,
                 live! {
@@ -264,7 +265,7 @@ impl LiveHook for GBadge {
     }
 }
 
-impl GBadgeRef {
+impl GTagRef {
     pub fn area(&self) -> Area {
         if let Some(btn_ref) = self.borrow() {
             return btn_ref.draw_badge.area();

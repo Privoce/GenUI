@@ -5,7 +5,7 @@ use crate::{
         card::DrawState,
         table::row::{GTableRowRef, GTableRowWidgetRefExt},
     },
-    shader::draw_card::DrawCard,
+    shader::draw_card::DrawGCard,
 };
 
 live_design! {
@@ -25,7 +25,7 @@ pub struct GTableBody {
     pub visible: bool,
     #[redraw]
     #[live]
-    pub draw_table_body: DrawCard,
+    pub draw_table_body: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]

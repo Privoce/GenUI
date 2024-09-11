@@ -6,7 +6,7 @@ use types::{Edit, EditKind, History};
 use unicode_segmentation::{GraphemeCursor, UnicodeSegmentation};
 
 use crate::{
-    shader::{draw_card::DrawCard, draw_text::DrawGText},
+    shader::{draw_card::DrawGCard, draw_text::DrawGText},
     themes::Themes,
     utils::{get_font_family, BoolToF32, ThemeColor},
 };
@@ -199,13 +199,13 @@ pub struct GInput {
     animator: Animator,
     #[redraw]
     #[live]
-    draw_input: DrawCard,
+    draw_input: DrawGCard,
     #[live]
     draw_text: DrawGText,
     #[live]
-    draw_selection: DrawCard,
+    draw_selection: DrawGCard,
     #[live]
-    draw_cursor: DrawCard,
+    draw_cursor: DrawGCard,
     #[layout]
     layout: Layout,
     #[walk]

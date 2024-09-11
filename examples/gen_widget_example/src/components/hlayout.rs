@@ -34,7 +34,7 @@ live_design! {
                 width: 30.0,
             }
             <GButton>{
-                text: "hello"
+                
             }
         }
     }

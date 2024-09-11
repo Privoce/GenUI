@@ -12,6 +12,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::svg::register(cx);
     crate::components::icon::register(cx);
     crate::components::button::register(cx);
+    crate::components::tag::register(cx);
     // crate::components::button::live_design(cx);
     crate::components::card::live_design(cx);
     crate::components::radio::live_design(cx);
@@ -25,7 +26,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::toggle::live_design(cx);
     crate::components::progress::live_design(cx);
     crate::components::loading::live_design(cx);
-    crate::components::badge::live_design(cx);
+    
     crate::components::breadcrumb::live_design(cx);
     crate::components::breadcrumb::item::live_design(cx);
     crate::components::tab::header::live_design(cx);

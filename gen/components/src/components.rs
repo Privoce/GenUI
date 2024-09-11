@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-pub mod badge;
+pub mod tag;
 pub mod breadcrumb;
 pub mod button;
 pub mod card;
@@ -29,7 +29,7 @@ live_design! {
     // imports -----------------------------------------------------
     import crate::components::label::GLabelBase;
     import crate::components::button::GButtonBase;
-    import crate::components::card::CardBase;
+    import crate::components::card::GCardBase;
     import crate::components::link::GLinkBase;
     import crate::components::icon::GIconBase;
     import crate::components::radio::GRadioBase;
@@ -45,7 +45,7 @@ live_design! {
     import crate::components::toggle::GToggleBase;
     import crate::components::progress::GProgressBase;
     import crate::components::loading::GLoadingBase;
-    import crate::components::badge::GBadgeBase;
+    import crate::components::tag::GTagBase;
     import crate::components::breadcrumb::GBreadCrumbBase;
     import crate::components::breadcrumb::item::GBreadCrumbItemBase;
     import crate::components::tab::header::GTabHeaderBase;
@@ -182,14 +182,14 @@ live_design! {
     // ## GCard
     // A card component that you can use to wrap other components
     // card has default styles for border, background color, ...
-    GCard = <CardBase>{
+    GCard = <GCardBase>{
         width: 300.0,
         height: 200.0,
     }
     // ## GHLayout
     // A horizontal layout component use CardBase
     // layout don't have border, background color, border-radius, ... (but you can add if you want)
-    GHLayout = <CardBase>{
+    GHLayout = <GCardBase>{
         height: Fill,
         width: Fill,
         flow: Right,
@@ -202,7 +202,7 @@ live_design! {
     }
     // ## GVLayout
     // A vertical layout component use CardBase
-    GVLayout = <CardBase>{
+    GVLayout = <GCardBase>{
         height: Fill,
         width: Fill,
         flow: Down,
@@ -494,25 +494,14 @@ live_design! {
         src: dep("crate://self/resources/icons/searching.png"),
         fit: Vertical
     }
-    GBadge = <GBadgeBase>{
+    GTag = <GTagBase>{
         spacing: 4.6,
         theme: Primary,
         text: "",
         padding: <GLOBAL_PADDING_SMALL>{},
         font_size: (FONT_SIZE_SMALL),
         align: <ALIGN_CENTER_WALK>{},
-        draw_close: {
-            fn pixel(self) -> vec4{
-                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
-                let offset = 1.0;
-                sdf.move_to(self.pos.x, self.pos.y);
-                sdf.line_to(self.rect_size.x - offset, self.rect_size.y - offset);
-                sdf.move_to(self.rect_size.x - offset, self.pos.y);
-                sdf.line_to(self.pos.x, self.rect_size.y - offset);
-                sdf.stroke(self.color, 1.46);
-                return sdf.result;
-            }
-        }
+        
     }
     GBreadCrumbItem = <GBreadCrumbItemBase>{
         height: 24.0,

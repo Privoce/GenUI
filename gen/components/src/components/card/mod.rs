@@ -1,18 +1,26 @@
+pub mod event;
+mod register;
+
+use event::*;
+pub use register::register;
+
 use std::{cell::RefCell, collections::HashMap};
 
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawCard,
-    themes::Themes,
-    utils::{set_cursor, BoolToF32, ThemeColor},
+    event_option, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
     import makepad_draw::shader::std::*;
     GLOBAL_DURATION = 0.25
 
-    CardBase = {{Card}}{
+    GCardBase = {{GCard}}{
+        blur_radius: 100.0,
+        spread_radius: 0.0,
+        shadow_offset: vec2(0.0, 0.0),
+        shadow_color: vec4(0.0, 0.0, 0.0, 0.0),
         animator: {
             hover = {
                 default: off,
@@ -45,7 +53,7 @@ live_design! {
 }
 
 #[derive(Live, LiveRegisterWidget, WidgetRef, WidgetSet)]
-pub struct Card {
+pub struct GCard {
     #[live]
     pub theme: Themes,
     #[live]
@@ -58,16 +66,24 @@ pub struct Card {
     pub border_color: Option<Vec4>,
     #[live(0.0)]
     pub border_width: f32,
-    #[live(4.0)]
+    #[live(2.0)]
     pub border_radius: f32,
     #[live(true)]
     pub visible: bool,
     #[live(false)]
     pub background_visible: bool,
     #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(4.8)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
+    #[live]
     pub cursor: Option<MouseCursor>,
     #[live(false)]
-    pub animator_key: bool,
+    pub animation_open: bool,
     // scroll ---------------------
     #[live]
     pub scroll_bars: Option<LivePtr>,
@@ -80,7 +96,7 @@ pub struct Card {
     pub block_signal_event: bool,
     // deref ---------------------
     #[live]
-    pub draw_card: DrawCard,
+    pub draw_card: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -107,20 +123,7 @@ pub enum DrawState {
     DeferWalk(usize),
 }
 
-#[derive(Clone, Debug, DefaultNone)]
-pub enum CardEvent {
-    KeyDown(KeyEvent),
-    KeyUp(KeyEvent),
-    FingerDown(FingerDownEvent),
-    FingerMove(FingerMoveEvent),
-    FingerHoverIn(FingerHoverEvent),
-    FingerHoverOver(FingerHoverEvent),
-    FingerHoverOut(FingerHoverEvent),
-    FingerUp(FingerUpEvent),
-    None,
-}
-
-impl LiveHook for Card {
+impl LiveHook for GCard {
     fn before_apply(
         &mut self,
         _cx: &mut Cx,
@@ -136,6 +139,7 @@ impl LiveHook for Card {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
@@ -162,6 +166,10 @@ impl LiveHook for Card {
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
                 background_visible: (background_visible),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
             },
         );
         self.draw_card.redraw(cx);
@@ -199,7 +207,7 @@ impl LiveHook for Card {
     }
 }
 
-impl Widget for Card {
+impl Widget for GCard {
     fn handle_event_with(
         &mut self,
         cx: &mut Cx,
@@ -271,40 +279,40 @@ impl Widget for Card {
         ) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, CardEvent::KeyDown(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e))
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e))
                 }
             }
-            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
+            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerScroll(e)),
             Hit::FingerDown(e) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(sweep_area);
                 }
-                cx.widget_action(uid, &scope.path, CardEvent::FingerDown(e));
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerDown(e));
             }
-            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerMove(e)),
+            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerMove(e)),
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverIn(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverIn(e));
+                if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.on))
                 }
             }
             Hit::FingerHoverOver(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOver(e));
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOver(e));
             }
             Hit::FingerHoverOut(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOut(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOut(e));
+                if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.off))
                 }
             }
             Hit::FingerUp(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerUp(e));
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerUp(e));
             }
             _ => (),
         }
@@ -452,40 +460,40 @@ impl Widget for Card {
         match event.hits(cx, self.area()) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, CardEvent::KeyDown(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e))
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e))
                 }
             }
-            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
+            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerScroll(e)),
             Hit::FingerDown(e) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(self.area());
                 }
-                cx.widget_action(uid, &scope.path, CardEvent::FingerDown(e));
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerDown(e));
             }
-            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerMove(e)),
+            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerMove(e)),
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverIn(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverIn(e));
+                if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.on))
                 }
             }
             Hit::FingerHoverOver(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOver(e));
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOver(e));
             }
             Hit::FingerHoverOut(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOut(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOut(e));
+                if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.off))
                 }
             }
             Hit::FingerUp(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerUp(e));
+                cx.widget_action(uid, &scope.path, GCardEvent::FingerUp(e));
             }
             _ => (),
         }
@@ -498,7 +506,7 @@ impl Widget for Card {
     }
 }
 
-impl WidgetNode for Card {
+impl WidgetNode for GCard {
     fn uid_to_widget(&self, uid: WidgetUid) -> WidgetRef {
         for child in self.children.values() {
             let x = child.uid_to_widget(uid);
@@ -564,16 +572,12 @@ impl WidgetNode for Card {
             child.redraw(cx);
         }
     }
-
-    fn area(&self) -> Area {
-        self.draw_card.area()
+    fn area(&self)->Area {
+        self.draw_card.area
     }
 }
 
-impl Card {
-    pub fn area(&self) -> Area {
-        self.draw_card.area()
-    }
+impl GCard {
     pub fn set_scroll_pos(&mut self, cx: &mut Cx, v: DVec2) {
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
             scroll_bars.set_scroll_pos(cx, v);
@@ -586,29 +590,33 @@ impl Card {
     }
 }
 
-impl CardRef {
+impl GCardRef {
     pub fn set_abs_pos(&self, _cx: &mut Cx, abs_pos: DVec2) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.walk.abs_pos.replace(abs_pos);
         }
     }
-    pub fn finger_down(&self, actions: &Actions) -> Option<FingerDownEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::FingerDown(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
+    event_option! {
+        finger_down: ViewAction::FingerDown => FingerDownEvent,
+        finger_up: ViewAction::FingerUp => FingerUpEvent
     }
+    // pub fn finger_down(&self, actions: &Actions) -> Option<FingerDownEvent> {
+    //     if let Some(item) = actions.find_widget_action(self.widget_uid()) {
+    //         if let ViewAction::FingerDown(fd) = item.cast() {
+    //             return Some(fd);
+    //         }
+    //     }
+    //     None
+    // }
 
-    pub fn finger_up(&self, actions: &Actions) -> Option<FingerUpEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::FingerUp(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
-    }
+    // pub fn finger_up(&self, actions: &Actions) -> Option<FingerUpEvent> {
+    //     if let Some(item) = actions.find_widget_action(self.widget_uid()) {
+    //         if let ViewAction::FingerUp(fd) = item.cast() {
+    //             return Some(fd);
+    //         }
+    //     }
+    //     None
+    // }
 
     pub fn finger_move(&self, actions: &Actions) -> Option<FingerMoveEvent> {
         if let Some(item) = actions.find_widget_action(self.widget_uid()) {
@@ -733,7 +741,7 @@ impl CardRef {
     }
 }
 
-impl CardSet {
+impl GCardSet {
     pub fn animator_cut(&mut self, cx: &mut Cx, state: &[LiveId; 2]) {
         for item in self.iter() {
             item.animator_cut(cx, state)

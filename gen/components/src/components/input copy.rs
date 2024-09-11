@@ -2,7 +2,7 @@ use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 
 use crate::{
-    shader::{draw_card::DrawCard, draw_text::DrawGText},
+    shader::{draw_card::DrawGCard, draw_text::DrawGText},
     themes::{get_color, Themes}, utils::get_font_family,
 };
 
@@ -211,12 +211,12 @@ pub struct GInput {
     // deref --------------------
     #[redraw]
     #[live]
-    draw_input: DrawCard,
+    draw_input: DrawGCard,
     #[live]
     // 光标
-    draw_select: DrawCard,
+    draw_select: DrawGCard,
     #[live]
-    draw_cursor: DrawCard,
+    draw_cursor: DrawGCard,
     #[live]
     draw_text: DrawGText,
     /// 撤销id

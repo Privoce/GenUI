@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use makepad_widgets::*;
 use rfd::FileDialog;
 
-use crate::shader::draw_card::DrawCard;
+use crate::shader::draw_card::DrawGCard;
 
 use super::svg::GSvg;
 
@@ -25,7 +25,7 @@ pub struct GUpload {
     pub filters: Vec<String>,
     #[redraw]
     #[live]
-    pub draw_upload: DrawCard,
+    pub draw_upload: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]

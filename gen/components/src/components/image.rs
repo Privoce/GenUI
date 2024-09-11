@@ -1,7 +1,7 @@
 use image_cache::{ImageCacheImpl, ImageFit};
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawCard;
+use crate::shader::draw_card::DrawGCard;
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -125,7 +125,7 @@ pub struct GImage {
     layout: Layout,
     #[redraw]
     #[live]
-    draw_image: DrawCard,
+    draw_image: DrawGCard,
     #[live]
     pub src: LiveDependency,
     #[rust(Texture::new(cx))]

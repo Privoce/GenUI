@@ -8,7 +8,7 @@ use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawCard,
+    shader::draw_card::DrawGCard,
     themes::Themes,
     utils::{set_cursor, ThemeColor},
     widget_origin_fn,
@@ -129,7 +129,7 @@ pub struct GBreadCrumb {
     // deref -------------------
     #[redraw]
     #[live]
-    pub draw_bread_crumb: DrawCard,
+    pub draw_bread_crumb: DrawGCard,
     #[live]
     pub icon: GIcon,
     #[live]

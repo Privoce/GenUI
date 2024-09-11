@@ -7,7 +7,7 @@ use header::GTabHeader;
 use makepad_widgets::*;
 use pane::GTabPane;
 
-use crate::{shader::draw_card::DrawCard, themes::Themes};
+use crate::{shader::draw_card::DrawGCard, themes::Themes};
 
 live_design! {
     GTabBase = {{GTab}}{}
@@ -23,7 +23,7 @@ pub struct GTab {
     pub items: Vec<String>,
     #[redraw]
     #[live]
-    pub draw_tab: DrawCard,
+    pub draw_tab: DrawGCard,
     #[live]
     pub header: GTabHeader,
     #[live]

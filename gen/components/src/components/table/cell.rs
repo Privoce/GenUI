@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::Card, utils::ThemeColor};
+use crate::{components::card::GCard, utils::ThemeColor};
 
 live_design! {
     GTableCellBase = {{GTableCell}}{
@@ -13,7 +13,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GTableCell {
     #[deref]
-    pub deref_widget: Card,
+    pub deref_widget: GCard,
 }
 
 impl LiveHook for GTableCell {

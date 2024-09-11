@@ -2,7 +2,7 @@ use makepad_widgets::*;
 
 use crate::{
     shader::{
-        draw_card::DrawCard,
+        draw_card::DrawGCard,
         draw_loading::{DrawGLoading, GLoadingType},
     },
     themes::Themes,
@@ -26,7 +26,7 @@ pub struct GLoading {
     // deref -------------------
     #[redraw]
     #[live]
-    pub draw_loading_wrap: DrawCard,
+    pub draw_loading_wrap: DrawGCard,
     #[live]
     pub draw_loading: DrawGLoading,
     #[live]

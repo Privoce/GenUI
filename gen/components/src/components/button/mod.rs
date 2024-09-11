@@ -4,7 +4,7 @@ pub use register::register;
 
 use crate::utils::{set_cursor, ThemeColor};
 use crate::{animatie_fn, event_option, ref_event_option, set_event, widget_area};
-use crate::{shader::draw_card::DrawCard, themes::Themes};
+use crate::{shader::draw_card::DrawGCard, themes::Themes};
 use makepad_widgets::*;
 
 live_design! {
@@ -91,7 +91,7 @@ pub struct GButton {
     // deref -----------------
     #[redraw]
     #[live]
-    pub draw_button: DrawCard,
+    pub draw_button: DrawGCard,
     #[walk]
     pub walk: Walk,
     #[layout]
