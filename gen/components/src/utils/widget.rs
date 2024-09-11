@@ -114,6 +114,21 @@ macro_rules! ref_event_bool {
     };
 }
 
+/// # Generate Set Event Function
+/// ```rust
+/// impl GBreadCrumbItemSet {
+///     set_event!{
+///        clicked,
+///        hover
+///     }
+///     // pub fn clicked(&self, actions: &Actions) -> bool {
+///     //     self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
+///     // }
+///     // pub fn hover(&self, actions: &Actions) -> bool {
+///     //     self.iter().any(|c_ref| c_ref.hover(actions).is_some())
+///     // }
+/// }
+/// ```
 #[macro_export]
 macro_rules! set_event {
     ($($event_fn: ident),*) => {
@@ -125,7 +140,31 @@ macro_rules! set_event {
     };
 }
 
-
+/// ```
+/// impl GBreadCrumbItem {
+///     event_option!{
+///         clicked : GBreadCrumbItemEvent => GBreadCrumbEventItemParam,
+///         hover : GBreadCrumbItemEvent => GBreadCrumbEventItemParam
+///     }
+///     // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+///     //     if let GBreadCrumbItemEvent::Clicked(e) =
+///     //         actions.find_widget_action(self.widget_uid()).cast()
+///     //     {
+///     //         Some(e)
+///     //     } else {
+///     //         None
+///     //     }
+///     // }
+///     // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
+///     //     if let GBreadCrumbItemEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast()
+///     //     {
+///     //         Some(e)
+///     //     } else {
+///     //         None
+///     //     }
+///     // }
+/// }
+/// ```
 #[macro_export]
 macro_rules! event_option {
     ($($event_fn: ident : $event: ident => $return: ty),*) => {
@@ -143,12 +182,53 @@ macro_rules! event_option {
     };
 }
 
+/// # Generate Animation Function
+/// ```
+/// impl GBreadCrumbItemRef {
+///     animatie_fn!{
+///         animate_hover_on,
+///         animate_hover_off,
+///         animate_pressed
+///     }
+///     // pub fn animate_hover_on(&self, cx: &mut Cx) -> () {
+///     //     self.borrow_mut().unwrap().animate_hover_on(cx);
+///     // }
+///     // pub fn animate_hover_off(&self, cx: &mut Cx) -> () {
+///     //     self.borrow_mut().unwrap().animate_hover_off(cx);
+///     // }
+///     // pub fn animate_pressed(&self, cx: &mut Cx) -> () {
+///     //     self.borrow_mut().unwrap().animate_pressed(cx);
+///     // }
+/// }
+/// ```
 #[macro_export]
 macro_rules! animatie_fn{
     ($($an_fn: ident),*) => {
         $(
             pub fn $an_fn(&self, cx: &mut Cx) -> () {
                 self.borrow_mut().unwrap().$an_fn(cx);
+            }
+        )*
+    };
+}
+
+/// # Generate Area Function
+/// ```
+/// impl GBreadCrumbItem {
+///     widget_area!{
+///         area, draw_item
+///     }
+///     // pub fn area(&self) -> Area {
+///     //     self.draw_item.area
+///     // }
+/// }
+/// ```
+#[macro_export]
+macro_rules! widget_area {
+    ($($area_fn: ident, $prop: ident),*) => {
+        $(
+            pub fn $area_fn(&self) -> Area {
+                self.$prop.area
             }
         )*
     };

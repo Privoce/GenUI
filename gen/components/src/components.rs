@@ -538,7 +538,7 @@ live_design! {
             cursor: Hand,
         },
         crumb_item: <GBreadCrumbItem>{
-            theme: Error,
+            theme: Dark,
         }
     }
     GTabButton = <GTabButtonBase>{

@@ -5,7 +5,7 @@ use crate::{
     animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, shader::{
         draw_split::{DrawGSplit, GSplitType},
         draw_text::DrawGText,
-    }, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor}, widget_origin_fn
+    }, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor}, widget_area, widget_origin_fn
 };
 
 use super::event::{GBreadCrumbEventItemParam, GBreadCrumbItemEvent};
@@ -232,9 +232,12 @@ impl LiveHook for GBreadCrumbItem {
 }
 
 impl GBreadCrumbItem {
-    pub fn area(&self) -> Area {
-        self.draw_item.area
+    widget_area!{
+        area, draw_item
     }
+    // pub fn area(&self) -> Area {
+    //     self.draw_item.area
+    // }
     event_option!{
         clicked : GBreadCrumbItemEvent => GBreadCrumbEventItemParam,
         hover : GBreadCrumbItemEvent => GBreadCrumbEventItemParam
