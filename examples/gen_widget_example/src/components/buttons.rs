@@ -51,7 +51,6 @@ live_design! {
                             height: 16.0,
                             width: 16.0,
                             icon_type: Code,
-                            hover_color: #F00,
                             animation_open: true,
                         }
                         <GLabel>{

@@ -1,13 +1,13 @@
 mod register;
+pub mod event;
 
+use event::{GSvgEvent, GSvgEventParam};
 pub use register::register;
 
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_svg::DrawGSvg,
-    themes::Themes,
-    utils::{set_cursor, ThemeColor},
+    animatie_fn, event_option, ref_event_option, set_event, shader::draw_svg::DrawGSvg, themes::Themes, utils::{set_cursor, ThemeColor, ToPath}, widget_area
 };
 
 live_design! {
@@ -83,13 +83,6 @@ pub struct GSvg {
     layout: Layout,
 }
 
-#[derive(Debug, Clone, DefaultNone)]
-pub enum GSvgEvent {
-    Clicked,
-    Hover,
-    None,
-}
-
 impl Widget for GSvg {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
@@ -154,22 +147,28 @@ impl LiveHook for GSvg {
 }
 
 impl GSvg {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        if let GSvgEvent::Clicked = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
+    widget_area! {
+        area, draw_svg
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let GSvgEvent::Hover = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
+    event_option! {
+        clicked: GSvgEvent::Clicked => GSvgEventParam,
+        hover: GSvgEvent::Hover => GSvgEventParam
     }
-    pub fn area(&self) -> Area {
-        self.draw_svg.area
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_svg.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_svg.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
     }
     pub fn handle_widget_event(
         &mut self,
@@ -193,17 +192,23 @@ impl GSvg {
                     cx.set_key_focus(focus_area);
                 }
             }
-            Hit::FingerHoverIn(_) => {
+            Hit::FingerHoverIn(f_in) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GSvgEvent::Hover);
+                cx.widget_action(uid, &scope.path, GSvgEvent::Hover(GSvgEventParam{
+                    src: self.src.to_pathbuf(),
+                    key_modifiers: f_in.modifiers
+                }));
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GSvgEvent::Clicked);
+                    cx.widget_action(uid, &scope.path, GSvgEvent::Clicked(GSvgEventParam{
+                        src: self.src.to_pathbuf(),
+                        key_modifiers: f_up.modifiers
+                    }));
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
@@ -219,25 +224,19 @@ impl GSvg {
 }
 
 impl GSvgRef {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.clicked(actions);
-        }
-        false
+    ref_event_option! {
+        clicked => GSvgEventParam,
+        hover => GSvgEventParam
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.hover(actions);
-        }
-        false
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off
     }
 }
 
 impl GSvgSet {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        self.iter().any(|c_ref| c_ref.clicked(actions))
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        self.iter().any(|c_ref| c_ref.hover(actions))
+    set_event! {
+        clicked,
+        hover
     }
 }

@@ -102,7 +102,7 @@ live_design! {
         fn stroke_color(self) -> vec4 {
             return mix(
                 self.stroke_color,
-                self.hover_color,
+                self.stroke_hover_color,
                 self.hover
             );
         }
@@ -125,7 +125,7 @@ pub struct DrawGIcon {
     #[live]
     pub stroke_color: Vec4,
     #[live]
-    pub hover_color: Vec4,
+    pub stroke_hover_color: Vec4,
     #[live]
     pub border_color: Vec4,
     #[live(0.0)]

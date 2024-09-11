@@ -87,7 +87,7 @@ pub struct GIcon {
     #[live]
     pub stroke_color: Option<Vec4>,
     #[live]
-    pub hover_color: Option<Vec4>,
+    pub stroke_hover_color: Option<Vec4>,
     #[live(1.0)]
     pub stroke_width: f32,
     #[live]
@@ -261,8 +261,8 @@ impl LiveHook for GIcon {
             return;
         }
 
-        let color = self.stroke_color.get(self.theme, 200);
-        let hover_color = self.hover_color.get(self.theme, 100);
+        let color = self.stroke_color.get(self.theme, 300);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 200);
 
         self.draw_type.replace(self.icon_type.to_draw_type());
         match self.draw_type.as_ref().unwrap() {
@@ -272,7 +272,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_base
@@ -286,7 +286,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_code
@@ -300,7 +300,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_arrow
@@ -314,7 +314,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_emoji
@@ -328,7 +328,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_fs
@@ -342,7 +342,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_ui
@@ -356,7 +356,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_person
@@ -370,7 +370,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_relation
@@ -384,7 +384,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_state
@@ -398,7 +398,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_time
@@ -412,7 +412,7 @@ impl LiveHook for GIcon {
                     live! {
                         stroke_color: (color),
                         stroke_width: (self.stroke_width),
-                        hover_color: (hover_color),
+                        stroke_hover_color: (stroke_hover_color),
                     },
                 );
                 self.icon_tool

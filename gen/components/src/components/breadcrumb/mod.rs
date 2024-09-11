@@ -117,7 +117,11 @@ pub struct GBreadCrumb {
     #[live(1.0)]
     pub icon_scale: f64,
     #[live]
-    pub icon_color: Option<Vec4>,
+    pub stroke_color: Option<Vec4>,
+    #[live]
+    pub stroke_hover_color: Option<Vec4>,
+    #[live(1.0)]
+    pub stroke_width: f32,
     #[live(1.0)]
     pub icon_draw_depth: f32,
     #[live]
@@ -290,8 +294,8 @@ impl LiveHook for GBreadCrumb {
             return;
         }
         // ------------------ font ------------------------------------------------------
-        let _icon_color = self.color.get(self.theme, 100);
-        let _icon_hover_color = self.color.get(self.theme, 50);
+        let stroke_color = self.stroke_color.get(self.theme, 200);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 100);
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 200);
         // ------------------ hover color -----------------------------------------------
@@ -312,6 +316,11 @@ impl LiveHook for GBreadCrumb {
                 background_visible: 1.0
             },
         );
+        self.icon.apply_over(cx, live!{
+            stroke_color: (stroke_color),
+            stroke_width: (self.stroke_width),
+            stroke_hover_color: (stroke_hover_color),
+        });
 
         self.draw_bread_crumb.redraw(cx);
         self.icon.redraw(cx);

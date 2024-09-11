@@ -37,7 +37,7 @@ live_design! {
                     <GIcon>{
                         icon_type: Min,
                         cursor: Hand,
-                        hover_color: #F00,
+                        stroke_hover_color: #F00,
                         animation_open: true,
                     }
                     <GLabel>{

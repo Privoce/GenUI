@@ -1,4 +1,6 @@
-use makepad_widgets::Vec4;
+use std::{path::PathBuf, str::FromStr};
+
+use makepad_widgets::{LiveDependency, Vec4};
 
 use crate::themes::{get_color, Themes};
 
@@ -18,7 +20,6 @@ impl ThemeColor for Option<Vec4> {
 #[macro_export]
 macro_rules! color_v_trait {
     ($T:ty) => {
-        
         impl ThemeColorValue for $T {
             fn v(target: u32) -> Vec4 {
                 hex_to_vec4(match target {
@@ -36,7 +37,7 @@ macro_rules! color_v_trait {
                     _ => panic!("invalid target"),
                 })
             }
-        
+
             fn get(&self) -> Vec4 {
                 self.0
             }
@@ -72,3 +73,13 @@ pub trait Render {
     fn render(&mut self);
 }
 
+// ---------------------------------------------------------------------------------------------------
+pub trait ToPath {
+    fn to_pathbuf(&self) -> PathBuf;
+}
+
+impl ToPath for LiveDependency {
+    fn to_pathbuf(&self) -> PathBuf {
+        PathBuf::from_str(self.as_str()).unwrap()
+    }
+}

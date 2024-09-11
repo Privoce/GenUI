@@ -182,7 +182,7 @@ impl LiveHook for GBreadCrumbItem {
         }
         // ------------------ font ------------------------------------------------------
         let font_color = self.color.get(self.theme, 100);
-        let text_hover_color = self.text_hover_color.get(self.theme, 50);
+        let text_hover_color = self.text_hover_color.get(self.theme, 400);
         let text_pressed_color = self.text_pressed_color.get(self.theme, 200);
         // ------------------icon color -----------------------------------------------
         let icon_color = self.icon_color.get(self.theme, 100);
