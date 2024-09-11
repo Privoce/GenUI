@@ -195,7 +195,7 @@ live_design! {
         padding: 0,
         border_radius: 0,
         border_width: 0,
-        transparent: true,
+        background_visible: true,
         spacing: 0,
         margin: 0,
     }
@@ -208,7 +208,7 @@ live_design! {
         padding: 0,
         border_radius: 0,
         border_width: 0,
-        transparent: true,
+        background_visible: true,
         spacing: 0,
         margin: 0,
     }
@@ -409,7 +409,7 @@ live_design! {
                     Position::RightTop => {}
                     Position::RightBottom => {}
                 } 
-                // if self.transparent == 0.0 {
+                // if self.background_visible == 0.0 {
                 //     sdf.fill_keep(self.get_color());
                 // }
                 sdf.stroke(self.get_border_color(), self.border_width);
@@ -417,7 +417,7 @@ live_design! {
             }
         }
         container: <GPopupContainer>{
-            transparent: true,
+            background_visible: true,
         }
     }
     GDialog = <GPopup>{
@@ -446,7 +446,7 @@ live_design! {
         padding: 0,
         border_radius: 0,
         border_width: 0,
-        transparent: true,
+        background_visible: true,
         spacing: 0,
         margin: 0,
         popup: <GPopup> {
@@ -529,11 +529,12 @@ live_design! {
         spacing: 8.0,
         align: <ALIGN_LEFT_WALK>{},
         font_size: (FONT_SIZE),
-        draw_icon: <GIcon>{
+        icon: <GIcon>{
             theme: Dark,
             height: 14.0,
             width: 14.0,
             icon_type: Home,
+            cursor: Hand,
         },
         crumb_item: <GBreadCrumbItem>{}
     }

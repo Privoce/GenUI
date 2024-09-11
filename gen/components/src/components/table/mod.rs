@@ -15,7 +15,7 @@ use crate::shader::draw_card::DrawCard;
 
 live_design! {
     GTableBase = {{GTable}}{
-        // transparent: true,
+        // background_visible: true,
         // border_width: 0.0,
         // border_radius: 0.0,
         flow: Down,

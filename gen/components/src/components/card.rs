@@ -63,7 +63,7 @@ pub struct Card {
     #[live(true)]
     pub visible: bool,
     #[live(false)]
-    pub transparent: bool,
+    pub background_visible: bool,
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live(false)]
@@ -142,8 +142,8 @@ impl LiveHook for Card {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
-        // ------------------ is transparent --------------------------------------------
-        let transparent = self.transparent.to_f32();
+        // ------------------ is background_visible --------------------------------------------
+        let background_visible = self.background_visible.to_f32();
         // ------------------ check scroll bar -------------------------------------------
         if self.scroll_bars.is_some() {
             if self.scroll_bars_obj.is_none() {
@@ -161,7 +161,7 @@ impl LiveHook for Card {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                transparent: (transparent),
+                background_visible: (background_visible),
             },
         );
         self.draw_card.redraw(cx);

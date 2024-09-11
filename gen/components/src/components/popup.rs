@@ -29,8 +29,8 @@ impl LiveHook for GPopupContainer {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
-        // ------------------ is transparent --------------------------------------------
-        let transparent = self.transparent.to_f32();
+        // ------------------ is background_visible --------------------------------------------
+        let background_visible = self.background_visible.to_f32();
         // ------------------ apply draw_popup --------------------------------------------
         let border_width = self.border_width;
         let border_radius = self.border_radius;
@@ -43,7 +43,7 @@ impl LiveHook for GPopupContainer {
                 border_radius: (border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                transparent: (transparent),
+                background_visible: (background_visible),
             },
         );
         self.draw_card.redraw(cx);
@@ -92,7 +92,7 @@ pub struct GPopup {
     #[live(true)]
     pub visible: bool,
     #[live(false)]
-    pub transparent: bool,
+    pub background_visible: bool,
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live(false)]
@@ -126,8 +126,8 @@ impl LiveHook for GPopup {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
-        // ------------------ is transparent --------------------------------------------
-        let transparent = self.transparent.to_f32();
+        // ------------------ is background_visible --------------------------------------------
+        let background_visible = self.background_visible.to_f32();
         // ------------------ apply draw_popup --------------------------------------------
         self.draw_popup.apply_over(
             cx,
@@ -138,7 +138,7 @@ impl LiveHook for GPopup {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                transparent: (transparent),
+                background_visible: (background_visible),
             },
         );
         self.draw_popup.redraw(cx);

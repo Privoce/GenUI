@@ -1,20 +1,81 @@
+pub mod event;
 pub mod item;
 mod register;
+use event::{GBreadCrumbEvent, GBreadCrumbEventParam};
 pub use register::register;
 
 use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
 use makepad_widgets::*;
 
-use crate::{shader::draw_card::DrawCard, themes::Themes, utils::ThemeColor};
+use crate::{
+    shader::draw_card::DrawCard,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor},
+};
 
-use super::{icon::GIcon, image::GImage};
+use super::icon::GIcon;
 
 live_design! {
+    GLOBAL_DURATION = 0.25,
     GBreadCrumbBase = {{GBreadCrumb}}{
         icon_walk: {
             height: 20.0,
             width: 20.0,
             margin: 0,
+        },
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        icon: {
+                            draw_icon: {hover: 0.0},
+                            icon_base: {hover: 0.0},
+                            icon_arrow: {hover: 0.0},
+                            icon_code: {hover: 0.0},
+                            icon_emoji: {hover: 0.0},
+                            icon_fs: {hover: 0.0},
+                            icon_ui: {hover: 0.0},
+                            icon_person: {hover: 0.0},
+                            icon_relation: {hover: 0.0},
+                            icon_state: {hover: 0.0},
+                            icon_time: {hover: 0.0},
+                            icon_tool: {hover: 0.0},
+                        }
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        icon: {
+                            draw_icon: {hover: 1.0},
+                            icon_base: {hover: 1.0},
+                            icon_arrow: {hover: 1.0},
+                            icon_code: {hover: 1.0},
+                            icon_emoji: {hover: 1.0},
+                            icon_fs: {hover: 1.0},
+                            icon_ui: {hover: 1.0},
+                            icon_person: {hover: 1.0},
+                            icon_relation: {hover: 1.0},
+                            icon_state: {hover: 1.0},
+                            icon_time: {hover: 1.0},
+                            icon_tool: {hover: 1.0},
+                        }
+                    }
+                }
+
+                // pressed = {
+                //     from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                //     apply: {
+                //         draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                //     }
+                // }
+            }
         }
     }
 }
@@ -25,6 +86,8 @@ pub struct GBreadCrumb {
     pub theme: Themes,
     #[live]
     pub background_color: Option<Vec4>,
+    #[live]
+    pub background_visible: bool,
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
@@ -64,7 +127,7 @@ pub struct GBreadCrumb {
     #[live]
     pub draw_bread_crumb: DrawCard,
     #[live]
-    pub draw_icon: GIcon,
+    pub icon: GIcon,
     #[live]
     pub crumb_item: Option<LivePtr>,
     #[rust]
@@ -73,12 +136,27 @@ pub struct GBreadCrumb {
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
+    #[live(true)]
+    pub grab_key_focus: bool,
+    // animator -----------------
+    #[live(true)]
+    pub animation_open: bool,
+    #[animator]
+    pub animator: Animator,
+    #[live(true)]
+    pub visible: bool,
+    #[live(Some(MouseCursor::Hand))]
+    pub cursor: Option<MouseCursor>,
 }
 
 impl Widget for GBreadCrumb {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
+
         self.draw_bread_crumb.begin(cx, walk, self.layout);
-        let _ = self.draw_icon.draw_walk(cx, scope, self.icon_walk);
+        let _ = self.icon.draw_walk(cx, scope, self.icon_walk);
         let len = self.labels.len();
         let labels = if len <= 3 {
             self.labels.clone()
@@ -105,10 +183,82 @@ impl Widget for GBreadCrumb {
         self.draw_bread_crumb.end(cx);
         DrawStep::done()
     }
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
+
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        // let focus_area = self.area();
+        // let hit = event.hits(cx, self.area());
+        // self.handle_widget_event(cx, event, scope, hit, focus_area)
+
+        let uid = self.widget_uid();
+
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_bread_crumb.redraw(cx);
+            }
+        }
+
+        // if click the home icon, call ToHome Event
+        match event.hits(cx, self.icon_area()) {
+            Hit::FingerDown(_) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(self.icon_area());
+                }
+            }
+            Hit::FingerHoverIn(_) => {
+                self.animator_play(cx, id!(hover.on));
+                let _ = set_cursor(cx, self.icon.cursor.as_ref());
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(uid, &scope.path, GBreadCrumbEvent::ToHome);
+
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => {}
+        }
+
+        if let Event::Actions(actions) = event {
+            for (index, (id, c_ref)) in self.crumb_items.iter().enumerate() {
+                if c_ref.clicked(actions).is_some() {
+                    dbg!("clicked");
+                }
+            }
+        }
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GBreadCrumb {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ------------------ font ------------------------------------------------------
         let _icon_color = self.color.get(self.theme, 100);
         let _icon_hover_color = self.color.get(self.theme, 50);
@@ -120,20 +270,6 @@ impl LiveHook for GBreadCrumb {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
-        // self.draw_text.apply_over(
-        //     cx,
-        //     live! {
-        //         color: (font_color),
-        //         text_style: {
-        //             font_size: (self.font_size),
-        //             brightness: (self.brightness),
-        //             curve: (self.curve),
-        //             line_spacing: (self.layout.line_spacing),
-        //             top_drop: (self.top_drop),
-        //             height_factor: (self.height_factor),
-        //         },
-        //     },
-        // );
         self.draw_bread_crumb.apply_over(
             cx,
             live! {
@@ -143,12 +279,76 @@ impl LiveHook for GBreadCrumb {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                transparent: 1.0
+                background_visible: 1.0
             },
         );
 
         self.draw_bread_crumb.redraw(cx);
-        self.draw_icon.redraw(cx);
+        self.icon.redraw(cx);
+    }
+}
+
+impl GBreadCrumb {
+    pub fn area(&self) -> Area {
+        self.draw_bread_crumb.area
+    }
+    pub fn icon_area(&self) -> Area {
+        self.icon.area()
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_bread_crumb.redraw(cx);
+            }
+        }
+
+        // match hit {
+        //     Hit::FingerDown(_) => {
+        //         if self.grab_key_focus {
+        //             cx.set_key_focus(focus_area);
+        //         }
+        //         self.animator_play(cx, id!(hover.pressed));
+        //     }
+        //     Hit::FingerHoverIn(h) => {
+        //         let _ = set_cursor(cx, self.cursor.as_ref());
+        //         self.animator_play(cx, id!(hover.on));
+        //         cx.widget_action(uid, &scope.path, GBreadCrumbEvent::Hover(GBreadCrumbEventParam{
+        //             index: todo!(),
+        //             item: todo!(),
+        //             key_modifiers: h.modifiers,
+        //         }));
+        //     }
+        //     Hit::FingerHoverOut(_) => {
+        //         self.animator_play(cx, id!(hover.off));
+        //     }
+        //     Hit::FingerUp(f_up) => {
+        //         if f_up.is_over {
+        //             cx.widget_action(
+        //                 uid,
+        //                 &scope.path,
+        //                 GBreadCrumbEvent::Clicked(f_up.modifiers),
+        //             );
+
+        //             if f_up.device.has_hovers() {
+        //                 self.animator_play(cx, id!(hover.on));
+        //             } else {
+        //                 self.animator_play(cx, id!(hover.off));
+        //             }
+        //         } else {
+        //             self.animator_play(cx, id!(hover.off));
+        //         }
+        //     }
+        //     _ => (),
+        // }
     }
 }
 

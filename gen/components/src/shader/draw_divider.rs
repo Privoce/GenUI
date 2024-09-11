@@ -26,7 +26,7 @@ live_design!{
                 self.rect_size.y - (self.inset.y + self.inset.w),
                 0.0
             )
-            // if self.transparent == 0.0 {
+            // if self.background_visible == 0.0 {
             //    sdf.fill_keep(self.get_color())
             // }
             sdf.stroke(#FFFFFFFF, 0.0)

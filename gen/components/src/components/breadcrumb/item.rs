@@ -3,10 +3,15 @@ use shader::draw_text::TextWrap;
 
 use crate::{
     set_text_and_visible_fn,
-    shader::{draw_split::{DrawGSplit, GSplitType}, draw_text::DrawGText},
+    shader::{
+        draw_split::{DrawGSplit, GSplitType},
+        draw_text::DrawGText,
+    },
     themes::Themes,
     utils::{get_font_family, set_cursor, ThemeColor},
 };
+
+use super::event::{GBreadCrumbEventItemParam, GBreadCrumbItemEvent};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -132,13 +137,6 @@ pub struct GBreadCrumbItem {
     pub cursor: Option<MouseCursor>,
 }
 
-#[derive(Clone, Debug, DefaultNone)]
-pub enum GBreadCrumbItemEvent {
-    Hover(KeyModifiers),
-    Clicked(KeyModifiers),
-    None,
-}
-
 impl Widget for GBreadCrumbItem {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
@@ -240,7 +238,7 @@ impl GBreadCrumbItem {
     pub fn area(&self) -> Area {
         self.draw_item.area
     }
-    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
+    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
         if let GBreadCrumbItemEvent::Clicked(e) =
             actions.find_widget_action(self.widget_uid()).cast()
         {
@@ -249,7 +247,7 @@ impl GBreadCrumbItem {
             None
         }
     }
-    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
+    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
         if let GBreadCrumbItemEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast()
         {
             Some(e)
@@ -282,7 +280,14 @@ impl GBreadCrumbItem {
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GBreadCrumbItemEvent::Hover(h.modifiers));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GBreadCrumbItemEvent::Hover(GBreadCrumbEventItemParam {
+                        item: self.text(),
+                        key_modifiers: h.modifiers,
+                    }),
+                );
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
@@ -292,7 +297,10 @@ impl GBreadCrumbItem {
                     cx.widget_action(
                         uid,
                         &scope.path,
-                        GBreadCrumbItemEvent::Clicked(f_up.modifiers),
+                        GBreadCrumbItemEvent::Clicked(GBreadCrumbEventItemParam {
+                            item: self.text(),
+                            key_modifiers: f_up.modifiers,
+                        }),
                     );
 
                     if f_up.device.has_hovers() {
@@ -316,13 +324,13 @@ impl GBreadCrumbItemRef {
     pub fn as_origin_mut(&mut self) -> Option<std::cell::RefMut<GBreadCrumbItem>> {
         self.borrow_mut()
     }
-    pub fn clicked(&self, actions: &Actions) -> Option<KeyModifiers> {
+    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
         if let Some(c_ref) = self.borrow() {
             return c_ref.clicked(actions);
         }
         None
     }
-    pub fn hover(&self, actions: &Actions) -> Option<KeyModifiers> {
+    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
         if let Some(c_ref) = self.borrow() {
             return c_ref.hover(actions);
         }

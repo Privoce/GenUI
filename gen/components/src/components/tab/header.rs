@@ -28,7 +28,7 @@ live_design! {
                     self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
                     max(1.0, self.border_radius)
                 )
-                if self.transparent == 0.0 {
+                if self.background_visible == 0.0 {
                    sdf.fill_keep(self.get_color())
                 }
 
@@ -147,7 +147,7 @@ impl LiveHook for GTabHeader {
             cx,
             live! {
                 background_color: (bg_color),
-                transparent: 1.0
+                background_visible: 1.0
             },
         )
     }

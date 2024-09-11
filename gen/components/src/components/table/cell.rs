@@ -4,7 +4,7 @@ use crate::{components::card::Card, utils::ThemeColor};
 
 live_design! {
     GTableCellBase = {{GTableCell}}{
-        transparent: true,
+        background_visible: true,
         border_radius: 0.0,
         border_width: 0.0
     }
