@@ -2,11 +2,11 @@ mod register;
 
 pub use register::register;
 
-use crate::set_text_and_visible_fn;
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
 use crate::themes::Themes;
 use crate::utils::{get_font_family, set_cursor, BoolToF32, ThemeColor};
+use crate::{animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, widget_area};
 use makepad_widgets::*;
 
 live_design! {
@@ -260,37 +260,44 @@ impl LiveHook for GLink {
 }
 
 impl GLink {
-    pub fn clicked(&self, actions: &Actions) -> Option<(KeyModifiers, Option<String>, LinkType)> {
-        if let GLinkEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
-            Some(e)
-        } else {
-            None
-        }
+    widget_area! {
+        area, draw_link
     }
-    pub fn pressed(&self, actions: &Actions) -> bool {
-        if let GLinkEvent::Pressed(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
+    event_option! {
+        clicked : GLinkEvent::Clicked => (KeyModifiers, Option<String>, LinkType),
+        pressed : GLinkEvent::Pressed => KeyModifiers,
+        released : GLinkEvent::Released => KeyModifiers,
+        hover: GLinkEvent::Hover => KeyModifiers
     }
-    pub fn released(&self, actions: &Actions) -> bool {
-        if let GLinkEvent::Released(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
+
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
     }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let GLinkEvent::Hover(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
     }
-    pub fn area(&self) -> Area {
-        self.draw_link.area
+    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 1.0
+            },
+        );
     }
+
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
@@ -346,44 +353,24 @@ impl GLink {
 }
 
 impl GLinkRef {
-    pub fn clicked(&self, actions: &Actions) -> Option<(KeyModifiers, Option<String>, LinkType)> {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.clicked(actions);
-        }
-        None
+    ref_event_option! {
+        clicked => (KeyModifiers, Option<String>, LinkType),
+        released => KeyModifiers,
+        pressed => KeyModifiers,
+        hover => KeyModifiers
     }
-    pub fn released(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.released(actions);
-        }
-        false
-    }
-    pub fn pressed(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.pressed(actions);
-        }
-        false
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.hover(actions);
-        }
-        false
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off,
+        animate_pressed
     }
 }
 
 impl GLinkSet {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        self.iter()
-            .any(|btn_ref| btn_ref.clicked(actions).is_some())
-    }
-    pub fn pressed(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.pressed(actions))
-    }
-    pub fn released(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.released(actions))
-    }
-    pub fn hover(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.hover(actions))
+    set_event! {
+        clicked,
+        pressed,
+        released,
+        hover
     }
 }

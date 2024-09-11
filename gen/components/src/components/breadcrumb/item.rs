@@ -173,16 +173,6 @@ impl Widget for GBreadCrumbItem {
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
     set_text_and_visible_fn!();
-    // fn text(&self) -> String {
-    //     self.text.as_ref().to_string()
-    // }
-    // fn set_text(&mut self, v: &str) {
-    //     self.text.as_mut_empty().push_str(v);
-    // }
-    // fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
-    //     self.text.as_mut_empty().push_str(v);
-    //     self.redraw(cx)
-    // }
 }
 
 impl LiveHook for GBreadCrumbItem {
@@ -235,30 +225,10 @@ impl GBreadCrumbItem {
     widget_area!{
         area, draw_item
     }
-    // pub fn area(&self) -> Area {
-    //     self.draw_item.area
-    // }
     event_option!{
-        clicked : GBreadCrumbItemEvent => GBreadCrumbEventItemParam,
-        hover : GBreadCrumbItemEvent => GBreadCrumbEventItemParam
+        clicked : GBreadCrumbItemEvent::Clicked => GBreadCrumbEventItemParam,
+        hover : GBreadCrumbItemEvent::Hover => GBreadCrumbEventItemParam
     }
-    // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-    //     if let GBreadCrumbItemEvent::Clicked(e) =
-    //         actions.find_widget_action(self.widget_uid()).cast()
-    //     {
-    //         Some(e)
-    //     } else {
-    //         None
-    //     }
-    // }
-    // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-    //     if let GBreadCrumbItemEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast()
-    //     {
-    //         Some(e)
-    //     } else {
-    //         None
-    //     }
-    // }
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
@@ -359,27 +329,6 @@ impl GBreadCrumbItemRef {
         animate_hover_off,
         animate_pressed
     }
-    // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-    //     if let Some(c_ref) = self.borrow() {
-    //         return c_ref.clicked(actions);
-    //     }
-    //     None
-    // }
-    // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventItemParam> {
-    //     if let Some(c_ref) = self.borrow() {
-    //         return c_ref.hover(actions);
-    //     }
-    //     None
-    // }
-    // pub fn animate_hover_on(&self, cx: &mut Cx) -> () {
-    //     self.borrow_mut().unwrap().animate_hover_on(cx);
-    // }
-    // pub fn animate_hover_off(&self, cx: &mut Cx) -> () {
-    //     self.borrow_mut().unwrap().animate_hover_off(cx);
-    // }
-    // pub fn animate_pressed(&self, cx: &mut Cx) -> () {
-    //     self.borrow_mut().unwrap().animate_pressed(cx);
-    // }
 }
 
 impl GBreadCrumbItemSet {
@@ -387,10 +336,4 @@ impl GBreadCrumbItemSet {
        clicked,
        hover
     }
-    // pub fn clicked(&self, actions: &Actions) -> bool {
-    //     self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
-    // }
-    // pub fn hover(&self, actions: &Actions) -> bool {
-    //     self.iter().any(|c_ref| c_ref.hover(actions).is_some())
-    // }
 }

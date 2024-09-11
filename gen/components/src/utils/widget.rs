@@ -140,6 +140,17 @@ macro_rules! set_event {
     };
 }
 
+#[macro_export]
+macro_rules! set_event_bool {
+    ($($event_fn: ident),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> bool {
+                self.iter().any(|c_ref| c_ref.$event_fn(actions))
+            }
+        )*
+    };
+}
+
 /// ```
 /// impl GBreadCrumbItem {
 ///     event_option!{
@@ -167,15 +178,32 @@ macro_rules! set_event {
 /// ```
 #[macro_export]
 macro_rules! event_option {
-    ($($event_fn: ident : $event: ident => $return: ty),*) => {
+    ($($event_fn: ident : $event: path => $return: ty),*) => {
         $(
             pub fn $event_fn(&self, actions: &Actions) -> Option<$return> {
-                if let $event::Clicked(e) =
+                if let $event(e) =
                     actions.find_widget_action(self.widget_uid()).cast()
                 {
                     Some(e)
                 } else {
                     None
+                }
+            }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! event_bool {
+    ($($event_fn: ident : $event: path),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> bool {
+                if let $event =
+                    actions.find_widget_action(self.widget_uid()).cast()
+                {
+                    true
+                } else {
+                    false
                 }
             }
         )*

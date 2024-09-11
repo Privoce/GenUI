@@ -30,7 +30,7 @@ pub use register::register;
 use crate::{
     set_text_and_visible_fn,
     themes::Themes,
-    utils::{get_font_family, ThemeColor},
+    utils::{get_font_family, ThemeColor}, widget_area,
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -100,20 +100,6 @@ impl Widget for GLabel {
         DrawStep::done()
     }
     set_text_and_visible_fn!();
-    ///// copy label text
-    // fn text(&self) -> String {
-    //     self.text.as_ref().to_string()
-    // }
-    // fn set_text(&mut self, v: &str) {
-    //     self.text.as_mut_empty().push_str(v);
-    // }
-    // fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
-    //     self.text.as_mut_empty().push_str(v);
-    //     self.redraw(cx)
-    // }
-    // fn is_visible(&self) -> bool {
-    //     self.visible
-    // }
 }
 
 impl LiveHook for GLabel {
@@ -144,7 +130,7 @@ impl LiveHook for GLabel {
 }
 
 impl GLabel {
-    pub fn area(&self) -> Area {
-        self.draw_text.area()
+    widget_area! {
+        area, draw_text
     }
 }
