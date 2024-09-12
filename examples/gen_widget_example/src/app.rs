@@ -43,6 +43,15 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    
+                    <GDividerExample>{}
+                    // <GCard>{
+                    //     width: 200.0,
+                    //     height: 200.0,
+                    //     <GSplitter>{
+                    //
+                    //     }
+                    // }
                     // <GLoadingExample>{}
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}
@@ -73,6 +82,7 @@ live_design! {
                     // <GIconLibExample>{}
                     // <GButtonExample>{}
                     // <GLabelExample>{}
+                    //
                     // --------------------------------
                     // <GVLayout>{
                     //     height: 300.0,
@@ -85,13 +95,7 @@ live_design! {
                     //     width: 300.0
                     // }
 
-                    // <GCard>{
-                    //     width: 200.0,
-                    //     height: 200.0,
-                    //     <GSplitter>{
-
-                    //     }
-                    // }
+                    
                     // <GTabsExample>{}
                     // <GProgressExample>{}
                     //
@@ -99,7 +103,7 @@ live_design! {
                     // <GPopupExample>{}
                     // // <GShaderExample>{}
                     // // <GSelectExample>{}
-                    // <GDividerExample>{}
+                    // 
                     // <GInputExample>{}
 
                 }

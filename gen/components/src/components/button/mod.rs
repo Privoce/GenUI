@@ -1,10 +1,10 @@
-mod register; 
 pub mod event;
+mod register;
 
 use event::GButtonEvent;
 pub use register::register;
 
-use crate::utils::{set_cursor, ThemeColor};
+use crate::utils::{set_cursor, BoolToF32, ThemeColor};
 use crate::{animatie_fn, event_option, ref_event_option, set_event, widget_area};
 use crate::{shader::draw_card::DrawGCard, themes::Themes};
 use makepad_widgets::*;
@@ -55,6 +55,8 @@ pub struct GButton {
     pub theme: Themes,
     #[live]
     pub background_color: Option<Vec4>,
+    #[live(true)]
+    pub background_visible: bool,
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
@@ -99,7 +101,6 @@ pub struct GButton {
     #[layout]
     pub layout: Layout,
 }
-
 
 impl Widget for GButton {
     fn handle_event_with(
@@ -154,11 +155,13 @@ impl LiveHook for GButton {
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         let shadow_color = self.shadow_color.get(self.theme, 700);
+        let background_visible = self.background_visible.to_f32();
         // apply over props to draw_button ----------------------------------------------
         self.draw_button.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
+                background_visible: (background_visible),
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
@@ -291,4 +294,3 @@ impl GButtonSet {
         hover => FingerHoverEvent
     }
 }
-

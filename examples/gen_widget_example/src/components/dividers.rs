@@ -44,17 +44,7 @@ live_design! {
                 theme: Error,
                 height: Fit;
                 width: Fill;
-                <GCard>{
-                    height: Fit,
-                    width: Fit,
-                    background_color: #888888,
-                    padding: 2.0,
-                    border_radius: 0.0,
-                    <GButton>{
-                        text: "Add",
-                        margin: 6.0,
-                    }
-                }
+                <GButton>{}
             }
             // <GHLayout>{
             //     height: Fit,

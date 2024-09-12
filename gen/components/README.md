@@ -14,7 +14,7 @@
 - [x] Input
 - [x] Popup
 - [x] Progress
-- [x] Loading
+- [x] Loading 🆗
 - [x] Tag 🆗
 - [x] DropDown
 - [x] Toggle 🆗
@@ -24,10 +24,9 @@
 - [x] Tab
 - [x] Table
 - [x] Dialog
-- [x] Select
 - [x] Splitter 🆗
 - [x] FileUpload
-- [x] Divide
+- [x] Divider
 - [x] State 🆗
 - [x] BreadCrumb 🆗
 - [x] ScrollBar(s) 🆗

@@ -1,6 +1,14 @@
+pub mod event;
+mod register;
+use event::*;
+pub use register::register;
+
 use crate::shader::draw_divider::DrawGDivider;
 use crate::themes::Themes;
 use crate::utils::{set_cursor, ThemeColor};
+use crate::{
+    animatie_fn, event_option, ref_event_option, set_event, widget_area, widget_origin_fn,
+};
 
 use makepad_widgets::*;
 // GDivider component
@@ -39,17 +47,15 @@ pub struct GDivider {
     #[live]
     pub theme: Themes,
     #[live]
-    pub color: Option<Vec4>,
+    pub stroke_color: Option<Vec4>,
     #[live]
-    pub hover_color: Option<Vec4>,
-    #[live(0.76)]
+    pub stroke_hover_color: Option<Vec4>,
+    #[live(0.8)]
     pub stroke_width: f64,
     #[live(true)]
     pub visible: bool,
     #[live]
     pub cursor: Option<MouseCursor>,
-    #[live(false)]
-    pub animator_key: bool,
     // control ---------------------
     #[live(true)]
     pub grab_key_focus: bool,
@@ -69,40 +75,19 @@ pub struct GDivider {
     #[rust]
     pub draw_order: Vec<LiveId>,
     #[live]
-    event_order: EventOrder,
+    pub event_order: EventOrder,
     #[rust]
-    defer_walks: Vec<(LiveId, DeferWalk)>,
+    pub defer_walks: Vec<(LiveId, DeferWalk)>,
+    #[live(true)]
+    pub animation_open: bool,
     #[animator]
-    animator: Animator,
+    pub animator: Animator,
 }
 
 #[derive(Clone)]
 enum DrawState {
     Drawing(usize, bool),
     DeferWalk(usize),
-}
-
-/// copy Hit from makepad_widgets
-#[derive(Clone, Debug, DefaultNone)]
-pub enum GDividerEvent {
-    // These are not the events we are interested in
-    // KeyFocus(KeyFocusEvent),
-    // KeyFocusLost(KeyFocusEvent),
-    // Trigger(TriggerHitEvent),
-    // TextInput(TextInputEvent),
-    // TextCopy(TextClipboardEvent),
-    // TextCut(TextClipboardEvent),
-    KeyDown(KeyEvent),
-    KeyUp(KeyEvent),
-    // FingerScroll(FingerScrollEvent),
-    FingerDown(FingerDownEvent),
-    FingerMove(FingerMoveEvent),
-    FingerHoverIn(FingerHoverEvent),
-    FingerHoverOver(FingerHoverEvent),
-    FingerHoverOut(FingerHoverEvent),
-    FingerUp(FingerUpEvent),
-    // None is eq Nothing
-    None,
 }
 
 impl Widget for GDivider {
@@ -163,11 +148,27 @@ impl Widget for GDivider {
 
         DrawStep::done()
     }
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
 
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+    }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.redraw(cx);
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.redraw(cx);
+            }
         }
 
         match &self.event_order {
@@ -230,18 +231,14 @@ impl Widget for GDivider {
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 cx.widget_action(uid, &scope.path, GDividerEvent::FingerHoverIn(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
-                    self.animator_play(cx, id!(hover.on))
-                }
+                self.animator_play(cx, id!(hover.on))
             }
             Hit::FingerHoverOver(e) => {
                 cx.widget_action(uid, &scope.path, GDividerEvent::FingerHoverOver(e));
             }
             Hit::FingerHoverOut(e) => {
                 cx.widget_action(uid, &scope.path, GDividerEvent::FingerHoverOut(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
-                    self.animator_play(cx, id!(hover.off))
-                }
+                self.animator_play(cx, id!(hover.off))
             }
             Hit::FingerUp(e) => {
                 cx.widget_action(uid, &scope.path, GDividerEvent::FingerUp(e));
@@ -301,17 +298,16 @@ impl LiveHook for GDivider {
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = self.color.get(self.theme, 300);
+        let stroke_color = self.stroke_color.get(self.theme, 300);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 200);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 200);
         // ------------------ apply draw_divider --------------------------------------------
         self.draw_divider.apply_over(
             cx,
             live! {
-                color: (bg_color),
-                hover_color: (hover_color),
+                stroke_color: (stroke_color),
+                stroke_hover_color: (stroke_hover_color),
                 stroke_width: (self.stroke_width),
-                hover_color: (hover_color),
             },
         );
         self.draw_divider.redraw(cx);
@@ -350,12 +346,143 @@ impl LiveHook for GDivider {
 }
 
 impl GDivider {
-    pub fn area(&self) -> Area {
-        self.draw_divider.area()
+    widget_area! {
+        area, draw_divider
+    }
+    event_option! {
+        finger_down: GDividerEvent::FingerDown => FingerDownEvent,
+        finger_up: GDividerEvent::FingerUp => FingerUpEvent,
+        finger_move : GDividerEvent::FingerMove => FingerMoveEvent,
+        finger_hover_in: GDividerEvent::FingerHoverIn => FingerHoverEvent,
+        finger_hover_out: GDividerEvent::FingerHoverOut => FingerHoverEvent,
+        finger_hover_over: GDividerEvent::FingerHoverOver => FingerHoverEvent,
+        key_down: GDividerEvent::KeyDown => KeyEvent,
+        key_up: GDividerEvent::KeyUp => KeyEvent
+    }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_divider.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_divider.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.redraw(cx);
+            }
+        }
+
+        match &self.event_order {
+            EventOrder::Down => {
+                for id in self.draw_order.iter() {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            })
+                        }
+                    }
+                }
+            }
+            EventOrder::Up => {
+                // the default event order is Up
+                for id in self.draw_order.iter().rev() {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            });
+                        }
+                    }
+                }
+            }
+            EventOrder::List(list) => {
+                for id in list {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            })
+                        }
+                    }
+                }
+            }
+        }
+
+        // handle event and set cursor to control
+        match hit {
+            Hit::KeyDown(e) => {
+                if self.grab_key_focus {
+                    cx.widget_action(uid, &scope.path, GDividerEvent::KeyDown(e));
+                }
+            }
+            Hit::KeyUp(e) => {
+                if self.grab_key_focus {
+                    cx.widget_action(uid, &scope.path, GDividerEvent::KeyUp(e));
+                }
+            }
+            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GDividerEvent::FingerScroll(e)),
+            Hit::FingerDown(e) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }
+                cx.widget_action(uid, &scope.path, GDividerEvent::FingerDown(e));
+            }
+            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, GDividerEvent::FingerMove(e)),
+            Hit::FingerHoverIn(e) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                cx.widget_action(uid, &scope.path, GDividerEvent::FingerHoverIn(e));
+                self.animator_play(cx, id!(hover.on));
+            }
+            Hit::FingerHoverOver(e) => {
+                cx.widget_action(uid, &scope.path, GDividerEvent::FingerHoverOver(e));
+            }
+            Hit::FingerHoverOut(e) => {
+                cx.widget_action(uid, &scope.path, GDividerEvent::FingerHoverOut(e));
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(e) => {
+                cx.widget_action(uid, &scope.path, GDividerEvent::FingerUp(e));
+            }
+            _ => (),
+        }
     }
 }
 
 impl GDividerRef {
+    ref_event_option! {
+        finger_down => FingerDownEvent,
+        finger_up => FingerUpEvent,
+        finger_move => FingerMoveEvent,
+        finger_hover_in => FingerHoverEvent,
+        finger_hover_out => FingerHoverEvent,
+        finger_hover_over => FingerHoverEvent,
+        key_down => KeyEvent,
+        key_up => KeyEvent
+    }
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off
+    }
+    widget_origin_fn!(GDivider);
     pub fn set_visible(&self, visible: bool) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.visible = visible
@@ -379,9 +506,27 @@ impl GDividerRef {
 
     pub fn area(&self) -> Area {
         if let Some(inner) = self.borrow() {
-            inner.draw_divider.area()
+            inner.area()
         } else {
             Area::Empty
         }
+    }
+}
+
+impl GDividerSet {
+    pub fn redraw(&self, cx: &mut Cx) {
+        for item in self.iter() {
+            item.redraw(cx);
+        }
+    }
+    set_event! {
+        finger_down => FingerDownEvent,
+        finger_up => FingerUpEvent,
+        finger_move => FingerMoveEvent,
+        finger_hover_in => FingerHoverEvent,
+        finger_hover_out => FingerHoverEvent,
+        finger_hover_over => FingerHoverEvent,
+        key_down => KeyEvent,
+        key_up => KeyEvent
     }
 }

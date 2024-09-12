@@ -9,7 +9,7 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, 
+    animatie_fn, event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_origin_fn 
 };
 
 live_design! {
@@ -637,6 +637,12 @@ impl GCardRef {
         key_down => KeyEvent,
         key_up => KeyEvent
     }
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off,
+        animate_pressed
+    }
+    widget_origin_fn!(GCard);
     pub fn set_abs_pos(&self, _cx: &mut Cx, abs_pos: DVec2) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.walk.abs_pos.replace(abs_pos);
