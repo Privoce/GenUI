@@ -118,23 +118,22 @@ macro_rules! ref_event_bool {
 /// ```rust
 /// impl GBreadCrumbItemSet {
 ///     set_event!{
-///        clicked,
-///        hover
+///        clicked => FingerUpEvent,
+///        hover => FingerHoverEvent
 ///     }
-///     // pub fn clicked(&self, actions: &Actions) -> bool {
-///     //     self.iter().any(|c_ref| c_ref.clicked(actions).is_some())
-///     // }
-///     // pub fn hover(&self, actions: &Actions) -> bool {
-///     //     self.iter().any(|c_ref| c_ref.hover(actions).is_some())
-///     // }
 /// }
 /// ```
 #[macro_export]
 macro_rules! set_event {
-    ($($event_fn: ident),*) => {
+    ($($event_fn: ident => $return: ty),*) => {
         $(
-            pub fn $event_fn(&self, actions: &Actions) -> bool {
-                self.iter().any(|c_ref| c_ref.$event_fn(actions).is_some())
+            pub fn $event_fn(&self, actions: &Actions) -> Option<$return> {
+                for item in self.iter() {
+                    if let Some(e) = item.$event_fn(actions) {
+                        return Some(e);
+                    }
+                }
+                None
             }
         )*
     };
@@ -247,7 +246,7 @@ macro_rules! animatie_fn{
 ///         area, draw_item
 ///     }
 ///     // pub fn area(&self) -> Area {
-///     //     self.draw_item.area
+///     //     self.draw_item.area()
 ///     // }
 /// }
 /// ```
@@ -256,7 +255,7 @@ macro_rules! widget_area {
     ($($area_fn: ident, $prop: ident),*) => {
         $(
             pub fn $area_fn(&self) -> Area {
-                self.$prop.area
+                self.$prop.area()
             }
         )*
     };

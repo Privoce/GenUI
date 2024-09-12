@@ -1,5 +1,7 @@
 mod register;
+pub mod event;
 
+use event::GIconEvent;
 use makepad_widgets::*;
 pub use register::register;
 
@@ -139,12 +141,7 @@ pub struct GIcon {
     pub icon_type: IconType,
 }
 
-#[derive(Clone, Debug, DefaultNone)]
-pub enum GIconEvent {
-    Hover(KeyModifiers),
-    Clicked(KeyModifiers),
-    None,
-}
+
 
 impl Widget for GIcon {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
@@ -431,8 +428,8 @@ impl GIcon {
         area, draw_icon
     }
     event_option! {
-        clicked : GIconEvent::Clicked => KeyModifiers,
-        hover : GIconEvent::Hover => KeyModifiers
+        clicked : GIconEvent::Clicked => FingerUpEvent,
+        hover : GIconEvent::Hover => FingerHoverEvent
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.draw_icon.apply_over(
@@ -476,14 +473,14 @@ impl GIcon {
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GIconEvent::Hover(h.modifiers));
+                cx.widget_action(uid, &scope.path, GIconEvent::Hover(h.clone()));
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GIconEvent::Clicked(f_up.modifiers));
+                    cx.widget_action(uid, &scope.path, GIconEvent::Clicked(f_up.clone()));
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
@@ -500,8 +497,8 @@ impl GIcon {
 
 impl GIconRef {
     ref_event_option! {
-        clicked => KeyModifiers,
-        hover => KeyModifiers
+        clicked => FingerUpEvent,
+        hover => FingerHoverEvent
     }
     animatie_fn! {
         animate_hover_on,
@@ -511,7 +508,7 @@ impl GIconRef {
 
 impl GIconSet {
     set_event! {
-        clicked,
-        hover
+        clicked => FingerUpEvent,
+        hover => FingerHoverEvent
     }
 }

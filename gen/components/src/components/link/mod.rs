@@ -1,5 +1,9 @@
-mod register;
+mod register; 
+pub mod event;
+pub mod types;
 
+use types::LinkType;
+use event::{GLinkClickedParam, GLinkEvent};
 pub use register::register;
 
 use crate::shader::draw_link::DrawGLink;
@@ -129,23 +133,6 @@ pub struct GLink {
     pub layout: Layout,
 }
 
-#[derive(Copy, Clone, Live, LiveHook, Debug)]
-#[live_ignore]
-pub enum LinkType {
-    #[pick]
-    NewTab,
-    SameTab,
-}
-
-#[derive(Clone, Debug, DefaultNone)]
-pub enum GLinkEvent {
-    Hover(KeyModifiers),
-    /// clicked(key_modifiers, href, link_type)
-    Clicked((KeyModifiers, Option<String>, LinkType)),
-    Released(KeyModifiers),
-    Pressed(KeyModifiers),
-    None,
-}
 
 impl Widget for GLink {
     fn handle_event_with(
@@ -264,10 +251,10 @@ impl GLink {
         area, draw_link
     }
     event_option! {
-        clicked : GLinkEvent::Clicked => (KeyModifiers, Option<String>, LinkType),
-        pressed : GLinkEvent::Pressed => KeyModifiers,
-        released : GLinkEvent::Released => KeyModifiers,
-        hover: GLinkEvent::Hover => KeyModifiers
+        clicked : GLinkEvent::Clicked => GLinkClickedParam,
+        pressed : GLinkEvent::Pressed => FingerDownEvent,
+        released : GLinkEvent::Released => FingerUpEvent,
+        hover: GLinkEvent::Hover => FingerHoverEvent
     }
 
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
@@ -318,13 +305,13 @@ impl GLink {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
-                cx.widget_action(uid, &scope.path, GLinkEvent::Pressed(f_down.modifiers));
+                cx.widget_action(uid, &scope.path, GLinkEvent::Pressed(f_down.clone()));
                 self.animator_play(cx, id!(hover.pressed));
             }
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GLinkEvent::Hover(h.modifiers));
+                cx.widget_action(uid, &scope.path, GLinkEvent::Hover(h.clone()));
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
@@ -334,16 +321,20 @@ impl GLink {
                     cx.widget_action(
                         uid,
                         &scope.path,
-                        GLinkEvent::Clicked((f_up.modifiers, self.href.clone(), self.link_type)),
+                        GLinkEvent::Clicked(GLinkClickedParam{
+                            href: self.href.clone(),
+                            ty: self.link_type,
+                            e: f_up.clone(),
+                        }),
                     );
-                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
+                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.clone()));
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
                         self.animator_play(cx, id!(hover.off));
                     }
                 } else {
-                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
+                    cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.clone()));
                     self.animator_play(cx, id!(hover.off));
                 }
             }
@@ -354,10 +345,10 @@ impl GLink {
 
 impl GLinkRef {
     ref_event_option! {
-        clicked => (KeyModifiers, Option<String>, LinkType),
-        released => KeyModifiers,
-        pressed => KeyModifiers,
-        hover => KeyModifiers
+        clicked => GLinkClickedParam,
+        released => FingerUpEvent,
+        pressed => FingerDownEvent,
+        hover => FingerHoverEvent
     }
     animatie_fn! {
         animate_hover_on,
@@ -368,9 +359,9 @@ impl GLinkRef {
 
 impl GLinkSet {
     set_event! {
-        clicked,
-        pressed,
-        released,
-        hover
+        clicked => GLinkClickedParam,
+        released => FingerUpEvent,
+        pressed => FingerDownEvent,
+        hover => FingerHoverEvent
     }
 }

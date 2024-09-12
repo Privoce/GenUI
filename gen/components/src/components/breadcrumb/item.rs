@@ -8,7 +8,7 @@ use crate::{
     }, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor}, widget_area, widget_origin_fn
 };
 
-use super::event::{GBreadCrumbEventItemParam, GBreadCrumbItemEvent};
+use super::event::{ GBreadCrumbItemClickedParam, GBreadCrumbItemEvent, GBreadCrumbItemHoverParam};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -226,8 +226,8 @@ impl GBreadCrumbItem {
         area, draw_item
     }
     event_option!{
-        clicked : GBreadCrumbItemEvent::Clicked => GBreadCrumbEventItemParam,
-        hover : GBreadCrumbItemEvent::Hover => GBreadCrumbEventItemParam
+        clicked : GBreadCrumbItemEvent::Clicked => GBreadCrumbItemClickedParam,
+        hover : GBreadCrumbItemEvent::Hover => GBreadCrumbItemHoverParam
     }
     pub fn handle_widget_event(
         &mut self,
@@ -257,9 +257,9 @@ impl GBreadCrumbItem {
                 cx.widget_action(
                     uid,
                     &scope.path,
-                    GBreadCrumbItemEvent::Hover(GBreadCrumbEventItemParam {
+                    GBreadCrumbItemEvent::Hover(GBreadCrumbItemHoverParam {
                         item: self.text(),
-                        key_modifiers: h.modifiers,
+                        e: h.clone(),
                     }),
                 );
             }
@@ -271,9 +271,9 @@ impl GBreadCrumbItem {
                     cx.widget_action(
                         uid,
                         &scope.path,
-                        GBreadCrumbItemEvent::Clicked(GBreadCrumbEventItemParam {
+                        GBreadCrumbItemEvent::Clicked(GBreadCrumbItemClickedParam {
                             item: self.text(),
-                            key_modifiers: f_up.modifiers,
+                            e: f_up.clone(),
                         }),
                     );
 
@@ -321,8 +321,8 @@ impl GBreadCrumbItem {
 impl GBreadCrumbItemRef {
     widget_origin_fn!(GBreadCrumbItem);
     ref_event_option!{
-        clicked => GBreadCrumbEventItemParam,
-        hover => GBreadCrumbEventItemParam
+        clicked => GBreadCrumbItemClickedParam,
+        hover => GBreadCrumbItemHoverParam
     }
     animatie_fn!{
         animate_hover_on,
@@ -333,7 +333,7 @@ impl GBreadCrumbItemRef {
 
 impl GBreadCrumbItemSet {
     set_event!{
-       clicked,
-       hover
+        clicked => GBreadCrumbItemClickedParam,
+        hover => GBreadCrumbItemHoverParam
     }
 }

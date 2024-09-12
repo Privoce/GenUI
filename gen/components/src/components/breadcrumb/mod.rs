@@ -1,17 +1,14 @@
 pub mod event;
 pub mod item;
 mod register;
-use event::{GBreadCrumbEvent, GBreadCrumbEventParam};
+use event::{GBreadCrumbClickedParam, GBreadCrumbEvent, GBreadCrumbHoverParam};
 pub use register::register;
 
 use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawGCard,
-    themes::Themes,
-    utils::{set_cursor, ThemeColor},
-    widget_origin_fn,
+    event_bool, event_option, ref_event_bool, ref_event_option, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, ThemeColor}, widget_area, widget_origin_fn
 };
 
 use super::icon::GIcon;
@@ -244,10 +241,10 @@ impl Widget for GBreadCrumb {
                     cx.widget_action(
                         uid,
                         &scope.path,
-                        GBreadCrumbEvent::Hover(GBreadCrumbEventParam {
+                        GBreadCrumbEvent::Hover(GBreadCrumbHoverParam {
                             index,
                             item: c_ref.text(),
-                            key_modifiers: f_in.modifiers,
+                            e: f_in.clone(),
                         }),
                     );
                 }
@@ -260,10 +257,10 @@ impl Widget for GBreadCrumb {
                         cx.widget_action(
                             uid,
                             &scope.path,
-                            GBreadCrumbEvent::Clicked(GBreadCrumbEventParam {
+                            GBreadCrumbEvent::Clicked(GBreadCrumbClickedParam {
                                 index,
                                 item: c_ref.text(),
-                                key_modifiers: f_up.modifiers,
+                                e: f_up.clone(),
                             }),
                         );
 
@@ -328,53 +325,71 @@ impl LiveHook for GBreadCrumb {
 }
 
 impl GBreadCrumb {
-    pub fn area(&self) -> Area {
-        self.draw_bread_crumb.area
+    widget_area! {
+        area, draw_bread_crumb,
+        icon_area, icon
     }
-    pub fn icon_area(&self) -> Area {
-        self.icon.area()
+    event_option! {
+        clicked: GBreadCrumbEvent::Clicked => GBreadCrumbClickedParam,
+        hover: GBreadCrumbEvent::Hover => GBreadCrumbHoverParam
     }
-    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
-        if let GBreadCrumbEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
-            Some(e)
-        } else {
-            None
-        }
+    event_bool!{
+        to_home: GBreadCrumbEvent::ToHome
     }
-    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
-        if let GBreadCrumbEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast() {
-            Some(e)
-        } else {
-            None
-        }
-    }
-    pub fn to_home(&self, actions: &Actions) -> bool {
-        if let GBreadCrumbEvent::ToHome = actions.find_widget_action(self.widget_uid()).cast() {
-            true
-        } else {
-            false
-        }
-    }
+    // pub fn area(&self) -> Area {
+    //     self.draw_bread_crumb.area
+    // }
+    // pub fn icon_area(&self) -> Area {
+    //     self.icon.area()
+    // }
+    // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+    //     if let GBreadCrumbEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
+    //         Some(e)
+    //     } else {
+    //         None
+    //     }
+    // }
+    // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+    //     if let GBreadCrumbEvent::Hover(e) = actions.find_widget_action(self.widget_uid()).cast() {
+    //         Some(e)
+    //     } else {
+    //         None
+    //     }
+    // }
+    // pub fn to_home(&self, actions: &Actions) -> bool {
+    //     if let GBreadCrumbEvent::ToHome = actions.find_widget_action(self.widget_uid()).cast() {
+    //         true
+    //     } else {
+    //         false
+    //     }
+    // }
 }
 
 impl GBreadCrumbRef {
     widget_origin_fn!(GBreadCrumb);
-    pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.clicked(actions);
-        }
-        None
+    ref_event_option! {
+        clicked => GBreadCrumbClickedParam,
+        hover => GBreadCrumbHoverParam
     }
-    pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.hover(actions);
-        }
-        None
+    ref_event_bool! {
+        to_home
     }
-    pub fn to_home(&self, actions: &Actions) -> bool {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.to_home(actions);
-        }
-        false
-    }
+    // pub fn clicked(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+    //     if let Some(c_ref) = self.borrow() {
+    //         return c_ref.clicked(actions);
+    //     }
+    //     None
+    // }
+    // pub fn hover(&self, actions: &Actions) -> Option<GBreadCrumbEventParam> {
+    //     if let Some(c_ref) = self.borrow() {
+    //         return c_ref.hover(actions);
+    //     }
+    //     None
+    // }
+    // pub fn to_home(&self, actions: &Actions) -> bool {
+    //     if let Some(c_ref) = self.borrow() {
+    //         return c_ref.to_home(actions);
+    //     }
+    //     false
+    // }
 }

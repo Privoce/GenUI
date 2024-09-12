@@ -236,7 +236,7 @@ impl GSvgRef {
 
 impl GSvgSet {
     set_event! {
-        clicked,
-        hover
+        clicked => GSvgEventParam,
+        hover => GSvgEventParam
     }
 }

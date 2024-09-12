@@ -1,29 +1,44 @@
-use makepad_widgets::{DefaultNone, KeyModifiers};
+use makepad_widgets::{DefaultNone, FingerHoverEvent, FingerUpEvent};
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GBreadCrumbEvent {
-    Hover(GBreadCrumbEventParam),
-    Clicked(GBreadCrumbEventParam),
+    Hover(GBreadCrumbHoverParam),
+    Clicked(GBreadCrumbClickedParam),
     ToHome,
     None,
 }
 
 #[derive(Clone, Debug)]
-pub struct GBreadCrumbEventParam{
+pub struct GBreadCrumbHoverParam {
     pub index: usize,
     pub item: String,
-    pub key_modifiers: KeyModifiers,
+    pub e: FingerHoverEvent,
 }
+
+#[derive(Clone, Debug)]
+pub struct GBreadCrumbClickedParam {
+    pub index: usize,
+    pub item: String,
+    pub e: FingerUpEvent,
+}
+
+// ---------------------------------------------------------------------------------------
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GBreadCrumbItemEvent {
-    Hover(GBreadCrumbEventItemParam),
-    Clicked(GBreadCrumbEventItemParam),
+    Hover(GBreadCrumbItemHoverParam),
+    Clicked(GBreadCrumbItemClickedParam),
     None,
 }
 
 #[derive(Clone, Debug)]
-pub struct GBreadCrumbEventItemParam{
+pub struct GBreadCrumbItemHoverParam {
     pub item: String,
-    pub key_modifiers: KeyModifiers,
+    pub e: FingerHoverEvent,
+}
+
+#[derive(Clone, Debug)]
+pub struct GBreadCrumbItemClickedParam {
+    pub item: String,
+    pub e: FingerUpEvent,
 }

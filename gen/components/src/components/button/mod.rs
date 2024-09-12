@@ -1,5 +1,7 @@
-mod register;
+mod register; 
+pub mod event;
 
+use event::GButtonEvent;
 pub use register::register;
 
 use crate::utils::{set_cursor, ThemeColor};
@@ -98,14 +100,6 @@ pub struct GButton {
     pub layout: Layout,
 }
 
-#[derive(Clone, Debug, DefaultNone)]
-pub enum GButtonEvent {
-    Hover(KeyModifiers),
-    Clicked(KeyModifiers),
-    Released(KeyModifiers),
-    Pressed(KeyModifiers),
-    None,
-}
 
 impl Widget for GButton {
     fn handle_event_with(
@@ -185,10 +179,10 @@ impl GButton {
         area, draw_button
     }
     event_option! {
-        clicked: GButtonEvent::Clicked => KeyModifiers,
-        pressed: GButtonEvent::Pressed => KeyModifiers,
-        released: GButtonEvent::Released => KeyModifiers,
-        hover: GButtonEvent::Hover => KeyModifiers
+        clicked: GButtonEvent::Clicked => FingerUpEvent,
+        pressed: GButtonEvent::Pressed => FingerDownEvent,
+        released: GButtonEvent::Released => FingerUpEvent,
+        hover: GButtonEvent::Hover => FingerHoverEvent
     }
     pub fn handle_widget_event(
         &mut self,
@@ -210,28 +204,28 @@ impl GButton {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
-                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.modifiers));
+                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.clone()));
                 self.animator_play(cx, id!(hover.pressed));
             }
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GButtonEvent::Hover(h.modifiers));
+                cx.widget_action(uid, &scope.path, GButtonEvent::Hover(h.clone()));
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Clicked(f_up.modifiers));
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.modifiers));
+                    cx.widget_action(uid, &scope.path, GButtonEvent::Clicked(f_up.clone()));
+                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.clone()));
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
                         self.animator_play(cx, id!(hover.off));
                     }
                 } else {
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.modifiers));
+                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.clone()));
                     self.animator_play(cx, id!(hover.off));
                 }
             }
@@ -269,10 +263,10 @@ impl GButton {
 
 impl GButtonRef {
     ref_event_option! {
-        clicked => KeyModifiers,
-        released => KeyModifiers,
-        pressed => KeyModifiers,
-        hover => KeyModifiers
+        clicked => FingerUpEvent,
+        released => FingerUpEvent,
+        pressed => FingerDownEvent,
+        hover => FingerHoverEvent
     }
 
     pub fn area(&self) -> Area {
@@ -291,9 +285,10 @@ impl GButtonRef {
 
 impl GButtonSet {
     set_event! {
-        clicked,
-        released,
-        pressed,
-        hover
+        clicked => FingerUpEvent,
+        released => FingerUpEvent,
+        pressed => FingerDownEvent,
+        hover => FingerHoverEvent
     }
 }
+

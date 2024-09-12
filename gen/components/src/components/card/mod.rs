@@ -9,7 +9,7 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    event_option, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
+    event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -145,7 +145,7 @@ impl LiveHook for GCard {
         // ------------------ pressed color ---------------------------------------------
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 800);
+        let border_color = self.border_color.get(self.theme, 600);
         // ------------------ is background_visible --------------------------------------------
         let background_visible = self.background_visible.to_f32();
         // ------------------ check scroll bar -------------------------------------------
@@ -578,6 +578,16 @@ impl WidgetNode for GCard {
 }
 
 impl GCard {
+    event_option! {
+        finger_down: GCardEvent::FingerDown => FingerDownEvent,
+        finger_up: GCardEvent::FingerUp => FingerUpEvent,
+        finger_move : GCardEvent::FingerMove => FingerMoveEvent,
+        finger_hover_in: GCardEvent::FingerHoverIn => FingerHoverEvent,
+        finger_hover_out: GCardEvent::FingerHoverOut => FingerHoverEvent,
+        finger_hover_over: GCardEvent::FingerHoverOver => FingerHoverEvent,
+        key_down: GCardEvent::KeyDown => KeyEvent,
+        key_up: GCardEvent::KeyUp => KeyEvent
+    }
     pub fn set_scroll_pos(&mut self, cx: &mut Cx, v: DVec2) {
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
             scroll_bars.set_scroll_pos(cx, v);
@@ -588,81 +598,51 @@ impl GCard {
     pub fn child_count(&self) -> usize {
         self.draw_order.len()
     }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_card.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_card.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+        self.draw_card.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 1.0
+            },
+        );
+    }
 }
 
 impl GCardRef {
+    ref_event_option! {
+        finger_down => FingerDownEvent,
+        finger_up => FingerUpEvent,
+        finger_move => FingerMoveEvent,
+        finger_hover_in => FingerHoverEvent,
+        finger_hover_out => FingerHoverEvent,
+        finger_hover_over => FingerHoverEvent,
+        key_down => KeyEvent,
+        key_up => KeyEvent
+    }
     pub fn set_abs_pos(&self, _cx: &mut Cx, abs_pos: DVec2) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.walk.abs_pos.replace(abs_pos);
         }
     }
-    event_option! {
-        finger_down: ViewAction::FingerDown => FingerDownEvent,
-        finger_up: ViewAction::FingerUp => FingerUpEvent
-    }
-    // pub fn finger_down(&self, actions: &Actions) -> Option<FingerDownEvent> {
-    //     if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-    //         if let ViewAction::FingerDown(fd) = item.cast() {
-    //             return Some(fd);
-    //         }
-    //     }
-    //     None
-    // }
-
-    // pub fn finger_up(&self, actions: &Actions) -> Option<FingerUpEvent> {
-    //     if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-    //         if let ViewAction::FingerUp(fd) = item.cast() {
-    //             return Some(fd);
-    //         }
-    //     }
-    //     None
-    // }
-
-    pub fn finger_move(&self, actions: &Actions) -> Option<FingerMoveEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::FingerMove(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
-    }
-
-    pub fn finger_hover_in(&self, actions: &Actions) -> Option<FingerHoverEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::FingerHoverIn(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
-    }
-
-    pub fn finger_hover_out(&self, actions: &Actions) -> Option<FingerHoverEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::FingerHoverOut(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
-    }
-
-    pub fn key_down(&self, actions: &Actions) -> Option<KeyEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::KeyDown(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
-    }
-
-    pub fn key_up(&self, actions: &Actions) -> Option<KeyEvent> {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            if let ViewAction::KeyUp(fd) = item.cast() {
-                return Some(fd);
-            }
-        }
-        None
-    }
-
     pub fn animator_cut(&self, cx: &mut Cx, state: &[LiveId; 2]) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.animator_cut(cx, state);
@@ -789,49 +769,14 @@ impl GCardSet {
             item.redraw(cx);
         }
     }
-
-    pub fn finger_down(&self, actions: &Actions) -> Option<FingerDownEvent> {
-        for item in self.iter() {
-            if let Some(e) = item.finger_down(actions) {
-                return Some(e);
-            }
-        }
-        None
-    }
-
-    pub fn finger_up(&self, actions: &Actions) -> Option<FingerUpEvent> {
-        for item in self.iter() {
-            if let Some(e) = item.finger_up(actions) {
-                return Some(e);
-            }
-        }
-        None
-    }
-
-    pub fn finger_move(&self, actions: &Actions) -> Option<FingerMoveEvent> {
-        for item in self.iter() {
-            if let Some(e) = item.finger_move(actions) {
-                return Some(e);
-            }
-        }
-        None
-    }
-
-    pub fn key_down(&self, actions: &Actions) -> Option<KeyEvent> {
-        for item in self.iter() {
-            if let Some(e) = item.key_down(actions) {
-                return Some(e);
-            }
-        }
-        None
-    }
-
-    pub fn key_up(&self, actions: &Actions) -> Option<KeyEvent> {
-        for item in self.iter() {
-            if let Some(e) = item.key_up(actions) {
-                return Some(e);
-            }
-        }
-        None
+    set_event! {
+        finger_down => FingerDownEvent,
+        finger_up => FingerUpEvent,
+        finger_move => FingerMoveEvent,
+        finger_hover_in => FingerHoverEvent,
+        finger_hover_out => FingerHoverEvent,
+        finger_hover_over => FingerHoverEvent,
+        key_down => KeyEvent,
+        key_up => KeyEvent
     }
 }
