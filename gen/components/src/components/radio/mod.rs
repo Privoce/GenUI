@@ -63,15 +63,11 @@ pub struct GRadio {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub focus_color: Option<Vec4>,
-    #[live]
     pub selected_color: Option<Vec4>,
     #[live]
     pub stroke_color: Option<Vec4>,
     #[live]
     pub stroke_hover_color: Option<Vec4>,
-    #[live]
-    pub stroke_focus_color: Option<Vec4>,
     #[live]
     pub stroke_selected_color: Option<Vec4>,
     #[live]
@@ -158,9 +154,6 @@ impl LiveHook for GRadio {
         let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
-        // ------------------ focus color -----------------------------------------------
-        let focus_color = self.focus_color.get(self.theme, 500);
-        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 500);
         // ------------------ selected color ---------------------------------------------
         let selected_color = self.selected_color.get(self.theme, 500);
         let stroke_selected_color = self.stroke_selected_color.get(self.theme, 50);
@@ -173,11 +166,9 @@ impl LiveHook for GRadio {
                 background_color: (bg_color),
                 background_visible: (background_visible),
                 hover_color: (hover_color),
-                focus_color: (focus_color),
                 selected_color: (selected_color),
                 stroke_color: (stroke_color),
                 stroke_hover_color: (stroke_hover_color),
-                stroke_focus_color: (stroke_focus_color),
                 stroke_selected_color: (stroke_selected_color),
                 border_color: (border_color),
                 border_width: (self.border_width),

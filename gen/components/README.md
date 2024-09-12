@@ -6,8 +6,8 @@
 - [x] Card 🆗
   - [x] VLayout 🆗
   - [x] HLayout 🆗
-- [x] Radio 
-- [x] CheckBox
+- [x] Radio 🆗
+- [x] CheckBox 🆗
 - [x] Icon 🆗
 - [x] Svg 🆗
 - [x] Image 🆗

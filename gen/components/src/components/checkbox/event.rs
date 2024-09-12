@@ -1,20 +1,20 @@
 use makepad_widgets::{DefaultNone, FingerHoverEvent, FingerUpEvent};
 
 #[derive(Debug, Clone, DefaultNone)]
-pub enum GCheckboxEvent {
-    Clicked(GCheckboxClickedParam),
-    Hover(GCheckboxHoverParam),
+pub enum GCheckBoxEvent {
+    Clicked(GCheckBoxClickedParam),
+    Hover(GCheckBoxHoverParam),
     None,
 }
 
 #[derive(Clone, Debug)]
-pub struct GCheckboxClickedParam {
+pub struct GCheckBoxClickedParam {
     pub value: bool,
     pub e: FingerUpEvent,
 }
 
 #[derive(Clone, Debug)]
-pub struct GCheckboxHoverParam {
+pub struct GCheckBoxHoverParam {
     pub value: bool,
     pub e: FingerHoverEvent,
 }

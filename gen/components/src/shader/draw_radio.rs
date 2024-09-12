@@ -7,13 +7,9 @@ live_design! {
         fn get_background_color(self) -> vec4 {
             return mix(
                 mix(
-                    mix(
-                        self.background_color,
-                        self.focus_color,
-                        self.hover
-                    ),
-                    self.focus_color,
-                    self.focus
+                    self.background_color,
+                    self.hover_color,
+                    self.hover
                 ),
                 self.selected_color,
                 self.selected
@@ -27,13 +23,9 @@ live_design! {
         fn get_stroke_color(self) -> vec4 {
             return mix(
                 mix(
-                    mix(
-                        self.stroke_color,
-                        self.stroke_hover_color,
-                        self.hover
-                    ),
-                    self.stroke_focus_color,
-                    self.focus
+                    self.stroke_color,
+                    self.stroke_hover_color,
+                    self.hover
                 ),
                 self.stroke_selected_color,
                 self.selected
@@ -89,8 +81,6 @@ pub struct DrawGRadio {
     #[live]
     pub hover: f32,
     #[live]
-    pub focus: f32,
-    #[live]
     pub selected: f32,
     // ---- colors
     #[live]
@@ -102,13 +92,9 @@ pub struct DrawGRadio {
     #[live]
     pub stroke_hover_color: Vec4,
     #[live]
-    pub stroke_focus_color: Vec4,
-    #[live]
     pub stroke_selected_color: Vec4,
     #[live]
     pub hover_color: Vec4,
-    #[live]
-    pub focus_color: Vec4,
     #[live]
     pub selected_color: Vec4,
     #[live]
