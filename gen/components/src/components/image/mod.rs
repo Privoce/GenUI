@@ -116,28 +116,28 @@ pub struct GImage {
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live(1.0)]
-    scale: f64,
+    pub scale: f64,
     #[live]
-    fit: ImageFit,
+    pub fit: ImageFit,
     #[live(16)]
-    min_width: i64,
+    pub min_width: i64,
     #[live(16)]
-    min_height: i64,
+    pub min_height: i64,
     // rotate -----------------
     #[live(0.0)]
     pub rotation: f32,
     // deref -----------------
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[layout]
-    layout: Layout,
+    pub layout: Layout,
     #[redraw]
     #[live]
-    draw_image: DrawGCard,
+    pub draw_image: DrawGCard,
     #[live]
     pub src: LiveDependency,
     #[rust(Texture::new(cx))]
-    texture: Option<Texture>,
+    pub texture: Option<Texture>,
 }
 
 impl ImageCacheImpl for GImage {

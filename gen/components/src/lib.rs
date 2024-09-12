@@ -16,6 +16,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tag::register(cx);
     crate::components::image::register(cx);
     crate::components::breadcrumb::register(cx);
+    crate::components::toggle::register(cx);
     // crate::components::button::live_design(cx);
     
     crate::components::radio::live_design(cx);
@@ -26,7 +27,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::shader::live_design(cx);
     crate::components::popup::live_design(cx);
     crate::components::drop_down::live_design(cx);
-    crate::components::toggle::live_design(cx);
+    
     crate::components::progress::live_design(cx);
     crate::components::loading::live_design(cx);
     

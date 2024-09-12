@@ -17,7 +17,7 @@
 - [x] Loading
 - [x] Tag 🆗
 - [x] DropDown
-- [x] Toggle
+- [x] Toggle 🆗
 - [x] Collapse
 - [x] ToolTip
 - [x] Progress

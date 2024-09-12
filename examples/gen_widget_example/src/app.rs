@@ -43,7 +43,8 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GImageExample>{}
+                    <GToggleExample>{}
+                    // <GImageExample>{}
                     // <GStatesExample>{}
                     // <GCardExample>{}
                     // <GHLayoutExample>{}
@@ -95,7 +96,7 @@ live_design! {
                     // // // loading pass, test ok
                     // // // <GLoadingExample>{}
                     // <GProgressExample>{}
-                    // <GToggleExample>{}
+                    // 
 
                     // <GPopupExample>{}
                     // // <GShaderExample>{}
