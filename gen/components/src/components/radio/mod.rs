@@ -1,31 +1,33 @@
 pub mod event;
 mod register;
 
-use event::{GToggleClickedParam, GToggleEvent, GToggleHoverParam};
-use makepad_widgets::*;
+use event::{GRadioClickedParam, GRadioEvent, GRadioHoverParam};
 pub use register::register;
 
+use makepad_widgets::*;
+
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event, shader::draw_toggle::{DrawGToggle, GToggleType}, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
+    animatie_fn, event_option, ref_event_option, set_event, shader::draw_radio::{DrawGRadio, GChooseType}, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
     import makepad_draw::shader::std::*;
     GLOBAL_DURATION = 0.25
-    GToggleBase = {{GToggle}}{
+
+    GRadioBase = {{GRadio}}{
         animator: {
             hover = {
                 default: off
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_toggle: {hover: 0.0}
+                        draw_radio: {hover: 0.0}
                     }
                 }
                 on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_toggle: {hover: 1.0}
+                        draw_radio: {hover: 1.0}
                     }
                 }
             }
@@ -34,23 +36,26 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_toggle: {selected: 0.0}
+                        draw_radio: {selected: 0.0}
                     }
                 }
                 on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_toggle: {selected: 1.0}
+                        draw_radio: {selected: 1.0}
                     }
                 }
             }
         }
     }
 }
-#[derive(Live, Widget)]
-pub struct GToggle {
+
+#[derive(Widget, Live)]
+pub struct GRadio {
     #[live]
     pub theme: Themes,
+    #[live(8.0)]
+    pub size: f32,
     #[live]
     pub background_color: Option<Vec4>,
     #[live(true)]
@@ -58,37 +63,39 @@ pub struct GToggle {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
+    pub focus_color: Option<Vec4>,
+    #[live]
     pub selected_color: Option<Vec4>,
     #[live]
     pub stroke_color: Option<Vec4>,
     #[live]
     pub stroke_hover_color: Option<Vec4>,
     #[live]
+    pub stroke_focus_color: Option<Vec4>,
+    #[live]
     pub stroke_selected_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(1.0)]
     pub border_width: f32,
-    #[live(2.0)]
-    pub border_radius: f32,
-    #[live(0.64)]
+    #[live(0.48)]
     pub scale: f32,
     #[live(MouseCursor::Hand)]
     pub cursor: Option<MouseCursor>,
+    // value ------------------
     #[live(false)]
     pub value: bool,
-    #[live(true)]
-    pub grab_key_focus: bool,
+    // ---- type
     #[live]
-    pub toggle_type: GToggleType,
+    pub radio_type: GChooseType,
     // deref -------------------
     #[redraw]
     #[live]
-    draw_toggle: DrawGToggle,
+    pub draw_radio: DrawGRadio,
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[layout]
-    layout: Layout,
+    pub layout: Layout,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
@@ -96,15 +103,17 @@ pub struct GToggle {
     #[live(true)]
     pub animation_open: bool,
     #[animator]
-    animator: Animator,
+    pub animator: Animator,
+    #[live(true)]
+    pub grab_key_focus: bool,
 }
 
-impl Widget for GToggle {
+impl Widget for GRadio {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
-        self.draw_toggle.draw_walk(cx, walk);
+        self.draw_radio.draw_walk(cx, walk);
         DrawStep::done()
     }
     fn handle_event_with(
@@ -132,61 +141,68 @@ impl Widget for GToggle {
     }
 }
 
-impl LiveHook for GToggle {
+impl LiveHook for GRadio {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible{
+        if !self.visible {
             return;
         }
-
         // ----------------- background color -------------------------------------------
-        let bg_color = self.background_color.get(self.theme, 500);
+        let bg_color = self.background_color.get(self.theme, 50);
+        let stroke_color = if self.background_visible{
+            self.stroke_color.get(self.theme, 50)
+        }else{
+            vec4(0.0, 0.0, 0.0, 0.0)
+        };
         // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ selected color ---------------------------------------------
-        let selected_color = self.selected_color.get(self.theme, 600);
+        let hover_color = self.hover_color.get(self.theme, 100);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
-        // ------------------ stroke color ---------------------------------------------
-        let stroke_color = self.stroke_color.get(self.theme, 50);
-        // ------------------ stroke hover color ---------------------------------------
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
+        // ------------------ focus color -----------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 500);
+        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 500);
+        // ------------------ selected color ---------------------------------------------
+        let selected_color = self.selected_color.get(self.theme, 500);
         let stroke_selected_color = self.stroke_selected_color.get(self.theme, 50);
-        // ------------------ apply to draw_toggle ----------------------------------------
         let selected = self.value.to_f32();
         let background_visible = self.background_visible.to_f32();
-        self.draw_toggle.apply_over(
+        // ------------------ apply to draw_radio ----------------------------------------
+        self.draw_radio.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
-                background_visible: (background_visible)
+                background_visible: (background_visible),
                 hover_color: (hover_color),
+                focus_color: (focus_color),
                 selected_color: (selected_color),
                 stroke_color: (stroke_color),
                 stroke_hover_color: (stroke_hover_color),
-                stroke_selected_color: (stroke_selected_color)
+                stroke_focus_color: (stroke_focus_color),
+                stroke_selected_color: (stroke_selected_color),
                 border_color: (border_color),
                 border_width: (self.border_width),
-                border_radius: (self.border_radius),
+                scale: (self.scale),
+                size: (self.size),
                 scale: (self.scale),
                 selected: (selected)
             },
         );
-        self.draw_toggle.apply_type(self.toggle_type.clone());
+        self.draw_radio.apply_type(self.radio_type.clone());
 
-        self.draw_toggle.redraw(cx);
+        self.draw_radio.redraw(cx);
     }
 }
 
-impl GToggle {
+impl GRadio {
     widget_area! {
-        area, draw_toggle
+        area, draw_radio
     }
     event_option! {
-        clicked: GToggleEvent::Clicked => GToggleClickedParam,
-        hover: GToggleEvent::Hover => GToggleHoverParam
+        clicked: GRadioEvent::Clicked => GRadioClickedParam,
+        hover: GRadioEvent::Hover => GRadioHoverParam
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
-        self.draw_toggle.apply_over(
+        self.draw_radio.apply_over(
             cx,
             live! {
                 hover: 1.0,
@@ -194,7 +210,7 @@ impl GToggle {
         );
     }
     pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
-        self.draw_toggle.apply_over(
+        self.draw_radio.apply_over(
             cx,
             live! {
                 hover: 0.0,
@@ -203,7 +219,7 @@ impl GToggle {
     }
     pub fn animate_selected_on(&mut self, cx: &mut Cx) -> () {
         self.value = true;
-        self.draw_toggle.apply_over(
+        self.draw_radio.apply_over(
             cx,
             live! {
                 selected: 1.0,
@@ -212,7 +228,7 @@ impl GToggle {
     }
     pub fn animate_selected_off(&mut self, cx: &mut Cx) -> () {
         self.value = false;
-        self.draw_toggle.apply_over(
+        self.draw_radio.apply_over(
             cx,
             live! {
                 selected: 0.0,
@@ -231,19 +247,15 @@ impl GToggle {
         if self.animation_open{
             self.animator_handle_event(cx, event);
         }
-        
+
         match hit {
             Hit::FingerHoverIn(f_in) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GToggleEvent::Hover(GToggleHoverParam {
-                        value: self.value,
-                        e: f_in.clone(),
-                    }),
-                );
+                cx.widget_action(uid, &scope.path, GRadioEvent::Hover(GRadioHoverParam{
+                    value: self.value,
+                    e: f_in.clone(),
+                }))
             }
             Hit::FingerHoverOut(_) => {
                 cx.set_cursor(MouseCursor::Arrow);
@@ -255,36 +267,31 @@ impl GToggle {
                 }
             }
             Hit::FingerUp(f_up) => {
-                // you need to add this line to ensure animation currently open if value is true
-                if self.value{
-                    self.animator_play(cx, id!(selected.on));
-                }
-                let state = if self.animator_in_state(cx, id!(selected.on)) {
-                    self.value = false;
-                    id!(selected.off)
-                } else {
+                // if self.value{
+                //     self.animator_play(cx, id!(selected.on));
+                // }
+                if self.animator_in_state(cx, id!(selected.off)) {
                     self.value = true;
-                    id!(selected.on)
-                };
-                self.animator_play(cx, state);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GToggleEvent::Clicked(GToggleClickedParam {
-                        value: self.value,
-                        e: f_up.clone(),
-                    }),
-                );
+                    self.animator_play(cx, id!(selected.on));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GRadioEvent::Clicked(GRadioClickedParam{
+                            value: self.value,
+                            e: f_up.clone()
+                        }),
+                    );
+                }
             }
             _ => (),
         }
     }
 }
 
-impl GToggleRef {
+impl GRadioRef {
     ref_event_option! {
-        clicked => GToggleClickedParam,
-        hover => GToggleHoverParam
+        clicked => GRadioClickedParam,
+        hover => GRadioHoverParam
     }
     animatie_fn! {
         animate_hover_on,
@@ -294,9 +301,9 @@ impl GToggleRef {
     }   
 }
 
-impl GToggleSet{
+impl GRadioSet{
     set_event! {
-        clicked => GToggleClickedParam,
-        hover => GToggleHoverParam
+        clicked => GRadioClickedParam,
+        hover => GRadioHoverParam
     }
 }

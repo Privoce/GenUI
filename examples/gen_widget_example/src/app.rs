@@ -28,7 +28,7 @@ live_design! {
     import crate::components::tabs::*;
     import crate::components::icon_lib::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
-    
+
     App = {{App}}{
         root: <Root>{
             main_window = <Window>{
@@ -43,7 +43,9 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GToggleExample>{}
+                    <GRadioExample>{}
+                    // <GCheckBoxExample>{}
+                    // <GToggleExample>{}
                     // <GImageExample>{}
                     // <GStatesExample>{}
                     // <GCardExample>{}
@@ -76,40 +78,31 @@ live_design! {
                     //     spacing: 6.0,
                     //     width:Fill,
                     // }
-                    
+
                     // <GCollapse>{
                     //     height: 100.0,
                     //     width: 300.0
                     // }
-                    
+
                     // <GCard>{
                     //     width: 200.0,
                     //     height: 200.0,
                     //     <GSplitter>{
-                        
+
                     //     }
                     // }
                     // <GTabsExample>{}
-                    // 
-                    // 
-                   
+                    //
+                    //
+
                     // // // loading pass, test ok
                     // // // <GLoadingExample>{}
                     // <GProgressExample>{}
-                    // 
+                    //
 
                     // <GPopupExample>{}
                     // // <GShaderExample>{}
                     // // <GSelectExample>{}
-                    
-
-                    
-                    
-                    // 
-                    // <GRadioExample>{}
-                    // <GCheckBoxExample>{}
-                    // 
-                    // 
                     // <GDividerExample>{}
                     // <GInputExample>{}
 

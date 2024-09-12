@@ -25,7 +25,7 @@
 - [x] Table
 - [x] Dialog
 - [x] Select
-- [x] Splitter
+- [x] Splitter 🆗
 - [x] FileUpload
 - [x] Divide
 - [x] State 🆗

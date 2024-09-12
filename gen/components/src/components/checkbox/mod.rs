@@ -1,3 +1,7 @@
+mod register; 
+pub mod event;
+
+pub use register::register;
 use makepad_widgets::*;
 
 use crate::{
