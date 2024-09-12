@@ -43,7 +43,7 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GLoadingExample>{}
+                    // <GLoadingExample>{}
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
