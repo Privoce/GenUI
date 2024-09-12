@@ -85,15 +85,15 @@ pub struct GCheckBox {
     pub value: bool,
     // ---- type
     #[live]
-    check_type: GChooseType,
+    pub check_type: GChooseType,
     // deref -------------------
     #[redraw]
     #[live]
-    draw_checkbox: DrawGCheckBox,
+    pub draw_checkbox: DrawGCheckBox,
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[layout]
-    layout: Layout,
+    pub layout: Layout,
     // visible -------------------
     #[live(true)]
     pub visible: bool,

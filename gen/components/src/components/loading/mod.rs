@@ -1,10 +1,10 @@
+mod register;
+
 use makepad_widgets::*;
+pub use register::register;
 
 use crate::{
-    shader::{
-        draw_card::DrawGCard,
-        draw_loading::{DrawGLoading, GLoadingType},
-    },
+    shader::draw_loading::{DrawGLoading, GLoadingType},
     themes::Themes,
     utils::ThemeColor,
 };
@@ -20,14 +20,10 @@ pub struct GLoading {
     #[live]
     pub theme: Themes,
     #[live]
-    pub background_color: Option<Vec4>,
-    #[live]
-    pub loading_color: Option<Vec4>,
+    pub stroke_color: Option<Vec4>,
     // deref -------------------
+    #[live]
     #[redraw]
-    #[live]
-    pub draw_loading_wrap: DrawGCard,
-    #[live]
     pub draw_loading: DrawGLoading,
     #[live]
     pub loading_type: GLoadingType,
@@ -44,9 +40,7 @@ pub struct GLoading {
 
 impl Widget for GLoading {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.draw_loading_wrap.begin(cx, walk, self.layout);
         self.draw_loading.draw_walk(cx, walk);
-        self.draw_loading_wrap.end(cx);
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
@@ -63,18 +57,16 @@ impl Widget for GLoading {
 impl LiveHook for GLoading {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ------------------ hover color -----------------------------------------------
-        let loading_color = self.loading_color.get(self.theme, 600);
-
+        let loading_color = self.stroke_color.get(self.theme, 600);
         // ------------------ apply to draw_loading_wrap ----------------------------------------
         self.draw_loading.apply_over(
             cx,
             live! {
-                background_color: (loading_color),
+                stroke_color: (loading_color),
             },
         );
-        self.draw_loading
-            .apply_loading_type(self.loading_type.clone());
-        self.draw_loading_wrap.redraw(cx);
+        self.draw_loading.apply_type(self.loading_type.clone());
+        self.draw_loading.redraw(cx);
     }
     fn after_new_from_doc(&mut self, cx: &mut Cx) {
         // starts the animation cycle on startup

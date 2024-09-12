@@ -29,6 +29,12 @@ live_design! {
                 check_type: Cross,
             }
             <GCheckBox>{
+                theme: Error,
+                check_type: Cross,
+                background_visible: false,
+                value: true,
+            }
+            <GCheckBox>{
                 theme: Success,
                 height: 30.0,
                 width: 30.0,

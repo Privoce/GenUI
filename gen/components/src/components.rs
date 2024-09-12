@@ -461,8 +461,8 @@ live_design! {
         border_radius: 4.0,
     }
     GLoading = <GLoadingBase>{
-        height: Fill,
-        width: Fill,
+        height: 48.0,
+        width: 48.0,
     }
     GState404 = <GImage>{
         height: Fill,

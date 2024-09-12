@@ -43,8 +43,9 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GLoadingExample>{}
                     // <GRadioExample>{}
-                    <GCheckBoxExample>{}
+                    // <GCheckBoxExample>{}
                     // <GToggleExample>{}
                     // <GImageExample>{}
                     // <GStatesExample>{}
@@ -92,11 +93,6 @@ live_design! {
                     //     }
                     // }
                     // <GTabsExample>{}
-                    //
-                    //
-
-                    // // // loading pass, test ok
-                    // // // <GLoadingExample>{}
                     // <GProgressExample>{}
                     //
 
