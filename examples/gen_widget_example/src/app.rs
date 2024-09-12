@@ -23,7 +23,7 @@ live_design! {
     import crate::components::progresss::*;
     import crate::components::loadings::*;
     import crate::components::states::*;
-    import crate::components::badges::*;
+    import crate::components::tags::*;
     import crate::components::bread_crumbs::*;
     import crate::components::tabs::*;
     import crate::components::icon_lib::*;
@@ -43,10 +43,12 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GImageExample>{}
+                    // <GStatesExample>{}
                     // <GCardExample>{}
                     // <GHLayoutExample>{}
                     // <GVLayoutExample>{}
-                    <GTagExample>{}
+                    // <GTagExample>{}
                     // <GCard>{
                     //     theme: Dark,
                     //     height: 100.0,
@@ -89,7 +91,7 @@ live_design! {
                     // <GTabsExample>{}
                     // 
                     // 
-                    // <GStatesExample>{}
+                   
                     // // // loading pass, test ok
                     // // // <GLoadingExample>{}
                     // <GProgressExample>{}
@@ -106,7 +108,7 @@ live_design! {
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // 
-                    // <GImageExample>{}
+                    // 
                     // <GDividerExample>{}
                     // <GInputExample>{}
 
@@ -145,7 +147,7 @@ impl LiveRegister for App {
         crate::components::progresss::live_design(cx);
         crate::components::loadings::live_design(cx);
         crate::components::states::live_design(cx);
-        crate::components::badges::live_design(cx);
+        crate::components::tags::live_design(cx);
         crate::components::bread_crumbs::live_design(cx);
         crate::components::tabs::live_design(cx);
         crate::components::icon_lib::live_design(cx);

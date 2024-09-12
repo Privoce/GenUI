@@ -1,20 +1,21 @@
 # GEN Components (Basic Step 09-08)
 
-- [x] Label
-- [x] Link
-- [x] Button
-- [x] Card
-  - [x] VLayout
-  - [x] HLayout
-- [x] Radio
+- [x] Label 🆗
+- [x] Link 🆗
+- [x] Button 🆗
+- [x] Card 🆗
+  - [x] VLayout 🆗
+  - [x] HLayout 🆗
+- [x] Radio 
 - [x] CheckBox
-- [x] Icon
-- [x] Image
+- [x] Icon 🆗
+- [x] Svg 🆗
+- [x] Image 🆗
 - [x] Input
 - [x] Popup
 - [x] Progress
 - [x] Loading
-- [x] Badge
+- [x] Tag 🆗
 - [x] DropDown
 - [x] Toggle
 - [x] Collapse
@@ -27,10 +28,10 @@
 - [x] Splitter
 - [x] FileUpload
 - [x] Divide
-- [x] State
-- [x] BreadCrumb
-- [x] ScrollBar(s)
-- [x] icon_lib
+- [x] State 🆗
+- [x] BreadCrumb 🆗
+- [x] ScrollBar(s) 🆗
+- [x] icon_lib 🆗
 
 # GEN Components (Super)
 

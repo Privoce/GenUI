@@ -9,15 +9,18 @@ pub fn live_design(cx: &mut Cx) {
     // components ---------------------------------------------
     crate::components::label::register(cx);
     crate::components::link::register(cx);
+    crate::components::card::register(cx);
     crate::components::svg::register(cx);
     crate::components::icon::register(cx);
     crate::components::button::register(cx);
     crate::components::tag::register(cx);
+    crate::components::image::register(cx);
+    crate::components::breadcrumb::register(cx);
     // crate::components::button::live_design(cx);
-    crate::components::card::live_design(cx);
+    
     crate::components::radio::live_design(cx);
     crate::components::checkbox::live_design(cx);
-    crate::components::image::live_design(cx);
+    
     crate::components::input::live_design(cx);
     crate::components::divider::live_design(cx);
     crate::components::shader::live_design(cx);
@@ -27,8 +30,6 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::progress::live_design(cx);
     crate::components::loading::live_design(cx);
     
-    crate::components::breadcrumb::live_design(cx);
-    crate::components::breadcrumb::item::live_design(cx);
     crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);
     crate::components::tab::body::live_design(cx);

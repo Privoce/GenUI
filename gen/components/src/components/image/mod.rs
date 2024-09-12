@@ -1,7 +1,13 @@
+mod register;
+pub mod event;
+
+pub use register::register;
+use event::GImageEvent;
+
 use image_cache::{ImageCacheImpl, ImageFit};
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawGCard;
+use crate::{event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, utils::set_cursor, widget_area};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -103,6 +109,8 @@ live_design! {
 pub struct GImage {
     #[live(true)]
     pub visible: bool,
+    #[live(true)]
+    pub grab_key_focus: bool,
     #[live(1.0)]
     pub opacity: f32,
     #[live]
@@ -150,6 +158,10 @@ impl LiveHook for GImage {
         _index: usize,
         _nodes: &[LiveNode],
     ) {
+        if !self.visible{
+            return;
+        }
+
         self.draw_image.apply_over(
             cx,
             live! {
@@ -218,9 +230,39 @@ impl Widget for GImage {
         }
         self.draw_walk_rotated_image(cx, walk)
     }
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
+
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
+        self.handle_widget_event(cx, event, scope, hit, focus_area)
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl GImage {
+    widget_area! {
+        area, draw_image
+    }
+    event_option! {
+        clicked : GImageEvent::Clicked => FingerUpEvent,
+        hover : GImageEvent::Hover => FingerHoverEvent
+    }
     pub fn draw_walk_rotated_image(&mut self, cx: &mut Cx2d, walk: Walk) -> DrawStep {
         if let Some(image_texture) = &self.texture {
             self.draw_image.draw_vars.set_texture(0, image_texture);
@@ -228,5 +270,49 @@ impl GImage {
         self.draw_image.draw_walk(cx, walk);
 
         DrawStep::done()
+    }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        _event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+
+        match hit {
+            Hit::FingerDown(_) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }
+            }
+            Hit::FingerHoverIn(h) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+
+                cx.widget_action(uid, &scope.path, GImageEvent::Hover(h.clone()));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(uid, &scope.path, GImageEvent::Clicked(f_up.clone()));
+
+                }
+            }
+            _ => (),
+        }
+    }
+}
+
+impl GImageRef {
+    ref_event_option! {
+        clicked => FingerUpEvent,
+        hover => FingerHoverEvent
+    }
+}
+
+impl GImageSet {
+    set_event! {
+        clicked => FingerUpEvent,
+        hover => FingerHoverEvent
     }
 }

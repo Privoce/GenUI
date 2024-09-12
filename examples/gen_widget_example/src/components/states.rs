@@ -20,15 +20,7 @@ live_design! {
                 height: 200.0,
                 width: Fill,
             }
-        }
-        <GHLayout>{
-            height: 200.0,
-            width: Fill,
             <GStateNoMsg>{
-                height: 200.0,
-                width: Fill,
-            }
-            <GStateNoData>{
                 height: 200.0,
                 width: Fill,
             }
@@ -41,6 +33,10 @@ live_design! {
                 width: Fill,
             }
             <GStateSearch>{
+                height: 200.0,
+                width: Fill,
+            }
+            <GStateNoData>{
                 height: 200.0,
                 width: Fill,
             }

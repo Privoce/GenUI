@@ -17,7 +17,7 @@ pub mod toggles;
 pub mod progresss;
 pub mod loadings;
 pub mod states;
-pub mod badges;
+pub mod tags;
 pub mod bread_crumbs;
 pub mod tabs;
 pub mod icon_lib;
