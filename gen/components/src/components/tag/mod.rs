@@ -1,16 +1,20 @@
+pub mod event;
 mod register;
 
+use event::{GTagClickedParam, GTagEvent, GTagHoverParam};
 pub use register::register;
 
 use crate::shader::draw_icon_pixel::DrawGIconPixel;
 use crate::shader::draw_svg::DrawGSvg;
 use crate::shader::draw_text::DrawGText;
-use crate::utils::{get_font_family, DefaultTextStyle, ThemeColor};
+use crate::utils::{get_font_family, set_cursor, BoolToF32, ThemeColor};
+use crate::{animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, widget_area};
 use crate::{shader::draw_card::DrawGCard, themes::Themes};
 use makepad_widgets::*;
 
 live_design! {
     import makepad_draw::shader::std::*;
+    GLOBAL_DURATION = 0.25;
     GTagBase = {{GTag}}{
         clip_x: false,
         clip_y: false,
@@ -38,6 +42,26 @@ live_design! {
                 sdf.stroke(self.color, 1.2);
                 return sdf.result;
             }
+        },
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_tag: {hover: 0.0}
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_tag: { hover: 1.0}
+                    }
+                }
+            }
         }
     }
 }
@@ -48,10 +72,12 @@ pub struct GTag {
     pub theme: Themes,
     #[live]
     pub background_color: Option<Vec4>,
+    #[live(true)]
+    pub background_visible: bool,
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub icon_hover_color: Option<Vec4>,
+    pub stroke_hover_color: Option<Vec4>,
     #[live]
     pub pressed_color: Option<Vec4>,
     #[live]
@@ -70,7 +96,7 @@ pub struct GTag {
     pub shadow_offset: Vec2,
     #[live(false)]
     pub round: bool,
-    // text -----------------
+    // text ----------------------------
     #[live]
     pub text: ArcStringMut,
     #[live(10.0)]
@@ -79,6 +105,13 @@ pub struct GTag {
     pub color: Option<Vec4>,
     #[live]
     pub font_family: LiveDependency,
+    #[live(1.1)]
+    pub top_drop: f64,
+    #[live(1.3)]
+    pub height_factor: f64,
+    #[live(0.88)]
+    pub line_scale: f64,
+    // icon ----------------------------
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live]
@@ -97,10 +130,10 @@ pub struct GTag {
     pub icon_color: Option<Vec4>,
     #[live(1.0)]
     pub icon_draw_depth: f32,
-    // visible -------------------
+    // visible -------------------------
     #[live(true)]
     pub visible: bool,
-    // define area -----------------
+    // define area ---------------------
     #[live]
     draw_text: DrawGText,
     #[live]
@@ -118,11 +151,16 @@ pub struct GTag {
     // deref -----------------
     #[redraw]
     #[live]
-    draw_badge: DrawGCard,
+    draw_tag: DrawGCard,
     #[walk]
     walk: Walk,
     #[layout]
     layout: Layout,
+    // animator -----------------
+    #[live(false)]
+    pub animation_open: bool,
+    #[animator]
+    animator: Animator,
 }
 
 impl Widget for GTag {
@@ -136,7 +174,7 @@ impl Widget for GTag {
         self.icon_walk.height = Size::Fixed(self.font_size);
         self.icon_walk.width = Size::Fixed(self.font_size);
         // self.text_walk.margin.top = self.font_size / 4.0;
-        let _ = self.draw_badge.begin(cx, walk, self.layout);
+        let _ = self.draw_tag.begin(cx, walk, self.layout);
         let _ = self.draw_icon.draw_walk(cx, self.icon_walk);
 
         let _ = self
@@ -145,27 +183,71 @@ impl Widget for GTag {
         if self.closeable {
             let _ = self.draw_close.draw_walk(cx, self.icon_walk);
         }
-        self.draw_badge.end(cx);
+        self.draw_tag.end(cx);
         DrawStep::done()
     }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let uid = self.widget_uid();
 
-    fn text(&self) -> String {
-        self.text.as_ref().to_string()
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_tag.redraw(cx);
+            }
+        }
+
+        if self.closeable {
+            match event.hits(cx, self.area_close()) {
+                Hit::FingerUp(f_up) => {
+                    if f_up.is_over {
+                        cx.widget_action(
+                            uid,
+                            &scope.path,
+                            GTagEvent::Close(self.text.as_ref().to_string()),
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        match event.hits(cx, self.area()) {
+            Hit::FingerHoverIn(f_in) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.animator_play(cx, id!(hover.on));
+                cx.widget_action(uid, &scope.path, GTagEvent::Hover(GTagHoverParam{
+                    text: self.text.as_ref().to_string(),
+                    e: f_in.clone(),
+                }));
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(uid, &scope.path, GTagEvent::Clicked(GTagClickedParam{
+                        text: self.text.as_ref().to_string(),
+                        e: f_up.clone(),
+                    }));
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => (),
+        }
     }
-    fn set_text(&mut self, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-    }
-    fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
-        self.text.as_mut_empty().push_str(v);
-        self.redraw(cx)
-    }
-    fn is_visible(&self) -> bool {
-        self.visible
-    }
+    set_text_and_visible_fn!();
 }
 
 impl LiveHook for GTag {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         let shadow_color = self.shadow_color.get(self.theme, 700);
@@ -179,7 +261,7 @@ impl LiveHook for GTag {
         let font_color = self.color.get(self.theme, 100);
         // ------------------icon color -----------------------------------------------
         let icon_color = self.icon_color.get(self.theme, 100);
-        let icon_hover_color = self.icon_hover_color.get(self.theme, 50);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
         // ------------------ round -----------------------------------------------------
 
         if self.round {
@@ -199,11 +281,12 @@ impl LiveHook for GTag {
                 _ => panic!("round only support fixed and fit"),
             };
         }
-
-        self.draw_badge.apply_over(
+        let background_visible = self.background_visible.to_f32();
+        self.draw_tag.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
+                background_visible: (background_visible),
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
@@ -218,7 +301,7 @@ impl LiveHook for GTag {
         self.draw_icon.apply_over(
             cx,
             live! {
-                hover_color: (icon_hover_color),
+                stroke_hover_color: (stroke_hover_color),
                 color: (icon_color),
                 brightness: (self.icon_brightness),
                 curve: (self.icon_curve),
@@ -229,7 +312,6 @@ impl LiveHook for GTag {
         );
 
         self.draw_icon.set_src(self.src.clone());
-        let default_text_style = DefaultTextStyle::default();
         self.draw_text.apply_over(
             cx,
             live! {
@@ -238,9 +320,10 @@ impl LiveHook for GTag {
                     font_size: (self.font_size),
                     // brightness: (default_text_style.brightness),
                     // curve: (default_text_style.curve),
-                    line_spacing: (default_text_style.line_spacing),
-                    top_drop: (default_text_style.top_drop),
-                    height_factor: (default_text_style.height_factor),
+                    // line_spacing: (self.line_spacing),
+                    line_scale: (self.line_scale)
+                    top_drop: (self.top_drop),
+                    height_factor: (self.height_factor),
                 },
             },
         );
@@ -259,17 +342,69 @@ impl LiveHook for GTag {
             self.draw_close.redraw(cx);
         }
 
-        self.draw_badge.redraw(cx);
+        self.draw_tag.redraw(cx);
         self.draw_text.redraw(cx);
         self.draw_icon.redraw(cx);
+    }
+}
+
+impl GTag {
+    widget_area! {
+        area, draw_tag,
+        area_icon, draw_icon,
+        area_text, draw_text
+    }
+    pub fn area_close(&self) -> Area {
+        if self.closeable {
+            return self.draw_close.area;
+        }
+        return Area::Empty;
+    }
+    event_option! {
+        clicked: GTagEvent::Clicked => GTagClickedParam,
+        hover: GTagEvent::Hover => GTagHoverParam,
+        close: GTagEvent::Close => String
+    }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
     }
 }
 
 impl GTagRef {
     pub fn area(&self) -> Area {
         if let Some(btn_ref) = self.borrow() {
-            return btn_ref.draw_badge.area();
+            return btn_ref.draw_tag.area();
         }
         Area::Empty
+    }
+    ref_event_option! {
+        clicked => GTagClickedParam,
+        hover => GTagHoverParam,
+        close => String
+    }
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off
+    }
+}
+
+impl GTagSet {
+    set_event! {
+        clicked => GTagClickedParam,
+        hover => GTagHoverParam,
+        close => String
     }
 }

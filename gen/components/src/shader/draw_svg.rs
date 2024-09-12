@@ -4,7 +4,7 @@ live_design! {
         fn get_color(self) -> vec4 {
             return mix(
                 self.color,
-                self.hover_color,
+                self.stroke_hover_color,
                 self.hover
             );
         }
@@ -18,7 +18,7 @@ pub struct DrawGSvg {
     #[deref]
     pub draw_super: DrawIcon,
     #[live]
-    pub hover_color: Vec4,
+    pub stroke_hover_color: Vec4,
     #[live(0.0)]
     pub hover: f32,
 }

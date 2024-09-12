@@ -36,6 +36,11 @@ live_design! {
                 height: 30.0,
                 width: 30.0,
                 animation_open: true,
+                blur_radius: 4.0,
+                spread_radius: 5.0,
+                clip_x: false,
+                clip_y: false,
+                cursor: Hand
             }
             <GCard>{
                 theme: Success,

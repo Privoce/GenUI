@@ -60,7 +60,7 @@ pub struct GSvg {
     #[live(1.0)]
     pub draw_depth: f32,
     #[live]
-    pub hover_color: Option<Vec4>,
+    pub stroke_hover_color: Option<Vec4>,
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live(true)]
@@ -123,14 +123,14 @@ impl LiveHook for GSvg {
             return;
         }
         // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 400);
+        let hover_color = self.stroke_hover_color.get(self.theme, 400);
         // ------------------ color -----------------------------------------------
         let color = self.color.get(self.theme, 500);
 
         self.draw_svg.apply_over(
             cx,
             live! {
-                hover_color: (hover_color),
+                stroke_hover_color: (hover_color),
                 color: (color),
                 brightness: (self.brightness),
                 curve: (self.curve),

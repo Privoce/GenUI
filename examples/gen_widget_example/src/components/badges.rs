@@ -25,6 +25,7 @@ live_design! {
                 round: true,
                 theme: Success,
                 text: "badge tag1",
+                animation_open: true,
             }
             <GHLayout>{
                 spacing: 6.0,

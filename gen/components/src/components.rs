@@ -196,7 +196,7 @@ live_design! {
         padding: 0,
         border_radius: 0,
         border_width: 0,
-        background_visible: true,
+        background_visible: false,
         spacing: 0,
         margin: 0,
     }
@@ -209,7 +209,7 @@ live_design! {
         padding: 0,
         border_radius: 0,
         border_width: 0,
-        background_visible: true,
+        background_visible: false,
         spacing: 0,
         margin: 0,
     }
@@ -418,7 +418,7 @@ live_design! {
             }
         }
         container: <GPopupContainer>{
-            background_visible: true,
+            background_visible: false,
         }
     }
     GDialog = <GPopup>{
@@ -447,7 +447,7 @@ live_design! {
         padding: 0,
         border_radius: 0,
         border_width: 0,
-        background_visible: true,
+        background_visible: false,
         spacing: 0,
         margin: 0,
         popup: <GPopup> {

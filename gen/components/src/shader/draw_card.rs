@@ -33,8 +33,11 @@ live_design!{
             self.sdf_rect_size = self.rect_size2 - vec2(self.spread_radius * 2.0 + self.border_width * 2.0)
             self.sdf_rect_pos = -min_offset + vec2(self.border_width + self.spread_radius);
             self.rect_shift = -min_offset;
-                                    
-            return self.clip_and_transform_vertex(self.rect_pos2, self.rect_size3)
+            if self.spread_radius != 0.0{
+                return self.clip_and_transform_vertex(self.rect_pos2, self.rect_size3);
+            }else{
+                return self.clip_and_transform_vertex(self.rect_pos, self.rect_size);
+            }
         }
                                         
         fn get_border_color(self) -> vec4 {
@@ -50,8 +53,9 @@ live_design!{
                 self.sdf_rect_size.x - self.border_width * 2.0,
                 self.sdf_rect_size.y - self.border_width * 2.0, 
                 max(1.0, self.border_radius)
-            )
-            if self.shadow_color.a != 0.0 {
+            );
+            
+            if self.spread_radius != 0.0 {
                 if sdf.shape > -1.0{
                     let m = self.blur_radius;
                     let o = self.shadow_offset + self.rect_shift;
@@ -67,7 +71,7 @@ live_design!{
                 }
             }
                                             
-            if self.background_visible == 0.0 {
+            if self.background_visible != 0.0 {
                 sdf.fill_keep(self.get_color())
             }
             if self.border_width > 0.0 {

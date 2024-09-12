@@ -43,9 +43,9 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GCardExample>{}
-                    <GHLayoutExample>{}
-                    <GVLayoutExample>{}
+                    // <GCardExample>{}
+                    // <GHLayoutExample>{}
+                    // <GVLayoutExample>{}
                     <GTagExample>{}
                     // <GCard>{
                     //     theme: Dark,

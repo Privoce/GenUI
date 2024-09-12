@@ -9,7 +9,7 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
+    event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, 
 };
 
 live_design! {
@@ -17,10 +17,9 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GCardBase = {{GCard}}{
-        blur_radius: 100.0,
+        blur_radius: 20.0,
         spread_radius: 0.0,
         shadow_offset: vec2(0.0, 0.0),
-        shadow_color: vec4(0.0, 0.0, 0.0, 0.0),
         animator: {
             hover = {
                 default: off,
@@ -70,7 +69,7 @@ pub struct GCard {
     pub border_radius: f32,
     #[live(true)]
     pub visible: bool,
-    #[live(false)]
+    #[live(true)]
     pub background_visible: bool,
     #[live]
     pub shadow_color: Option<Vec4>,
