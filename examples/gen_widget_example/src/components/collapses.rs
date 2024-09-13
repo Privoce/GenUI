@@ -1,0 +1,50 @@
+use makepad_widgets::*;
+
+live_design! {
+    import makepad_widgets::base::*;
+    import makepad_widgets::theme_desktop_dark::*; 
+    import gen_components::components::*;
+
+    GCollapseExample = <ScrollYView>{
+        height: 200.0,
+        width: Fill,
+        flow: Down,
+        spacing: 10.0,
+        <Label>{
+            text: "GCollapse",
+        }
+        <GVLayout>{
+            spacing: 6.0,
+            height: 100.0,
+            width: Fill,
+            <GHLayout>{
+                height: Fit,
+                width: Fill,
+                spacing: 6.0,
+                <GCollapse>{
+                    height: 100.0,
+                    width: 300.0,
+                    header: {
+                        <GLabel>{
+                            text: "Open Collapse !!!",
+                        }
+                    }
+                }
+                <GCollapse>{
+                    height: 100.0,
+                    width: 300.0,
+                    opened: true,
+                    body: {
+                        theme: Dark,
+                        <GButton>{
+                            theme: Error,
+                            slot:{
+                                text: "Close!"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -27,6 +27,7 @@ live_design! {
     import crate::components::bread_crumbs::*;
     import crate::components::tabs::*;
     import crate::components::icon_lib::*;
+    import crate::components::collapses::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
 
     App = {{App}}{
@@ -43,7 +44,8 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GProgressExample>{}
+                    <GCollapseExample>{}
+                    // <GProgressExample>{}
                     // <GDividerExample>{}
                     // <GCard>{
                     //     width: 200.0,
@@ -85,17 +87,6 @@ live_design! {
                     // <GLabelExample>{}
                     //
                     // --------------------------------
-                    // <GVLayout>{
-                    //     height: 300.0,
-                    //     spacing: 6.0,
-                    //     width:Fill,
-                    // }
-
-                    // <GCollapse>{
-                    //     height: 100.0,
-                    //     width: 300.0
-                    // }
-
                     // <GTabsExample>{}
 
                     // <GPopupExample>{}
@@ -154,6 +145,7 @@ impl LiveRegister for App {
         crate::components::icon_lib::time::live_design(cx);
         crate::components::icon_lib::tool::live_design(cx);
         crate::components::icon_lib::ui::live_design(cx);
+        crate::components::collapses::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

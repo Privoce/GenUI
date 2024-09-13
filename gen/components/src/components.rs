@@ -639,49 +639,23 @@ live_design! {
         height: Fit,
         width: Fill,
         flow: Down,
-        opened: 0.0,
-        animator: {
-            open = {
-                default: off
-                off = {
-                    from: {all: Forward {duration: 0.2}}
-                    ease: ExpDecay {d1: 0.96, d2: 0.97}
-                    redraw: true
-                    apply: {
-                        opened: [{time: 0.0, value: 1.0}, {time: 1.0, value: 0.0}]
-                    }
-                }
-                on = {
-                    from: {all: Forward {duration: 0.2}}
-                    ease: ExpDecay {d1: 0.98, d2: 0.95}
-                    redraw: true
-                    apply: {
-                        opened: [{time: 0.0, value: 0.0}, {time: 1.0, value: 1.0}]
-                    }
-                }
-            }
-        },
+        opened: false,
         header: <GCard>{
             height: 24.0,
             padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
             flow: Right,
-            align: <ALIGN_CENTER_WALK>{},
+            align: <ALIGN_LEFT_WALK>{},
             spacing: 6.0,
             margin: 0.0,
             border_radius: 0.0,
-            fold_button = <FoldButton>{},
-            fold_label = <GLabel>{ text: "Fold", }
         },
         body: <GCard>{
-            height: 50.0,
-            
+            height: 80.0,
             width: Fill,
             padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
             margin: 0.0,
             border_radius: 0.0,
-            <GLabel>{
-                text: "body"
-            }
+            
         }
     }
     GTCell = <GTableCellBase>{

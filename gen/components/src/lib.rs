@@ -22,7 +22,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::loading::register(cx);
     crate::components::divider::register(cx);
     crate::components::file_upload::register(cx);
-
+    crate::components::progress::register(cx);
 
     
     crate::components::input::live_design(cx);
@@ -31,7 +31,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::popup::live_design(cx);
     crate::components::drop_down::live_design(cx);
     
-    crate::components::progress::live_design(cx);
+    
     
     
     crate::components::tab::header::live_design(cx);
