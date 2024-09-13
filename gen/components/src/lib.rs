@@ -21,7 +21,10 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::checkbox::register(cx);
     crate::components::loading::register(cx);
     crate::components::divider::register(cx);
+    crate::components::file_upload::register(cx);
 
+
+    
     crate::components::input::live_design(cx);
     
     crate::components::shader::live_design(cx);
@@ -36,7 +39,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tab::body::live_design(cx);
     crate::components::tab::pane::live_design(cx);
     crate::components::tab::live_design(cx);
-    crate::components::file_upload::live_design(cx);
+    
     crate::components::collapse::live_design(cx);
     // crate::components::table::cell::live_design(cx);
     // crate::components::table::row::live_design(cx);

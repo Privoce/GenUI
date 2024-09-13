@@ -26,16 +26,19 @@ live_design!{
             let progress_bg = self.get_background_color();
             let progress_in_bg = self.get_stroke_color();
             sdf.box(self.border_width, self.border_width, progress_width, progress_height, self.border_radius);
-            sdf.fill(progress_bg);
+            if self.background_visible == 1.0{
+                sdf.fill(progress_bg);
+            }
             sdf.stroke(self.border_color, self.border_width);
             match self.progress_type {
                 GProgressType::Horizontal => {
+                    let box_radius = self.border_radius - self.border_width * 0.5;
                     sdf.box(
                             self.border_width,
                             self.border_width,
-                            self.position * self.rect_size.x,
+                            self.position * self.rect_size.x - self.border_width * 2.0,
                             progress_height,
-                            self.border_radius
+                            box_radius
                     )
                     sdf.fill(progress_in_bg);
                 }
@@ -46,7 +49,7 @@ live_design!{
                         self.border_width,
                         self.rect_size.y - self.rect_size.y * self.position,
                         self.rect_size.x - self.border_width * 2.0,
-                        self.rect_size.y * self.position,
+                        self.rect_size.y * self.position - self.border_width * 2.0,
                         box_radius
                     )
                     sdf.fill(progress_in_bg);
@@ -64,6 +67,8 @@ live_design!{
 pub struct  DrawGProgress{
     #[deref]
     pub draw_super: DrawQuad,
+    #[live(1.0)]
+    pub background_visible: f32,
     #[live]
     pub position: f32,
     #[live]

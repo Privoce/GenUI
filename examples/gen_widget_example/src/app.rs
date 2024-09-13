@@ -43,7 +43,7 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-
+                    <GProgressExample>{}
                     // <GDividerExample>{}
                     // <GCard>{
                     //     width: 200.0,
@@ -62,21 +62,21 @@ live_design! {
                     // <GHLayoutExample>{}
                     // <GVLayoutExample>{}
                     // <GTagExample>{}
-                    <GCard>{
-                        theme: Dark,
-                        height: 100.0,
-                        width: 300.0,
-                        flow: Down,
-                        align: {x: 0.5, y: 0.5},
-                        <GUpload>{
-                            height: 70.0,
-                            filters: ["png"]
-                        }
-                        <GLabel>{
-                            height: Fit,
-                            text: "Upload!",
-                        }
-                    }
+                    // <GCard>{
+                    //     theme: Dark,
+                    //     height: 100.0,
+                    //     width: 300.0,
+                    //     flow: Down,
+                    //     align: {x: 0.5, y: 0.5},
+                    //     <GUpload>{
+                    //         height: 70.0,
+                    //         filters: ["png"]
+                    //     }
+                    //     <GLabel>{
+                    //         height: Fit,
+                    //         text: "Upload!",
+                    //     }
+                    // }
                     // <GBreadCrumbExample>{}
                     // <GLinkExample>{}
                     // <GSvgExample>{}
@@ -96,10 +96,7 @@ live_design! {
                     //     width: 300.0
                     // }
 
-                    
                     // <GTabsExample>{}
-                    // <GProgressExample>{}
-                    //
 
                     // <GPopupExample>{}
                     // // <GShaderExample>{}

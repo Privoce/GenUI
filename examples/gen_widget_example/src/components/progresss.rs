@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
 
     GProgressExample = <ScrollYView>{
-        height: 150.0,
+        height: 200.0,
         width: Fill,
         spacing: 10.0,
         flow: Down,
@@ -23,12 +23,27 @@ live_design! {
             value: 0.36,
             read_only: false,
         }
-        <GProgress>{
-            progress_type: Vertical,
-            height: 200.0,
-            width: 16.0,
-            value: 0.8,
-            read_only: false,
+        <GHLayout>{
+            height: Fit,
+            width: Fill,
+            spacing: 10.0,
+            <GProgress>{
+                progress_type: Vertical,
+                height: 200.0,
+                width: 16.0,
+                value: 0.8,
+                read_only: false,
+            }
+            <GProgress>{
+                theme: Error,
+                visible: true,
+                background_visible: false,
+                progress_type: Vertical,
+                height: 200.0,
+                width: 16.0,
+                value: 0.8,
+                read_only: false,
+            }
         }
     }
 }
