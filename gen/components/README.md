@@ -26,7 +26,7 @@
 - [x] Dialog
 - [x] Splitter 🆗
 - [x] FileUpload
-- [x] Divider
+- [x] Divider 🆗
 - [x] State 🆗
 - [x] BreadCrumb 🆗
 - [x] ScrollBar(s) 🆗
