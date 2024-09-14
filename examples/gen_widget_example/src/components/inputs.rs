@@ -13,21 +13,28 @@ live_design! {
         <Label>{
             text: "GInput"
         }
-        <GInput>{
-            theme: Dark,   
-        }
-        <GInput>{
-            theme: Dark,
-            border_width: 1.0,
-            // border_radius: 4.0,
-            value: "Hello",
-            placeholder: "please",
-            
-        }
-        <GInput>{
-            border_radius: 7.0,
-            border_width: 1.0,
-            input_type: Pwd,
+        <GHLayout>{
+            height: Fit,
+            width: Fill,
+            spacing: 20.0,
+            <GCard>{
+                height: 62.0,
+                width: 200.0,
+                background_visible: false,
+                <GInput>{
+                    height: Fill,
+                }
+            }
+            <GCard>{
+                height: 36.0,
+                width: 200.0,
+                <TextInput>{
+                    height: Fill,
+                    // border_radius: 4.0,
+                    // border_width: 1.0,
+                    // input_type: Pwd,
+                }
+            }
         }
     }
 }

@@ -1,8 +1,8 @@
-pub mod types;
 mod register;
+pub mod types;
 
-pub use register::register;
 use makepad_widgets::*;
+pub use register::register;
 use shader::draw_text::TextWrap;
 use types::{Edit, EditKind, History};
 use unicode_segmentation::{GraphemeCursor, UnicodeSegmentation};
@@ -16,14 +16,14 @@ use crate::{
 live_design! {
     import makepad_draw::shader::std::*;
     GInputBase = {{GInput}}{
-        height: Fit,
+        height: Fill,
         width: 180.0,
-        align: {x: 0.0, y: 0.5},
+        // align: {x: 0.0, y: 0.0},
         padding: 8.6,
         clip_x: false,
         clip_y: false,
         placeholder: "Please Input",
-        text_align: {x: 0.0, y: 0.0},
+        text_align: {y: 0.},
         is_read_only: false,
         is_numeric_only: false,
         animator: {
@@ -81,10 +81,10 @@ live_design! {
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
 
                 sdf.box(
-                    1.,
-                    1.,
-                    self.rect_size.x - 2.0,
-                    self.rect_size.y - 2.0,
+                    self.border_width,
+                    self.border_width,
+                    self.rect_size.x - self.border_width * 2.0,
+                    self.rect_size.y - self.border_width * 2.0,
                     self.border_radius
                 )
 
@@ -99,9 +99,8 @@ live_design! {
             }
         }
         draw_text: {
-            instance hover: 0.0
-            instance focus: 0.0
-            wrap: Line,
+            instance hover: 0.0;
+            instance focus: 0.0;
 
             fn get_color(self) -> vec4 {
                 return mix(
@@ -212,8 +211,6 @@ pub struct GInput {
     layout: Layout,
     #[walk]
     walk: Walk,
-    #[live]
-    label_align: Align,
     #[live(2.0)]
     cursor_width: f64,
     #[live]
@@ -234,67 +231,35 @@ pub struct GInput {
 
 impl Widget for GInput {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+        // self.draw_text.wrap = self.wrap.clone();
+        self.draw_text.text_style.font = get_font_family(&self.font_family, cx);
         self.draw_input.begin(cx, walk, self.layout);
 
         self.draw_selection.append_to_draw_call(cx);
-        let font = get_font_family(&self.font_family, cx);
-
-        self.draw_text.text_style.font = font;
-        let real_width = if let Size::Fixed(w) = self.walk.width {
-            Size::Fixed(w - self.layout.padding.left - self.layout.padding.right)
-        } else {
-            self.walk.width
-        };
-
-        let rect_walk = Walk {
-            height: self.walk.height,
-            width: real_width,
-            ..Default::default()
-        };
-        let padded_rect = cx.turtle().padded_rect();
-        let mut cursor_position = self.cursor_position(cx, padded_rect.size.x);
-        let scroll_width = if cursor_position.x > padded_rect.size.x {
-            cursor_position.x
-        } else {
-            padded_rect.size.x
-        };
-        self.scroll_bars.begin(
-            cx,
-            Walk {
-                height: rect_walk.height,
-                width: Size::Fixed(padded_rect.size.x),
-                ..Default::default()
-            },
-            Layout::flow_right(),
-        );
 
         // Draw text
         if self.text.is_empty() {
-            self.draw_text.empty = 1.0;
+            // self.draw_text.empty = 1.0;
             self.draw_text
-                .draw_walk(cx, Walk::fit(), self.label_align, &self.placeholder);
+                .draw_walk(cx, Walk::fill(), self.text_align, &self.placeholder);
         } else {
-            self.draw_text.empty = 0.0;
+            // self.draw_text.empty = 0.0;
             self.draw_text
-                .draw_walk(cx, Walk::fit(), self.label_align, &self.text);
+                .draw_walk(cx, Walk::fill(), self.text_align, &self.text);
         }
 
-        // let padded_rect = cx.turtle().padded_rect();
+        let padded_rect = cx.turtle().padded_rect();
+
         // Draw selection
         let rects = self.draw_text.selected_rects(
             cx,
-            Walk::fit(),
-            self.label_align,
+            Walk::fill(),
+            self.text_align,
             padded_rect.size.x,
             &self.text,
             self.cursor.head.min(self.cursor.tail),
             self.cursor.head.max(self.cursor.tail),
         );
-
-        let last_pos = rects
-            .last()
-            .map(|rect| padded_rect.pos + rect.pos)
-            .unwrap_or(padded_rect.pos);
         for rect in rects {
             self.draw_selection.draw_abs(
                 cx,
@@ -304,35 +269,18 @@ impl Widget for GInput {
                 },
             );
         }
-        // dbg!(self.scroll_bars.get_viewport_rect(cx));
 
-        self.scroll_bars.set_scroll_x(cx, last_pos.x);
-
-        // dbg!(self.scroll_bars.get_scroll_pos());
-        self.scroll_bars.end(cx);
         // Draw cursor
-        // let mut cursor_position = self.cursor_position(cx, padded_rect.size.x);
-        // let scroll_width = cursor_position.x;
-        // if cursor_position.x > padded_rect.size.x {
-        //     dbg!(cursor_position.x);
-        //    let mut s_area = self.scroll_bars.area();
-        //    let mut s_rect = s_area.rect(cx).clone();
-        //    s_rect.pos.x = cursor_position.x;
-        //    s_area.set_rect(cx, &s_rect);
-        //    self.scroll_bars.set_area(s_area);
-        // }
+        let cursor_position = self.cursor_position(cx, padded_rect.size.x);
         let cursor_height = self.draw_text.line_height(cx);
-        // dbg!(&cursor_position, &self.text);
-        cursor_position.x = last_pos.x;
-
-        cursor_position.y = last_pos.y;
-        // dbg!(&cursor_position);
-        // self.scroll_bars.set_scroll_pos(cx, cursor_position);
-
         self.draw_cursor.draw_abs(
             cx,
             Rect {
-                pos: cursor_position,
+                pos: padded_rect.pos
+                    + dvec2(
+                        cursor_position.x - 0.5 * self.cursor_width,
+                        cursor_position.y,
+                    ),
                 size: dvec2(self.cursor_width, cursor_height),
             },
         );
@@ -458,11 +406,7 @@ impl Widget for GInput {
                 ..
             }) => {
                 cx.hide_text_ime();
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Return(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Return(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::ReturnKey,
@@ -477,11 +421,7 @@ impl Widget for GInput {
                     replace_with: "\n".to_string(),
                 });
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Escape,
@@ -496,7 +436,7 @@ impl Widget for GInput {
                 let mut start = self.cursor.start().index;
                 let end = self.cursor.end().index;
                 if start == end {
-                    start = prev_grapheme_boundary(self.text.as_ref(), start).unwrap_or(0);
+                    start = prev_grapheme_boundary(&self.text, start).unwrap_or(0);
                 }
                 self.history
                     .create_or_extend_edit_group(EditKind::Backspace, self.cursor);
@@ -506,11 +446,7 @@ impl Widget for GInput {
                     replace_with: String::new(),
                 });
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Delete,
@@ -519,8 +455,7 @@ impl Widget for GInput {
                 let start = self.cursor.start().index;
                 let mut end = self.cursor.end().index;
                 if start == end {
-                    end =
-                        next_grapheme_boundary(self.text.as_ref(), end).unwrap_or(self.text.len());
+                    end = next_grapheme_boundary(&self.text, end).unwrap_or(self.text.len());
                 }
                 self.history
                     .create_or_extend_edit_group(EditKind::Delete, self.cursor);
@@ -530,11 +465,7 @@ impl Widget for GInput {
                     replace_with: String::new(),
                 });
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyA,
@@ -561,11 +492,7 @@ impl Widget for GInput {
             }) if !self.is_read_only => {
                 self.undo();
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyZ,
@@ -579,11 +506,7 @@ impl Widget for GInput {
             }) if !self.is_read_only => {
                 self.redo();
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::TextInput(TextInputEvent {
                 input,
@@ -598,7 +521,7 @@ impl Widget for GInput {
                     if replace_last {
                         start -= self
                             .history
-                            .last_inserted_text(self.text.as_ref())
+                            .last_inserted_text(&self.text)
                             .map_or(0, |text| text.len());
                     }
                     self.history.create_or_extend_edit_group(
@@ -615,21 +538,15 @@ impl Widget for GInput {
                         replace_with: input,
                     });
                     self.draw_input.redraw(cx);
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        TextInputAction::Change(self.text.to_string()),
-                    );
+                    cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
                 }
             }
             Hit::TextCopy(event) => {
-                let selection =
-                    self.text[self.cursor.start().index..self.cursor.end().index].to_string();
-                *event.response.borrow_mut() = Some(selection);
+                let selection = &self.text[self.cursor.start().index..self.cursor.end().index];
+                *event.response.borrow_mut() = Some(selection.to_string());
             }
             Hit::TextCut(event) => {
-                let selection =
-                    self.text[self.cursor.start().index..self.cursor.end().index].to_string();
+                let selection = &self.text[self.cursor.start().index..self.cursor.end().index];
                 *event.response.borrow_mut() = Some(selection.to_string());
                 if !selection.is_empty() {
                     self.history
@@ -640,11 +557,7 @@ impl Widget for GInput {
                         replace_with: String::new(),
                     });
                     self.draw_input.redraw(cx);
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        TextInputAction::Change(self.text.to_string()),
-                    );
+                    cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
                 }
             }
             Hit::FingerHoverIn(_) => {
@@ -723,18 +636,18 @@ impl LiveHook for GInput {
         let mut select_color = font_color.clone();
         select_color.w = 0.5;
         // ------------------ round -----------------------------------------------------
-        if self.round {
-            self.border_radius = match self.walk.height {
-                Size::Fixed(h) => (h * 0.25) as f32,
-                Size::Fit => {
-                    ((self.draw_text.text_style.font_size
-                        + self.layout.padding.top
-                        + self.layout.padding.bottom)
-                        * 0.25) as f32
-                }
-                _ => panic!("round only support fixed and fit"),
-            };
-        }
+        // if self.round {
+        //     self.border_radius = match self.walk.height {
+        //         Size::Fixed(h) => (h * 0.25) as f32,
+        //         Size::Fit => {
+        //             ((self.draw_text.text_style.font_size
+        //                 + self.layout.padding.top
+        //                 + self.layout.padding.bottom)
+        //                 * 0.25) as f32
+        //         }
+        //         _ => panic!("round only support fixed and fit"),
+        //     };
+        // }
         // draw input --------------------------------------------------------------
         self.draw_input.apply_over(
             cx,
@@ -758,13 +671,14 @@ impl LiveHook for GInput {
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
-                    line_spacing: (self.layout.line_spacing),
-                    top_drop: (self.top_drop),
+                    // line_spacing: (self.layout.line_spacing),
+                    // top_drop: (self.top_drop),
                     font_size: (self.font_size),
-                    height_factor: (self.height_factor),
+                    // height_factor: (self.height_factor),
                 }
             },
         );
+        self.draw_text.wrap = self.wrap.clone();
         // draw cursor -------------------------------------------------------------
         self.draw_cursor.apply_over(
             cx,
@@ -842,10 +756,10 @@ impl GInput {
     ) -> IndexAffinity {
         self.draw_text.position_to_index_affinity(
             cx,
-            Walk::fit(),
-            self.label_align,
+            Walk::fill(),
+            self.text_align,
             width,
-            self.text.as_ref(),
+            &self.text,
             position,
         )
     }
@@ -853,16 +767,16 @@ impl GInput {
     fn cursor_position(&self, cx: &mut Cx2d, width: f64) -> DVec2 {
         self.draw_text.index_affinity_to_position(
             cx,
-            Walk::fit(),
-            self.label_align,
+            Walk::fill(),
+            self.text_align,
             width,
-            self.text.as_ref(),
+            &self.text,
             self.cursor.head,
         )
     }
 
     fn move_cursor_left(&mut self, is_select: bool) {
-        let Some(index) = prev_grapheme_boundary(self.text.as_ref(), self.cursor.head.index) else {
+        let Some(index) = prev_grapheme_boundary(&self.text, self.cursor.head.index) else {
             return;
         };
         self.move_cursor_to(
@@ -875,7 +789,7 @@ impl GInput {
     }
 
     fn move_cursor_right(&mut self, is_select: bool) {
-        let Some(index) = next_grapheme_boundary(self.text.as_ref(), self.cursor.head.index) else {
+        let Some(index) = next_grapheme_boundary(&self.text, self.cursor.head.index) else {
             return;
         };
         self.move_cursor_to(
@@ -985,6 +899,44 @@ impl GInput {
             self.cursor = cursor;
         }
     }
+}
+
+impl GInputRef {
+    pub fn changed(&self, actions: &Actions) -> Option<String> {
+        if let TextInputAction::Change(val) = actions.find_widget_action_cast(self.widget_uid()) {
+            return Some(val);
+        }
+        None
+    }
+
+    pub fn returned(&self, actions: &Actions) -> Option<String> {
+        if let TextInputAction::Return(val) = actions.find_widget_action_cast(self.widget_uid()) {
+            return Some(val);
+        }
+        None
+    }
+    
+    pub fn set_cursor(&self, head: usize, tail: usize) {
+        if let Some(mut inner) = self.borrow_mut() {
+            inner.set_cursor(Cursor {
+                head: IndexAffinity {
+                    index: head,
+                    affinity: Affinity::After,
+                },
+                tail: IndexAffinity {
+                    index: tail,
+                    affinity: Affinity::Before,
+                },
+            });
+        }
+    }
+
+    pub fn set_key_focus(&self, cx: &mut Cx) {
+        if let Some(inner) = self.borrow() {
+            inner.set_key_focus(cx);
+        }
+    }
+
 }
 
 fn next_grapheme_boundary(string: &str, index: usize) -> Option<usize> {

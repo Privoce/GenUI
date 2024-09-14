@@ -127,7 +127,7 @@ impl History {
     pub fn apply_edit(&mut self, edit: Edit, text: &mut String) {
         let inverted_edit = edit.invert(&text);
         edit.apply(text);
-        dbg!(&edit, &text, &inverted_edit);
+        // dbg!(&edit, &text, &inverted_edit);
         self.undo_stack.push_edit(inverted_edit);
         self.redo_stack.clear();
     }
