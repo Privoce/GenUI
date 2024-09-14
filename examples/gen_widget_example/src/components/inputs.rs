@@ -18,21 +18,28 @@ live_design! {
             width: Fill,
             spacing: 20.0,
             <GCard>{
-                height: 62.0,
+                height: 32.0,
                 width: 200.0,
                 background_visible: false,
                 <GInput>{
                     height: Fill,
+                    width: Fill,
+                    text: "esdsadasdsa"
                 }
             }
             <GCard>{
                 height: 36.0,
                 width: 200.0,
-                <TextInput>{
-                    height: Fill,
-                    // border_radius: 4.0,
-                    // border_width: 1.0,
-                    // input_type: Pwd,
+                background_visible: false,
+                <GInput>{
+                    spread_radius: 2.0,
+                    shadow_offset: vec2(2.0, 2.0),
+                    cursor_width: 3.0,
+                    border_width: 1.0,
+                    theme: Error,
+                    height: 32.0,
+                    width: Fill,
+                    placeholder: "Place Input"
                 }
             }
         }

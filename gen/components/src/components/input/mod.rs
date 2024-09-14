@@ -16,6 +16,11 @@ use crate::{
 live_design! {
     import makepad_draw::shader::std::*;
     GInputBase = {{GInput}}{
+        background_color: vec4(1.0, 1.0, 1.0, 1.0),
+        font_hover_color: vec4(0.2, 0.2, 0.2, 1.0),
+        font_pressed_color: vec4(0.2, 0.2, 0.2, 1.0),
+        shadow_offset: vec2(0.0, 0.0),
+        color: #667085,
         height: Fill,
         width: 180.0,
         // align: {x: 0.0, y: 0.0},
@@ -52,8 +57,8 @@ live_design! {
                     from: {all: Forward {duration: .25}}
                     apply: {
                         draw_cursor: {focus: 0.0},
-                        draw_input: {focus: 0.0},
-                        draw_selection: {focus: 0.0}
+                        draw_input: {pressed: 0.0},
+                        draw_selection: {pressed: 0.0}
                         draw_text: {focus: 0.0}
                     }
                 }
@@ -61,47 +66,18 @@ live_design! {
                     from: {all: Snap}
                     apply: {
                         draw_cursor: {focus: 1.0},
-                        draw_input: {focus: 1.0},
-                        draw_selection: {focus: 1.0}
+                        draw_input: {pressed: 1.0},
+                        draw_selection: {pressed: 1.0}
                         draw_text: {focus: 1.0}
                     }
                 }
             }
         },
-        draw_input: {
-            instance hover: 0.0
-            instance pressed: 0.0
-            instance focus: 0.0
-
-            fn get_color(self) -> vec4 {
-                return self.background_color
-            }
-
-            fn pixel(self) -> vec4 {
-                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
-
-                sdf.box(
-                    self.border_width,
-                    self.border_width,
-                    self.rect_size.x - self.border_width * 2.0,
-                    self.rect_size.y - self.border_width * 2.0,
-                    self.border_radius
-                )
-
-                sdf.fill_keep(self.get_color());
-
-                sdf.stroke(
-                    self.get_border_color(),
-                    self.border_width
-                );
-
-                return sdf.result
-            }
-        }
+        
         draw_text: {
             instance hover: 0.0;
             instance focus: 0.0;
-
+            instance placeholder_color: vec4;
             fn get_color(self) -> vec4 {
                 return mix(
                     mix(
@@ -109,7 +85,7 @@ live_design! {
                         mix(self.hover_color, self.pressed_color, self.pressed),
                         self.hover
                     ),
-                    self.hover_color,
+                    self.placeholder_color,
                     self.empty
                 )
             }
@@ -132,26 +108,26 @@ live_design! {
             }
         }
 
-        draw_selection: {
-            instance hover: 0.0
-            instance focus: 0.0
+        // draw_selection: {
+        //     instance hover: 0.0
+        //     instance focus: 0.0
 
-            fn pixel(self) -> vec4 {
-                //return mix(#f00,#0f0,self.pos.y)
-                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
-                sdf.box(
-                    0.,
-                    0.,
-                    self.rect_size.x,
-                    self.rect_size.y,
-                    0.5
-                )
-                sdf.fill(
-                    self.get_color()
-                );
-                return sdf.result
-            }
-        }
+        //     fn pixel(self) -> vec4 {
+        //         //return mix(#f00,#0f0,self.pos.y)
+        //         let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+        //         sdf.box(
+        //             0.,
+        //             0.,
+        //             self.rect_size.x,
+        //             self.rect_size.y,
+        //             0.5
+        //         )
+        //         sdf.fill(
+        //             self.get_color()
+        //         );
+        //         return sdf.result
+        //     }
+        // }
 
     }
 }
@@ -161,21 +137,49 @@ pub struct GInput {
     #[live]
     pub theme: Themes,
     #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(0.0)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
+    #[live]
+    pub placeholder_color: Option<Vec4>,
+    #[live]
     pub color: Option<Vec4>,
     #[live]
+    pub cursor_color: Option<Vec4>,
+    #[live]
+    pub select_color: Option<Vec4>,
+    #[live]
     pub background_color: Option<Vec4>,
+    #[live(true)]
+    pub background_visible: bool,
+    #[live(true)]
+    pub visible: bool,
     #[live]
     pub hover_color: Option<Vec4>,
+    #[live]
+    pub font_hover_color: Option<Vec4>,
+    #[live]
+    pub font_pressed_color: Option<Vec4>,
+    #[live]
+    pub cursor_hover_color: Option<Vec4>,
+    #[live]
+    pub cursor_pressed_color: Option<Vec4>,
+    #[live]
+    pub select_hover_color: Option<Vec4>,
+    #[live]
+    pub select_pressed_color: Option<Vec4>,
     #[live]
     pub pressed_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
-    #[live(0.0)]
+    #[live(1.0)]
     pub border_width: f32,
     #[live(2.0)]
     pub border_radius: f32,
-    #[live(false)]
-    pub round: bool,
     // text --------------------
     #[live]
     pub text_align: Align,
@@ -623,41 +627,40 @@ impl LiveHook for GInput {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 25);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 400);
+        let hover_color = self.hover_color.get(self.theme, 25);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
+        let font_hover_color = self.font_hover_color.get(self.theme, 600);
+        let font_pressed_color = self.font_pressed_color.get(self.theme, 800);
+        let cursor_color = self.cursor_color.get(self.theme, 800);
+        let cursor_hover_color = self.cursor_hover_color.get(self.theme, 800);
+        let cursor_pressed_color = self.cursor_pressed_color.get(self.theme, 800);
+        let select_color = self.select_color.get(self.theme, 400);
+        let select_hover_color = self.select_hover_color.get(self.theme, 300);
+        let select_pressed_color = self.select_pressed_color.get(self.theme, 500);
+        let placeholder_color = self.placeholder_color.use_or("#98A2B3");
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 25);
         // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 800);
+        let border_color = self.border_color.get(self.theme, 400);
         // ------------------ font ------------------------------------------------------
         let font_color = self.color.get(self.theme, 800);
         // ---------------------- is empty ------------------------------------------------
         let empty = self.text.len().eq(&0).to_f32();
-        // ---------------------- select color ------------------------------------------
-        let mut select_color = font_color.clone();
-        select_color.w = 0.5;
-        // ------------------ round -----------------------------------------------------
-        // if self.round {
-        //     self.border_radius = match self.walk.height {
-        //         Size::Fixed(h) => (h * 0.25) as f32,
-        //         Size::Fit => {
-        //             ((self.draw_text.text_style.font_size
-        //                 + self.layout.padding.top
-        //                 + self.layout.padding.bottom)
-        //                 * 0.25) as f32
-        //         }
-        //         _ => panic!("round only support fixed and fit"),
-        //     };
-        // }
         // draw input --------------------------------------------------------------
         self.draw_input.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
+                background_visible: (self.background_visible.to_f32()),
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
             },
         );
         // draw text ---------------------------------------------------------------
@@ -665,8 +668,9 @@ impl LiveHook for GInput {
             cx,
             live! {
                 color: (font_color),
-                hover_color: (hover_color),
-                pressed_color: (pressed_color),
+                hover_color: (font_hover_color),
+                pressed_color: (font_pressed_color),
+                placeholder_color:(placeholder_color),
                 empty: (empty),
                 text_style: {
                     // brightness: (self.brightness),
@@ -683,12 +687,12 @@ impl LiveHook for GInput {
         self.draw_cursor.apply_over(
             cx,
             live! {
-                background_color: (font_color),
-                border_color: (border_color),
+                background_color: (cursor_color),
+                // border_color: (border_color),
                 // border_width: (self.border_width),
                 border_radius: (self.cursor_border_radius),
-                pressed_color: (pressed_color),
-                hover_color: (hover_color),
+                pressed_color: (cursor_pressed_color),
+                hover_color: (cursor_hover_color),
             },
         );
         // draw select -------------------------------------------------------------
@@ -696,8 +700,10 @@ impl LiveHook for GInput {
             cx,
             live! {
                 background_color: (select_color),
-                pressed_color: (pressed_color),
-                hover_color: (hover_color),
+                background_visible: 1.0,
+                pressed_color: (select_pressed_color),
+                hover_color: (select_hover_color),
+                border_radius: 0.0
             },
         );
         self.draw_text.redraw(cx);

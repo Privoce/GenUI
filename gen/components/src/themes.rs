@@ -212,15 +212,26 @@ pub fn hex_to_vec4(hex: &str) -> Vec4 {
     let hex = hex.trim_start_matches('#');
 
     // 解析 RGB 值
-    let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
-    let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
-    let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+    let (r, g, b, a) = if hex.len() == 6 {
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+        (r, g, b, 255)
+    } else if hex.len() == 8 {
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+        let a = u8::from_str_radix(&hex[6..8], 16).unwrap();
+        (r, g, b, a)
+    } else {
+        panic!("invalid hex color: {}", hex);
+    };
 
     Vec4 {
         x: r as f32 / 255.0,
         y: g as f32 / 255.0,
         z: b as f32 / 255.0,
-        w: 1.0, // opacity 1.0
+        w: a as f32 / 255.0,
     }
 }
 

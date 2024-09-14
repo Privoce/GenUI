@@ -133,7 +133,7 @@ live_design! {
     COLOR_SUCCESS_800 = #05603A;
     COLOR_SUCCESS_900 = #054F31;
     // -------- font-family ------------------------------------
-    FONT_FAMILY = dep("crate://self/resources/font/IBMPlexSans-Text.ttf");
+    FONT_FAMILY = dep("crate://self/resources/font/OPPOSans-Regular.ttf");
     FONT_SIZE = 10.0;
     FONT_SIZE_SMALL = 9.0;
     // padding -----------------------------------------------------

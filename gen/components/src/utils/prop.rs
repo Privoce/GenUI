@@ -2,18 +2,22 @@ use std::{path::PathBuf, str::FromStr};
 
 use makepad_widgets::{LiveDependency, Vec4};
 
-use crate::themes::{get_color, Themes};
+use crate::themes::{get_color, hex_to_vec4, Themes};
 
 // -------------------------------------------------------------------------------------------------
 /// This trait is used to get the color of the theme
 pub trait ThemeColor {
     /// Get the color of the theme. if color is none, return the default color
     fn get(&self, theme: Themes, default: u32) -> Vec4;
+    fn use_or(&self, hex: &str) -> Vec4;
 }
 
 impl ThemeColor for Option<Vec4> {
     fn get(&self, theme: Themes, default: u32) -> Vec4 {
         get_color(theme, self.as_ref(), default)
+    }
+    fn use_or(&self, hex: &str) -> Vec4 {
+        self.unwrap_or_else(|| hex_to_vec4(hex))
     }
 }
 
