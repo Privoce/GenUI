@@ -1,5 +1,7 @@
 pub mod types;
+mod register;
 
+pub use register::register;
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 use types::{Edit, EditKind, History};

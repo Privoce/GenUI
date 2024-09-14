@@ -18,7 +18,7 @@
 - [x] Tag 🆗
 - [x] DropDown
 - [x] Toggle 🆗
-- [x] Collapse
+- [x] Collapse 🆗
 - [x] ToolTip
 - [x] Tab
 - [x] Table

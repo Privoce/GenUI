@@ -18,7 +18,6 @@ pub mod loading;
 pub mod popup;
 pub mod progress;
 pub mod radio;
-pub mod select;
 pub mod shader;
 pub mod tab;
 pub mod toggle;

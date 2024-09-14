@@ -10,9 +10,7 @@ use crate::{
 };
 
 live_design! {
-    GLoadingBase = {{GLoading}}{
-
-    }
+    GLoadingBase = {{GLoading}}{}
 }
 
 #[derive(Live, Widget)]
@@ -75,6 +73,9 @@ impl Widget for GLoading {
 impl LiveHook for GLoading {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         self.pre_state = self.animation_open;
+        if !self.visible {
+            return;
+        }
         // ------------------ hover color -----------------------------------------------
         let loading_color = self.stroke_color.get(self.theme, 600);
         // ------------------ apply to draw_loading_wrap ----------------------------------------
