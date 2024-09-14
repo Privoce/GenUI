@@ -51,7 +51,7 @@ live_design! {
                     //     width: 200.0,
                     //     height: 200.0,
                     //     <GSplitter>{
-                    //
+                    
                     //     }
                     // }
                     // <GLoadingExample>{}

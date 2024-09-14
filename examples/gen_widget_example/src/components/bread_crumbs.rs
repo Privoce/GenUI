@@ -34,10 +34,12 @@ live_design! {
                 }
             }
             <GBreadCrumb>{
+               
                 theme: Dark,
                 labels: ["home", "components", "button"],
             }
             <GBreadCrumb>{
+                
                 labels: ["home", "components", "gen", "ui", "crumb"],
                 crumb_item: {
                     split_type: Arrow,

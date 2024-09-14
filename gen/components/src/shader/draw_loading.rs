@@ -73,6 +73,7 @@ live_design! {
                     }
                 }
                 GLoadingType::CircleDot => {
+                    // https://www.shadertoy.com/view/ldVXRt
                     let counter = 0.0;
                     // draw 16 dots around as a loading animation
                     for i in 0..16{
@@ -84,7 +85,7 @@ live_design! {
                             self.rect_size.y * 0.5 - sin(angle * counter) * loading_size.y * 0.5
                         );
 
-                        sdf.circle(dot_pos.x, dot_pos.y, loading_dot_size.x * 0.4 + 0.1 * counter);
+                        sdf.circle(dot_pos.x, dot_pos.y, loading_dot_size.x * 0.3 + 0.1 * counter);
                         // with the time passing, the circle color(self.stroke_color) will change from deeper to lighter, then back to deeper
                         // It looks like it's spinning, but it's actually the color changing
                         // the easy way is to adjust the alpha value of the color

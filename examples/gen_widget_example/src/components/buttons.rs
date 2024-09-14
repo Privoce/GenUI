@@ -49,8 +49,17 @@ live_design! {
                         <GIcon>{
                             theme: Dark,
                             height: 16.0,
-                            width: 16.0,
+                            width: 18.0,
                             icon_type: Code,
+                            stroke_width: 1.4,
+                            animation_open: true,
+                        }
+                        <GIcon>{
+                            theme: Dark,
+                            height: 16.0,
+                            width: 18.0,
+                            icon_type: Add,
+                            stroke_width: 1.4,
                             animation_open: true,
                         }
                         <GLabel>{

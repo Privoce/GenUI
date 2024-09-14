@@ -310,7 +310,7 @@ impl LiveHook for GBreadCrumb {
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                background_visible: 1.0
+                background_visible: 0.0
             },
         );
         self.icon.apply_over(cx, live!{

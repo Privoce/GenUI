@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
 
     GCollapseExample = <ScrollYView>{
-        height: 200.0,
+        height: 300.0,
         width: Fill,
         flow: Down,
         spacing: 10.0,
@@ -15,7 +15,7 @@ live_design! {
         }
         <GVLayout>{
             spacing: 6.0,
-            height: 100.0,
+            height: Fill,
             width: Fill,
             <GHLayout>{
                 height: Fit,
@@ -34,7 +34,17 @@ live_design! {
                     height: 100.0,
                     width: 300.0,
                     opened: true,
+                    position: Right,
+                    header: {
+                        <GLabel>{
+                            text: "Right",
+                        }
+                        width: 60.0,
+                        height: Fill,
+                    }
                     body: {
+                        height: Fill,
+                        width: 240.0,
                         theme: Dark,
                         <GButton>{
                             theme: Error,
@@ -42,6 +52,49 @@ live_design! {
                                 text: "Close!"
                             }
                         }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                width: Fill,
+                spacing: 6.0,
+                <GCollapse>{
+                    height: 180.0,
+                    width: 300.0,
+                    opened: false,
+                    position: Top,
+                    header: {
+                        <GLabel>{
+                            text: "Open Top",
+                        }
+                        width: Fill,
+                        height: 40.0,
+                    }
+                    body: {
+                        height: 140.0,
+                        width: Fill,
+                        theme: Dark,
+                        
+                    }
+                }
+                <GCollapse>{
+                    height: 180.0,
+                    width: 300.0,
+                    opened: false,
+                    position: Left,
+                    header: {
+                        <GLabel>{
+                            text: "Left",
+                        }
+                        width: 60.0,
+                        height: Fill,
+                    }
+                    body: {
+                        height: Fill,
+                        width: 240.0,
+                        theme: Dark,
+                        
                     }
                 }
             }

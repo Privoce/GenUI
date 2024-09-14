@@ -10,7 +10,7 @@ use makepad_widgets::*;
 
 use crate::{
     animatie_fn, event_option, ref_event_option, set_event,
-    shader::draw_card::DrawGCard,
+    shader::{draw_card::DrawGCard, manual::Position4},
     utils::{set_cursor, BoolToF32},
     widget_area,
 };
@@ -85,6 +85,8 @@ pub struct GCollapse {
     // use animation counter to prevent multiple animations
     #[rust(true)]
     animation_counter: bool,
+    #[live]
+    pub position: Position4,
 }
 
 impl Widget for GCollapse {
@@ -93,36 +95,82 @@ impl Widget for GCollapse {
             return DrawStep::done();
         }
         self.fold = self.opened.to_f32() as f64;
-        if self.draw_state.begin(cx, DrawCollapseState::DrawHeader) {
+        let body_walk = self.body.walk(cx);
+        let header_walk = self.header.walk(cx);
+        let (flow, steps) = match self.position {
+            Position4::Left => (
+                Flow::Right,
+                [DrawCollapseState::DrawBody, DrawCollapseState::DrawHeader],
+            ),
+            Position4::Right => (
+                Flow::Right,
+                [DrawCollapseState::DrawHeader, DrawCollapseState::DrawBody],
+            ),
+            Position4::Top => (
+                Flow::Down,
+                [DrawCollapseState::DrawBody, DrawCollapseState::DrawHeader],
+            ),
+            Position4::Bottom => (
+                Flow::Down,
+                [DrawCollapseState::DrawHeader, DrawCollapseState::DrawBody],
+            ),
+        };
+
+        self.layout.flow = flow;
+        if self.draw_state.begin(cx, steps[0]) {
             cx.begin_turtle(walk, self.layout);
         }
-        if let Some(DrawCollapseState::DrawHeader) = self.draw_state.get() {
-            let walk = self.header.walk(cx);
-            self.header.draw_walk(cx, scope, walk)?;
 
-            let body_walk = self.body.walk(cx);
-
-            cx.begin_turtle(
-                body_walk,
-                Layout::flow_down().with_scroll(dvec2(0.0, self.rect_size * (1.0 - self.fold))),
-            );
-            self.draw_state.set(DrawCollapseState::DrawBody);
-        }
-        if self.fold == 0.0 {
-            dbg!(self.opened, self.fold);
-            cx.end_turtle();
-            cx.end_turtle_with_area(&mut self.area);
-            self.draw_state.end();
-        } else {
-            self.animator_play(cx, id!(open.on));
-            if let Some(DrawCollapseState::DrawBody) = self.draw_state.get() {
-                let walk = self.body.walk(cx);
-                self.body.draw_walk(cx, scope, walk)?;
-                self.rect_size = cx.turtle().used().y;
-                cx.end_turtle();
-                cx.end_turtle_with_area(&mut self.area);
-                self.draw_state.end();
-            }
+        for (index, _) in steps.iter().enumerate() {
+            let _ = self.draw_state.get().map(|state| match state {
+                DrawCollapseState::DrawHeader => {
+                    let _ = self.header.draw_walk(cx, scope, header_walk);
+                    // check is the first step
+                    if index == 0 {
+                        cx.begin_turtle(
+                            body_walk,
+                            Layout::flow_down()
+                                .with_scroll(dvec2(0.0, self.rect_size * (1.0 - self.fold))),
+                        );
+                        self.draw_state.set(steps[1]);
+                    } else {
+                        match self.position {
+                            Position4::Left | Position4::Right => {
+                                self.rect_size = cx.turtle().used().x;
+                            }
+                            Position4::Top | Position4::Bottom => {
+                                self.rect_size = cx.turtle().used().y;
+                            }
+                        }
+                        cx.end_turtle();
+                        cx.end_turtle_with_area(&mut self.area);
+                        self.draw_state.end();
+                    }
+                }
+                DrawCollapseState::DrawBody => {
+                    if self.fold == 1.0 {
+                        self.animator_play(cx, id!(open.on));
+                        let _ = self.body.draw_walk(cx, scope, body_walk);
+                    }
+                    // check is the last step
+                    if index == 1 {
+                        match self.position {
+                            Position4::Left | Position4::Right => {
+                                self.rect_size = cx.turtle().used().x;
+                            }
+                            Position4::Top | Position4::Bottom => {
+                                self.rect_size = cx.turtle().used().y;
+                            }
+                        }
+                        cx.end_turtle();
+                        cx.end_turtle_with_area(&mut self.area);
+                        self.draw_state.end();
+                    } else {
+                        cx.begin_turtle(header_walk, Layout::flow_down());
+                        self.draw_state.set(steps[1]);
+                    }
+                }
+            });
         }
         DrawStep::done()
     }
@@ -205,7 +253,6 @@ impl Widget for GCollapse {
                 self.fold = self.opened.to_f32() as f64;
 
                 if self.opened {
-                    dbg!("open", self.fold);
                     self.animator_play(cx, id!(open.on));
                     cx.widget_action(uid, &scope.path, GCollapseEvent::Opened(f_up.clone()));
                 } else {

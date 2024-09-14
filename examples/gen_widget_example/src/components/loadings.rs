@@ -31,12 +31,14 @@ live_design! {
             }
         }
         <View>{
-            height: 100.0,
+            height: 180.0,
             width: Fill,
             flow: Down,
             spacing: 16.0,
             align: {x: 0.5, y: 0.5},
             <GLoading>{
+                height: 120.0,
+                width: 120.0,
                 loading_type: CircleDot
             }
             <GLabel>{

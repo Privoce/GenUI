@@ -13,14 +13,13 @@
 - [x] Image 🆗
 - [x] Input
 - [x] Popup
-- [x] Progress
+- [x] Progress 🆗
 - [x] Loading 🆗
 - [x] Tag 🆗
 - [x] DropDown
 - [x] Toggle 🆗
 - [x] Collapse
 - [x] ToolTip
-- [x] Progress
 - [x] Tab
 - [x] Table
 - [x] Dialog
