@@ -8,9 +8,7 @@ use types::{Edit, EditKind, History};
 use unicode_segmentation::{GraphemeCursor, UnicodeSegmentation};
 
 use crate::{
-    shader::{draw_card::DrawGCard, draw_text::DrawGText},
-    themes::Themes,
-    utils::{get_font_family, BoolToF32, ThemeColor},
+    animatie_fn, event_bool, event_option, ref_event_bool, ref_event_option, set_event, set_event_bool, shader::{draw_card::DrawGCard, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -73,7 +71,7 @@ live_design! {
                 }
             }
         },
-        
+
         draw_text: {
             instance hover: 0.0;
             instance focus: 0.0;
@@ -235,6 +233,9 @@ pub struct GInput {
 
 impl Widget for GInput {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
         // self.draw_text.wrap = self.wrap.clone();
         self.draw_text.text_style.font = get_font_family(&self.font_family, cx);
         self.draw_input.begin(cx, walk, self.layout);
@@ -620,10 +621,17 @@ impl Widget for GInput {
         self.cursor.tail.index = self.cursor.tail.index.min(text.len());
         self.history.clear();
     }
+
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GInput {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 25);
         // ------------------ hover color -----------------------------------------------
@@ -714,6 +722,141 @@ impl LiveHook for GInput {
 }
 
 impl GInput {
+    widget_area! {
+        area, draw_input,
+        area_selection, draw_selection
+    }
+    event_option! {
+        change: TextInputAction::Change => String,
+        r#return: TextInputAction::Return => String
+    }
+    event_bool! {
+        key_focus: TextInputAction::KeyFocus,
+        key_focus_lost: TextInputAction::KeyFocusLost,
+        escape: TextInputAction::Escape
+    }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                focus: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 1.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 1.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 1.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 1.0
+            },
+        );
+    }
+
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
+
     pub fn set_key_focus(&self, cx: &mut Cx) {
         cx.set_key_focus(self.draw_input.area());
     }
@@ -908,6 +1051,21 @@ impl GInput {
 }
 
 impl GInputRef {
+    ref_event_bool! {
+        key_focus,
+        key_focus_lost,
+        escape
+    }
+    ref_event_option! {
+        change => String,
+        r#return => String
+    }
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
+    }
     pub fn changed(&self, actions: &Actions) -> Option<String> {
         if let TextInputAction::Change(val) = actions.find_widget_action_cast(self.widget_uid()) {
             return Some(val);
@@ -921,7 +1079,7 @@ impl GInputRef {
         }
         None
     }
-    
+
     pub fn set_cursor(&self, head: usize, tail: usize) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.set_cursor(Cursor {
@@ -942,7 +1100,18 @@ impl GInputRef {
             inner.set_key_focus(cx);
         }
     }
+}
 
+impl GInputSet {
+    set_event_bool! {
+        key_focus,
+        key_focus_lost,
+        escape
+    }
+    set_event! {
+        change => String,
+        r#return => String
+    }
 }
 
 fn next_grapheme_boundary(string: &str, index: usize) -> Option<usize> {
