@@ -26,13 +26,9 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::collapse::register(cx);
     crate::components::shader::register(cx);
     crate::components::input::register(cx);
-    
-   
-    crate::components::popup::live_design(cx);
-    crate::components::drop_down::live_design(cx);
-    
-    
-    
+    crate::components::popup::register(cx);
+    crate::components::drop_down::register(cx);
+
     
     crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);

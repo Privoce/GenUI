@@ -1,12 +1,12 @@
 pub mod event;
 mod register;
 
-use event::*;
+// use event::*;
 use makepad_widgets::*;
 pub use register::register;
 use std::rc::Rc;
 
-use crate::shader::manual::{PopupMode, Position};
+use crate::{shader::manual::{PopupMode, Position}, widget_area};
 use icon_atlas::RefCell;
 
 use super::{card::GCard, popup::GPopup};
@@ -64,6 +64,9 @@ impl LiveHook for GDropDown {
 }
 
 impl GDropDown {
+    widget_area! {
+        area, draw_card
+    }
     pub fn open(&mut self, cx: &mut Cx) {
         self.opened = true;
         self.draw_card.redraw(cx);
