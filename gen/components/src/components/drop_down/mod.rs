@@ -30,6 +30,10 @@ pub struct GDropDown {
     pub opened: bool,
     #[live(6.0)]
     pub offset: f32,
+    #[live]
+    pub offset_x: f32,
+    #[live]
+    pub offset_y: f32,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
@@ -107,7 +111,7 @@ impl Widget for GDropDown {
                 popup_menu.draw_container(cx, scope, Some(self.position.clone()));
                 let container = popup_menu.container_area().rect(cx);
 
-                let shift = match self.position {
+                let mut shift = match self.position {
                     Position::Bottom => DVec2 {
                         x: -container.size.x / 2.0 + area.size.x / 2.0,
                         y: area.size.y + self.offset as f64,
@@ -157,6 +161,9 @@ impl Widget for GDropDown {
                         y: 0.0 - container.size.y + area.size.y,
                     },
                 };
+
+                shift.x += self.offset_x as f64;
+                shift.y += self.offset_y as f64;
 
                 popup_menu.end(cx, scope, self.draw_card.area(), shift);
             }

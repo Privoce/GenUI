@@ -132,7 +132,7 @@ impl Widget for GTabButton {
         self.draw_text.draw_walk(
             cx,
             self.text_walk.with_add_padding(Padding {
-                top: 6.0,
+                top: 4.0,
                 bottom: 4.0,
                 ..Default::default()
             }),
@@ -150,8 +150,8 @@ impl Widget for GTabButton {
                 Layout {
                     align: Align { x: 0.5, y: 0.5 },
                     padding: Padding {
-                        top: 4.0,
-                        bottom: 2.0,
+                        top: 2.5,
+                        bottom: 2.5,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -317,6 +317,7 @@ impl GTabButton {
                 cx,
                 live! {
                     background_color: (msg_bg_color),
+                    background_visible: 1.0,
                     border_radius: ((self.font_size + 8.0)  * 0.25),
                 },
             );
@@ -325,8 +326,8 @@ impl GTabButton {
                 live! {
                     color: (font_color),
                     text_style: {
-                        brightness: (text_style.brightness),
-                        curve: (text_style.curve),
+                        // brightness: (text_style.brightness),
+                        // curve: (text_style.curve),
                         line_spacing: (text_style.line_spacing),
                         top_drop: (text_style.top_drop),
                         font_size: (self.font_size - 1.0),
@@ -356,8 +357,8 @@ impl GTabButton {
             live! {
                 color: (font_color),
                 text_style: {
-                    brightness: (text_style.brightness),
-                    curve: (text_style.curve),
+                    // brightness: (text_style.brightness),
+                    // curve: (text_style.curve),
                     line_spacing: (text_style.line_spacing),
                     top_drop: (text_style.top_drop),
                     font_size: (self.font_size),

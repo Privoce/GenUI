@@ -6,9 +6,10 @@ live_design! {
     import gen_components::components::*;
 
     GTabsExample = <GVLayout>{
-        height: 200.0,
+        height: 400.0,
         width: Fill,
         scroll_bars: <GScrollBars> {}
+        spacing: 10.0,
         <GTab>{
             height: 300.0,
             width: Fill,
@@ -23,9 +24,7 @@ live_design! {
                     <GLabel>{
                         text: "GTabBody1",
                     }
-                    <GButton>{
-                        text: "GButton",
-                    }
+                    <GButton>{}
                     <GStateNoMsg>{
                         height: 100.0,
                     }
@@ -47,9 +46,7 @@ live_design! {
             <GLabel>{
                 text: "GTabBody",
             }
-            <GButton>{
-                text: "GButton",
-            }
+            <GButton>{}
             <GStateNoMsg>{
                 height: 100.0,
             }

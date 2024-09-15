@@ -30,7 +30,7 @@ pub use register::register;
 use crate::{
     set_text_and_visible_fn,
     themes::Themes,
-    utils::{get_font_family, ThemeColor}, widget_area,
+    utils::{get_font_family, set_cursor, ThemeColor}, widget_area,
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -53,6 +53,8 @@ pub struct GLabel {
     // pub brightness: f32,
     // #[live(0.5)]
     // pub curve: f32,
+    #[live]
+    pub cursor: Option<MouseCursor>,
     #[live(1.5)]
     pub line_spacing: f64,
     #[live(0.0)]
@@ -96,7 +98,6 @@ impl Widget for GLabel {
             self.align,
             self.text.as_ref(),
         );
-
         DrawStep::done()
     }
     set_text_and_visible_fn!();
@@ -125,6 +126,7 @@ impl LiveHook for GLabel {
             },
         );
         self.draw_text.wrap = self.wrap.clone();
+        set_cursor(cx, self.cursor.as_ref());
         self.draw_text.redraw(cx);
     }
 }

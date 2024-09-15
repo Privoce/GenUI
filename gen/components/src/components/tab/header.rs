@@ -15,17 +15,17 @@ live_design! {
             fn pixel(self) -> vec4 {
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size)
                 sdf.rect(
-                    self.inset.x + self.border_width,
+                    self.border_width,
                     self.rect_size.y - self.border_width - 3.0,
-                    self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
+                    self.rect_size.x - self.border_width * 2.0,
                     3.0
                 );
                 sdf.fill(self.get_color())
                 sdf.box(
-                    self.inset.x + self.border_width,
-                    self.inset.y + self.border_width,
-                    self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
-                    self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
+                    self.border_width,
+                     self.border_width,
+                    self.rect_size.x - self.border_width * 2.0,
+                    self.rect_size.y - self.border_width * 2.0,
                     max(1.0, self.border_radius)
                 )
                 if self.background_visible == 0.0 {
