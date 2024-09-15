@@ -24,16 +24,16 @@ pub enum Position4 {
 #[repr(u32)]
 pub enum Position {
     Left = shader_enum(1),
-    LeftTop,
-    LeftBottom,
-    Right,
-    RightTop,
-    RightBottom,
-    Top,
-    TopLeft,
-    TopRight,
+    LeftTop = shader_enum(2),
+    LeftBottom = shader_enum(3),
+    Right = shader_enum(4),
+    RightTop = shader_enum(5),
+    RightBottom = shader_enum(6),
+    Top = shader_enum(7),
+    TopLeft = shader_enum(8),
+    TopRight = shader_enum(9),
     #[pick]
-    Bottom,
-    BottomLeft,
-    BottomRight
+    Bottom = shader_enum(10),
+    BottomLeft = shader_enum(11),
+    BottomRight = shader_enum(12),
 }

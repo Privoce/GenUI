@@ -14,5 +14,7 @@ pub struct DrawGPopup{
     #[deref]
     pub deref_draw: DrawGCard,
     #[live]
-    pub position: Position
+    pub position: Position,
+    #[live(0.6)]
+    pub opactiy: f32,
 }

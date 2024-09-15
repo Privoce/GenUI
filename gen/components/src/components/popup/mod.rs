@@ -4,7 +4,7 @@ use makepad_widgets::*;
 pub use register::register;
 
 use crate::{
-    shader::{draw_popup::DrawGPopup, manual::PopupMode},
+    shader::{draw_popup::DrawGPopup, manual::{PopupMode, Position}},
     themes::Themes,
     utils::{BoolToF32, ThemeColor},
 };
@@ -94,6 +94,8 @@ impl GPopupContainer {
 pub struct GPopup {
     #[live]
     pub theme: Themes,
+    #[live(0.6)]
+    pub opacity: f32,
     #[live]
     pub background_color: Option<Vec4>,
     #[live]
@@ -118,7 +120,7 @@ pub struct GPopup {
     pub shadow_color: Option<Vec4>,
     #[live(0.0)]
     pub spread_radius: f32,
-    #[live(4.8)]
+    #[live(10.0)]
     pub blur_radius: f32,
     #[live]
     pub shadow_offset: Vec2,
@@ -146,7 +148,7 @@ impl LiveHook for GPopup {
         }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
-        let shadow_color = self.shadow_color.get(self.theme, 700);
+        let shadow_color = self.shadow_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
@@ -159,6 +161,7 @@ impl LiveHook for GPopup {
         self.draw_popup.apply_over(
             cx,
             live! {
+                opacity: (self.opacity),
                 background_color: (bg_color),
                 border_color: (border_color),
                 border_width: (self.border_width),
@@ -206,7 +209,6 @@ impl GPopup {
     pub fn begin(&mut self, cx: &mut Cx2d) {
         self.draw_list.begin_overlay_reuse(cx);
         cx.begin_pass_sized_turtle(Layout::flow_down());
-
         self.draw_popup.begin(cx, self.walk, self.layout);
     }
     /// ## End to draw popup
@@ -220,7 +222,10 @@ impl GPopup {
         // self.draw_popup.redraw(cx);
     }
     /// ## Draw items
-    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
+    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope, position: Option<Position>) {
+        let _ = position.map(|position| {
+            self.draw_popup.position = position;
+        });
         self.container.draw_item(cx, scope);
     }
     pub fn container_area(&self) -> Area {

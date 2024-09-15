@@ -1,15 +1,14 @@
 use makepad_widgets::*;
 
-pub mod tag;
 pub mod breadcrumb;
 pub mod button;
 pub mod card;
 pub mod checkbox;
+pub mod collapse;
 pub mod divider;
 pub mod drop_down;
 pub mod file_upload;
 pub mod icon;
-pub mod svg;
 pub mod image;
 pub mod input;
 pub mod label;
@@ -19,10 +18,11 @@ pub mod popup;
 pub mod progress;
 pub mod radio;
 pub mod shader;
+pub mod svg;
 pub mod tab;
-pub mod toggle;
-pub mod collapse;
 pub mod table;
+pub mod tag;
+pub mod toggle;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -54,7 +54,7 @@ live_design! {
     import crate::components::tab::GTabBase;
     import crate::components::file_upload::GUploadBase;
     import crate::components::collapse::GCollapseBase;
-    import crate::components::table::cell::GTableCellBase;    
+    import crate::components::table::cell::GTableCellBase;
     import crate::components::table::row::GTableRowBase;
     import crate::components::table::body::GTableBodyBase;
     import crate::components::table::header::GTableHeaderBase;
@@ -382,7 +382,139 @@ live_design! {
                 let w = self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0);
                 let h = self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0);
                 let center = vec2((self.pos.x + w) * 0.5, (self.pos.y + h)  * 0.5);
+                let start_p = vec2(self.inset.x + self.border_width, self.inset.y + self.border_width);
+                let quarter_w = w * 0.25;
+                let quarter_h = h * 0.25;
                 match self.position{
+                    Position::Left => {
+                        let end_w = self.inset.x + self.border_width + w - spacing;
+                        sdf.box(
+                            start_p.x,
+                            start_p.y,
+                            w - spacing,
+                            h,
+                            max(1.0, self.border_radius)
+                        );
+
+                        sdf.move_to(end_w - 0.4, center.y - spacing * 0.7);
+                        sdf.line_to(end_w + spacing - 0.4, center.y);
+                        sdf.line_to(end_w - 0.4, center.y + spacing * 0.7);
+                        sdf.close_path();
+                    }
+                    Position::LeftTop => {
+                        let end_w = self.inset.x + self.border_width + w - spacing;
+                        sdf.box(
+                            start_p.x,
+                            start_p.y,
+                            w - spacing,
+                            h,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(end_w - 0.4, start_p.y + quarter_h - spacing * 0.7);
+                        sdf.line_to(end_w + spacing - 0.4, start_p.y + quarter_h);
+                        sdf.line_to(end_w - 0.4, start_p.y + quarter_h + spacing * 0.7);
+                        sdf.close_path();
+                    }
+                    Position::LeftBottom => {
+                        let end_w = self.inset.x + self.border_width + w - spacing;
+                        sdf.box(
+                            start_p.x,
+                            start_p.y,
+                            w - spacing,
+                            h,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(end_w - 0.4, start_p.y + h - quarter_h - spacing * 0.7);
+                        sdf.line_to(end_w + spacing - 0.4, start_p.y + h - quarter_h);
+                        sdf.line_to(end_w - 0.4, start_p.y + h - quarter_h + spacing * 0.7);
+                        sdf.close_path();
+                    }
+                    Position::Right => {
+                        let start_w = self.inset.x + self.border_width + spacing;
+                        sdf.box(
+                            self.inset.x + self.border_width + spacing,
+                            self.inset.y + self.border_width,
+                            w - spacing,
+                            h,
+                            max(1.0, self.border_radius)
+                        );
+
+                        sdf.move_to(start_w - spacing, center.y);
+                        sdf.line_to(start_w + 0.4, center.y - spacing * 0.7);
+                        sdf.line_to(start_w + 0.4, center.y + spacing * 0.7);
+                        sdf.close_path();
+                    }
+                    Position::RightTop => {
+                        let start_w = self.inset.x + self.border_width + spacing;
+                        sdf.box(
+                            self.inset.x + self.border_width + spacing,
+                            self.inset.y + self.border_width,
+                            w - spacing,
+                            h,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(start_w - spacing, start_p.y + quarter_h);
+                        sdf.line_to(start_w + 0.4, start_p.y + quarter_h - spacing * 0.7);
+                        sdf.line_to(start_w + 0.4, start_p.y + quarter_h + spacing * 0.7);
+                        sdf.close_path();
+                    }
+                    Position::RightBottom => {
+                        let start_w = self.inset.x + self.border_width + spacing;
+                        sdf.box(
+                            self.inset.x + self.border_width + spacing,
+                            self.inset.y + self.border_width,
+                            w - spacing,
+                            h,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(start_w - spacing, start_p.y + h - quarter_h);
+                        sdf.line_to(start_w + 0.4, start_p.y + h - quarter_h - spacing * 0.7);
+                        sdf.line_to(start_w + 0.4, start_p.y + h - quarter_h + spacing * 0.7);
+                        sdf.close_path();
+                    }
+                    Position::Top => {
+                        let end_h =  self.inset.y + self.border_width + h - spacing;
+                        sdf.box(
+                            self.inset.x + self.border_width,
+                            self.inset.y + self.border_width,
+                            w,
+                            h - spacing,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(center.x, end_h + spacing - 0.4);
+                        sdf.line_to(center.x - spacing * 0.7, end_h - 0.4);
+                        sdf.line_to(center.x + spacing * 0.7, end_h - 0.4);
+                        sdf.close_path();
+
+                    }
+                    Position::TopLeft => {
+                        let end_h =  self.inset.y + self.border_width + h - spacing;
+                        sdf.box(
+                            self.inset.x + self.border_width,
+                            self.inset.y + self.border_width,
+                            w,
+                            h - spacing,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(start_p.x + quarter_w, end_h + spacing - 0.4);
+                        sdf.line_to(start_p.x + quarter_w - spacing * 0.7, end_h - 0.4);
+                        sdf.line_to(start_p.x + quarter_w + spacing * 0.7, end_h - 0.4);
+                        sdf.close_path();
+                    }
+                    Position::TopRight => {
+                        let end_h =  self.inset.y + self.border_width + h - spacing;
+                        sdf.box(
+                            self.inset.x + self.border_width,
+                            self.inset.y + self.border_width,
+                            w,
+                            h - spacing,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(start_p.x + w - quarter_w, end_h + spacing - 0.4);
+                        sdf.line_to(start_p.x + w - quarter_w - spacing * 0.7, end_h - 0.4);
+                        sdf.line_to(start_p.x + w - quarter_w + spacing * 0.7, end_h - 0.4);
+                        sdf.close_path();
+                    }
                     Position::Bottom => {
                         sdf.box(
                             self.inset.x + self.border_width,
@@ -392,28 +524,41 @@ live_design! {
                             max(1.0, self.border_radius)
                         );
 
-                        sdf.move_to(center.x - spacing * 0.7, spacing);
+                        sdf.move_to(center.x - spacing * 0.7, spacing + 0.4);
                         sdf.line_to(center.x, self.pos.y);
-                        sdf.line_to(center.x + spacing * 0.7, spacing);
-                        sdf.line_to(center.x - spacing * 0.7, spacing);
-
-                        sdf.fill(self.get_color());
+                        sdf.line_to(center.x + spacing * 0.7, spacing + 0.4);
+                        sdf.line_to(center.x - spacing * 0.7, spacing + 0.4);
                     }
-                    Position::BottomLeft => {}
-                    Position::BottomRight => {}
-                    Position::Top => {}
-                    Position::TopLeft => {}
-                    Position::TopRight => {}
-                    Position::Left => {}
-                    Position::LeftTop => {}
-                    Position::LeftBottom => {}
-                    Position::Right => {}
-                    Position::RightTop => {}
-                    Position::RightBottom => {}
-                } 
-                // if self.background_visible == 0.0 {
-                //     sdf.fill_keep(self.get_color());
-                // }
+                    Position::BottomLeft => {
+                        sdf.box(
+                            self.inset.x + self.border_width,
+                            self.inset.y + self.border_width + spacing,
+                            w,
+                            h - spacing,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(start_p.x + quarter_w - spacing * 0.7, spacing + 0.4);
+                        sdf.line_to(start_p.x + quarter_w, self.pos.y);
+                        sdf.line_to(start_p.x + quarter_w + spacing * 0.7, spacing + 0.4);
+                        sdf.line_to(start_p.x + quarter_w - spacing * 0.7, spacing + 0.4);
+                    }
+                    Position::BottomRight => {
+                        sdf.box(
+                            self.inset.x + self.border_width,
+                            self.inset.y + self.border_width + spacing,
+                            w,
+                            h - spacing,
+                            max(1.0, self.border_radius)
+                        );
+                        sdf.move_to(start_p.x + w - quarter_w - spacing * 0.7, spacing + 0.4);
+                        sdf.line_to(start_p.x + w - quarter_w, self.pos.y);
+                        sdf.line_to(start_p.x + w - quarter_w + spacing * 0.7, spacing + 0.4);
+                        sdf.line_to(start_p.x + w - quarter_w - spacing * 0.7, spacing + 0.4);
+                    }
+                }
+                if self.background_visible == 1.0 {
+                    sdf.fill(self.get_color());
+                }
                 sdf.stroke(self.get_border_color(), self.border_width);
                 return sdf.result;
             }
@@ -434,12 +579,14 @@ live_design! {
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
                 sdf.rect(self.pos.x, self.pos.y, self.rect_size.x, self.rect_size.y);
                 let color = self.get_color();
-                sdf.fill(vec4(color.r, color.g, color.b, 0.4));
+                sdf.fill(vec4(color.r, color.g, color.b, self.opacity));
                 return sdf.result;
             }
         }
         container: <GPopupContainer>{
-
+            clip_x: false,
+            clip_y: false,
+            background_visible: false,
         }
     }
     GDropDown = <GDropDownBase>{
@@ -502,7 +649,7 @@ live_design! {
         padding: <GLOBAL_PADDING_SMALL>{},
         font_size: (FONT_SIZE_SMALL),
         align: <ALIGN_CENTER_WALK>{},
-        
+
     }
     GBreadCrumbItem = <GBreadCrumbItemBase>{
         height: 24.0,
@@ -656,7 +803,7 @@ live_design! {
             padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
             margin: 0.0,
             border_radius: 0.0,
-            
+
         }
     }
     GTCell = <GTableCellBase>{

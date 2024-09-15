@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-#[derive(Live, LiveHook)]
+#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
 #[live_ignore]
 #[repr(u32)]
 pub enum PopupMode {

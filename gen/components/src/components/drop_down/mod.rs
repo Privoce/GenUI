@@ -28,8 +28,11 @@ pub struct GDropDown {
     pub position: Position,
     #[rust]
     pub opened: bool,
-    #[live(2.0)]
+    #[live(6.0)]
     pub offset: f32,
+    // visible -------------------
+    #[live(true)]
+    pub visible: bool,
 }
 
 #[derive(Default, Clone)]
@@ -45,6 +48,9 @@ struct PopupMenuGlobal {
 
 impl LiveHook for GDropDown {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         self.card.after_apply(cx, apply, index, nodes);
         if self.popup.is_none() || !apply.from.is_from_doc() {
             return;
@@ -72,6 +78,10 @@ impl GDropDown {
 
 impl Widget for GDropDown {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
+
         let _ = self.card.draw_walk(cx, scope, walk);
 
         cx.add_nav_stop(self.draw_card.area(), NavRole::DropDown, Margin::default());
@@ -87,21 +97,65 @@ impl Widget for GDropDown {
                 let mut rect = area.rect(cx);
                 rect.pos = DVec2::default();
                 area.set_rect(cx, &rect);
-                popup_menu.draw_container(cx, scope);
+                popup_menu.draw_container(cx, scope, None);
                 popup_menu.end(cx, scope, area, DVec2::default());
             } else {
-                match self.position {
-                    Position::Bottom => {
-                        let area = self.draw_card.area().rect(cx);
-                        let shift = DVec2 {
-                            x: 0.0,
-                            y: area.size.y + self.offset as f64,
-                        };
-                        popup_menu.draw_container(cx, scope);
-                        popup_menu.end(cx, scope, self.draw_card.area(), shift);
-                    }
-                    _ => {}
-                }
+                let area = self.draw_card.area().rect(cx);
+                popup_menu.draw_container(cx, scope, Some(self.position.clone()));
+                let container = popup_menu.container_area().rect(cx);
+
+                let shift = match self.position {
+                    Position::Bottom => DVec2 {
+                        x: -container.size.x / 2.0 + area.size.x / 2.0,
+                        y: area.size.y + self.offset as f64,
+                    },
+                    Position::BottomLeft => DVec2 {
+                        x: 0.0,
+                        y: area.size.y + self.offset as f64,
+                    },
+                    Position::BottomRight => DVec2 {
+                        x: area.size.x - container.size.x,
+                        y: area.size.y + self.offset as f64,
+                    },
+                    Position::Top => DVec2 {
+                        x: 0.0 - area.size.x / 2.0,
+                        y: -self.offset as f64 - container.size.y,
+                    },
+                    Position::TopLeft => DVec2 {
+                        x: 0.0,
+                        y: -self.offset as f64 - container.size.y,
+                    },
+                    Position::TopRight => DVec2 {
+                        x: area.size.x - container.size.x,
+                        y: -self.offset as f64 - container.size.y,
+                    },
+                    Position::Left => DVec2 {
+                        x: -self.offset as f64 - container.size.x,
+                        y: area.size.y / 2.0 - container.size.y / 2.0,
+                    },
+                    Position::LeftTop => DVec2 {
+                        x: -self.offset as f64 - container.size.x,
+                        y: 0.0,
+                    },
+                    Position::LeftBottom => DVec2 {
+                        x: -self.offset as f64 - container.size.x,
+                        y: 0.0 - container.size.y + area.size.y,
+                    },
+                    Position::Right => DVec2 {
+                        x: area.size.x + self.offset as f64,
+                        y: area.size.y / 2.0 - container.size.y / 2.0,
+                    },
+                    Position::RightTop => DVec2 {
+                        x: area.size.x + self.offset as f64,
+                        y: 0.0,
+                    },
+                    Position::RightBottom => DVec2 {
+                        x: area.size.x + self.offset as f64,
+                        y: 0.0 - container.size.y + area.size.y,
+                    },
+                };
+
+                popup_menu.end(cx, scope, self.draw_card.area(), shift);
             }
         }
 
