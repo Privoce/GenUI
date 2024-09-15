@@ -8,3 +8,11 @@ pub enum PopupMode {
     ToolTip,
     Dialog
 }
+
+#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
+#[live_ignore]
+#[repr(u32)]
+pub enum TriggerMode {
+    #[pick] Click = shader_enum(1),
+    Hover = shader_enum(2)
+}

@@ -17,10 +17,14 @@ live_design! {
             height: 200.0,
             width: Fill,
             spacing: 10.0,
+            align: {
+                x: 0.5
+            }
             <GDropDown>{
                 offset: 6.0,
                 height: Fit,
                 width: Fit,
+                trigger_mode: Hover,
                 trigger = <GButton>{
                     slot: {
                         text:"open"

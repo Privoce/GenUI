@@ -1,6 +1,6 @@
 # GenUI Builtin Lib Font (2024-06-20)
 
-we use [OPPO Sans 3.0](https://www.coloros.com/article/A00000050/) as builtin font family.
+we use [OPPO Sans 3.0](https://www.coloros.com/article/A00000050/) `OPPOSans-Regular.ttf` as builtin font family.
 
 - Commercial Use: ✅
 - Required Authorization: ✅

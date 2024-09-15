@@ -23,6 +23,7 @@ pub mod tab;
 pub mod table;
 pub mod tag;
 pub mod toggle;
+pub mod notification;
 
 live_design! {
     // imports -----------------------------------------------------

@@ -6,7 +6,10 @@ use makepad_widgets::*;
 pub use register::register;
 use std::rc::Rc;
 
-use crate::{shader::manual::{PopupMode, Position}, widget_area};
+use crate::{
+    shader::manual::{PopupMode, Position, TriggerMode},
+    widget_area,
+};
 use icon_atlas::RefCell;
 
 use super::{card::GCard, popup::GPopup};
@@ -26,7 +29,9 @@ pub struct GDropDown {
     pub popup: Option<LivePtr>,
     #[live]
     pub position: Position,
-    #[rust]
+    #[live]
+    pub trigger_mode: TriggerMode,
+    #[live]
     pub opened: bool,
     #[live(6.0)]
     pub offset: f32,
@@ -214,10 +219,16 @@ impl Widget for GDropDown {
             }
             Hit::FingerHoverIn(_) => {
                 cx.set_cursor(MouseCursor::Hand);
+                if let TriggerMode::Hover = self.trigger_mode {
+                    self.open(cx);
+                }
                 self.animator_play(cx, id!(hover.on));
             }
             Hit::FingerHoverOut(_) => {
                 cx.set_cursor(MouseCursor::Default);
+                if let TriggerMode::Hover = self.trigger_mode {
+                    self.close(cx);
+                }
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerUp(f) => {

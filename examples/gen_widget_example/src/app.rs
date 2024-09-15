@@ -45,9 +45,9 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GTabsExample>{}
+                    // <GTabsExample>{}
                     // <GTableExample>{}
-                    // <GPopupExample>{}
+                    <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}
