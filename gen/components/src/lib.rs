@@ -25,8 +25,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::progress::register(cx);
     crate::components::collapse::register(cx);
     crate::components::shader::register(cx);
-    
-    crate::components::input::live_design(cx);
+    crate::components::input::register(cx);
     
    
     crate::components::popup::live_design(cx);

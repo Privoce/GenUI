@@ -1,10 +1,13 @@
+pub mod event;
+mod register;
+
+use event::*;
+use makepad_widgets::*;
+pub use register::register;
 use std::rc::Rc;
 
-use icon_atlas::RefCell;
-
-use makepad_widgets::*;
-
 use crate::shader::manual::{PopupMode, Position};
+use icon_atlas::RefCell;
 
 use super::{card::GCard, popup::GPopup};
 
@@ -18,13 +21,15 @@ pub struct GDropDown {
     pub mode: PopupMode,
     #[deref]
     #[live]
-    card: GCard,
+    pub card: GCard,
     #[live]
-    popup: Option<LivePtr>,
+    pub popup: Option<LivePtr>,
     #[live]
-    position: Position,
+    pub position: Position,
     #[rust]
-    opened: bool,
+    pub opened: bool,
+    #[live(2.0)]
+    pub offset: f32,
 }
 
 #[derive(Default, Clone)]
@@ -90,7 +95,7 @@ impl Widget for GDropDown {
                         let area = self.draw_card.area().rect(cx);
                         let shift = DVec2 {
                             x: 0.0,
-                            y: area.size.y,
+                            y: area.size.y + self.offset as f64,
                         };
                         popup_menu.draw_container(cx, scope);
                         popup_menu.end(cx, scope, self.draw_card.area(), shift);
@@ -114,13 +119,13 @@ impl Widget for GDropDown {
                 //     self.animator_play(cx, id!(hover.off));
                 //     return;
                 // }
-                if let PopupMode::Dialog = self.mode{
-                    if !popup_menu.container_contains_pos(cx, e.abs){
+                if let PopupMode::Dialog = self.mode {
+                    if !popup_menu.container_contains_pos(cx, e.abs) {
                         self.close(cx);
                         self.animator_play(cx, id!(hover.off));
                         return;
                     }
-                }else{
+                } else {
                     if !popup_menu.menu_contains_pos(cx, e.abs) {
                         self.close(cx);
                         self.animator_play(cx, id!(hover.off));
@@ -129,7 +134,7 @@ impl Widget for GDropDown {
                 }
             }
         }
-        
+
         match event.hits_with_sweep_area(cx, self.draw_card.area(), self.draw_card.area()) {
             Hit::KeyFocus(_) => {
                 // self.animator_play(cx, id!(focus.on));

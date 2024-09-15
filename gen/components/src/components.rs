@@ -374,6 +374,8 @@ live_design! {
     GToolTip = <GPopup>{
         mode: ToolTip,
         draw_popup: {
+            instance inset: vec4(0.0, 0.0, 0.0, 0.0);
+
             fn pixel(self) -> vec4{
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
                 let spacing = 6.0;

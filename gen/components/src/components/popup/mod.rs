@@ -1,4 +1,7 @@
+mod register;
+
 use makepad_widgets::*;
+pub use register::register;
 
 use crate::{
     shader::{draw_popup::DrawGPopup, manual::PopupMode},
@@ -9,7 +12,10 @@ use crate::{
 use super::card::GCard;
 
 live_design! {
-    GPopupContainerBase = {{GPopupContainer}} {}
+    GPopupContainerBase = {{GPopupContainer}} {
+        animation_open: false,
+        background_visible: false,
+    }
     GPopupBase = {{GPopup}} {}
 }
 #[derive(Live, LiveRegister)]
@@ -21,6 +27,9 @@ pub struct GPopupContainer {
 
 impl LiveHook for GPopupContainer {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
@@ -29,11 +38,15 @@ impl LiveHook for GPopupContainer {
         let pressed_color = self.pressed_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ is background_visible --------------------------------------------
         let background_visible = self.background_visible.to_f32();
         // ------------------ apply draw_popup --------------------------------------------
         let border_width = self.border_width;
         let border_radius = self.border_radius;
+        let shadow_offset = self.shadow_offset;
+        let spread_radius = self.spread_radius;
+        let blur_radius = self.blur_radius;
         self.draw_card.apply_over(
             cx,
             live! {
@@ -44,6 +57,10 @@ impl LiveHook for GPopupContainer {
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
                 background_visible: (background_visible),
+                shadow_color: (shadow_color),
+                shadow_offset: (shadow_offset),
+                spread_radius: (spread_radius),
+                blur_radius: (blur_radius)
             },
         );
         self.draw_card.redraw(cx);
@@ -87,18 +104,24 @@ pub struct GPopup {
     pub border_color: Option<Vec4>,
     #[live(0.0)]
     pub border_width: f32,
-    #[live(4.0)]
+    #[live(0.0)]
     pub border_radius: f32,
     #[live(true)]
     pub visible: bool,
-    #[live(false)]
+    #[live(true)]
     pub background_visible: bool,
     #[live]
     pub cursor: Option<MouseCursor>,
-    #[live(false)]
-    pub animator_key: bool,
     #[live]
     pub mode: PopupMode,
+    #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(0.0)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
     // deref ---------------------
     #[live]
     pub draw_popup: DrawGPopup,
@@ -118,8 +141,12 @@ pub struct GPopup {
 
 impl LiveHook for GPopup {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
@@ -139,6 +166,10 @@ impl LiveHook for GPopup {
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
                 background_visible: (background_visible),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
             },
         );
         self.draw_popup.redraw(cx);

@@ -11,7 +11,7 @@
 - [x] Icon 🆗
 - [x] Svg 🆗
 - [x] Image 🆗
-- [x] Input
+- [x] Input 🆗
 - [x] Popup
 - [x] Progress 🆗
 - [x] Loading 🆗

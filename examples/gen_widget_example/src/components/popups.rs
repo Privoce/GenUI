@@ -14,10 +14,14 @@ live_design! {
             text: "GPopup"
         }
         <GDropDown>{
-
+            offset: 6.0,
             height: Fit,
             width: Fit,
-            trigger = <GButton>{text:"open"},
+            trigger = <GButton>{
+                slot: {
+                    text:"open"
+                }
+            },
             popup :<GPopup> {
                 height: 150.0,
                 width: 200.0,
@@ -32,7 +36,6 @@ live_design! {
                     }
                     <GButton>{
                         theme: Dark,
-                        text: "Options"
                     }
                     <View>{
                         show_bg: true,
@@ -47,7 +50,9 @@ live_design! {
             mode: ToolTip,
             height: Fit,
             width: Fit,
-            trigger = <GButton>{text:"open"},
+            trigger = <GButton>{slot: {
+                text:"open"
+            }},
             popup :<GToolTip> {
                 height: 150.0,
                 width: 200.0,
@@ -62,7 +67,7 @@ live_design! {
                     }
                     <GButton>{
                         theme: Dark,
-                        text: "Options"
+                        
                     }
                     <View>{
                         show_bg: true,
@@ -77,7 +82,11 @@ live_design! {
             mode: Dialog,
             height: Fit,
             width: Fit,
-            trigger = <GButton>{text:"open"},
+            trigger = <GButton>{
+                slot: {
+                    text:"open"
+                }
+            },
             popup :<GDialog> {
                 container: {
                     height: 200.0,
@@ -90,7 +99,7 @@ live_design! {
                     }
                     <GButton>{
                         theme: Dark,
-                        text: "Options"
+                        
                     }
                     <View>{
                         show_bg: true,
