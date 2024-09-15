@@ -1,3 +1,4 @@
+use gen_components::components::popup::GPopup;
 use makepad_widgets::*;
 
 live_design! {
@@ -47,7 +48,7 @@ live_design! {
                     padding: 10.0,
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    <GPopupExample>{}
+                    // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}
@@ -92,7 +93,10 @@ live_design! {
                     // <GLabelExample>{}
                     //
                     // --------------------------------
-                    
+                    // pop = <GPopup>{
+                    //     height: 100.0,
+                    //     width: 200.0,
+                    // }
                 }
             }
         }
@@ -149,7 +153,14 @@ impl LiveRegister for App {
     }
 }
 
-impl MatchEvent for App {}
+impl MatchEvent for App {
+    fn handle_startup(&mut self, cx: &mut Cx) {
+        log!("App started!");
+
+        // call popup to show a message (test)
+        
+    }
+}
 
 impl AppMain for App {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
