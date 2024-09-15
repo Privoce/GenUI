@@ -1,4 +1,4 @@
-# GEN Components (v1.0)
+# GEN Components (v0.1.0)
 
 - version: `v0.1.0`
 - update date: 2024-09-16
@@ -8,6 +8,7 @@
 
 ## Basic Builtin Component
 
+- [x] Font 🆗
 - [x] Label 🆗
 - [x] Link 🆗
 - [x] Button 🆗
@@ -39,7 +40,7 @@
 - [x] ScrollBar(s) 🆗
 - [x] icon_lib 🆗
 
-## GEN Components (Super, v2.0 ~ v3.0)
+## GEN Components (Super, v0.2.0 ~ v0.5.0)
 
 - [ ] Metric (用于数据统计)
 - [ ] Route (用于路由跳转)
@@ -55,16 +56,43 @@
 - [ ] TimeLine(时间轴)
 - [ ] Calender(日历)
 - [ ] Container(用于快速放置界面)
+- [ ] Audio
+- [ ] Video
 
-## Experimental function
+## Experimental function (v0.1.0 ~ v0.5.0)
 
+- [ ] Radio Switch Container (多个radio切换)
 - [ ] Link to Web src (点击link跳转网页)
 - [ ] Text UnderLine (通过文字下划线实现文字下划线, 划除, 上划线效果)
 - [ ] Powerful Input (更强大的输入框, 支持多种输入模式, 清除, 数据检验等功能)
 - [ ] Expandable Card (可拖动拉伸)
-- [ ] Audio
-- [ ] Video
+- [ ] Audio Api
+- [ ] Video Api
+- [ ] Theme Config (通过toml配置的方式设置主题色等默认样式)
+- [ ] Right mouse button event (鼠标右击事件展开组件)
+
+## Macro
+
+- [x] widget_area!
+- [x] set_text_and_visible_fn!
+- [x] widget_origin_fn!
+- [x] ref_event_option!
+- [x] ref_event_bool!
+- [x] set_event!
+- [x] set_event_bool!
+- [x] event_option!
+- [x] event_bool!
+- [x] animatie_fn!
 
 ## Example Project
-- [ ] AWS Personal Cloud Drive GUI (亚马逊个人云盘GUI界面)
+- [ ] AWS Personal Cloud Drive GUI (亚马逊个人云盘GUI界面, 仅实现上传，查看，验证功能)
 - [ ] GenUI Builtin Component Lib (GenUI内置组件库学习页面)
+- [ ] Fake Phone (仿手机系统)
+
+## Plan
+
+- 09-24 finish v0.1.0
+- 09-28 AWS Personal Cloud Drive GUI
+- 10-18 GenUI Framework 集成
+- 10-31 finish v0.2.0
+- 11-30 finish v0.3.0
