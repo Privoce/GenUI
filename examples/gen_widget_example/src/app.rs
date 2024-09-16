@@ -47,7 +47,7 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     // <GTabsExample>{}
-                    // <GTableExample>{}
+                    <GTableExample>{}
                     // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}

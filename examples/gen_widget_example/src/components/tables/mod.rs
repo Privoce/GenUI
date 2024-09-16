@@ -1,3 +1,4 @@
+mod virtuals;
 use makepad_widgets::*;
 
 live_design! {
@@ -19,12 +20,44 @@ live_design! {
             width: Fill,
             <GTable>{
                 height: Fit,
-                width: Fill,
+                width: 480.0,
+                header: {
+                    height: Fit,
+                    width: 480.0,
+                    <GTRow>{
+                        height: 32.0,
+                        width: Fit,
+                        <GTCell>{
+                            height: Fill,
+                            width: 160.0,
+                            <GLabel>{
+                                color: #667085,
+                                text: "Table header 1",
+                            }  
+                        }
+                        <GTCell>{
+                            height: Fill,
+                            width: 160.0,
+                            <GLabel>{
+                                color: #667085,
+                                text: "Table header 2",
+                            }
+                        }
+                        <GTCell>{
+                            height: Fill,
+                            width: 160.0,
+                            <GLabel>{
+                                color: #667085,
+                                text: "Table header 3",
+                            }
+                        }
+                    }
+                }
                 body: <GTBody>{
                     height: 120.0,
                     width: Fill,
                     <GTRow>{
-                        height: 60.0,
+                        height: 32.0,
                         width: Fill,
                         <GTCell>{
                             height: Fill,
@@ -49,7 +82,7 @@ live_design! {
                         }
                     }
                     <GTRow>{
-                        height: 60.0,
+                        height: 32.0,
                         width: Fill,
                         <GTCell>{
                             height: Fill,
