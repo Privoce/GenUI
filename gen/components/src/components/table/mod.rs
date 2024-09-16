@@ -14,27 +14,14 @@ pub use register::register;
 use crate::{
     shader::draw_card::DrawGCard,
     themes::Themes,
-    utils::{BoolToF32, ThemeColor},
+    utils::{BoolToF32, ThemeColor}, widget_area,
 };
 
 live_design! {
     GTableBase = {{GTable}}{
-        // background_visible: true,
-        // border_width: 0.0,
-        // border_radius: 0.0,
         flow: Down,
         padding: 0.0,
         margin: 0.0,
-        // header_walk: {
-        //     height: Fit,
-        //     width: Fill,
-        //     margin: 0.0,
-        // },
-        // body_walk: {
-        //     height: Fit,
-        //     width: Fill,
-        //     margin: 0.0,
-        // }
     }
 }
 
@@ -136,5 +123,11 @@ impl LiveHook for GTable {
             },
         );
         self.draw_table.redraw(cx);
+    }
+}
+
+impl GTable {
+    widget_area! {
+        area, draw_table
     }
 }

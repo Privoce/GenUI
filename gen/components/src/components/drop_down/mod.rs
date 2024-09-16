@@ -45,8 +45,8 @@ pub struct GDropDown {
 }
 
 #[derive(Default, Clone)]
-struct PopupMenuGlobal {
-    map: Rc<RefCell<ComponentMap<LivePtr, GPopup>>>,
+pub struct PopupMenuGlobal {
+    pub map: Rc<RefCell<ComponentMap<LivePtr, GPopup>>>,
 }
 
 // #[derive(Clone, Debug, DefaultNone)]

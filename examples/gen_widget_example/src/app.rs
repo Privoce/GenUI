@@ -1,4 +1,3 @@
-use gen_components::components::popup::GPopup;
 use makepad_widgets::*;
 
 live_design! {
@@ -30,6 +29,7 @@ live_design! {
     import crate::components::icon_lib::*;
     import crate::components::collapses::*;
     import crate::components::tables::*;
+    import crate::components::notifications::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
 
     App = {{App}}{
@@ -46,6 +46,7 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    // <Note>{}
                     // <GTabsExample>{}
                     <GTableExample>{}
                     // <GPopupExample>{}
@@ -149,6 +150,7 @@ impl LiveRegister for App {
         crate::components::icon_lib::ui::live_design(cx);
         crate::components::collapses::live_design(cx);
         crate::components::tables::live_design(cx);
+        crate::components::notifications::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }
@@ -156,9 +158,7 @@ impl LiveRegister for App {
 impl MatchEvent for App {
     fn handle_startup(&mut self, cx: &mut Cx) {
         log!("App started!");
-
-        // call popup to show a message (test)
-        
+       
     }
 }
 

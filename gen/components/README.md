@@ -29,8 +29,8 @@
 - [x] Toggle 🆗
 - [x] Collapse 🆗
 - [x] ToolTip 🆗
-- [x] Tab
-- [x] Table
+- [x] Tab 🆗
+- [x] Table 🆗
 - [x] Dialog 🆗
 - [x] Splitter 🆗
 - [x] FileUpload
@@ -43,10 +43,10 @@
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
 
 - [ ] Metric (用于数据统计)
-- [ ] Route (用于路由跳转)
-- [ ] ToolButton (用于处理界面控制事件，如：放大，缩小，全屏，关闭等)
-- [ ] Notification (用于编程式弹出通知)
-- [ ] Drawer (用于侧面展开)
+- [ ] Route (用于路由跳转) 🔼
+- [ ] ToolButton (用于处理界面控制事件，如：放大，缩小，全屏，关闭等) 🔼
+- [ ] Notification (用于编程式弹出通知) (测试成功, 思路cx.global绑定到窗口或Root上，可能需要后续自己实现一个Root) 🔼
+- [ ] Drawer (用于侧面展开) 
 - [ ] ColorPicker (颜色选择器)
 - [ ] DatePicker(日期选择器)
 - [ ] TimePicker(时间选择器)

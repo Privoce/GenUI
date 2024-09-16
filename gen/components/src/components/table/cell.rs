@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::components::card::GCard;
+use crate::{components::card::GCard, widget_area};
 
 live_design! {
     GTableCellBase = {{GTableCell}}{
@@ -29,5 +29,11 @@ impl Widget for GTableCell {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         self.deref_widget.handle_event(cx, event, scope)
+    }
+}
+
+impl GTableCell{
+    widget_area! {
+        area, draw_card
     }
 }

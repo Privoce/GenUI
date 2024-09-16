@@ -6,7 +6,7 @@ use crate::{
         table::row::{GTableRowRef, GTableRowWidgetRefExt},
     },
     shader::draw_card::DrawGCard,
-    utils::{BoolToF32, ThemeColor},
+    utils::{BoolToF32, ThemeColor}, widget_area,
 };
 
 live_design! {
@@ -180,5 +180,11 @@ impl LiveHook for GTableHeader {
             }
             _ => nodes.skip_node(index),
         }
+    }
+}
+
+impl GTableHeader {
+    widget_area! {
+        area, draw_table_header
     }
 }
