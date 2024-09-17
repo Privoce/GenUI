@@ -48,7 +48,7 @@ live_design! {
                     padding: 10.0,
                     // <Note>{}
                     // <GTabsExample>{}
-                    <GTableExample>{}
+                    // <GTableExample>{}
                     // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
@@ -90,7 +90,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    // <GButtonExample>{}
+                    <GButtonExample>{}
                     // <GLabelExample>{}
                     //
                     // --------------------------------

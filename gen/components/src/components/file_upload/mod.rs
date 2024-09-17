@@ -8,7 +8,9 @@ use std::{path::PathBuf, str::FromStr};
 use makepad_widgets::*;
 use rfd::FileDialog;
 
-use crate::{event_option, ref_event_option, set_event, widget_area};
+use crate::{
+    events_option, ref_event_option, set_event, utils::filter_widget_actions, widget_area,
+};
 
 use super::svg::GSvg;
 
@@ -136,12 +138,13 @@ impl GUpload {
     widget_area! {
         area, draw_upload
     }
-    event_option! {
+    events_option! {
         clear: GFileUploadEvent::Clear => Vec<PathBuf>,
         path_error: GFileUploadEvent::PathError => PathError,
         before_select: GFileUploadEvent::BeforeSelect => bool,
         after_select: GFileUploadEvent::AfterSelect => Vec<PathBuf>
     }
+
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
@@ -152,7 +155,7 @@ impl GUpload {
     ) {
         let uid = self.widget_uid();
 
-        match hit{
+        match hit {
             Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);

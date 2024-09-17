@@ -33,12 +33,15 @@
 - [x] Table 🆗
 - [x] Dialog 🆗
 - [x] Splitter 🆗
-- [x] FileUpload
+- [x] FileUpload 🆗
 - [x] Divider 🆗
 - [x] State 🆗
 - [x] BreadCrumb 🆗
 - [x] ScrollBar(s) 🆗
 - [x] icon_lib 🆗
+---
+- [ ] Virtual Table
+
 
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
 

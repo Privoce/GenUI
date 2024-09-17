@@ -4,17 +4,19 @@ pub mod column;
 pub mod header;
 mod register;
 pub mod row;
-pub mod r#virtual;
+pub mod virt;
 
 use body::GTableBody;
 use header::GTableHeader;
 use makepad_widgets::*;
 pub use register::register;
+use virt::GVTableBody;
 
 use crate::{
-    shader::draw_card::DrawGCard,
+    shader::{draw_card::DrawGCard, manual::ComponentMode},
     themes::Themes,
-    utils::{BoolToF32, ThemeColor}, widget_area,
+    utils::{BoolToF32, ThemeColor},
+    widget_area,
 };
 
 live_design! {
@@ -68,6 +70,12 @@ pub struct GTable {
     #[redraw]
     #[find]
     pub body: GTableBody,
+    #[live]
+    #[redraw]
+    #[find]
+    pub body_virtual: GVTableBody,
+    #[live]
+    pub mode: ComponentMode,
 }
 
 impl Widget for GTable {
@@ -78,8 +86,16 @@ impl Widget for GTable {
         self.draw_table.begin(cx, walk, self.layout);
         let header_walk = self.header.walk(cx);
         let _ = self.header.draw_walk(cx, scope, header_walk);
-        let body_walk = self.body.walk(cx);
-        let _ = self.body.draw_walk(cx, scope, body_walk);
+        match self.mode {
+            ComponentMode::Real => {
+                let body_walk = self.body.walk(cx);
+                let _ = self.body.draw_walk(cx, scope, body_walk);
+            }
+            ComponentMode::Virtual => {
+                let body_walk = self.body_virtual.walk(cx);
+                let _ = self.body_virtual.draw_walk(cx, scope, body_walk);
+            }
+        }
 
         self.draw_table.end(cx);
         DrawStep::done()
@@ -128,6 +144,8 @@ impl LiveHook for GTable {
 
 impl GTable {
     widget_area! {
-        area, draw_table
+        area, draw_table,
+        area_header, header,
+        area_body, body
     }
 }

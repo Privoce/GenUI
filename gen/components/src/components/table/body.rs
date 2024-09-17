@@ -54,7 +54,6 @@ impl Widget for GTableBody {
             // begin draw the card
             let _ = self.draw_table_body.begin(cx, walk, self.layout);
         }
-
         // loop handle the inner children
         while let Some(DrawState::Drawing(step, resumed)) = self.draw_state.get() {
             if step < self.draw_order.len() {

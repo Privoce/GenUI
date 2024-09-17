@@ -209,6 +209,42 @@ macro_rules! event_bool {
     };
 }
 
+/// # Generate Events Option Function (if a widget has multiple events in one action called)
+/// See GFileUpload in `src/components/file_upload/mod.rs`
+/// ```rust
+/// pub fn after_select(&self, actions: &Actions) -> Option<Vec<PathBuf>> {
+///     let mut res = None;
+///     filter_widget_actions(actions, self.widget_uid()).map(|actions| {
+///         actions.iter().for_each(|action| {
+///             if let GFileUploadEvent::AfterSelect(e) = action.cast() {
+///                 res.replace(e.clone());
+///             }
+///         })
+///     });
+///
+///     res
+/// }
+/// ```
+#[macro_export]
+macro_rules! events_option {
+    ($($event_fn: ident : $event: path => $return: ty),*) => {
+        $(
+            pub fn $event_fn(&self, actions: &Actions) -> Option<$return> {
+                let mut res = None;
+                filter_widget_actions(actions, self.widget_uid()).map(|actions| {
+                    actions.iter().for_each(|action| {
+                        if let $event(e) = action.cast() {
+                            res.replace(e.clone());
+                        }
+                    })
+                });
+        
+                res
+            }
+        )*
+    };
+}
+
 /// # Generate Animation Function
 /// ```
 /// impl GBreadCrumbItemRef {

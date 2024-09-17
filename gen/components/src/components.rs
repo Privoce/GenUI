@@ -60,6 +60,7 @@ live_design! {
     import crate::components::table::body::GTableBodyBase;
     import crate::components::table::header::GTableHeaderBase;
     import crate::components::table::GTableBase;
+    import crate::components::table::virt::GVTableBodyBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -816,5 +817,13 @@ live_design! {
     GTable = <GTableBase>{
         header: <GTHeader>{}
         body: <GTBody>{}
+    }
+    GVTBody = <GVTableBodyBase>{
+        height: Fit,
+        width: Fill,
+        flow: Down,
+        align: {
+            x: 0.0, y: 0.0
+        }
     }
 }
