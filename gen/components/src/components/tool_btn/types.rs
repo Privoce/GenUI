@@ -1,4 +1,3 @@
-use file_tree::FileTreeNodeAction;
 use makepad_widgets::*;
 
 use crate::{shader::icon_lib::types::base::Base, themes::hex_to_vec4};

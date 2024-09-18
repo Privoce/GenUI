@@ -48,36 +48,8 @@ live_design! {
                         }
                     }
                 }
-                // window_bar = {
-                //     window_title_wrap = {
-                //         text: "GenUI Builtin Components",
-                //     }
-                // }
-                // caption_bar = {
-                //     caption_label = {
-                //         label = {
-                //             text: "GenUI Builtin Components"
-                //         }
-                //     }
-                //     windows_buttons = <View> {
-                //         visible: false,
-                //         width: Fit, height: Fit,
-                //         min = <DesktopButton> {draw_bg: {button_type: WindowsMax}}
-                //         max = <DesktopButton> {draw_bg: {button_type: WindowsMin}}
-                //         close = <DesktopButton> {draw_bg: {button_type: WindowsClose}}
-                //     }
-                //     // windows_buttons = {
-                //     //     visible: true,
-                //     //     min = <GToolButton> {icon_type: Min, os_type: Mac}
-                //     //     max = <GToolButton> {icon_type: Max, os_type: Mac}
-                //     //     close = <GToolButton> {icon_type: Close, os_type: Mac}
-                //     // }  
-                // },
-                
-                // show_bg: true,
                 width: Fill,
                 height: Fill,
-                // draw_bg: {color: #2},
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: All,
@@ -86,7 +58,7 @@ live_design! {
                     // spacing: 10.0,
                     // padding: 10.0,
                     
-                    <GToolButtonExample>{}
+                    // <GToolButtonExample>{}
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
@@ -198,7 +170,7 @@ impl LiveRegister for App {
 }
 
 impl MatchEvent for App {
-    fn handle_startup(&mut self, cx: &mut Cx) {
+    fn handle_startup(&mut self, _cx: &mut Cx) {
         log!("App started!");
        
     }

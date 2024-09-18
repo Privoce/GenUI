@@ -169,7 +169,7 @@ impl Widget for GDropDown {
 
                 shift.x += self.offset_x as f64;
                 shift.y += self.offset_y as f64;
-
+                popup_menu.redraw(cx);
                 popup_menu.end(cx, scope, self.draw_card.area(), shift);
             }
         }

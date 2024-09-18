@@ -464,9 +464,12 @@ impl Widget for GCard {
             };
 
             // begin draw the card
-            let _ = self
-                .draw_card
-                .begin(cx, walk, self.layout.with_scroll(scroll));
+            if self.background_visible {
+                self.draw_card
+                    .begin(cx, walk, self.layout.with_scroll(scroll)); //.with_scale(2.0 / self.dpi_factor.unwrap_or(2.0)));
+            } else {
+                cx.begin_turtle(walk, self.layout.with_scroll(scroll)); //.with_scale(2.0 / self.dpi_factor.unwrap_or(2.0)));
+            }
         }
 
         // loop handle the inner children
@@ -502,8 +505,6 @@ impl Widget for GCard {
                 }
                 self.draw_state.set(DrawState::DeferWalk(step + 1));
             } else {
-                let area = self.area();
-
                 if let Some(scroll_bars) = &mut self.scroll_bars_obj {
                     scroll_bars.draw_scroll_bars(cx);
                 }
@@ -521,7 +522,7 @@ impl Widget for GCard {
                 // self.draw_card.end(cx);
 
                 if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-                    scroll_bars.set_area(area);
+                    scroll_bars.set_area(self.area);
                     scroll_bars.end_nav_area(cx);
                 }
 
@@ -725,7 +726,7 @@ impl WidgetNode for GCard {
 
     fn redraw(&mut self, cx: &mut Cx) {
         self.area.redraw(cx);
-        for (_,child) in &mut self.children {
+        for (_, child) in &mut self.children {
             child.redraw(cx);
         }
     }
