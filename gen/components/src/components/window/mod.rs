@@ -2,17 +2,10 @@ pub mod event;
 mod register;
 pub mod types;
 
-use std::borrow::BorrowMut;
-
-use desktop_button::DesktopButtonWidgetExt;
-use event::*;
 use makepad_widgets::*;
 use nav_control::NavControl;
-use performance_view::PerformanceView;
-pub use register::register;
-use types::DrawState;
 
-use crate::shader::manual::WindowButtonMode;
+pub use register::register;
 
 use super::{
     card::{GCard, GCardWidgetExt},
@@ -86,15 +79,17 @@ pub struct GWindow {
     #[rust(Overlay::new(cx))]
     pub overlay: Overlay,
     #[live]
-    cursor_draw_list: DrawList2d,
+    pub cursor_draw_list: DrawList2d,
     #[live]
-    draw_cursor: DrawQuad,
+    pub draw_cursor: DrawQuad,
     #[live]
-    last_mouse_pos: DVec2,
+    pub last_mouse_pos: DVec2,
     #[live]
-    mouse_cursor_size: DVec2,
+    pub mouse_cursor_size: DVec2,
     #[live]
-    nav_control: NavControl,
+    pub nav_control: NavControl,
+    #[live]
+    pub hide_caption_on_fullscreen: bool,
     #[rust]
     pub btns_width: f64,
     #[rust]
@@ -103,6 +98,8 @@ pub struct GWindow {
     pub offset: f64,
     #[rust(true)]
     pub redraw_flag: bool,
+    #[rust(OsType::Windows)]
+    pub current_os: OsType,
 }
 
 impl Widget for GWindow {
@@ -117,9 +114,124 @@ impl Widget for GWindow {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let handle_min = |w: &mut GWindow, cx: &mut Cx, id_min, id_max, id_close, actions| {
+            if w.gtool_button(id_min).clicked(actions).is_some() {
+                w.window.minimize(cx);
+            }
+            if w.gtool_button(id_max).clicked(actions).is_some() {
+                if w.window.is_fullscreen(cx) {
+                    w.window.restore(cx);
+                } else {
+                    w.window.maximize(cx);
+                }
+            }
+
+            if w.gtool_button(id_close).clicked(actions).is_some() {
+                w.window.close(cx);
+            }
+        };
+        // ---------------------------------------------------------------------
+
         let uid = self.widget_uid();
         self.overlay.handle_event(cx, event);
-        self.deref_widget.handle_event(cx, event, scope);
+        // self.deref_widget.handle_event(cx, event, scope);
+        let is_for_other_window = match event {
+            Event::WindowCloseRequested(ev) => ev.window_id != self.window.window_id(),
+            Event::WindowClosed(ev) => {
+                if ev.window_id == self.window.window_id() {
+                    cx.widget_action(uid, &scope.path, WindowAction::WindowClosed)
+                }
+                true
+            }
+            Event::WindowGeomChange(ev) => {
+                if ev.window_id == self.window.window_id() {
+                    match cx.os_type() {
+                        OsType::Macos => {
+                            if self.hide_caption_on_fullscreen {
+                                if ev.new_geom.is_fullscreen && !ev.old_geom.is_fullscreen {
+                                    self.view(id!(caption_bar)).set_visible(false);
+                                    self.redraw(cx);
+                                } else if !ev.new_geom.is_fullscreen && ev.old_geom.is_fullscreen {
+                                    self.view(id!(caption_bar)).set_visible(true);
+                                    self.redraw(cx);
+                                };
+                            }
+                        }
+                        _ => (),
+                    }
+                    cx.widget_action(uid, &scope.path, WindowAction::WindowGeomChange(ev.clone()));
+                    return;
+                }
+                true
+            }
+            Event::WindowDragQuery(dq) => {
+                if dq.window_id == self.window.window_id() {
+                    if self.view(id!(caption_bar)).is_visible() {
+                        let size = self.window.get_inner_size(cx);
+
+                        if dq.abs.y < 25. {
+                            if dq.abs.x < size.x - 135.0 {
+                                dq.response.set(WindowDragQueryResponse::Caption);
+                            }
+                            cx.set_cursor(MouseCursor::Default);
+                        }
+                        /*
+                        if dq.abs.x < self.caption_size.x && dq.abs.y < self.caption_size.y {
+                        }*/
+                    }
+                }
+                true
+            }
+            Event::TouchUpdate(ev) => ev.window_id != self.window.window_id(),
+            Event::MouseDown(ev) => ev.window_id != self.window.window_id(),
+            Event::MouseMove(ev) => ev.window_id != self.window.window_id(),
+            Event::MouseUp(ev) => ev.window_id != self.window.window_id(),
+            Event::Scroll(ev) => ev.window_id != self.window.window_id(),
+            _ => false,
+        };
+
+        if is_for_other_window {
+            cx.widget_action(uid, &scope.path, WindowAction::EventForOtherWindow);
+            return;
+        } else {
+            self.deref_widget.handle_event(cx, event, scope);
+        }
+
+        if let Event::Actions(actions) = event {
+            match self.current_os {
+                OsType::Windows => {
+                    let _ = handle_min(
+                        self,
+                        cx,
+                        id!(window_bar.win_btns_wrap.min),
+                        id!(window_bar.win_btns_wrap.max),
+                        id!(window_bar.win_btns_wrap.close),
+                        &actions,
+                    );
+                }
+                OsType::Macos => {
+                    let _ = handle_min(
+                        self,
+                        cx,
+                        id!(window_bar.mac_btns_wrap.min),
+                        id!(window_bar.mac_btns_wrap.max),
+                        id!(window_bar.mac_btns_wrap.close),
+                        &actions,
+                    );
+                }
+                OsType::LinuxDirect | OsType::LinuxWindow(_) => {
+                    let _ = handle_min(
+                        self,
+                        cx,
+                        id!(window_bar.linux_btns_wrap.min),
+                        id!(window_bar.linux_btns_wrap.max),
+                        id!(window_bar.linux_btns_wrap.close),
+                        &actions,
+                    );
+                }
+                _ => (),
+            }
+        }
 
         if let Event::ClearAtlasses = event {
             Cx2d::reset_fonts_atlas(cx);
@@ -156,11 +268,11 @@ impl LiveHook for GWindow {
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         let mut os_type = cx.os_type().clone();
-        let _ = self.os_type.as_ref().map(|g_os_type|{
+        let _ = self.os_type.as_ref().map(|g_os_type| {
             os_type = g_os_type.clone().into();
         });
-       
-        match os_type{
+        self.current_os = os_type;
+        match self.current_os {
             OsType::Windows => {
                 // in windows: show icon and title on the left, window buttons are on the right
                 self.show_icon(true);
@@ -215,11 +327,8 @@ impl GWindow {
     }
     pub fn get_btns_width(&mut self, cx: &mut Cx) {
         let mut offset = None;
-        let mut os_type = cx.os_type().clone();
-        let _ = self.os_type.as_ref().map(|g_os_type|{
-            os_type = g_os_type.clone().into();
-        });
-        match os_type {
+
+        match self.current_os {
             OsType::Windows => {
                 self.gcard(id!(window_bar.win_btns_wrap)).borrow().map(|x| {
                     if let Size::Fixed(s) = x.walk.width {
@@ -261,20 +370,21 @@ impl GWindow {
                 self.btns_width = 138.0;
             }
         }
-        
+
         if self.btns_width != self.pre_btns_width {
             self.redraw_flag = true;
             // if is windows offset = 0.0
+            let size = self.window.get_inner_size(cx);
             if let Some(offset) = offset {
-                let size = self.window.get_inner_size(cx);
                 let align_x = if offset.x != 0.0 {
                     offset.x / size.x
                 } else {
                     -offset.y / size.x
                 };
                 self.offset = 0.5 + align_x;
+            } else {
+                self.offset = 6.0 / size.x;
             }
-             
         } else {
             self.redraw_flag = false;
         }
@@ -331,7 +441,7 @@ impl GWindow {
             .map(|mut card| {
                 if self.redraw_flag {
                     let size = self.window.get_inner_size(cx);
-                    card.walk.width = Size::Fixed(size.x - self.btns_width);
+                    // card.walk.width = Size::Fixed(size.x - self.btns_width);
                     card.layout.align = Align {
                         x: self.offset,
                         y: card.layout.align.y,

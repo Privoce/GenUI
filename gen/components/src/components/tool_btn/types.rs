@@ -121,7 +121,7 @@ impl GOsType {
     }
 }
 
-#[derive(Live, LiveHook, Clone, Copy)]
+#[derive(Live, LiveHook, Clone, Copy, Debug)]
 #[live_ignore]
 #[repr(u32)]
 pub enum GToolButtonType {

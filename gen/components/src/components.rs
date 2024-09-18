@@ -856,7 +856,7 @@ live_design! {
             }
             window_title = <GHLayout>{
                 height: Fill,
-                width: Fit,
+                width: Fill,
                 align: {x: 0.0, y: 0.5},
                 spacing: 6.0,
                 icon = <GImage>{
@@ -871,7 +871,9 @@ live_design! {
                 },
             }
             sub = <GHLayout>{
-                visible: false
+                visible: false,
+                height: Fill,
+                width: Fit,
             }
             win_btns_wrap = <GHLayout>{
                 visible: false

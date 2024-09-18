@@ -228,7 +228,7 @@ impl GToolButton {
         area, draw_tool_btn
     }
     event_option! {
-        clicked: GToolButtonEvent::Clicked => FingerUpEvent,
+        clicked: GToolButtonEvent::Clicked => GToolButtonClickParam,
         pressed: GToolButtonEvent::Pressed => FingerDownEvent,
         hover: GToolButtonEvent::Hover => FingerHoverEvent
     }
@@ -263,7 +263,10 @@ impl GToolButton {
             }
             Hit::FingerUp(fe) => {
                 if fe.is_over {
-                    cx.widget_action(uid, &scope.path, GToolButtonEvent::Clicked(fe.clone()));
+                    cx.widget_action(uid, &scope.path, GToolButtonEvent::Clicked(GToolButtonClickParam{
+                        e: fe.clone(),
+                        mode: self.icon_type,
+                    }));
                     if fe.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
@@ -308,7 +311,7 @@ impl GToolButton {
 
 impl GToolButtonRef {
     ref_event_option! {
-        clicked => FingerUpEvent,
+        clicked => GToolButtonClickParam,
         pressed => FingerDownEvent,
         hover => FingerHoverEvent
     }
@@ -321,7 +324,7 @@ impl GToolButtonRef {
 
 impl GToolButtonSet {
     set_event! {
-        clicked => FingerUpEvent,
+        clicked => GToolButtonClickParam,
         pressed => FingerDownEvent,
         hover => FingerHoverEvent
     }
