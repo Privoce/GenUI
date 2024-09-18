@@ -159,7 +159,7 @@ impl LiveHook for GWindow {
         let _ = self.os_type.as_ref().map(|g_os_type|{
             os_type = g_os_type.clone().into();
         });
-        
+       
         match os_type{
             OsType::Windows => {
                 // in windows: show icon and title on the left, window buttons are on the right
@@ -171,16 +171,16 @@ impl LiveHook for GWindow {
             }
             OsType::Macos => {
                 // in macos: do not show icon , show title on the center, window buttons are on the left
-                self.show_icon(true);
-                self.show_title(false);
+                self.show_icon(false);
+                self.show_title(true);
                 self.show_btns(id!(window_bar.win_btns_wrap), false);
                 self.show_btns(id!(window_bar.mac_btns_wrap), true);
                 self.show_btns(id!(window_bar.linux_btns_wrap), false);
             }
             OsType::LinuxDirect | OsType::LinuxWindow(_) => {
                 // in linux: do not show icon, show  title on the center, window buttons are on the right
-                self.show_icon(true);
-                self.show_title(false);
+                self.show_icon(false);
+                self.show_title(true);
                 self.show_btns(id!(window_bar.win_btns_wrap), false);
                 self.show_btns(id!(window_bar.mac_btns_wrap), false);
                 self.show_btns(id!(window_bar.linux_btns_wrap), true);
@@ -215,7 +215,11 @@ impl GWindow {
     }
     pub fn get_btns_width(&mut self, cx: &mut Cx) {
         let mut offset = None;
-        match cx.os_type() {
+        let mut os_type = cx.os_type().clone();
+        let _ = self.os_type.as_ref().map(|g_os_type|{
+            os_type = g_os_type.clone().into();
+        });
+        match os_type {
             OsType::Windows => {
                 self.gcard(id!(window_bar.win_btns_wrap)).borrow().map(|x| {
                     if let Size::Fixed(s) = x.walk.width {
@@ -234,7 +238,7 @@ impl GWindow {
                     }
                     offset.replace(DVec2 {
                         x: 0.0,
-                        y: self.btns_width / 2.0,
+                        y: self.btns_width,
                     });
                 });
             }
@@ -248,7 +252,7 @@ impl GWindow {
                             self.btns_width = 72.0;
                         }
                         offset.replace(DVec2 {
-                            x: self.btns_width / 2.0,
+                            x: self.btns_width,
                             y: 0.0,
                         });
                     });
@@ -257,7 +261,7 @@ impl GWindow {
                 self.btns_width = 138.0;
             }
         }
-
+        
         if self.btns_width != self.pre_btns_width {
             self.redraw_flag = true;
             // if is windows offset = 0.0
@@ -266,13 +270,15 @@ impl GWindow {
                 let align_x = if offset.x != 0.0 {
                     offset.x / size.x
                 } else {
-                    offset.y / size.x
+                    -offset.y / size.x
                 };
                 self.offset = 0.5 + align_x;
             }
+             
         } else {
             self.redraw_flag = false;
         }
+        self.pre_btns_width = self.btns_width;
     }
     pub fn show_btns(&mut self, id: &[LiveId], show: bool) {
         self.gcard(id).borrow_mut().map(|mut x| {
@@ -330,6 +336,7 @@ impl GWindow {
                         x: self.offset,
                         y: card.layout.align.y,
                     };
+                    card.redraw(cx);
                 }
             });
     }

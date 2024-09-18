@@ -849,6 +849,7 @@ live_design! {
                 width: 72.0,
                 spacing: 6.0,
                 align: {x: 0.0, y: 0.5},
+                padding: {left: 6.0},
                 close = <GToolButton> {icon_type: Close, os_type: Mac}
                 max = <GToolButton> {icon_type: Max, os_type: Mac}
                 min = <GToolButton> {icon_type: Min, os_type: Mac}
@@ -858,7 +859,6 @@ live_design! {
                 width: Fit,
                 align: {x: 0.0, y: 0.5},
                 spacing: 6.0,
-                padding: {left: 6.0},
                 icon = <GImage>{
                     src: dep("crate://self/resources/icons/logo.png"),
                     height: 16.0,
@@ -888,6 +888,7 @@ live_design! {
                 width: 72.0,
                 spacing: 6.0,
                 align: {x: 1.0, y: 0.5},
+                padding: {right: 6.0},
                 min = <GToolButton> {icon_type: Min, os_type: Linux}
                 max = <GToolButton> {icon_type: Max, os_type: Linux}
                 close = <GToolButton> {icon_type: Close, os_type: Linux}
