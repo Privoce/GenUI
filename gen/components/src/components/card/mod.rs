@@ -9,7 +9,11 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_origin_fn 
+    animatie_fn, event_option, ref_event_option, set_event,
+    shader::draw_card::DrawGCard,
+    themes::Themes,
+    utils::{set_cursor, BoolToF32, ThemeColor},
+    widget_origin_fn,
 };
 
 live_design! {
@@ -102,10 +106,12 @@ pub struct GCard {
     pub layout: Layout,
     #[rust]
     pub draw_state: DrawStateWrap<DrawState>,
+    // #[rust]
+    // pub children: ComponentMap<LiveId, WidgetRef>,
     #[rust]
-    pub children: ComponentMap<LiveId, WidgetRef>,
-    #[rust]
-    pub draw_order: Vec<LiveId>,
+    children: Vec<(LiveId, WidgetRef)>,
+    // #[rust]
+    // pub draw_order: Vec<LiveId>,
     #[live]
     pub event_order: EventOrder,
     #[rust]
@@ -114,6 +120,51 @@ pub struct GCard {
     pub animator: Animator,
     #[rust]
     find_cache: RefCell<HashMap<u64, WidgetSet>>,
+    // optimize ---------------------
+    #[live]
+    pub dpi_factor: Option<f64>,
+    #[live]
+    pub optimize: ViewOptimize,
+    #[rust]
+    pub draw_list: Option<DrawList2d>,
+    #[rust]
+    pub view_size: Option<DVec2>,
+    #[rust]
+    pub texture_cache: Option<ViewTextureCache>,
+    #[rust]
+    pub area: Area,
+}
+
+pub struct ViewTextureCache {
+    pass: Pass,
+    _depth_texture: Texture,
+    color_texture: Texture,
+}
+
+pub trait OptimizeFor {
+    fn is_texture(&self) -> bool;
+    fn is_draw_list(&self) -> bool;
+    fn needs_draw_list(&self) -> bool;
+}
+
+impl OptimizeFor for ViewOptimize {
+    fn is_texture(&self) -> bool {
+        if let Self::Texture = self {
+            true
+        } else {
+            false
+        }
+    }
+    fn is_draw_list(&self) -> bool {
+        if let Self::DrawList = self {
+            true
+        } else {
+            false
+        }
+    }
+    fn needs_draw_list(&self) -> bool {
+        return self.is_texture() || self.is_draw_list();
+    }
 }
 
 #[derive(Clone)]
@@ -131,11 +182,24 @@ impl LiveHook for GCard {
         _nodes: &[LiveNode],
     ) {
         if let ApplyFrom::UpdateFromDoc { .. } = apply.from {
-            self.draw_order.clear();
+            // self.draw_order.clear();
             self.find_cache.get_mut().clear();
         }
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
+        if self.optimize.needs_draw_list() && self.draw_list.is_none() {
+            self.draw_list = Some(DrawList2d::new(cx));
+        }
+        if self.scroll_bars.is_some() {
+            if self.scroll_bars_obj.is_none() {
+                self.scroll_bars_obj =
+                    Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
+            }
+        }
+
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         let shadow_color = self.shadow_color.get(self.theme, 700);
@@ -183,19 +247,28 @@ impl LiveHook for GCard {
         let id = nodes[index].id;
         match apply.from {
             ApplyFrom::Animate | ApplyFrom::Over => {
-                if let Some(child) = self.children.get_mut(&id) {
-                    child.apply(cx, apply, index, nodes)
+                let node_id = nodes[index].id;
+                if let Some((_, component)) =
+                    self.children.iter_mut().find(|(id, _)| *id == node_id)
+                {
+                    component.apply(cx, apply, index, nodes)
                 } else {
                     nodes.skip_node(index)
                 }
             }
             ApplyFrom::NewFromDoc { .. } | ApplyFrom::UpdateFromDoc { .. } => {
                 if nodes[index].is_instance_prop() {
-                    self.draw_order.push(id);
-                    return self
-                        .children
-                        .get_or_insert(cx, id, |cx| WidgetRef::new(cx))
-                        .apply(cx, apply, index, nodes);
+                    //self.draw_order.push(id);
+                    if let Some((_, node)) = self.children.iter_mut().find(|(id2, _)| *id2 == id) {
+                        node.apply(cx, apply, index, nodes)
+                    } else {
+                        self.children.push((id, WidgetRef::new(cx)));
+                        self.children
+                            .last_mut()
+                            .unwrap()
+                            .1
+                            .apply(cx, apply, index, nodes)
+                    }
                 } else {
                     cx.apply_error_no_matching_field(live_error_origin!(), index, nodes);
                     nodes.skip_node(index)
@@ -235,36 +308,26 @@ impl Widget for GCard {
 
         match &self.event_order {
             EventOrder::Down => {
-                for id in self.draw_order.iter() {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event_with(cx, event, scope, sweep_area);
-                            })
-                        }
-                    }
+                for (id, child) in self.children.iter_mut().rev() {
+                    scope.with_id(*id, |scope| {
+                        child.handle_event(cx, event, scope);
+                    });
                 }
             }
             EventOrder::Up => {
                 // the default event order is Up
-                for id in self.draw_order.iter().rev() {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event_with(cx, event, scope, sweep_area);
-                            });
-                        }
-                    }
+                for (id, child) in self.children.iter_mut().rev() {
+                    scope.with_id(*id, |scope| {
+                        child.handle_event(cx, event, scope);
+                    });
                 }
             }
             EventOrder::List(list) => {
                 for id in list {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event_with(cx, event, scope, sweep_area);
-                            })
-                        }
+                    if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
+                        scope.with_id(*id, |scope| {
+                            child.handle_event(cx, event, scope);
+                        })
                     }
                 }
             }
@@ -329,6 +392,69 @@ impl Widget for GCard {
             }
             self.defer_walks.clear();
 
+            match self.optimize {
+                ViewOptimize::Texture => {
+                    let walk = self.walk_from_previous_size(walk);
+                    if !cx.will_redraw(self.draw_list.as_mut().unwrap(), walk) {
+                        if let Some(texture_cache) = &self.texture_cache {
+                            self.draw_card
+                                .draw_vars
+                                .set_texture(0, &texture_cache.color_texture);
+                            let mut rect = cx.walk_turtle_with_area(&mut self.area, walk);
+                            // NOTE(eddyb) see comment lower below for why this is
+                            // disabled (it used to match `set_pass_scaled_area`).
+                            if false {
+                                rect.size *= 2.0 / self.dpi_factor.unwrap_or(1.0);
+                            }
+                            self.draw_card.draw_abs(cx, rect);
+                            self.area = self.draw_card.area();
+
+                            cx.set_pass_area(&texture_cache.pass, self.area);
+                        }
+                        return DrawStep::done();
+                    }
+                    // lets start a pass
+                    if self.texture_cache.is_none() {
+                        self.texture_cache = Some(ViewTextureCache {
+                            pass: Pass::new(cx),
+                            _depth_texture: Texture::new(cx),
+                            color_texture: Texture::new(cx),
+                        });
+                        let texture_cache = self.texture_cache.as_mut().unwrap();
+                        //cache.pass.set_depth_texture(cx, &cache.depth_texture, PassClearDepth::ClearWith(1.0));
+                        texture_cache.color_texture = Texture::new_with_format(
+                            cx,
+                            TextureFormat::RenderBGRAu8 {
+                                size: TextureSize::Auto,
+                            },
+                        );
+                        texture_cache.pass.add_color_texture(
+                            cx,
+                            &texture_cache.color_texture,
+                            PassClearColor::ClearWith(vec4(0.0, 0.0, 0.0, 0.0)),
+                        );
+                    }
+                    let texture_cache = self.texture_cache.as_mut().unwrap();
+                    cx.make_child_pass(&texture_cache.pass);
+                    cx.begin_pass(&texture_cache.pass, self.dpi_factor);
+                    self.draw_list.as_mut().unwrap().begin_always(cx)
+                }
+                ViewOptimize::DrawList => {
+                    let walk = self.walk_from_previous_size(walk);
+                    if self
+                        .draw_list
+                        .as_mut()
+                        .unwrap()
+                        .begin(cx, walk)
+                        .is_not_redrawing()
+                    {
+                        cx.walk_turtle_with_area(&mut self.area, walk);
+                        return DrawStep::done();
+                    }
+                }
+                _ => (),
+            }
+
             // get scroll position
             let scroll = if let Some(scroll_bars) = &mut self.scroll_bars_obj {
                 scroll_bars.begin_nav_area(cx);
@@ -344,24 +470,22 @@ impl Widget for GCard {
         }
 
         // loop handle the inner children
-        while let Some(DrawState::Drawing(step, resumed)) = self.draw_state.get() {
-            if step < self.draw_order.len() {
-                // get id from draw_order list
-                let id = self.draw_order[step];
-                // get the child widget by id
-                if let Some(child) = self.children.get_mut(&id) {
-                    // is the child visible?
-                    // true -> draw the child walk
+        while let Some(DrawState::Drawing(step, resume)) = self.draw_state.get() {
+            if step < self.children.len() {
+                //let id = self.draw_order[step];
+                if let Some((id, child)) = self.children.get_mut(step) {
                     if child.is_visible() {
                         let walk = child.walk(cx);
-                        // if resumed
-                        if !resumed {
+                        if resume {
+                            scope.with_id(*id, |scope| child.draw_walk(cx, scope, walk))?;
+                        } else if let Some(fw) = cx.defer_walk(walk) {
+                            self.defer_walks.push((*id, fw));
+                        } else {
                             self.draw_state.set(DrawState::Drawing(step, true));
+                            scope.with_id(*id, |scope| child.draw_walk(cx, scope, walk))?;
                         }
-                        scope.with_id(id, |scope| child.draw_walk(cx, scope, walk))?;
                     }
                 }
-                // set the next step
                 self.draw_state.set(DrawState::Drawing(step + 1, false));
             } else {
                 self.draw_state.set(DrawState::DeferWalk(0));
@@ -371,9 +495,9 @@ impl Widget for GCard {
         // loop handle the defer walk
         while let Some(DrawState::DeferWalk(step)) = self.draw_state.get() {
             if step < self.defer_walks.len() {
-                let (id, d_walk) = &mut self.defer_walks[step];
-                if let Some(child) = self.children.get_mut(&id) {
-                    let walk = d_walk.resolve(cx);
+                let (id, dw) = &mut self.defer_walks[step];
+                if let Some((id, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
+                    let walk = dw.resolve(cx);
                     scope.with_id(*id, |scope| child.draw_walk(cx, scope, walk))?;
                 }
                 self.draw_state.set(DrawState::DeferWalk(step + 1));
@@ -383,16 +507,61 @@ impl Widget for GCard {
                 if let Some(scroll_bars) = &mut self.scroll_bars_obj {
                     scroll_bars.draw_scroll_bars(cx);
                 }
+                if self.background_visible {
+                    if self.optimize.is_texture() {
+                        panic!("dont use background_visible and texture caching at the same time");
+                    }
+                    self.draw_card.end(cx);
+                    self.area = self.draw_card.area();
+                } else {
+                    cx.end_turtle_with_area(&mut self.area);
+                };
 
-                // draw background
-                self.draw_card.end(cx);
+                // // draw background
+                // self.draw_card.end(cx);
 
                 if let Some(scroll_bars) = &mut self.scroll_bars_obj {
                     scroll_bars.set_area(area);
                     scroll_bars.end_nav_area(cx);
                 }
+
+                if self.optimize.needs_draw_list() {
+                    let rect = self.area.rect(cx);
+                    self.view_size = Some(rect.size);
+                    self.draw_list.as_mut().unwrap().end(cx);
+
+                    if self.optimize.is_texture() {
+                        let texture_cache = self.texture_cache.as_mut().unwrap();
+                        cx.end_pass(&texture_cache.pass);
+                        /*if cache.pass.id_equals(4){
+                            self.draw_bg.draw_vars.set_uniform(cx, id!(marked),&[1.0]);
+                        }
+                        else{
+                            self.draw_bg.draw_vars.set_uniform(cx, id!(marked),&[0.0]);
+                        }*/
+                        self.draw_card
+                            .draw_vars
+                            .set_texture(0, &texture_cache.color_texture);
+                        self.draw_card.draw_abs(cx, rect);
+                        let area = self.draw_card.area();
+                        let texture_cache = self.texture_cache.as_mut().unwrap();
+                        /* if false {
+                            // FIXME(eddyb) this was the previous logic,
+                            // but the only tested apps that use `CachedView`
+                            // are sized correctly (regardless of `dpi_factor`)
+                            // *without* extra scaling here.
+                            cx.set_pass_scaled_area(
+                                &texture_cache.pass,
+                                area,
+                                2.0 / self.dpi_factor.unwrap_or(1.0),
+                            );
+                        } else {*/
+                        cx.set_pass_area(&texture_cache.pass, area);
+                        //}
+                    }
+                }
+                self.draw_state.end();
             }
-            self.draw_state.end();
         }
 
         DrawStep::done()
@@ -419,37 +588,26 @@ impl Widget for GCard {
         }
 
         match &self.event_order {
-            EventOrder::Down => {
-                for id in self.draw_order.iter() {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
-                            })
-                        }
-                    }
+            EventOrder::Up => {
+                for (id, child) in self.children.iter_mut().rev() {
+                    scope.with_id(*id, |scope| {
+                        child.handle_event(cx, event, scope);
+                    });
                 }
             }
-            EventOrder::Up => {
-                // the default event order is Up
-                for id in self.draw_order.iter().rev() {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
-                            });
-                        }
-                    }
+            EventOrder::Down => {
+                for (id, child) in self.children.iter_mut() {
+                    scope.with_id(*id, |scope| {
+                        child.handle_event(cx, event, scope);
+                    })
                 }
             }
             EventOrder::List(list) => {
                 for id in list {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
-                            })
-                        }
+                    if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
+                        scope.with_id(*id, |scope| {
+                            child.handle_event(cx, event, scope);
+                        })
                     }
                 }
             }
@@ -507,7 +665,7 @@ impl Widget for GCard {
 
 impl WidgetNode for GCard {
     fn uid_to_widget(&self, uid: WidgetUid) -> WidgetRef {
-        for child in self.children.values() {
+        for (_, child) in &self.children {
             let x = child.uid_to_widget(uid);
             if !x.is_empty() {
                 return x;
@@ -531,14 +689,14 @@ impl WidgetNode for GCard {
                     return;
                 }
                 let mut local_results = WidgetSet::empty();
-                if let Some(child) = self.children.get(&path[0]) {
+                if let Some((_, child)) = self.children.iter().find(|(id, _)| *id == path[0]) {
                     if path.len() > 1 {
                         child.find_widgets(&path[1..], WidgetCache::No, &mut local_results);
                     } else {
                         local_results.push(child.clone());
                     }
                 }
-                for child in self.children.values() {
+                for (_, child) in &self.children {
                     child.find_widgets(path, WidgetCache::No, &mut local_results);
                 }
                 if !local_results.is_empty() {
@@ -547,14 +705,14 @@ impl WidgetNode for GCard {
                 self.find_cache.borrow_mut().insert(hash, local_results);
             }
             WidgetCache::No => {
-                if let Some(child) = self.children.get(&path[0]) {
+                if let Some((_, child)) = self.children.iter().find(|(id, _)| *id == path[0]) {
                     if path.len() > 1 {
                         child.find_widgets(&path[1..], WidgetCache::No, results);
                     } else {
                         results.push(child.clone());
                     }
                 }
-                for child in self.children.values() {
+                for (_, child) in &self.children {
                     child.find_widgets(path, WidgetCache::No, results);
                 }
             }
@@ -566,13 +724,13 @@ impl WidgetNode for GCard {
     }
 
     fn redraw(&mut self, cx: &mut Cx) {
-        self.draw_card.redraw(cx);
-        for child in self.children.values_mut() {
+        self.area.redraw(cx);
+        for (_,child) in &mut self.children {
             child.redraw(cx);
         }
     }
-    fn area(&self)->Area {
-        self.draw_card.area
+    fn area(&self) -> Area {
+        self.area
     }
 }
 
@@ -587,6 +745,23 @@ impl GCard {
         key_down: GCardEvent::KeyDown => KeyEvent,
         key_up: GCardEvent::KeyUp => KeyEvent
     }
+    pub fn walk_from_previous_size(&self, walk: Walk) -> Walk {
+        let view_size = self.view_size.unwrap_or(DVec2::default());
+        Walk {
+            abs_pos: walk.abs_pos,
+            width: if walk.width.is_fill() {
+                walk.width
+            } else {
+                Size::Fixed(view_size.x)
+            },
+            height: if walk.height.is_fill() {
+                walk.height
+            } else {
+                Size::Fixed(view_size.y)
+            },
+            margin: walk.margin,
+        }
+    }
     pub fn set_scroll_pos(&mut self, cx: &mut Cx, v: DVec2) {
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
             scroll_bars.set_scroll_pos(cx, v);
@@ -595,7 +770,7 @@ impl GCard {
         }
     }
     pub fn child_count(&self) -> usize {
-        self.draw_order.len()
+        self.children.len()
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.draw_card.apply_over(
@@ -719,7 +894,7 @@ impl GCardRef {
 
     pub fn child_count(&self) -> usize {
         if let Some(inner) = self.borrow_mut() {
-            inner.draw_order.len()
+            inner.children.len()
         } else {
             0
         }
