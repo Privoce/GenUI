@@ -27,8 +27,8 @@ live_design! {
         clip_y: false,
         placeholder: "Please Input",
         text_align: {y: 0.},
-        is_read_only: false,
-        is_numeric_only: false,
+        read_only: false,
+        numeric_only: false,
         animator: {
             hover = {
                 default: off
@@ -216,9 +216,9 @@ pub struct GInput {
     #[live(2.0)]
     cursor_width: f64,
     #[live]
-    pub is_read_only: bool,
+    pub read_only: bool,
     #[live]
-    pub is_numeric_only: bool,
+    pub numeric_only: bool,
     #[live]
     pub placeholder: String,
     #[live]
@@ -417,7 +417,7 @@ impl Widget for GInput {
                 key_code: KeyCode::ReturnKey,
                 modifiers: KeyModifiers { shift: true, .. },
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 self.history
                     .create_or_extend_edit_group(EditKind::Other, self.cursor);
                 self.apply_edit(Edit {
@@ -437,7 +437,7 @@ impl Widget for GInput {
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Backspace,
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 let mut start = self.cursor.start().index;
                 let end = self.cursor.end().index;
                 if start == end {
@@ -456,7 +456,7 @@ impl Widget for GInput {
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Delete,
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 let start = self.cursor.start().index;
                 let mut end = self.cursor.end().index;
                 if start == end {
@@ -494,7 +494,7 @@ impl Widget for GInput {
                         ..
                     },
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 self.undo();
                 self.draw_input.redraw(cx);
                 cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
@@ -508,7 +508,7 @@ impl Widget for GInput {
                         ..
                     },
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 self.redo();
                 self.draw_input.redraw(cx);
                 cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
@@ -518,7 +518,7 @@ impl Widget for GInput {
                 replace_last,
                 was_paste,
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 let input = self.filter_input(input);
                 if !input.is_empty() {
                     let mut start = self.cursor.start().index;
@@ -879,7 +879,7 @@ impl GInput {
     }
 
     pub fn filter_input(&mut self, input: String) -> String {
-        if self.is_numeric_only {
+        if self.numeric_only {
             input
                 .chars()
                 .filter_map(|char| match char {

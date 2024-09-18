@@ -9,7 +9,8 @@ use makepad_widgets::*;
 use rfd::FileDialog;
 
 use crate::{
-    events_option, ref_event_option, set_event, utils::filter_widget_actions, widget_area,
+    events_option, ref_event_option, set_event, shader::manual::UploadMode,
+    utils::filter_widget_actions, widget_area,
 };
 
 use super::svg::GSvg;
@@ -28,8 +29,6 @@ live_design! {
 pub struct GUpload {
     #[live]
     pub path: Option<String>,
-    #[live]
-    pub multi: bool,
     #[live(true)]
     pub clear: bool,
     #[live(true)]
@@ -55,6 +54,8 @@ pub struct GUpload {
     pub visible: bool,
     #[rust]
     real_path: PathBuf,
+    #[live]
+    pub mode: UploadMode,
 }
 
 impl Widget for GUpload {
@@ -169,20 +170,39 @@ impl GUpload {
                 }
 
                 // call before selected
-                cx.widget_action(uid, &scope.path, GFileUploadEvent::BeforeSelect(self.multi));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GFileUploadEvent::BeforeSelect(self.mode.is_multi()),
+                );
                 // call system file picker
                 let f = FileDialog::new()
                     .add_filter("allow", &self.filters)
                     .set_directory(self.real_path.as_path());
-                if self.multi {
-                    f.pick_files().map(|p| {
-                        self.selected.extend(p.into_iter());
-                    });
-                } else {
-                    f.pick_file().map(|p| {
-                        self.selected.push(p);
-                    });
+
+                match self.mode {
+                    UploadMode::Folder => {
+                        f.pick_folder().map(|p| {
+                            self.selected.push(p);
+                        });
+                    }
+                    UploadMode::Folders => {
+                        f.pick_folders().map(|p| {
+                            self.selected.extend(p.into_iter());
+                        });
+                    }
+                    UploadMode::File => {
+                        f.pick_file().map(|p| {
+                            self.selected.push(p);
+                        });
+                    }
+                    UploadMode::Files => {
+                        f.pick_files().map(|p| {
+                            self.selected.extend(p.into_iter());
+                        });
+                    }
                 }
+
                 // call after selected
                 cx.widget_action(
                     uid,
