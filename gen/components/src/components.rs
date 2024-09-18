@@ -24,6 +24,7 @@ pub mod table;
 pub mod tag;
 pub mod toggle;
 pub mod notification;
+pub mod tool_btn;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -61,6 +62,7 @@ live_design! {
     import crate::components::table::header::GTableHeaderBase;
     import crate::components::table::GTableBase;
     import crate::components::table::virt::GVTableBodyBase;
+    import crate::components::tool_btn::GToolButtonBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -330,6 +332,9 @@ live_design! {
     GIcon = <GIconBase>{
         width: 24.0,
         height: 24.0,
+    }
+    GToolButton = <GToolButtonBase>{ 
+        align: <ALIGN_CENTER_WALK>{},
     }
     GImage = <GImageBase>{
         width: 32.0,

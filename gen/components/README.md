@@ -1,7 +1,7 @@
 # GEN Components (v0.1.0)
 
 - version: `v0.1.0`
-- update date: 2024-09-16
+- update date: 2024-09-18
 - author: [Will-YiFei Sheng](syf20020816@outlook.com)
 - makepad_widget version: `v0.6.0`
 - makepad branch: `rik`
@@ -40,8 +40,9 @@
 - [x] ScrollBar(s) 🆗
 - [x] icon_lib 🆗
 ---
-- [ ] Virtual Table
-
+- [x] Virtual Table
+- [ ] Window
+- [ ] ToolButton
 
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
 

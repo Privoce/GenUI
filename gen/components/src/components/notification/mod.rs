@@ -18,7 +18,7 @@ pub struct GNotification{
 }
 
 impl Widget for GNotification{
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, _cx: &mut Cx2d, _scope: &mut Scope, _walk: Walk) -> DrawStep {
         DrawStep::done()
     }
 }

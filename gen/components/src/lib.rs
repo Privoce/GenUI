@@ -28,14 +28,15 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::input::register(cx);
     crate::components::popup::register(cx);
     crate::components::drop_down::register(cx);
-
+    crate::components::table::register(cx);
+    crate::components::tool_btn::register(cx);
     
     crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);
     crate::components::tab::body::live_design(cx);
     crate::components::tab::pane::live_design(cx);
     crate::components::tab::live_design(cx);
-    crate::components::table::register(cx);
+    
     // shader -------------------------------------------------
     crate::shader::icon_lib::live_design(cx);
     crate::shader::icon_lib::base::live_design(cx);
