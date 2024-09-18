@@ -843,10 +843,11 @@ live_design! {
             align: {
                 x: 0.0, y: 0.5
             }
+            spacing: 0.0,
             mac_btns_wrap = <GHLayout>{
                 visible: false
                 height: 32.0,
-                width: 72.0,
+                width: Fit,
                 spacing: 6.0,
                 align: {x: 0.0, y: 0.5},
                 padding: {left: 6.0},
@@ -878,8 +879,9 @@ live_design! {
             win_btns_wrap = <GHLayout>{
                 visible: false
                 height: 32.0,
-                width: 138.0,
+                width: Fit,
                 spacing: 0.0,
+                background_visible: true,
                 min = <GToolButton> {icon_type: Min, os_type: Windows}
                 max = <GToolButton> {icon_type: Max, os_type: Windows}
                 close = <GToolButton> {icon_type: Close, os_type: Windows}
@@ -887,7 +889,7 @@ live_design! {
             linux_btns_wrap = <GHLayout>{
                 visible: false
                 height: 32.0,
-                width: 72.0,
+                width: Fit,
                 spacing: 6.0,
                 align: {x: 1.0, y: 0.5},
                 padding: {right: 6.0},
@@ -896,73 +898,5 @@ live_design! {
                 close = <GToolButton> {icon_type: Close, os_type: Linux}
             }
         }
-        
-        // pass: { clear_color: #22272F },
-        // flow: Down,
-        // cursor: Default
-        // mouse_cursor_size: vec2(20, 20),
-        // draw_cursor: {
-        //     instance border_width: 1.5
-        //     instance color: #F00
-        //     instance border_color: #0F0
-
-        //     fn get_color(self) -> vec4 {
-        //         return self.color
-        //     }
-
-        //     fn get_border_color(self) -> vec4 {
-        //         return self.border_color
-        //     }
-
-        //     fn pixel(self) -> vec4 {
-        //         let sdf = Sdf2d::viewport(self.pos * self.rect_size)
-        //         sdf.move_to(1.0, 1.0);
-        //         sdf.line_to(self.rect_size.x - 1.0, self.rect_size.y * 0.5)
-        //         sdf.line_to(self.rect_size.x * 0.5, self.rect_size.y - 1.0)
-        //         sdf.close_path();
-        //         sdf.fill_keep(self.get_color())
-        //         if self.border_width > 0.0 {
-        //             sdf.stroke(self.get_border_color(), self.border_width)
-        //         }
-        //         return sdf.result
-        //     }
-        // },
-        // window: {
-        //     inner_size: vec2(1024, 768)
-        // },
-        
-        // nav_control: <NavControl> {}
-        // window_bar = <GHLayout>{
-        //     height: 32.0,
-        //     width: Fill,
-        //     align: <ALIGN_LEFT_WALK>{},
-        //     background_visible: true,
-        //     background_color: #1F1E25,
-        //     window_title_wrap = <GLabel>{
-        //         font_size: 9.0,
-        //         text: "",
-        //     }
-        //     window_buttons = <View> {
-        //         visible: false,
-        //         width: Fit, height: Fit,
-        //         min = <GToolButton> {icon_type: Min}
-        //         max = <GToolButton> {icon_type: Max}
-        //         close = <GToolButton> {icon_type: Close}
-        //     }
-        // }
-        // window_menu = <WindowMenu> {
-        //     main = Main{items:[app]}
-        //     app = Sub { name:"Makepad", items:[quit] }
-        //     quit = Item {
-        //         name:"Quit",
-        //         shift: false,
-        //         key: KeyQ,
-        //         enabled: true
-        //     }
-        // }
-        // body = <KeyboardView> {
-        //     width: Fill, height: Fill,
-        //     keyboard_min_shift: 30,
-        // }
     }
 }

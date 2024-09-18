@@ -30,22 +30,63 @@ live_design! {
     import crate::components::collapses::*;
     import crate::components::tables::*;
     import crate::components::notifications::*;
+    import crate::components::tool_btns::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
 
     App = {{App}}{
         root: <Root>{
-            main_window = <Window>{
-                show_bg: true,
+            
+            main_window = <GWindow>{
+                os_type: Windows,
+                window_bar = {
+                    window_title = {
+                        title = {
+                            text: "GenUI Builtin Components",
+                        }
+                        icon = {
+                            src: dep("crate://self/resources/google.png"),
+                        }
+                    }
+                }
+                // window_bar = {
+                //     window_title_wrap = {
+                //         text: "GenUI Builtin Components",
+                //     }
+                // }
+                // caption_bar = {
+                //     caption_label = {
+                //         label = {
+                //             text: "GenUI Builtin Components"
+                //         }
+                //     }
+                //     windows_buttons = <View> {
+                //         visible: false,
+                //         width: Fit, height: Fit,
+                //         min = <DesktopButton> {draw_bg: {button_type: WindowsMax}}
+                //         max = <DesktopButton> {draw_bg: {button_type: WindowsMin}}
+                //         close = <DesktopButton> {draw_bg: {button_type: WindowsClose}}
+                //     }
+                //     // windows_buttons = {
+                //     //     visible: true,
+                //     //     min = <GToolButton> {icon_type: Min, os_type: Mac}
+                //     //     max = <GToolButton> {icon_type: Max, os_type: Mac}
+                //     //     close = <GToolButton> {icon_type: Close, os_type: Mac}
+                //     // }  
+                // },
+                
+                // show_bg: true,
                 width: Fill,
                 height: Fill,
-                draw_bg: {color: #2},
+                // draw_bg: {color: #2},
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: All,
                     width: All,
-                    flow: Down,
-                    spacing: 10.0,
-                    padding: 10.0,
+                    flow: Right,
+                    // spacing: 10.0,
+                    // padding: 10.0,
+                    
+                    <GToolButtonExample>{}
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
@@ -61,7 +102,7 @@ live_design! {
                     //     <GSplitter>{
                     //     }
                     // }
-                    <GLoadingExample>{}
+                    // <GLoadingExample>{}
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
@@ -90,7 +131,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    <GButtonExample>{}
+                    // <GButtonExample>{}
                     // <GLabelExample>{}
                     //
                     // --------------------------------
@@ -151,6 +192,7 @@ impl LiveRegister for App {
         crate::components::collapses::live_design(cx);
         crate::components::tables::live_design(cx);
         crate::components::notifications::live_design(cx);
+        crate::components::tool_btns::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

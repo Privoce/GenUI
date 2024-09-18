@@ -440,8 +440,6 @@ impl GWindow {
             .borrow_mut()
             .map(|mut card| {
                 if self.redraw_flag {
-                    let size = self.window.get_inner_size(cx);
-                    // card.walk.width = Size::Fixed(size.x - self.btns_width);
                     card.layout.align = Align {
                         x: self.offset,
                         y: card.layout.align.y,

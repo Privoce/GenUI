@@ -24,3 +24,4 @@ pub mod icon_lib;
 pub mod tables;
 pub mod collapses;
 pub mod notifications;
+pub mod tool_btns;
