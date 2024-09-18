@@ -37,8 +37,8 @@ live_design! {
             spacing: 16.0,
             align: {x: 0.5, y: 0.5},
             <GLoading>{
-                height: 120.0,
-                width: 120.0,
+                height: 64.0,
+                width: 64.0,
                 loading_type: CircleDot
             }
             <GLabel>{

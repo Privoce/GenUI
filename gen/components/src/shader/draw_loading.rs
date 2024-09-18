@@ -37,7 +37,40 @@ live_design! {
             
             return gradient_color * shape;
         }
+        fn rotating_radial_pattern(self) -> vec4 {
+            let r = self.rect_size;
+            let u = (self.pos * r * 2.0 - r) / (r.y * 0.5);
+            
+            // 初始化输出颜色
+            let o = vec4(0.0);
+            
+            // 创建基本形状
+            let shape = pow(abs(dot(u, u) - 2.0), 18.0);
+            o -= vec4(shape, shape, shape, shape);
+            
+            // 计算旋转角度
+            let angle = atan(u.y, u.x) / 0.7854;
+            let rotation = ceil(8.0 * self.time) - angle;
+            let fract_rotation = rotation - floor(rotation);
+            
+            let f = fract_rotation - vec2(0.0, 0.0);
+            let t_f = f.y;
+            // 创建平滑的过渡
+            let transition = smoothstep(0.0, 0.12, f.y);
+            
+            // 创建旋转效果
+            let pattern = floor(rotation);
+           
+            if transition == 1.0 {
+                if mod(pattern, 8.0) - 1.0 < 0.0 { 
+                    o += vec4(0.8); 
+                } else { 
+                    o += self.stroke_color;
+                }
+            }
 
+            return o;
+        }
         fn pixel(self) -> vec4 {
             let loading_size =  self.rect_size * 0.86;
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
@@ -74,26 +107,27 @@ live_design! {
                 }
                 GLoadingType::CircleDot => {
                     // https://www.shadertoy.com/view/ldVXRt
-                    let counter = 0.0;
-                    // draw 16 dots around as a loading animation
-                    for i in 0..16{
-                        // each dot is a circle and we place it around the circle, with a bit of spacing
-                        // there are 16 dots so angle is 0.125PI
-                        let angle = 0.125 * 3.1415926;
-                        let dot_pos = vec2(
-                            self.rect_size.x * 0.5 - cos(angle * counter) * loading_size.x * 0.5,
-                            self.rect_size.y * 0.5 - sin(angle * counter) * loading_size.y * 0.5
-                        );
+                    // let counter = 0.0;
+                    // // draw 16 dots around as a loading animation
+                    // for i in 0..16{
+                    //     // each dot is a circle and we place it around the circle, with a bit of spacing
+                    //     // there are 16 dots so angle is 0.125PI
+                    //     let angle = 0.125 * 3.1415926;
+                    //     let dot_pos = vec2(
+                    //         self.rect_size.x * 0.5 - cos(angle * counter) * loading_size.x * 0.5,
+                    //         self.rect_size.y * 0.5 - sin(angle * counter) * loading_size.y * 0.5
+                    //     );
 
-                        sdf.circle(dot_pos.x, dot_pos.y, loading_dot_size.x * 0.3 + 0.1 * counter);
-                        // with the time passing, the circle color(self.stroke_color) will change from deeper to lighter, then back to deeper
-                        // It looks like it's spinning, but it's actually the color changing
-                        // the easy way is to adjust the alpha value of the color
-                        // let circle_color = self.stroke_color - vec4(0.0, 0.0, 0.0, 0.046 * counter);
-                        sdf.fill(self.stroke_color * vec4(1.0, 1.0, 1.0, 0.5 + 0.5 * sin(rotate_time * 2 + counter * 0.1)));
+                    //     sdf.circle(dot_pos.x, dot_pos.y, loading_dot_size.x * 0.3 + 0.1 * counter);
+                    //     // with the time passing, the circle color(self.stroke_color) will change from deeper to lighter, then back to deeper
+                    //     // It looks like it's spinning, but it's actually the color changing
+                    //     // the easy way is to adjust the alpha value of the color
+                    //     // let circle_color = self.stroke_color - vec4(0.0, 0.0, 0.0, 0.046 * counter);
+                    //     sdf.fill(self.stroke_color * vec4(1.0, 1.0, 1.0, 0.5 + 0.5 * sin(rotate_time * 2 + counter * 0.1)));
 
-                        counter += 1.0;
-                    }
+                    //     counter += 1.0;
+                    // }
+                    return self.rotating_radial_pattern();
                 }
             }
 

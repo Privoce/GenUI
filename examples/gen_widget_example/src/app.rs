@@ -61,7 +61,7 @@ live_design! {
                     //     <GSplitter>{
                     //     }
                     // }
-                    // <GLoadingExample>{}
+                    <GLoadingExample>{}
                     // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
