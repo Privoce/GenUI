@@ -51,3 +51,12 @@ impl UploadMode {
         }
     }
 }
+
+#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
+#[live_ignore]
+#[repr(u32)]
+pub enum WindowButtonMode{
+    Desktop,
+    #[pick]
+    Tool
+}

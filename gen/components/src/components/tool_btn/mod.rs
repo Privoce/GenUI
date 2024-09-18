@@ -23,7 +23,7 @@ live_design! {
     GLOBAL_DURATION = 0.25;
     GToolButtonBase = {{GToolButton}} {
         height: 32.0,
-        width: 48.0,
+        width: 46.0,
         stroke_color: #768390,
         stroke_hover_color: #768390,
         stroke_pressed_color: #768390,

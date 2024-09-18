@@ -1,3 +1,4 @@
+use file_tree::FileTreeNodeAction;
 use makepad_widgets::*;
 
 use crate::{shader::icon_lib::types::base::Base, themes::hex_to_vec4};
@@ -10,6 +11,33 @@ pub enum GOsType {
     #[pick]
     Linux,
     Other,
+}
+
+impl From<GOsType> for OsType {
+    fn from(value: GOsType) -> Self {
+        match value {
+            GOsType::Windows => OsType::Windows,
+            GOsType::Mac => OsType::Macos,
+            GOsType::Linux => OsType::LinuxDirect,
+            GOsType::Other => OsType::Unknown,
+        }
+    }
+}
+
+impl From<OsType> for GOsType {
+    fn from(value: OsType) -> Self {
+        match value {
+            OsType::Unknown => GOsType::Other,
+            OsType::Windows => GOsType::Windows,
+            OsType::Macos => GOsType::Mac,
+            OsType::Ios => GOsType::Other,
+            OsType::Android(_android_params) => GOsType::Other,
+            OsType::OpenHarmony(_open_harmony_params) => GOsType::Other,
+            OsType::LinuxWindow(_linux_window_params) => GOsType::Other,
+            OsType::LinuxDirect => GOsType::Linux,
+            OsType::Web(_web_params) => GOsType::Other,
+        }
+    }
 }
 
 impl GOsType {
