@@ -881,7 +881,6 @@ live_design! {
                 height: 32.0,
                 width: Fit,
                 spacing: 0.0,
-                background_visible: true,
                 min = <GToolButton> {icon_type: Min, os_type: Windows}
                 max = <GToolButton> {icon_type: Max, os_type: Windows}
                 close = <GToolButton> {icon_type: Close, os_type: Windows}

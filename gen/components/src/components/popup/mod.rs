@@ -69,7 +69,7 @@ impl LiveHook for GPopupContainer {
 
 impl GPopupContainer {
     pub fn area(&self) -> Area {
-        self.draw_card.area
+        self.area
     }
     pub fn draw_item(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
         let _ = self.super_widget.draw_walk(cx, scope, self.walk);

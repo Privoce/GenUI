@@ -6,10 +6,7 @@ use makepad_widgets::*;
 pub use register::register;
 use std::rc::Rc;
 
-use crate::{
-    shader::manual::{PopupMode, Position, TriggerMode},
-    widget_area,
-};
+use crate::shader::manual::{PopupMode, Position, TriggerMode};
 use icon_atlas::RefCell;
 
 use super::{card::GCard, popup::GPopup};
@@ -73,18 +70,18 @@ impl LiveHook for GDropDown {
 }
 
 impl GDropDown {
-    widget_area! {
-        area, draw_card
+    fn area(&self) -> Area {
+        self.card.area
     }
     pub fn open(&mut self, cx: &mut Cx) {
         self.opened = true;
-        self.draw_card.redraw(cx);
-        cx.sweep_lock(self.draw_card.area());
+        self.redraw(cx);
+        cx.sweep_lock(self.area());
     }
     pub fn close(&mut self, cx: &mut Cx) {
         self.opened = false;
-        self.draw_card.redraw(cx);
-        cx.sweep_unlock(self.draw_card.area());
+        self.redraw(cx);
+        cx.sweep_unlock(self.area());
     }
 }
 
@@ -96,7 +93,7 @@ impl Widget for GDropDown {
 
         let _ = self.card.draw_walk(cx, scope, walk);
 
-        cx.add_nav_stop(self.draw_card.area(), NavRole::DropDown, Margin::default());
+        cx.add_nav_stop(self.area(), NavRole::DropDown, Margin::default());
 
         if self.opened && self.popup.is_some() {
             let global = cx.global::<PopupMenuGlobal>().clone();
@@ -105,17 +102,16 @@ impl Widget for GDropDown {
             popup_menu.begin(cx);
 
             if let PopupMode::Dialog = self.mode {
-                let area = self.draw_card.area();
+                let area = self.area();
                 let mut rect = area.rect(cx);
                 rect.pos = DVec2::default();
                 area.set_rect(cx, &rect);
                 popup_menu.draw_container(cx, scope, None);
                 popup_menu.end(cx, scope, area, DVec2::default());
             } else {
-                let area = self.draw_card.area().rect(cx);
+                let area = self.area().rect(cx);
                 popup_menu.draw_container(cx, scope, Some(self.position.clone()));
                 let container = popup_menu.container_area().rect(cx);
-
                 let mut shift = match self.position {
                     Position::Bottom => DVec2 {
                         x: -container.size.x / 2.0 + area.size.x / 2.0,
@@ -170,7 +166,7 @@ impl Widget for GDropDown {
                 shift.x += self.offset_x as f64;
                 shift.y += self.offset_y as f64;
                 popup_menu.redraw(cx);
-                popup_menu.end(cx, scope, self.draw_card.area(), shift);
+                popup_menu.end(cx, scope, self.area(), shift);
             }
         }
 
@@ -181,7 +177,7 @@ impl Widget for GDropDown {
             let global = cx.global::<PopupMenuGlobal>().clone();
             let mut map = global.map.borrow_mut();
             let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
-            popup_menu.handle_event_with(cx, event, scope, self.draw_card.area());
+            popup_menu.handle_event_with(cx, event, scope, self.area());
             if let Event::MouseDown(e) = event {
                 // if !popup_menu.menu_contains_pos(cx, e.abs) {
                 //     self.close(cx);
@@ -204,7 +200,7 @@ impl Widget for GDropDown {
             }
         }
 
-        match event.hits_with_sweep_area(cx, self.draw_card.area(), self.draw_card.area()) {
+        match event.hits_with_sweep_area(cx, self.area(), self.area()) {
             Hit::KeyFocus(_) => {
                 // self.animator_play(cx, id!(focus.on));
             }
@@ -214,7 +210,7 @@ impl Widget for GDropDown {
                 self.draw_card.redraw(cx);
             }
             Hit::FingerDown(_) => {
-                cx.set_key_focus(self.draw_card.area());
+                cx.set_key_focus(self.area());
                 self.open(cx);
             }
             Hit::FingerHoverIn(_) => {
