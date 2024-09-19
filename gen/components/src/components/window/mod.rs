@@ -261,6 +261,7 @@ impl LiveHook for GWindow {
             cx,
             TextureFormat::DepthD32 {
                 size: TextureSize::Auto,
+                initial: true,
             },
         );
         self.pass

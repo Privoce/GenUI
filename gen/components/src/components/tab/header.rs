@@ -106,8 +106,8 @@ impl Widget for GTabHeader {
         self.draw_header.end(cx);
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
-        if self.scroll_bars.handle_event(cx, event).len() > 0 {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if self.scroll_bars.handle_event(cx, event, scope).len() > 0 {
             self.view_area.redraw(cx);
         };
         let t_map = self.children.clone();
@@ -158,9 +158,10 @@ impl GTabHeader {
         &mut self,
         cx: &mut Cx,
         event: &Event,
+        scope: &mut Scope,
         f: &mut dyn FnMut(GTabHeaderEvent),
     ) {
-        if self.scroll_bars.handle_event(cx, event).len() > 0 {
+        if self.scroll_bars.handle_event(cx, event, scope).len() > 0 {
             self.view_area.redraw(cx);
         };
         let t_map = self.children.clone();

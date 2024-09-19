@@ -57,7 +57,7 @@ impl Widget for GTab {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let _ = self
             .header
-            .handle_event_actions(cx, event, &mut |e| match e {
+            .handle_event_actions(cx, event, scope, &mut |e| match e {
                 header::GTabHeaderEvent::Selected(index) => {
                     // select_target.replace(index);
                     self.selected = index;
@@ -73,7 +73,13 @@ impl Widget for GTab {
 }
 
 impl LiveHook for GTab {
-    fn after_apply(&mut self, _cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(
+        &mut self,
+        _cx: &mut Cx,
+        _apply: &mut Apply,
+        _index: usize,
+        _nodes: &[LiveNode],
+    ) {
         // let bg_color = get_color(self.theme, self.background_color, 500);
         // self.draw_tab.apply_over(cx, live!{
         //     background_color: (bg_color),
