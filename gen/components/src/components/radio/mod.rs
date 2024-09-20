@@ -1,13 +1,15 @@
 pub mod event;
+pub mod group;
 mod register;
 
 use event::{GRadioClickedParam, GRadioEvent, GRadioHoverParam};
 pub use register::register;
 
 use makepad_widgets::*;
+use shader::draw_text::TextWrap;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event, shader::draw_radio::{DrawGRadio, GChooseType}, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
+    animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, shader::{draw_radio::{DrawGRadio, GChooseType}, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, set_cursor, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -15,6 +17,19 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GRadioBase = {{GRadio}}{
+        height: 18.0,
+        width: Fit,
+        draw_radio_wrap: {
+            fn pixel(self) ->vec4{
+                return vec4(0.0);
+            }
+        },
+        font_size: 10.0,
+        spacing: 6.0,
+        align: {
+            x: 0.0,
+            y: 0.5
+        },
         animator: {
             hover = {
                 default: off
@@ -54,6 +69,18 @@ live_design! {
 pub struct GRadio {
     #[live]
     pub theme: Themes,
+    #[live]
+    pub color: Option<Vec4>,
+    #[live(12.0)]
+    pub font_size: f64,
+    #[live(0.0)]
+    pub top_drop: f64,
+    #[live(0.0)]
+    pub height_factor: f64,
+    #[live(TextWrap::Word)]
+    pub wrap: TextWrap,
+    #[live]
+    pub font_family: LiveDependency,
     #[live(8.0)]
     pub size: f32,
     #[live]
@@ -81,6 +108,8 @@ pub struct GRadio {
     // value ------------------
     #[live(false)]
     pub value: bool,
+    #[live]
+    pub text: ArcStringMut,
     // ---- type
     #[live]
     pub radio_type: GChooseType,
@@ -88,6 +117,12 @@ pub struct GRadio {
     #[redraw]
     #[live]
     pub draw_radio: DrawGRadio,
+    #[redraw]
+    #[live]
+    pub draw_text: DrawGText,
+    #[redraw]
+    #[live]
+    pub draw_radio_wrap: DrawQuad,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -109,7 +144,27 @@ impl Widget for GRadio {
         if !self.visible {
             return DrawStep::done();
         }
-        self.draw_radio.draw_walk(cx, walk);
+        let font = get_font_family(&self.font_family, cx);
+
+        self.draw_text.text_style.font = font;
+        self.draw_radio_wrap.begin(cx, walk, self.layout);
+        let size = self.size + self.border_width;
+        let radio_walk = Walk{
+            width: Size::Fixed((size * 2.0) as f64),
+            height: Size::Fixed((size * 2.0) as f64),
+            ..Default::default()
+        };
+        self.draw_radio.draw_walk(cx, radio_walk);
+        let text_walk = Walk{ 
+            width: Size::Fit,
+            height: Size::Fit,
+            ..Default::default()
+        };
+        self.draw_text.draw_walk(cx, text_walk, Align{
+            x: 0.0,
+            y: 0.0,
+        }, self.text.as_ref());
+        self.draw_radio_wrap.end(cx);
         DrawStep::done()
     }
     fn handle_event_with(
@@ -132,9 +187,7 @@ impl Widget for GRadio {
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
-    fn is_visible(&self) -> bool {
-        self.visible
-    }
+    set_text_and_visible_fn!();
 }
 
 impl LiveHook for GRadio {
@@ -150,6 +203,7 @@ impl LiveHook for GRadio {
             vec4(0.0, 0.0, 0.0, 0.0)
         };
         // ------------------ hover color -----------------------------------------------
+        let color = self.color.get(self.theme, 800);
         let hover_color = self.hover_color.get(self.theme, 100);
         let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
         // ------------------ border color ----------------------------------------------
@@ -179,14 +233,26 @@ impl LiveHook for GRadio {
             },
         );
         self.draw_radio.apply_type(self.radio_type.clone());
-
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                color: (color),
+                text_style: {
+                    top_drop: (self.top_drop),
+                    font_size: (self.font_size),
+                    height_factor: (self.height_factor),
+                }
+            },
+        );
+        self.draw_text.wrap = self.wrap.clone();
         self.draw_radio.redraw(cx);
+        self.draw_text.redraw(cx);
     }
 }
 
 impl GRadio {
     widget_area! {
-        area, draw_radio
+        area, draw_radio_wrap
     }
     event_option! {
         clicked: GRadioEvent::Clicked => GRadioClickedParam,

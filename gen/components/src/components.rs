@@ -312,11 +312,7 @@ live_design! {
         scroll_bar_x: <GScrollBar> {}
         scroll_bar_y: <GScrollBar> {}
     }
-    GRadio = <GRadioBase>{
-        width: 19.0,
-        height: 19.0,
-        align: { x: 0.0, y: 0.0 }
-    }
+    GRadio = <GRadioBase>{}
     GCheckBox = <GCheckBoxBase>{
         width: 19.0,
         height: 19.0,

@@ -62,7 +62,7 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    <GPopupExample>{}
+                    // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}
@@ -75,7 +75,7 @@ live_design! {
                     //     }
                     // }
                     // <GLoadingExample>{}
-                    // <GRadioExample>{}
+                    <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
                     // <GImageExample>{}

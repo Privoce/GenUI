@@ -10,6 +10,7 @@ live_design! {
         width: Fill,
         spacing: 10.0,
         flow: Down,
+        padding: 6.0,
         <GLabel>{
             text: "GRadio"
         }
@@ -17,15 +18,16 @@ live_design! {
             height: Fit,
             width: Fill,
             spacing: 10.0,
+            
             <GRadio>{
-                height: 30.0,
-                width: 60.0,
+                text: "GRadio"
             }
             <GRadio>{
                 theme: Warning,
                 height: 30.0,
-                width: 60.0,
+                width: 80.0,
                 radio_type: Tick,
+                text: "GRadio"
             }
             <GRadio>{
                 theme: Warning,
