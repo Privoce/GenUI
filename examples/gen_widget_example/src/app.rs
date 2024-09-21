@@ -54,7 +54,27 @@ live_design! {
                 body = <ScrollYView>{
                     height: All,
                     width: All,
-                    flow: Right,
+                    flow: Down,
+                    padding: 16.0,
+                    // <GSelect>{
+
+                    // }
+                    <GCard>{
+                        height: 60.0,
+                        width: 60.0,
+                        border_width: 1.0,
+                        border_color: #F,
+                        spread_radius: 5.6,
+                        blur_radius: 5.6,
+                        clip_x: false,
+                        clip_y: false,
+                        background_visible: false
+                    }
+                    <GCard>{
+                        height: 60.0,
+                        width: 60.0,
+                        border_color: #F,
+                    }
                     // spacing: 10.0,
                     // padding: 10.0,
                     
@@ -75,7 +95,7 @@ live_design! {
                     //     }
                     // }
                     // <GLoadingExample>{}
-                    <GRadioExample>{}
+                    // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
                     // <GImageExample>{}
@@ -103,7 +123,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    // <GButtonExample>{}
+                    <GButtonExample>{}
                     // <GLabelExample>{}
                     //
                     // --------------------------------

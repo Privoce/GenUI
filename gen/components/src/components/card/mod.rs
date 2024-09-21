@@ -21,9 +21,9 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GCardBase = {{GCard}}{
-        blur_radius: 20.0,
         spread_radius: 0.0,
-        shadow_offset: vec2(0.0, 0.0),
+        clip_x: false,
+        clip_y: false,
         animator: {
             hover = {
                 default: off,
@@ -223,12 +223,12 @@ impl LiveHook for GCard {
             cx,
             live! {
                 background_color: (bg_color),
+                background_visible: (background_visible),
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
-                background_visible: (background_visible),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
                 spread_radius: (self.spread_radius),
@@ -465,7 +465,7 @@ impl Widget for GCard {
             };
 
             // begin draw the card
-            if self.background_visible {
+            if self.visible {
                 self.draw_card
                     .begin(cx, walk, self.layout.with_scroll(scroll)); //.with_scale(2.0 / self.dpi_factor.unwrap_or(2.0)));
             } else {
@@ -509,7 +509,7 @@ impl Widget for GCard {
                 if let Some(scroll_bars) = &mut self.scroll_bars_obj {
                     scroll_bars.draw_scroll_bars(cx);
                 }
-                if self.background_visible {
+                if self.visible {
                     if self.optimize.is_texture() {
                         panic!("dont use background_visible and texture caching at the same time");
                     }

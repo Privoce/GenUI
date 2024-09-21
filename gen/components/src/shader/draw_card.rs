@@ -44,17 +44,19 @@ live_design!{
             return self.border_color
         }
                             
-        fn pixel(self) -> vec4 {
-                                     
-            let sdf = Sdf2d::viewport(self.pos * self.rect_size3)
+        fn pixel(self) -> vec4 {                
+            let sdf = Sdf2d::viewport(self.pos * self.rect_size3);
             sdf.box(
-                self.sdf_rect_pos.x + self.border_width,
-                self.sdf_rect_pos.y + self.border_width,
-                self.sdf_rect_size.x - self.border_width * 2.0,
-                self.sdf_rect_size.y - self.border_width * 2.0, 
+                self.sdf_rect_pos.x,
+                self.sdf_rect_pos.y,
+                self.sdf_rect_size.x,
+                self.sdf_rect_size.y, 
                 max(1.0, self.border_radius)
             );
             
+            if self.background_visible != 0.0 {
+                sdf.fill_keep(self.get_color());
+            }
             if self.spread_radius != 0.0 {
                 if sdf.shape > -1.0{
                     let m = self.blur_radius;
@@ -70,13 +72,9 @@ live_design!{
                     }
                 }
             }
-                                            
-            if self.background_visible != 0.0 {
-                sdf.fill_keep(self.get_color())
-            }
-            if self.border_width > 0.0 {
-                sdf.stroke(self.get_border_color(), self.border_width)
-            }
+                                   
+            sdf.stroke(self.get_border_color(), self.border_width); 
+            
             return sdf.result
         }
     }

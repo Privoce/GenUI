@@ -31,7 +31,8 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::table::register(cx);
     crate::components::tool_btn::register(cx);
     crate::components::window::register(cx);
-    
+    crate::components::select::register(cx);
+
     crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);
     crate::components::tab::body::live_design(cx);

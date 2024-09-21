@@ -30,7 +30,7 @@ pub struct GRadioGroup {
 
 impl Widget for GRadioGroup {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.deref_widget.draw_walk(cx, scope, walk);
+        let _ = self.deref_widget.draw_walk(cx, scope, walk);
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {

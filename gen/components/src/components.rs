@@ -26,6 +26,7 @@ pub mod tag;
 pub mod toggle;
 pub mod tool_btn;
 pub mod window;
+pub mod select;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -66,6 +67,7 @@ live_design! {
     import crate::components::table::virt::GVTableBodyBase;
     import crate::components::tool_btn::GToolButtonBase;
     import crate::components::window::GWindowBase;
+    import crate::components::select::GSelectBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -896,4 +898,5 @@ live_design! {
             }
         }
     }
+    GSelect = <GSelectBase>{}
 }
