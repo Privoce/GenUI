@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
 
     GLoadingExample = <ScrollYView>{
-        height: 230.0,
+        height: 300.0,
         width: Fill,
         spacing: 10.0,
         flow: Down,
@@ -31,7 +31,7 @@ live_design! {
             }
         }
         <View>{
-            height: 180.0,
+            height: 100.0,
             width: Fill,
             flow: Down,
             spacing: 16.0,

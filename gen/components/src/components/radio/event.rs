@@ -18,3 +18,18 @@ pub struct GRadioHoverParam {
     pub value: bool,
     pub e: FingerHoverEvent,
 }
+
+
+// -------------------------------------------------------------------------
+
+#[derive(Debug, Clone, DefaultNone)]
+pub enum GRadioGroupEvent {
+    Changed(GRadioGroupEventParam),
+    None,
+}
+
+#[derive(Clone, Debug)]
+pub struct GRadioGroupEventParam {
+    pub selected: usize,
+    pub e: FingerUpEvent,
+}

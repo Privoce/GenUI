@@ -252,7 +252,9 @@ impl LiveHook for GRadio {
 
 impl GRadio {
     widget_area! {
-        area, draw_radio_wrap
+        area, draw_radio_wrap,
+        area_radio, draw_radio,
+        area_text, draw_text
     }
     event_option! {
         clicked: GRadioEvent::Clicked => GRadioClickedParam,
