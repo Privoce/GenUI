@@ -59,21 +59,24 @@ live_design! {
                     // <GSelect>{
 
                     // }
-                    <GCard>{
-                        height: 60.0,
-                        width: 60.0,
-                        border_width: 1.0,
-                        border_color: #F,
-                        spread_radius: 5.6,
-                        blur_radius: 5.6,
-                        clip_x: false,
-                        clip_y: false,
-                        background_visible: false
-                    }
-                    <GCard>{
-                        height: 60.0,
-                        width: 60.0,
-                        border_color: #F,
+                    <GVLayout>{
+                        height: Fit,
+                        spacing: 8.0,
+                        <GSelectItem>{
+                            width: 200.0
+                        }
+                        <GSelectItem>{
+                            width: 200.0,
+                            right_visible: false,
+                            left_visible: true,
+                            right_visible: true,
+                            center: {
+                                center_slot = {
+                                    text: "Olivia Rhye"
+                                }
+                            },
+                            selected: true
+                        }
                     }
                     // spacing: 10.0,
                     // padding: 10.0,
@@ -123,7 +126,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    <GButtonExample>{}
+                    // <GButtonExample>{}
                     // <GLabelExample>{}
                     //
                     // --------------------------------

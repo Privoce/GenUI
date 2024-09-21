@@ -1,6 +1,6 @@
 use std::{path::PathBuf, str::FromStr};
 
-use makepad_widgets::{LiveDependency, Vec4};
+use makepad_widgets::{DVec2, LiveDependency, Rect, Vec2, Vec4};
 
 use crate::themes::{get_color, hex_to_vec4, Themes};
 
@@ -85,5 +85,78 @@ pub trait ToPath {
 impl ToPath for LiveDependency {
     fn to_pathbuf(&self) -> PathBuf {
         PathBuf::from_str(self.as_str()).unwrap()
+    }
+}
+
+// ----------------------------------------------------------------------------------------------------
+pub trait RectExpand {
+    fn abs_start(&mut self, by: &Rect, offset: Option<DVec2>) -> ();
+    fn abs_start_center(&mut self, by: &Rect, offset: Option<DVec2>) -> ();
+    fn abs_end(&mut self, by: &Rect, offset: Option<DVec2>) -> ();
+    fn abs_end_center(&mut self, by: &Rect, offset: Option<DVec2>) -> ();
+}
+
+impl RectExpand for Rect {
+    fn abs_start(&mut self, by: &Rect, offset: Option<DVec2>) -> () {
+        let Rect { pos, .. } = by;
+
+        if let Some(v) = offset {
+            self.pos.x = pos.x + v.x;
+            self.pos.y = pos.y + v.y;
+        } else {
+            self.pos.x = pos.x;
+            self.pos.y = pos.y;
+        };
+    }
+
+    fn abs_start_center(&mut self, by: &Rect, offset: Option<DVec2>) -> () {
+        let Rect { pos, size } = by;
+
+        if let Some(v) = offset {
+            self.pos.x = pos.x + v.x;
+            self.pos.y = pos.y + v.y + size.y * 0.5 - self.size.y * 0.5;
+        } else {
+            self.pos.x = pos.x;
+            self.pos.y = pos.y + size.y * 0.5 - self.size.y * 0.5;
+        };
+    }
+
+    fn abs_end(&mut self, by: &Rect, offset: Option<DVec2>) -> () {
+        let Rect { pos, size } = by;
+
+        if let Some(v) = offset {
+            self.pos.x = pos.x + v.x + size.x;
+            self.pos.y = pos.y + v.y;
+        } else {
+            self.pos.x = pos.x;
+            self.pos.y = pos.y;
+        };
+    }
+
+    fn abs_end_center(&mut self, by: &Rect, offset: Option<DVec2>) -> () {
+        let Rect { pos, size } = by;
+
+        if let Some(v) = offset {
+            self.pos.x = pos.x + v.x + size.x;
+            self.pos.y = pos.y + v.y + size.y * 0.5 - self.size.y * 0.5;
+        } else {
+            self.pos.x = pos.x + size.x;
+            self.pos.y = pos.y + size.y * 0.5 - self.size.y * 0.5;
+        };
+    }
+}
+
+// ------------------------------------------------------------------------------------------------------------
+
+pub trait ToDVec {
+    fn to_dvec2(self) -> DVec2;
+}
+
+impl ToDVec for Vec2 {
+    fn to_dvec2(self) -> DVec2 {
+        DVec2 {
+            x: self.x as f64,
+            y: self.y as f64,
+        }
     }
 }
