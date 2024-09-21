@@ -9,7 +9,7 @@ use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, shader::{draw_radio::{DrawGRadio, GChooseType}, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, set_cursor, BoolToF32, ThemeColor}, widget_area
+    animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, shader::{draw_radio::{DrawGRadio, GChooseType}, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, set_cursor, BoolToF32, ThemeColor}, widget_area, widget_origin_fn
 };
 
 live_design! {
@@ -258,6 +258,16 @@ impl GRadio {
         clicked: GRadioEvent::Clicked => GRadioClickedParam,
         hover: GRadioEvent::Hover => GRadioHoverParam
     }
+    pub fn toggle(&mut self, cx: &mut Cx, selected: bool) ->(){
+        self.value = selected;
+        self.draw_radio.selected = selected.to_f32();
+        if selected{
+            self.animator_play(cx, id!(selected.on));
+        }else{
+            self.animator_play(cx, id!(selected.off));
+        }
+        
+    }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.draw_radio.apply_over(
             cx,
@@ -355,7 +365,8 @@ impl GRadioRef {
         animate_hover_off,
         animate_selected_on,
         animate_selected_off
-    }   
+    }
+    widget_origin_fn!(GRadio);
 }
 
 impl GRadioSet{

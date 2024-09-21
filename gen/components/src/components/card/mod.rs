@@ -109,7 +109,7 @@ pub struct GCard {
     // #[rust]
     // pub children: ComponentMap<LiveId, WidgetRef>,
     #[rust]
-    children: Vec<(LiveId, WidgetRef)>,
+    pub children: Vec<(LiveId, WidgetRef)>,
     // #[rust]
     // pub draw_order: Vec<LiveId>,
     #[live]
@@ -119,7 +119,7 @@ pub struct GCard {
     #[animator]
     pub animator: Animator,
     #[rust]
-    find_cache: RefCell<HashMap<u64, WidgetSet>>,
+    pub find_cache: RefCell<HashMap<u64, WidgetSet>>,
     // optimize ---------------------
     #[live]
     pub dpi_factor: Option<f64>,

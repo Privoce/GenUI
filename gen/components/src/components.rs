@@ -35,6 +35,7 @@ live_design! {
     import crate::components::link::GLinkBase;
     import crate::components::icon::GIconBase;
     import crate::components::radio::GRadioBase;
+    import crate::components::radio::group::GRadioGroupBase;
     import crate::components::checkbox::GCheckBoxBase;
     import crate::components::image::GImageBase;
     import crate::components::input::GInputBase;
@@ -313,6 +314,7 @@ live_design! {
         scroll_bar_y: <GScrollBar> {}
     }
     GRadio = <GRadioBase>{}
+    GRadioGroup = <GRadioGroupBase>{}
     GCheckBox = <GCheckBoxBase>{
         width: 19.0,
         height: 19.0,
