@@ -190,7 +190,7 @@ impl Widget for GSelect {
             let _ = options_menu.end_container(cx);
             let area = self.area().rect(cx);
             let container_size = options_menu.area().rect(cx).size;
-            
+
             let shift = DVec2 {
                 x: area.size.x / 2.0 - container_size.x / 2.0,
                 y: area.size.y + self.offset as f64,
@@ -208,6 +208,7 @@ impl Widget for GSelect {
             let mut map = global.map.borrow_mut();
             let menu = map.get_mut(&self.select_options.unwrap()).unwrap();
             let mut close = false;
+
             menu.handle_event_with(cx, event, self.area(), &mut |cx, action| match action {
                 GSelectOptionsEvent::Changed(e) => {
                     self.selected = e.selected_id;
@@ -223,7 +224,7 @@ impl Widget for GSelect {
             if let Event::MouseDown(e) = event {
                 if !menu.menu_contains_pos(cx, e.abs) {
                     self.close(cx);
-                    self.animator_play(cx, id!(hover.off));
+                    // self.animator_play(cx, id!(hover.off));
                 }
             }
         }

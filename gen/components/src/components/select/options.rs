@@ -127,7 +127,7 @@ impl GSelectOptions {
         let target = self
             .children
             .get_or_insert(cx, item_id, |cx| GSelectItem::new_from_ptr(cx, self.item));
-        target.draw_item(cx, text, value);
+        target.draw_item(cx, text, value, self.theme);
     }
     pub fn handle_event_with(
         &mut self,
@@ -147,6 +147,17 @@ impl GSelectOptions {
             match action {
                 GSelectItemEvent::Clicked(param) => {
                     // if is item clicked, do options event change
+                    if param.selected {
+                        for (index, (id, item)) in self.children.iter_mut().enumerate() {
+                            if id.0 != node_id.0 {
+                                item.selected = false;
+                                item.animator_play(cx, id!(select.off));
+                            } else {
+                                item.selected = true;
+                                item.animator_play(cx, id!(select.on));
+                            }
+                        }
+                    }
                     dispatch_action(
                         cx,
                         GSelectOptionsEvent::Changed(GSelectOptionsChangedParam {

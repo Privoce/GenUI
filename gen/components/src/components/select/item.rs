@@ -1,7 +1,13 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::{draw_card::DrawGCard, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, BoolToF32, ThemeColor, ToBool}
+    shader::{
+        draw_card::DrawGCard,
+        draw_text::DrawGText,
+        icon_lib::{base::DrawGIconBase, types::base::Base},
+    },
+    themes::Themes,
+    utils::{get_font_family, BoolToF32, RectExpand, ThemeColor, ToBool},
 };
 
 use super::{GSelectItemClickedParam, GSelectItemEvent};
@@ -59,6 +65,10 @@ pub struct GSelectItem {
     #[live(9.0)]
     pub font_size: f32,
     #[live]
+    pub stroke_color: Option<Vec4>,
+    #[live]
+    pub stroke_hover_color: Option<Vec4>,
+    #[live]
     pub color: Option<Vec4>,
     #[live]
     pub background_color: Option<Vec4>,
@@ -82,10 +92,16 @@ pub struct GSelectItem {
     pub border_width: f32,
     #[live(0.0)]
     pub border_radius: f32,
+    #[live(1.0)]
+    pub stroke_width: f32,
     #[live]
     pub draw_item: DrawGCard,
     #[live]
     pub draw_text: DrawGText,
+    #[live]
+    pub draw_selector: DrawGIconBase,
+    #[live(Base::Correct)]
+    pub icon_type: Base,
     #[layout]
     pub layout: Layout,
     #[walk]
@@ -93,7 +109,7 @@ pub struct GSelectItem {
     #[live]
     pub hover: f32,
     #[live]
-    pub selected: f32,
+    pub selected: bool,
     #[animator]
     pub animator: Animator,
     #[live]
@@ -117,6 +133,8 @@ impl LiveHook for GSelectItem {
         let shadow_color = self.shadow_color.get(self.theme, 700);
         let background_visible = self.background_visible.to_f32();
         let color = self.color.use_or("#101828");
+        let stroke_color = self.stroke_color.get(self.theme, 600);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 600);
         self.draw_item.apply_over(
             cx,
             live! {
@@ -144,6 +162,16 @@ impl LiveHook for GSelectItem {
                 }
             },
         );
+        self.draw_selector.apply_over(
+            cx,
+            live! {
+                stroke_color: (stroke_color),
+                stroke_width: (self.stroke_width),
+                stroke_hover_color: (stroke_hover_color),
+            },
+        );
+        self.draw_selector.apply_type(self.icon_type);
+        self.draw_selector.redraw(cx);
         self.draw_text.redraw(cx);
         self.draw_item.redraw(cx);
     }
@@ -153,16 +181,35 @@ impl GSelectItem {
     pub fn area(&self) -> Area {
         self.draw_item.area()
     }
-    pub fn draw_item(&mut self, cx: &mut Cx2d, text: &str, value: &str) {
+    pub fn draw_item(&mut self, cx: &mut Cx2d, text: &str, value: &str, theme: Themes) {
+        self.theme = theme;
         let _ = self.draw_item.begin(cx, self.walk, self.layout);
         let font = get_font_family(&self.font_family, cx);
         self.draw_text.text_style.font = font;
         let _ = self
             .draw_text
             .draw_walk(cx, Walk::fit(), Align::default(), text);
+        let icon_walk = Walk {
+            height: Size::Fixed(16.0),
+            width: Size::Fixed(16.0),
+            abs_pos: Some(DVec2 { x: 16.0, y: 48.0 }),
+            ..Default::default()
+        };
+        let select_rect = if self.selected {
+            let select_rect = self.draw_selector.draw_walk(cx, icon_walk);
+            Some(select_rect)
+        } else {
+            None
+        };
         self.value = value.to_string();
         self.text = text.to_string();
         let _ = self.draw_item.end(cx);
+        select_rect.map(|mut select_rect| {
+            let rect = self.area().rect(cx);
+            let x = -16.0 - self.layout.padding.right;
+            select_rect.abs_end_center(&rect, Some(dvec2(x, 0.0)));
+            self.draw_selector.update_abs(cx, select_rect);
+        });
     }
     pub fn handle_event_with(
         &mut self,
@@ -186,16 +233,15 @@ impl GSelectItem {
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
             }
-            Hit::FingerDown(_) => {
-                self.animator_play(cx, id!(hover.on));
-                self.animator_play(cx, id!(select.on));
-            }
+            Hit::FingerDown(_) => {}
             Hit::FingerUp(se) => {
+                self.selected = !self.selected;
+                
                 if !se.is_sweep {
                     dispatch_action(
                         cx,
                         GSelectItemEvent::Clicked(GSelectItemClickedParam {
-                            selected: self.selected.to_bool(),
+                            selected: self.selected,
                             e: se.clone(),
                             text: self.text.to_string(),
                             value: self.value.to_string(),
