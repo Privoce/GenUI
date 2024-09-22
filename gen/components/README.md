@@ -64,6 +64,7 @@
 - [ ] Container(用于快速放置界面)
 - [ ] Audio
 - [ ] Video
+- [ ] Virtual Select(提供抽象与扩展能力，自定义模型)
 
 ## Experimental function (v0.1.0 ~ v0.5.0)
 

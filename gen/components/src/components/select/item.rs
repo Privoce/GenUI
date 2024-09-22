@@ -1,68 +1,51 @@
 use makepad_widgets::*;
 
 use crate::{
-    components::{card::GCard, image::GImage, label::GLabel},
-    shader::{
-        draw_card::DrawGCard,
-        icon_lib::{base::DrawGIconBase, types::base::Base},
-    },
-    themes::{hex_to_vec4, Themes},
-    utils::{set_cursor, BoolToF32, RectExpand, ThemeColor, ToDVec},
-    widget_area,
+    shader::{draw_card::DrawGCard, draw_text::DrawGText},
+    utils::{get_font_family, ToBool},
 };
 
 use super::{GSelectItemClickedParam, GSelectItemEvent};
 
 live_design! {
-    GLOBAL_DURATION = 0.25;
-    GSelectItemBase = {{GSelectItem}}{
+    GSelectItemBase = {{GSelectItem}} {
+        width: Fill,
         height: 36.0,
-        width: 180.0,
-        border_width: 0.0,
-        spread_radius: 1.0,
-        shadow_offset: vec2(0.0, 0.0),
-        blur_radius: 5.0,
-        clip_x: false,
-        clip_y: false,
-        background_visible: true,
-        padding: {
-            left: 8.0,
-            right: 8.0
-        },
+        padding: {left: 8.0, right: 8.0},
         animator: {
             hover = {
-                default: off,
+                default: off
                 off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    from: {all: Snap}
                     apply: {
                         draw_item: {hover: 0.0}
+                        draw_name: {hover: 0.0}
                     }
                 }
-
                 on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                    }
+                    cursor: Hand
+                    from: {all: Snap}
                     apply: {
                         draw_item: {hover: 1.0}
+                        draw_name: {hover: 1.0}
                     }
                 }
             }
-            focus = {
-                default: off,
+
+            select = {
+                default: off
                 off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    from: {all: Snap}
                     apply: {
-                        draw_item: { pressed: 0.0}
+                        draw_item: {pressed: 0.0,}
+                        draw_name: {pressed: 0.0,}
                     }
                 }
-
                 on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                    }
+                    from: {all: Snap}
                     apply: {
-                        draw_item: { pressed: 1.0}
+                        draw_item: {pressed: 1.0,}
+                        draw_name: {pressed: 1.0,}
                     }
                 }
             }
@@ -70,218 +53,90 @@ live_design! {
     }
 }
 
-#[derive(Live, Widget)]
+#[derive(Live, LiveRegister)]
 pub struct GSelectItem {
     #[live]
-    pub theme: Themes,
-    #[live]
-    pub stroke_color: Option<Vec4>,
-    #[live]
-    pub stroke_hover_color: Option<Vec4>,
-    #[live(1.0)]
-    pub stroke_width: f32,
-    #[live]
-    pub background_color: Option<Vec4>,
-    #[live(true)]
-    pub background_visible: bool,
-    #[live]
-    pub hover_color: Option<Vec4>,
-    #[live]
-    pub pressed_color: Option<Vec4>,
-    #[live]
-    pub shadow_color: Option<Vec4>,
-    #[live(4.8)]
-    pub spread_radius: f32,
-    #[live(4.8)]
-    pub blur_radius: f32,
-    #[live]
-    pub shadow_offset: Vec2,
-    #[live]
-    pub border_color: Option<Vec4>,
-    #[live(0.0)]
-    pub border_width: f32,
-    #[live(2.0)]
-    pub border_radius: f32,
-    #[live]
-    pub cursor: Option<MouseCursor>,
-    #[live(Base::Correct)]
-    pub icon_type: Base,
-    // visible -------------------
-    #[live(true)]
-    pub visible: bool,
-    #[live]
-    pub left_visible: bool,
-    #[live]
-    pub right_visible: bool,
-    #[redraw]
-    #[live]
     pub draw_item: DrawGCard,
-    #[walk]
-    pub walk: Walk,
+    #[live]
+    pub draw_text: DrawGText,
     #[layout]
     pub layout: Layout,
+    #[walk]
+    pub walk: Walk,
     #[live]
-    #[redraw]
-    #[find]
-    pub left: GCard,
+    pub hover: f32,
     #[live]
-    #[redraw]
-    #[find]
-    pub center: GCard,
-    #[live]
-    #[redraw]
-    pub right: GCard,
-    #[live]
-    #[redraw]
-    pub draw_select: DrawGIconBase,
-    #[live]
-    pub selected: bool,
-    #[live(true)]
-    pub grab_key_focus: bool,
-    // animator -----------------
-    #[live(true)]
-    pub animation_open: bool,
+    pub selected: f32,
     #[animator]
     pub animator: Animator,
+    #[live]
+    pub text: String,
+    #[live]
+    pub value: String,
+    #[live]
+    pub font_family: LiveDependency,
 }
 
-impl Widget for GSelectItem {
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        if !self.visible {
-            return DrawStep::done();
-        }
-        self.draw_item.begin(cx, walk, self.layout);
-        if self.left_visible {
-            let left_walk = self.left.walk(cx);
-            let _ = self.left.draw_walk(cx, scope, left_walk);
-        }
-        let center_walk = self.center.walk(cx);
-        let _ = self.center.draw_walk(cx, scope, center_walk);
-        if self.right_visible {
-            let right_walk = self.right.walk(cx);
-            let _ = self.right.draw_walk(cx, scope, right_walk);
-        }
-        let select_walk = Walk {
-            height: Size::Fixed(16.0),
-            width: Size::Fixed(16.0),
-            abs_pos: Some(DVec2 { x: 16.0, y: 48.0 }),
-            ..Default::default()
-        };
-        let select_rect = if self.selected {
-            let select_rect = self.draw_select.draw_walk(cx, select_walk);
-            Some(select_rect)
-        } else {
-            None
-        };
-        self.draw_item.end(cx);
-        select_rect.map(|mut select_rect| {
-            let rect = self.area().rect(cx);
-            let x = -16.0 - self.layout.padding.right;
-            select_rect.abs_end_center(&rect, Some(dvec2(x, 0.0)));
-            self.draw_select.update_abs(cx, select_rect);
-        });
-        DrawStep::done()
+impl LiveHook for GSelectItem {}
+
+impl GSelectItem {
+    pub fn area(&self) -> Area {
+        self.draw_item.area()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let uid = self.widget_uid();
+    pub fn draw_item(&mut self, cx: &mut Cx2d, text: &str,value: &str) {
+        let _ = self.draw_item.begin(cx, self.walk, self.layout);
+        let font = get_font_family(&self.font_family, cx);
+        self.draw_text.text_style.font = font;
+        let _ = self
+            .draw_text
+            .draw_walk(cx, Walk::fit(), Align { x: 0.0, y: 0.5 }, text);
+        self.value = value.to_string();
+        let _ = self.draw_item.end(cx);
+    }
+    pub fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        sweep_area: Area,
 
-        if self.animation_open {
-            let _ = self.animator_handle_event(cx, event);
+        dispatch_action: &mut dyn FnMut(&mut Cx, GSelectItemEvent),
+    ) {
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.draw_item.area().redraw(cx);
         }
-
-        match event.hits(cx, self.area()) {
+        match event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        ) {
             Hit::FingerHoverIn(_) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerDown(_) => {
-                if self.grab_key_focus {
-                    cx.set_key_focus(self.area());
-                }
+                self.animator_play(cx, id!(hover.on));
+                self.animator_play(cx, id!(select.on));
             }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    self.selected = !self.selected;
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
+            Hit::FingerUp(se) => {
+                if !se.is_sweep {
+                    dispatch_action(
+                        cx,
                         GSelectItemEvent::Clicked(GSelectItemClickedParam {
-                            selected: self.selected,
-                            e: f_up.clone(),
+                            selected: self.selected.to_bool(),
+                            e: se.clone(),
+                            text: self.text.to_string(),
+                            value: self.value.to_string(),
+                            
                         }),
                     );
-                    self.redraw(cx);
-                    if self.selected {
-                        self.animator_play(cx, id!(focus.on));
-                    } else {
-                        self.animator_play(cx, id!(focus.off));
-                    }
                 } else {
                     self.animator_play(cx, id!(hover.off));
+                    self.animator_play(cx, id!(select.off));
                 }
             }
-            _ => (),
+            _ => {}
         }
-    }
-}
-
-impl LiveHook for GSelectItem {
-    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible {
-            return;
-        }
-        // ----------------- background color -------------------------------------------
-        let bg_color = self.background_color.use_or("#ffffff");
-        // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.use_or("#E3E3E3");
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.use_or("#E3E3E3");
-        // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 500);
-        let shadow_color = self.shadow_color.use_or("#E3E3E3");
-        let background_visible = self.background_visible.to_f32();
-        let stroke_color = self.stroke_color.get(self.theme, 600);
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 600);
-        self.draw_item.apply_over(
-            cx,
-            live! {
-                background_color: (bg_color),
-                background_visible: (background_visible),
-                border_color: (border_color),
-                border_width: (self.border_width),
-                border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
-                hover_color: (hover_color),
-                shadow_color: (shadow_color),
-                shadow_offset: (self.shadow_offset),
-                spread_radius: (self.spread_radius),
-                blur_radius: (self.blur_radius),
-                pressed: (self.selected.to_f32())
-            },
-        );
-        self.draw_select.apply_over(
-            cx,
-            live! {
-                stroke_color: (stroke_color),
-                stroke_width: (self.stroke_width),
-                stroke_hover_color: (stroke_hover_color),
-            },
-        );
-        self.draw_select.apply_type(self.icon_type);
-        self.draw_select.redraw(cx);
-        self.draw_item.redraw(cx);
-    }
-}
-
-impl GSelectItem {
-    widget_area! {
-        area, draw_item,
-        area_left, left,
-        area_right, right,
-        area_select, draw_select,
-        area_center, center
     }
 }

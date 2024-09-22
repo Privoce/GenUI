@@ -69,6 +69,7 @@ live_design! {
     import crate::components::window::GWindowBase;
     import crate::components::select::GSelectBase;
     import crate::components::select::item::GSelectItemBase;
+    import crate::components::select::options::GSelectOptionsBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -899,46 +900,57 @@ live_design! {
             }
         }
     }
-    GSelectItem = <GSelectItemBase>{
-        height: 36.0,
-        width: Fill,
-        flow: Right,
-        spacing: 6.0,
-        align: {
-            x: 0.0,
-            y: 0.5
-        },
-        left: <GHLayout>{
-            align: {x: 0.5, y: 0.5},
-            height: Fill,
-            width: Fit,
-            left_slot = <GCard>{
-                height: 10.0,
-                width: 10.0,
-                border_radius: 2.5,
-                border_width: 0.0,
-            }
-        },
-        center: <GHLayout>{
-            align: {x: 0.0, y: 0.5},
-            height: Fill,
-            width: Fit,
-            center_slot = <GLabel>{
-                color: (COLOR_DARK_900),
-                font_size: (FONT_SIZE),
-                text: "Select Item"
-            }
-        }
-        right: <GHLayout>{
-            align: {x: 0.0, y: 0.5},
-            height: Fill,
-            width: Fit,
-            right_slot = <GLabel>{
-                color: (COLOR_DARK_900),
-                font_size: (FONT_SIZE_SMALL)
-                text: "sub info"
-            }
-        }
+    // GSelectItem = <GSelectItemBase>{
+    //     height: 36.0,
+    //     width: Fill,
+    //     flow: Right,
+    //     spacing: 6.0,
+    //     align: {
+    //         x: 0.0,
+    //         y: 0.5
+    //     },
+    //     left: <GHLayout>{
+    //         align: {x: 0.5, y: 0.5},
+    //         height: Fill,
+    //         width: Fit,
+    //         left_slot = <GCard>{
+    //             height: 10.0,
+    //             width: 10.0,
+    //             border_radius: 2.5,
+    //             border_width: 0.0,
+    //         }
+    //     },
+    //     center: <GHLayout>{
+    //         align: {x: 0.0, y: 0.5},
+    //         height: Fill,
+    //         width: Fit,
+    //         center_slot = <GLabel>{
+    //             color: (COLOR_DARK_900),
+    //             font_size: (FONT_SIZE),
+    //             text: "Select Item"
+    //         }
+    //     }
+    //     right: <GHLayout>{
+    //         align: {x: 0.0, y: 0.5},
+    //         height: Fill,
+    //         width: Fit,
+    //         right_slot = <GLabel>{
+    //             color: (COLOR_DARK_900),
+    //             font_size: (FONT_SIZE_SMALL)
+    //             text: "sub info"
+    //         }
+    //     }
+    // }
+    GSelectItem = <GSelectItemBase>{}
+    GSelectOptions = <GSelectOptionsBase>{
+        height: 180.0,
+        width: 200.0,
+        padding: 6.0,
+        flow: Down,
+        item: <GSelectItem>{}
     }
-    GSelect = <GSelectBase>{}
+    GSelect = <GSelectBase>{
+        flow: Down,
+        select_options: <GSelectOptions>{}
+    }
 }

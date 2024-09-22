@@ -31,6 +31,7 @@ live_design! {
     import crate::components::tables::*;
     import crate::components::notifications::*;
     import crate::components::tool_btns::*;
+    import crate::components::selects::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
 
     App = {{App}}{
@@ -56,28 +57,27 @@ live_design! {
                     width: All,
                     flow: Down,
                     padding: 16.0,
-                    // <GSelect>{
-
+                    <GSelectExample>{}
+                    
+                    // <GVLayout>{
+                    //     height: Fit,
+                    //     spacing: 8.0,
+                    //     <GSelectItem>{
+                    //         width: 200.0
+                    //     }
+                    //     <GSelectItem>{
+                    //         width: 200.0,
+                    //         right_visible: false,
+                    //         left_visible: true,
+                    //         right_visible: true,
+                    //         center: {
+                    //             center_slot = {
+                    //                 text: "Olivia Rhye"
+                    //             }
+                    //         },
+                    //         selected: true
+                    //     }
                     // }
-                    <GVLayout>{
-                        height: Fit,
-                        spacing: 8.0,
-                        <GSelectItem>{
-                            width: 200.0
-                        }
-                        <GSelectItem>{
-                            width: 200.0,
-                            right_visible: false,
-                            left_visible: true,
-                            right_visible: true,
-                            center: {
-                                center_slot = {
-                                    text: "Olivia Rhye"
-                                }
-                            },
-                            selected: true
-                        }
-                    }
                     // spacing: 10.0,
                     // padding: 10.0,
                     
@@ -126,7 +126,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    // <GButtonExample>{}
+                    <GButtonExample>{}
                     // <GLabelExample>{}
                     //
                     // --------------------------------
@@ -188,6 +188,7 @@ impl LiveRegister for App {
         crate::components::tables::live_design(cx);
         crate::components::notifications::live_design(cx);
         crate::components::tool_btns::live_design(cx);
+        crate::components::selects::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

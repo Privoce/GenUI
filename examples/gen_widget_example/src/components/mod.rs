@@ -25,3 +25,4 @@ pub mod tables;
 pub mod collapses;
 pub mod notifications;
 pub mod tool_btns;
+pub mod selects;

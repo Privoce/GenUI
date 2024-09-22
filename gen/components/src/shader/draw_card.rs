@@ -87,7 +87,7 @@ pub struct DrawGCard{
     #[live] pub background_color: Vec4,
     #[live] pub border_color: Vec4,
     #[live(0.0)] pub border_width: f32,
-    #[live(4.0)] pub border_radius: f32,
+    #[live(0.0)] pub border_radius: f32,
     #[live] pub hover_color: Vec4,
     #[live] pub pressed_color: Vec4,
     #[live] pub shadow_color: Vec4,
