@@ -51,10 +51,21 @@ pub struct GSelectOptions {
     pub draw_list: DrawList2d,
     #[live]
     pub item: Option<LivePtr>,
+    // scroll ---------------------
+    #[live]
+    pub scroll_bars: Option<LivePtr>,
+    #[rust]
+    pub scroll_bars_obj: Option<Box<ScrollBars>>,
 }
 
 impl LiveHook for GSelectOptions {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, _nodes: &[LiveNode]) {
+        if self.scroll_bars.is_some() {
+            if self.scroll_bars_obj.is_none() {
+                self.scroll_bars_obj =
+                    Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
+            }
+        }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.use_or("#ffffff");
         // ------------------ hover color -----------------------------------------------
@@ -98,18 +109,35 @@ impl GSelectOptions {
     pub fn begin(&mut self, cx: &mut Cx2d, theme: Themes) {
         self.draw_list.begin_overlay_reuse(cx);
         cx.begin_pass_sized_turtle(Layout::flow_down());
-        self.draw_options.begin(cx, self.walk, self.layout);
+        let scroll = if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            scroll_bars.begin_nav_area(cx);
+            scroll_bars.get_scroll_pos()
+        } else {
+            self.layout.scroll
+        };
+        self.draw_options.begin(cx, self.walk, self.layout.with_scroll(scroll));
         self.theme = theme;
     }
     pub fn end_container(&mut self, cx: &mut Cx2d) {
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            scroll_bars.draw_scroll_bars(cx);
+        }
         // before end do apply
         self.draw_options.end(cx);
+        let area = self.area();
+        
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            scroll_bars.set_area(area);
+            scroll_bars.end_nav_area(cx);
+        }
     }
     /// ## End to draw popup
     pub fn end(&mut self, cx: &mut Cx2d, _scope: &mut Scope, shift_area: Area, shift: DVec2) {
         // before this do end container!
         cx.end_pass_sized_turtle_with_shift(shift_area, shift);
         self.draw_list.end(cx);
+
+        // dbg!(cx.turtle().pos());
     }
     pub fn redraw(&mut self, cx: &mut Cx) {
         self.draw_list.redraw(cx);
@@ -171,6 +199,10 @@ impl GSelectOptions {
                 }
                 _ => (),
             }
+        }
+       
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            scroll_bars.handle_scroll_event(cx, event, &mut Scope::empty(), &mut Vec::new());
         }
     }
 }

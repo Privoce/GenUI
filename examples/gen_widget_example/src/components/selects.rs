@@ -1,6 +1,6 @@
 use gen_components::components::{
     card::GCard,
-    select::{event::GSelectEvent, types::SelectOption, GSelectWidgetExt},
+    select::{event::GSelectEvent, GSelectWidgetExt},
 };
 use makepad_widgets::*;
 
@@ -25,7 +25,13 @@ pub struct GSelectExample {
 }
 
 impl LiveHook for GSelectExample {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(
+        &mut self,
+        _cx: &mut Cx,
+        _apply: &mut Apply,
+        _index: usize,
+        _nodes: &[LiveNode],
+    ) {
         self.gselect(id!(easy)).borrow_mut().map(|mut x| {
             x.options = vec![
                 ("Rust", "rust").into(),
@@ -33,6 +39,7 @@ impl LiveHook for GSelectExample {
                 ("Python", "python").into(),
                 ("JavaScript", "js").into(),
                 ("TypeScript", "ts").into(),
+                // ("Go", "go").into(),
             ];
         });
     }
@@ -46,7 +53,7 @@ impl Widget for GSelectExample {
         let actions = cx.capture_actions(|cx| self.view.handle_event(cx, event, scope));
 
         self.gselect(id!(easy)).borrow_mut().map(|x| {
-            let mut actions = actions.filter_widget_actions(x.widget_uid());
+            let actions = actions.filter_widget_actions(x.widget_uid());
             actions.for_each(|action| {
                 if let GSelectEvent::Changed(e) = action.cast() {
                     dbg!(e);

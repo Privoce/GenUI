@@ -32,7 +32,7 @@ pub struct Note {
 }
 
 impl LiveHook for Note {
-    fn after_apply_from(&mut self, cx: &mut Cx, apply: &mut Apply) {
+    fn after_apply_from(&mut self, cx: &mut Cx, _apply: &mut Apply) {
         let global = cx.global::<PopupMenuGlobal>().clone();
         let mut global_map = global.map.borrow_mut();
         global_map.retain(|k, _| cx.live_registry.borrow().generation_valid(*k));
@@ -42,7 +42,7 @@ impl LiveHook for Note {
 }
 
 impl Widget for Note {
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, _walk: Walk) -> DrawStep {
         let area = self.draw_card.area();
         cx.add_nav_stop(self.draw_card.area(), NavRole::DropDown, Margin::default());
         let global = cx.global::<PopupMenuGlobal>().clone();

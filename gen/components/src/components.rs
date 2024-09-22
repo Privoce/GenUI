@@ -945,8 +945,17 @@ live_design! {
     GSelectOptions = <GSelectOptionsBase>{
         height: 180.0,
         width: 200.0,
-        padding: 6.0,
+        padding: {left: 8.0, right: 8.0, top: 6.0, bottom: 6.0},
         flow: Down,
+        scroll_bars: <GScrollBars>{
+            show_scroll_x: false
+            show_scroll_y: true
+            // scroll_bar_y: {
+            //     draw_bar: {bar_width: 4.0}
+            //     bar_size: 6
+            //     use_vertical_finger_scroll: true
+            // }
+        },
     }
     GSelect = <GSelectBase>{
         flow: Down,

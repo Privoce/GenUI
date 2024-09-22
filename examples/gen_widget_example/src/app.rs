@@ -126,7 +126,7 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    <GButtonExample>{}
+                    // <GButtonExample>{}
                     // <GLabelExample>{}
                     //
                     // --------------------------------

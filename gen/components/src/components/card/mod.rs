@@ -193,12 +193,12 @@ impl LiveHook for GCard {
         if self.optimize.needs_draw_list() && self.draw_list.is_none() {
             self.draw_list = Some(DrawList2d::new(cx));
         }
-        if self.scroll_bars.is_some() {
-            if self.scroll_bars_obj.is_none() {
-                self.scroll_bars_obj =
-                    Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
-            }
-        }
+        // if self.scroll_bars.is_some() {
+        //     if self.scroll_bars_obj.is_none() {
+        //         self.scroll_bars_obj =
+        //             Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
+        //     }
+        // }
 
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
