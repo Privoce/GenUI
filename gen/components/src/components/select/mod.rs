@@ -121,6 +121,8 @@ pub struct GSelect {
     pub draw_text: DrawGText,
     #[live]
     pub select_options: Option<LivePtr>,
+    #[live]
+    pub select_item: Option<LivePtr>,
     #[live(10.0)]
     pub font_size: f64,
     // visible -------------------
@@ -172,9 +174,9 @@ impl Widget for GSelect {
             let mut map = global.map.borrow_mut();
             let options_menu = map.get_mut(&self.select_options.unwrap()).unwrap();
             // begin draw options
-            options_menu.begin(cx);
+            options_menu.begin(cx, self.theme);
             // set item live ptr and draw
-            options_menu.item = self.select_options.clone();
+            options_menu.item = self.select_item.clone();
             for (index, option) in self.options.iter().enumerate() {
                 options_menu.draw_options(
                     cx,
@@ -185,9 +187,10 @@ impl Widget for GSelect {
                 );
             }
 
+            let _ = options_menu.end_container(cx);
             let area = self.area().rect(cx);
             let container_size = options_menu.area().rect(cx).size;
-
+            
             let shift = DVec2 {
                 x: area.size.x / 2.0 - container_size.x / 2.0,
                 y: area.size.y + self.offset as f64,
@@ -214,21 +217,6 @@ impl Widget for GSelect {
                 }
                 _ => (),
             });
-            // menu.handle_event_with(
-            //     cx,
-            //     scope,
-            //     event,
-            //     self.area(),
-            //     &mut |cx, action| match action {
-            //         GSelectOptionsEvent::Changed(e) => {
-            //             self.selected = e.selected_id;
-            //             cx.widget_action(uid, &scope.path, GSelectEvent::Changed(e));
-            //             self.draw_select.redraw(cx);
-            //             close = true;
-            //         }
-            //         _ => (),
-            //     },
-            // );
             if close {
                 self.close(cx);
             }
@@ -248,6 +236,7 @@ impl Widget for GSelect {
             Hit::FingerUp(f) => {
                 if f.is_over && f.device.has_hovers() {
                     set_cursor(cx, self.cursor.as_ref());
+                    self.open(cx);
                     self.animator_play(cx, id!(hover.on));
                 }
                 if !f.is_over {
@@ -260,23 +249,15 @@ impl Widget for GSelect {
 }
 
 impl LiveHook for GSelect {
-    // fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
-    //     if !self.visible {
-    //         return;
-    //     }
-
-    //     let global = cx.global::<SelectOptionsGlobal>().clone();
-    //     let mut global_map = global.map.borrow_mut();
-    //     global_map.retain(|k, _| cx.live_registry.borrow().generation_valid(*k));
-    //     let popup = self.select_options.unwrap();
-    //     global_map.get_or_insert(cx, popup, |cx| {
-    //         GSelectOptions::new_from_ptr(cx, Some(popup))
-    //     });
-    // }
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         if !self.visible {
             return;
         }
+        let global = cx.global::<SelectOptionsGlobal>().clone();
+        let mut map = global.map.borrow_mut();
+        map.retain(|k, _| cx.live_registry.borrow().generation_valid(*k));
+        let menu = self.select_options.unwrap();
+        map.get_or_insert(cx, menu, |cx| GSelectOptions::new_from_ptr(cx, Some(menu)));
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.use_or("#ffffff");
         // ------------------ hover color -----------------------------------------------
@@ -304,12 +285,15 @@ impl LiveHook for GSelect {
                 blur_radius: (self.blur_radius)
             },
         );
-        self.draw_text.apply_over(cx, live!{
-            color: (color),
-            text_style: {
-                font_size: (self.font_size),
-            }
-        });
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                color: (color),
+                text_style: {
+                    font_size: (self.font_size),
+                }
+            },
+        );
         self.draw_text.redraw(cx);
         self.draw_select.redraw(cx);
     }

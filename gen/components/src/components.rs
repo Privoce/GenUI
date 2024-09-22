@@ -947,10 +947,10 @@ live_design! {
         width: 200.0,
         padding: 6.0,
         flow: Down,
-        item: <GSelectItem>{}
     }
     GSelect = <GSelectBase>{
         flow: Down,
+        select_item: <GSelectItem>{},
         select_options: <GSelectOptions>{}
     }
 }
