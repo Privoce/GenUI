@@ -13,8 +13,10 @@ live_design! {
         height: 400.0,
         width: Fill,
         flow: Down,
+        spacing: 10.0,
         background_visible: false,
         easy = <GSelect>{}
+        easy2 = <GSelect>{}
     }
 }
 
@@ -40,6 +42,15 @@ impl LiveHook for GSelectExample {
                 ("JavaScript", "js").into(),
                 ("TypeScript", "ts").into(),
                 // ("Go", "go").into(),
+            ];
+        });
+        self.gselect(id!(easy2)).borrow_mut().map(|mut x| {
+            x.options = vec![
+                ("Rust", "rust").into(),
+                ("C++", "cpp").into(),
+                ("Python", "python").into(),
+                ("JavaScript", "js").into(),
+                
             ];
         });
     }

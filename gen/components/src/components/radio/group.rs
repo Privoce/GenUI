@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::GCard, event_option, ref_event_option, set_event, widget_area};
+use crate::{components::card::GCard, event_option, ref_event_option, set_event};
 
 use super::{
     event::{GRadioGroupEvent, GRadioGroupEventParam},

@@ -1,6 +1,10 @@
 use makepad_widgets::*;
 
-use crate::{components::card::GCard, shader::draw_card::DrawGCard, themes::Themes, utils::{BoolToF32, ThemeColor}};
+use crate::{
+    shader::draw_card::DrawGCard,
+    themes::Themes,
+    utils::{BoolToF32, ThemeColor},
+};
 
 use super::{item::GSelectItem, GSelectItemEvent, GSelectOptionsChangedParam, GSelectOptionsEvent};
 
@@ -59,7 +63,7 @@ pub struct GSelectOptions {
 }
 
 impl LiveHook for GSelectOptions {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         if self.scroll_bars.is_some() {
             if self.scroll_bars_obj.is_none() {
                 self.scroll_bars_obj =
@@ -115,7 +119,8 @@ impl GSelectOptions {
         } else {
             self.layout.scroll
         };
-        self.draw_options.begin(cx, self.walk, self.layout.with_scroll(scroll));
+        self.draw_options
+            .begin(cx, self.walk, self.layout.with_scroll(scroll));
         self.theme = theme;
     }
     pub fn end_container(&mut self, cx: &mut Cx2d) {
@@ -125,7 +130,7 @@ impl GSelectOptions {
         // before end do apply
         self.draw_options.end(cx);
         let area = self.area();
-        
+
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
             scroll_bars.set_area(area);
             scroll_bars.end_nav_area(cx);
@@ -146,12 +151,10 @@ impl GSelectOptions {
     pub fn draw_options(
         &mut self,
         cx: &mut Cx2d,
-        scope: &mut Scope,
         item_id: LiveId,
         text: &str,
         value: &str,
     ) {
-        
         let target = self
             .children
             .get_or_insert(cx, item_id, |cx| GSelectItem::new_from_ptr(cx, self.item));
@@ -176,7 +179,7 @@ impl GSelectOptions {
                 GSelectItemEvent::Clicked(param) => {
                     // if is item clicked, do options event change
                     if param.selected {
-                        for (index, (id, item)) in self.children.iter_mut().enumerate() {
+                        for (_index, (id, item)) in self.children.iter_mut().enumerate() {
                             if id.0 != node_id.0 {
                                 item.selected = false;
                                 item.animator_play(cx, id!(select.off));
@@ -200,7 +203,7 @@ impl GSelectOptions {
                 _ => (),
             }
         }
-       
+
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
             scroll_bars.handle_scroll_event(cx, event, &mut Scope::empty(), &mut Vec::new());
         }

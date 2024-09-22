@@ -7,7 +7,7 @@ use crate::{
         icon_lib::{base::DrawGIconBase, types::base::Base},
     },
     themes::Themes,
-    utils::{get_font_family, BoolToF32, RectExpand, ThemeColor, ToBool},
+    utils::{get_font_family, BoolToF32, RectExpand, ThemeColor},
 };
 
 use super::{GSelectItemClickedParam, GSelectItemEvent};
@@ -121,7 +121,7 @@ pub struct GSelectItem {
 }
 
 impl LiveHook for GSelectItem {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.use_or("#FFFFFF00");
         // ------------------ hover color -----------------------------------------------

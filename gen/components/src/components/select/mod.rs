@@ -20,8 +20,6 @@ use crate::{
     widget_area,
 };
 
-use super::{card::GCard, popup::GPopup};
-
 live_design! {
     GSelectBase = {{GSelect}}{
         height: 36.0,
@@ -178,13 +176,7 @@ impl Widget for GSelect {
             // set item live ptr and draw
             options_menu.item = self.select_item.clone();
             for (index, option) in self.options.iter().enumerate() {
-                options_menu.draw_options(
-                    cx,
-                    scope,
-                    LiveId(index as u64),
-                    &option.text,
-                    &option.value,
-                );
+                options_menu.draw_options(cx, LiveId(index as u64), &option.text, &option.value);
             }
 
             let _ = options_menu.end_container(cx);
@@ -250,7 +242,7 @@ impl Widget for GSelect {
 }
 
 impl LiveHook for GSelect {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         if !self.visible {
             return;
         }
