@@ -44,7 +44,10 @@
 - [x] Window
 - [x] ToolButton
 - [x] RadioGroup
-- [ ] Select
+- [ ] Virtual RadioGroup
+- [ ] CheckBoxGroup
+- [ ] Virtual CheckBoxGroup
+- [x] Select
 
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
 
@@ -68,8 +71,8 @@
 
 ## Experimental function (v0.1.0 ~ v0.5.0)
 
-- [ ] Radio Switch Container (多个radio切换)
-- [ ] Link to Web src (点击link跳转网页)
+- [x] Radio Switch Container (多个radio切换) (See RadioGroup)
+- [x] Link to Web src (点击link跳转网页) (See Link)
 - [ ] Text UnderLine (通过文字下划线实现文字下划线, 划除, 上划线效果)
 - [ ] Powerful Input (更强大的输入框, 支持多种输入模式, 清除, 数据检验等功能)
 - [ ] Expandable Card (可拖动拉伸)

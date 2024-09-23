@@ -24,7 +24,7 @@ live_design! {
 pub struct GRadioGroup {
     #[deref]
     pub deref_widget: GCard,
-    #[live(0)]
+    #[live(-1)]
     pub selected: i32,
 }
 
@@ -76,7 +76,7 @@ impl Widget for GRadioGroup {
 impl LiveHook for GRadioGroup {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
-        let _ = self.find_selected();
+        let _ = self.find_selected(cx);
     }
 }
 
@@ -96,7 +96,7 @@ impl GRadioGroup {
                 }
             });
     }
-    fn find_selected(&mut self) -> () {
+    fn find_selected(&mut self, cx: &mut Cx) -> () {
         let mut flag = true;
         let mut selected = 0;
         let _ = self
@@ -124,6 +124,9 @@ impl GRadioGroup {
 
         if !flag {
             self.selected = selected as i32;
+        }else{
+            // here means no radio is selected
+            self.set_selected(cx, 0);
         }
     }
     pub fn area(&self) -> Area {
@@ -134,7 +137,7 @@ impl GRadioGroup {
     }
 }
 
-impl GRadioGroupRef{
+impl GRadioGroupRef {
     ref_event_option! {
         changed => GRadioGroupEventParam
     }

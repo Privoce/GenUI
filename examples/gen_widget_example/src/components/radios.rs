@@ -20,9 +20,10 @@ live_design! {
             spacing: 10.0,
             
             <GRadioGroup>{
+                selected: 0.0,
                 a = <GRadio>{
                     text: "GRadio",
-                    value: true,
+                    // value: true,
                 }
                 b = <GRadio>{
                     theme: Warning,
