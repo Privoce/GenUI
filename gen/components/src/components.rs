@@ -27,6 +27,7 @@ pub mod toggle;
 pub mod tool_btn;
 pub mod window;
 pub mod select;
+pub mod tabbar;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -70,6 +71,8 @@ live_design! {
     import crate::components::select::GSelectBase;
     import crate::components::select::item::GSelectItemBase;
     import crate::components::select::options::GSelectOptionsBase;
+    import crate::components::tabbar::GTabbarBase;
+    import crate::components::tabbar::item::GTabbarItemBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -961,5 +964,22 @@ live_design! {
         flow: Down,
         select_item: <GSelectItem>{},
         select_options: <GSelectOptions>{}
+    }
+    GTabbarItem = <GTabbarItemBase>{
+        icon_slot: <GSvg>{
+            height: 18.0,
+            width: 18.0,
+            color: #161616,
+            src: dep("crate://self/resources/icons/home.svg"),
+            stroke_hover_color: #FF7043
+        }
+        text_slot: <GLabel>{
+            font_size: 6.0,
+            color: #161616,
+            animation_open: true,
+            text: "Home",
+            stroke_hover_color: #FF7043,
+            stroke_pressed_color: #FF7043,
+        }
     }
 }

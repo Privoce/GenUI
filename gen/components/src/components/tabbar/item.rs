@@ -1,0 +1,260 @@
+use super::event::*;
+use crate::{
+    components::{label::GLabel, svg::GSvg},
+    shader::{draw_card::DrawGCard, draw_svg::DrawGSvg, draw_text::DrawGText},
+    themes::Themes,
+    utils::{get_font_family, set_cursor, BoolToF32, ThemeColor},
+    widget_area,
+};
+use makepad_widgets::*;
+
+live_design! {
+    import makepad_draw::shader::std::*;
+    GLOBAL_DURATION = 0.25;
+    GTabbarItemBase = {{GTabbarItem}}{
+        height: 36.0,
+        width: 60.0,
+        flow: Down,
+        background_visible: false,
+        align: {
+            x: 0.5,
+            y: 0.5
+        },
+        cursor: Hand,
+        spacing: 2.0,
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_item: {pressed: 0.0, hover: 0.0},
+                        text_slot: {
+                            draw_text: {pressed: 0.0, hover: 0.0}
+                        },
+                        icon_slot: {
+                            draw_svg: {hover: 0.0}
+                        }
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_item: {pressed: 0.0, hover: 1.0,},
+                        text_slot: {
+                            draw_text: {pressed: 0.0, hover: 1.0}
+                        },
+                        icon_slot: {
+                            draw_svg: {hover: 1.0}
+                        }
+                    }
+                }
+
+                pressed = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_item: {pressed: 1.0, hover: 0.0,},
+                        text_slot: {
+                            draw_text: {pressed: 1.0, hover: 0.0}
+                        },
+                        icon_slot: {
+                            draw_svg: {hover: 1.0}
+                        }
+                    }
+                }
+            },
+            // focus = {
+            //     default: off,
+            //     off = {
+            //         from: {all: Forward {duration: (GLOBAL_DURATION)}}
+            //         apply: {
+            //             draw_item: {pressed: 0.0, hover: 0.0},
+            //             text_slot: {
+            //                 draw_text: {pressed: 0.0, hover: 0.0}
+            //             }
+            //         }
+            //     }
+
+            //     on = {
+            //         from: {
+            //             all: Forward {duration: (GLOBAL_DURATION)}
+            //         }
+            //         apply: {
+            //             draw_item: {pressed: 1.0, hover: 0.0,},
+            //             text_slot: {
+            //                 draw_text: {pressed: 1.0, hover: 0.0}
+            //             }
+            //         }
+            //     }
+            // }
+        }
+    }
+}
+
+#[derive(Live, Widget)]
+pub struct GTabbarItem {
+    #[live]
+    pub theme: Themes,
+    #[live]
+    pub background_color: Option<Vec4>,
+    #[live(true)]
+    pub background_visible: bool,
+    #[live]
+    pub hover_color: Option<Vec4>,
+    #[live]
+    pub pressed_color: Option<Vec4>,
+    #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(0.0)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
+    #[live]
+    pub border_color: Option<Vec4>,
+    #[live(0.0)]
+    pub border_width: f32,
+    #[live(0.0)]
+    pub border_radius: f32,
+    #[live]
+    pub stroke_color: Option<Vec4>,
+    #[live]
+    pub font_family: LiveDependency,
+    #[live]
+    pub icon: LiveDependency,
+    #[redraw]
+    #[live]
+    pub draw_item: DrawGCard,
+    #[redraw]
+    #[live]
+    #[find]
+    pub icon_slot: GSvg,
+    #[redraw]
+    #[live]
+    #[find]
+    pub text_slot: GLabel,
+    #[walk]
+    pub walk: Walk,
+    #[layout]
+    pub layout: Layout,
+    #[live]
+    pub cursor: Option<MouseCursor>,
+    #[live(true)]
+    pub grab_key_focus: bool,
+    // visible -------------------
+    #[live(true)]
+    pub visible: bool,
+    // animator -----------------
+    #[live(true)]
+    pub animation_open: bool,
+    #[animator]
+    animator: Animator,
+    #[live]
+    pub selected: bool,
+}
+
+impl Widget for GTabbarItem {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        let _ = self.draw_item.begin(cx, walk, self.layout);
+        let icon_walk = self.icon_slot.walk(cx);
+        let _ = self.icon_slot.draw_walk(cx, scope, icon_walk);
+        let text_walk = self.text_slot.walk(cx);
+        // let font = get_font_family(&self.font_family, cx);
+        // self.text_slot.draw_text.text_style.font = font;
+        let _ = self.text_slot.draw_walk(cx, scope, text_walk);
+        let _ = self.draw_item.end(cx);
+        DrawStep::done()
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let uid = self.widget_uid();
+
+        if self.animation_open {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_item.redraw(cx);
+                self.text_slot.redraw(cx);
+            }
+        }
+        match event.hits(cx, self.area()) {
+            Hit::FingerDown(f_down) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(self.area());
+                }
+                cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
+                self.animator_play(cx, id!(hover.pressed));
+            }
+            Hit::FingerHoverIn(h) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.animator_play(cx, id!(hover.on));
+                cx.widget_action(uid, &scope.path, GTabbarItemEvent::Hover(h.clone()));
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Clicked(f_up.clone()));
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => (),
+        }
+    }
+}
+
+impl LiveHook for GTabbarItem {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+        if !self.visible {
+            return;
+        }
+        // ----------------- background color -------------------------------------------
+        let bg_color = self.background_color.use_or("#FFFFFF");
+        // ------------------ hover color -----------------------------------------------
+        let hover_color = self.hover_color.use_or("#FFFFFF");
+        // ------------------ pressed color ---------------------------------------------
+        let pressed_color = self.pressed_color.use_or("#FFFFFF");
+        // ------------------ border color ----------------------------------------------
+        let border_color = self.border_color.use_or("#FFFFFF");
+        let shadow_color = self.shadow_color.use_or("#FFFFFF");
+        let background_visible = self.background_visible.to_f32();
+        let selected = self.selected.to_f32();
+        self.draw_item.apply_over(
+            cx,
+            live! {
+                background_color: (bg_color),
+                background_visible: (background_visible),
+                border_color: (border_color),
+                border_width: (self.border_width),
+                border_radius: (self.border_radius),
+                pressed_color: (pressed_color),
+                hover_color: (hover_color),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius),
+                pressed: (selected)
+            },
+        );
+        self.draw_item.redraw(cx);
+        self.text_slot.draw_text.pressed = selected;
+        self.icon_slot.draw_svg.hover = selected;
+        self.text_slot.redraw(cx);
+        self.icon_slot.redraw(cx);
+    }
+}
+
+impl GTabbarItem {
+    widget_area! {
+        area, draw_item
+    }
+}

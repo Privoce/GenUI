@@ -29,13 +29,46 @@ pub use register::register;
 
 use crate::{
     set_text_and_visible_fn,
+    shader::draw_text::DrawGText,
     themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor}, widget_area,
+    utils::{get_font_family, set_cursor, ThemeColor},
+    widget_area,
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 live_design! {
-    GLabelBase = {{GLabel}}{}
+    import makepad_draw::shader::std::*;
+    GLOBAL_DURATION = 0.25;
+    GLabelBase = {{GLabel}}{
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_text: {pressed: 0.0, hover: 0.0}
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                    }
+                }
+
+                pressed = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// ## GLabel component
@@ -45,6 +78,10 @@ live_design! {
 pub struct GLabel {
     #[live]
     pub theme: Themes,
+    #[live]
+    pub stroke_hover_color: Option<Vec4>,
+    #[live]
+    pub stroke_pressed_color: Option<Vec4>,
     #[live]
     pub color: Option<Vec4>,
     #[live(9.0)]
@@ -70,7 +107,7 @@ pub struct GLabel {
     // deref ---------------------
     #[redraw]
     #[live]
-    pub draw_text: DrawText,
+    pub draw_text: DrawGText,
     #[walk]
     pub walk: Walk,
     #[live]
@@ -79,6 +116,13 @@ pub struct GLabel {
     pub padding: Padding,
     #[live]
     pub text: ArcStringMut,
+    // animator -----------------
+    #[live(false)]
+    pub animation_open: bool,
+    #[animator]
+    animator: Animator,
+    #[rust]
+    area: Area,
 }
 
 impl Widget for GLabel {
@@ -86,35 +130,65 @@ impl Widget for GLabel {
         if !self.visible {
             return DrawStep::done();
         }
-        let font = get_font_family(&self.font_family, cx);
-
-        self.draw_text.text_style.font = font;
-
         let padding = self.padding;
-
-        self.draw_text.draw_walk(
-            cx,
-            walk.with_add_padding(padding),
-            self.align,
-            self.text.as_ref(),
-        );
+        let walk = walk.with_add_padding(padding);
+        cx.begin_turtle(walk, Layout::default());
+        let font = get_font_family(&self.font_family, cx);
+        self.draw_text.text_style.font = font;
+        self.draw_text
+            .draw_walk(cx, walk, self.align, self.text.as_ref());
+        cx.end_turtle_with_area(&mut self.area);
         DrawStep::done()
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        if self.animation_open {
+            let uid = self.widget_uid();
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.draw_text.redraw(cx);
+            }
+            match event.hits_with_capture_overload(cx, self.area, true) {
+                Hit::FingerHoverIn(_) => {
+                    self.animator_play(cx, id!(hover.on));
+                }
+                Hit::FingerHoverOut(_) => {
+                    self.animator_play(cx, id!(hover.off));
+                }
+                Hit::FingerDown(_) => {
+                    self.animator_play(cx, id!(hover.pressed));
+                }
+                Hit::FingerUp(f_up) => {
+                    if f_up.is_over {
+                        if f_up.device.has_hovers() {
+                            self.animator_play(cx, id!(hover.on));
+                        } else {
+                            self.animator_play(cx, id!(hover.off));
+                        }
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                }
+                _ => (),
+            }
+        }
     }
     set_text_and_visible_fn!();
 }
 
 impl LiveHook for GLabel {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible{
+        if !self.visible {
             return;
         }
 
         let color = self.color.get(self.theme, 800);
-
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 800);
+        let stroke_pressed_color = self.stroke_pressed_color.get(self.theme, 800);
         self.draw_text.apply_over(
             cx,
             live! {
                 color: (color),
+                hover_color: (stroke_hover_color),
+                pressed_color: (stroke_pressed_color),
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
@@ -126,13 +200,15 @@ impl LiveHook for GLabel {
             },
         );
         self.draw_text.wrap = self.wrap.clone();
-        set_cursor(cx, self.cursor.as_ref());
         self.draw_text.redraw(cx);
     }
 }
 
 impl GLabel {
-    widget_area! {
-        area, draw_text
+    pub fn area(&self) -> Area {
+        self.area
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.draw_text.redraw(cx);
     }
 }

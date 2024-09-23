@@ -4,14 +4,21 @@ live_design! {
     import makepad_draw::shader::std::*;
 
     DrawGText = {{DrawGText}} {
-        instance hover: 0.0,
-        instance pressed: 0.0,
-
+        
         fn get_color(self) -> vec4 {
+            // return mix(
+            //     self.color,
+            //     mix(self.hover_color, self.pressed_color, self.pressed),
+            //     self.hover
+            // )
             return mix(
-                self.color,
-                mix(self.hover_color, self.pressed_color, self.pressed),
-                self.hover
+                mix(
+                    self.color,
+                    self.hover_color,
+                    self.hover
+                ),
+                self.pressed_color,
+                self.pressed
             )
         }
     }
@@ -29,6 +36,10 @@ pub struct DrawGText {
     // text is empty or not
     #[live]
     pub empty: f32,
+    #[live]
+    pub hover: f32,
+    #[live]
+    pub pressed: f32
 }
 
 impl DrawGText {

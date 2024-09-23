@@ -57,6 +57,13 @@ live_design! {
                     width: All,
                     flow: Down,
                     padding: 16.0,
+                    
+                    <GTabbarItem>{
+                        selected: true
+                    }
+                    <GVLayout>{
+                        
+                    }
                     // <GSelectExample>{}
                     
                     // <GVLayout>{
@@ -98,7 +105,7 @@ live_design! {
                     //     }
                     // }
                     // <GLoadingExample>{}
-                    <GRadioExample>{}
+                    // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
                     // <GImageExample>{}

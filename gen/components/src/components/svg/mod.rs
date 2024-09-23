@@ -1,5 +1,5 @@
-mod register;
 pub mod event;
+mod register;
 
 use event::{GSvgEvent, GSvgEventParam};
 pub use register::register;
@@ -7,7 +7,11 @@ pub use register::register;
 use makepad_widgets::*;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event, shader::draw_svg::DrawGSvg, themes::Themes, utils::{set_cursor, ThemeColor, ToPath}, widget_area
+    animatie_fn, event_option, ref_event_option, set_event,
+    shader::draw_svg::DrawGSvg,
+    themes::Themes,
+    utils::{set_cursor, ThemeColor, ToPath},
+    widget_area,
 };
 
 live_design! {
@@ -76,11 +80,11 @@ pub struct GSvg {
     // deref -----------------
     #[redraw]
     #[live]
-    draw_svg: DrawGSvg,
+    pub draw_svg: DrawGSvg,
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[layout]
-    layout: Layout,
+    pub layout: Layout,
 }
 
 impl Widget for GSvg {
@@ -154,6 +158,9 @@ impl GSvg {
         clicked: GSvgEvent::Clicked => GSvgEventParam,
         hover: GSvgEvent::Hover => GSvgEventParam
     }
+    pub fn redraw(&self, cx: &mut Cx) ->(){
+        self.draw_svg.redraw(cx);
+    }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.draw_svg.apply_over(
             cx,
@@ -195,20 +202,28 @@ impl GSvg {
             Hit::FingerHoverIn(f_in) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GSvgEvent::Hover(GSvgEventParam{
-                    src: self.src.to_pathbuf(),
-                    key_modifiers: f_in.modifiers
-                }));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GSvgEvent::Hover(GSvgEventParam {
+                        src: self.src.to_pathbuf(),
+                        key_modifiers: f_in.modifiers,
+                    }),
+                );
             }
             Hit::FingerHoverOut(_) => {
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GSvgEvent::Clicked(GSvgEventParam{
-                        src: self.src.to_pathbuf(),
-                        key_modifiers: f_up.modifiers
-                    }));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GSvgEvent::Clicked(GSvgEventParam {
+                            src: self.src.to_pathbuf(),
+                            key_modifiers: f_up.modifiers,
+                        }),
+                    );
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
                     } else {
