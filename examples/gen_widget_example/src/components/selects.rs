@@ -15,8 +15,10 @@ live_design! {
         flow: Down,
         spacing: 10.0,
         background_visible: false,
-        easy = <GSelect>{}
-        easy2 = <GSelect>{}
+        easy = <GSelect>{
+            background_visible: true
+        }
+        // easy2 = <GSelect>{}
     }
 }
 
@@ -41,7 +43,7 @@ impl LiveHook for GSelectExample {
                 ("Python", "python").into(),
                 ("JavaScript", "js").into(),
                 ("TypeScript", "ts").into(),
-                // ("Go", "go").into(),
+                ("Go", "go").into(),
             ];
         });
         self.gselect(id!(easy2)).borrow_mut().map(|mut x| {

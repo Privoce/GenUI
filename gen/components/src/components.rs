@@ -943,8 +943,8 @@ live_design! {
     // }
     GSelectItem = <GSelectItemBase>{}
     GSelectOptions = <GSelectOptionsBase>{
-        height: 180.0,
-        width: 200.0,
+        height: 144.0,
+        width: 180.0,
         padding: {left: 8.0, right: 8.0, top: 6.0, bottom: 6.0},
         flow: Down,
         scroll_bars: <GScrollBars>{

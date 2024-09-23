@@ -175,10 +175,11 @@ impl Widget for GSelect {
             options_menu.begin(cx, self.theme);
             // set item live ptr and draw
             options_menu.item = self.select_item.clone();
-            for (index, option) in self.options.iter().enumerate() {
-                options_menu.draw_options(cx, LiveId(index as u64), &option.text, &option.value);
-            }
 
+            for (index, option) in self.options.iter().enumerate() {
+                options_menu.draw_option(cx, LiveId(index as u64), &option.text, &option.value);
+            }
+            
             let _ = options_menu.end_container(cx);
             let area = self.area().rect(cx);
             let container_size = options_menu.area().rect(cx).size;

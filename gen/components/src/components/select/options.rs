@@ -10,8 +10,7 @@ use super::{item::GSelectItem, GSelectItemEvent, GSelectOptionsChangedParam, GSe
 
 live_design! {
     GSelectOptionsBase = {{GSelectOptions}}{
-        height: Fill,
-        width: 360.0,
+
     }
 }
 
@@ -141,20 +140,12 @@ impl GSelectOptions {
         // before this do end container!
         cx.end_pass_sized_turtle_with_shift(shift_area, shift);
         self.draw_list.end(cx);
-
-        // dbg!(cx.turtle().pos());
     }
     pub fn redraw(&mut self, cx: &mut Cx) {
         self.draw_list.redraw(cx);
         // self.draw_options.redraw(cx);
     }
-    pub fn draw_options(
-        &mut self,
-        cx: &mut Cx2d,
-        item_id: LiveId,
-        text: &str,
-        value: &str,
-    ) {
+    pub fn draw_option(&mut self, cx: &mut Cx2d, item_id: LiveId, text: &str, value: &str) {
         let target = self
             .children
             .get_or_insert(cx, item_id, |cx| GSelectItem::new_from_ptr(cx, self.item));
@@ -198,7 +189,7 @@ impl GSelectOptions {
                             selected_id: node_id.0 as usize,
                             e: param.e,
                         }),
-                    )
+                    );
                 }
                 _ => (),
             }

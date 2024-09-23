@@ -1,65 +1,22 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::{draw_card::DrawGCard, draw_text::DrawGText},
+    shader::{
+        draw_card::DrawGCard,
+        draw_text::DrawGText,
+        icon_lib::{base::DrawGIconBase, types::base::Base},
+    },
     themes::Themes,
-    utils::{get_font_family, BoolToF32, ThemeColor},
+    utils::{get_font_family, BoolToF32, RectExpand, ThemeColor},
 };
 
 use super::{GSelectItemClickedParam, GSelectItemEvent};
 
 live_design! {
-    import makepad_draw::shader::std::*;
     GSelectItemBase = {{GSelectItem}} {
         width: Fill,
         height: 36.0,
         align: {x: 0.0, y: 0.5},
-        draw_item: {
-            instance stroke_color: vec4,
-            instance stroke_width: 1.4,
-            fn pixel(self) -> vec4 {
-                let sdf = Sdf2d::viewport(self.pos * self.rect_size3);
-                sdf.box(
-                    self.sdf_rect_pos.x,
-                    self.sdf_rect_pos.y,
-                    self.sdf_rect_size.x,
-                    self.sdf_rect_size.y,
-                    max(1.0, self.border_radius)
-                );
-
-                if self.background_visible != 0.0 {
-                    sdf.fill_keep(self.get_color());
-                }
-                if self.spread_radius != 0.0 {
-                    if sdf.shape > -1.0{
-                        let m = self.blur_radius;
-                        let o = self.shadow_offset + self.rect_shift;
-                        if self.border_radius != 0.0 {
-                            let v = GaussShadow::rounded_box_shadow(vec2(m) + o, self.rect_size2 + o, self.pos * (self.rect_size3+vec2(m)), self.spread_radius * 0.5, self.border_radius*2.0);
-                            let shadow_color = vec4(self.shadow_color.rgb, self.shadow_color.a * v);
-                            sdf.clear(shadow_color);
-                        }else{
-                            let v = GaussShadow::box_shadow(vec2(m) + o, self.rect_size2 + o, self.pos * (self.rect_size3+vec2(m)), self.spread_radius * 0.5);
-                            let shadow_color = vec4(self.shadow_color.rgb, self.shadow_color.a * v);
-                            sdf.clear(shadow_color);
-                        }
-                    }
-                }
-
-                sdf.stroke(self.get_border_color(), self.border_width);
-                if self.pressed == 1.0{
-                    let start_p = vec2(self.sdf_rect_size.x - 26.0, self.sdf_rect_size.y * 0.5 - 7.0);
-                    let end_p = vec2(self.sdf_rect_size.x - 12.0, self.sdf_rect_size.y * 0.5 + 7.0);
-                    let center_y = self.sdf_rect_size.y * 0.5;
-                    sdf.move_to(start_p.x, center_y + 1.0);
-                    sdf.line_to(self.sdf_rect_size.x - 22.0, end_p.y - 1.0);
-                    sdf.line_to(end_p.x, start_p.y + 2.0);
-                    sdf.stroke(self.stroke_color, self.stroke_width);
-                }
-
-                return sdf.result
-            }
-        }
         animator: {
             hover = {
                 default: off
@@ -135,12 +92,16 @@ pub struct GSelectItem {
     pub border_width: f32,
     #[live(0.0)]
     pub border_radius: f32,
-    #[live(1.4)]
+    #[live(1.0)]
     pub stroke_width: f32,
     #[live]
     pub draw_item: DrawGCard,
     #[live]
     pub draw_text: DrawGText,
+    #[live]
+    pub draw_selector: DrawGIconBase,
+    #[live(Base::Correct)]
+    pub icon_type: Base,
     #[layout]
     pub layout: Layout,
     #[walk]
@@ -173,7 +134,7 @@ impl LiveHook for GSelectItem {
         let background_visible = self.background_visible.to_f32();
         let color = self.color.use_or("#101828");
         let stroke_color = self.stroke_color.get(self.theme, 600);
-        // let stroke_hover_color = self.stroke_hover_color.get(self.theme, 600);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 600);
         self.draw_item.apply_over(
             cx,
             live! {
@@ -187,10 +148,7 @@ impl LiveHook for GSelectItem {
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
                 spread_radius: (self.spread_radius),
-                blur_radius: (self.blur_radius),
-                pressed: (self.selected.to_f32()),
-                stroke_color: (stroke_color),
-                stroke_width: (self.stroke_width),
+                blur_radius: (self.blur_radius)
             },
         );
         self.draw_text.apply_over(
@@ -204,6 +162,16 @@ impl LiveHook for GSelectItem {
                 }
             },
         );
+        self.draw_selector.apply_over(
+            cx,
+            live! {
+                stroke_color: (stroke_color),
+                stroke_width: (self.stroke_width),
+                stroke_hover_color: (stroke_hover_color),
+            },
+        );
+        self.draw_selector.apply_type(self.icon_type);
+        self.draw_selector.redraw(cx);
         self.draw_text.redraw(cx);
         self.draw_item.redraw(cx);
     }
@@ -221,15 +189,34 @@ impl GSelectItem {
         let _ = self
             .draw_text
             .draw_walk(cx, Walk::fit(), Align::default(), text);
+        let icon_walk = Walk {
+            height: Size::Fixed(16.0),
+            width: Size::Fixed(16.0),
+            abs_pos: Some(DVec2 { x: 16.0, y: 48.0 }),
+            ..Default::default()
+        };
+        let select_rect = if self.selected {
+            let select_rect = self.draw_selector.draw_walk(cx, icon_walk);
+            Some(select_rect)
+        } else {
+            None
+        };
         self.value = value.to_string();
         self.text = text.to_string();
         let _ = self.draw_item.end(cx);
+        select_rect.map(|mut select_rect| {
+            let rect = self.area().rect(cx);
+            let x = -16.0 - self.layout.padding.right;
+            select_rect.abs_end_center(&rect, Some(dvec2(x, 0.0)));
+            self.draw_selector.update_abs(cx, select_rect);
+        });
     }
     pub fn handle_event_with(
         &mut self,
         cx: &mut Cx,
         event: &Event,
         sweep_area: Area,
+
         dispatch_action: &mut dyn FnMut(&mut Cx, GSelectItemEvent),
     ) {
         if self.animator_handle_event(cx, event).must_redraw() {
@@ -249,7 +236,7 @@ impl GSelectItem {
             Hit::FingerDown(_) => {}
             Hit::FingerUp(se) => {
                 self.selected = !self.selected;
-
+                
                 if !se.is_sweep {
                     dispatch_action(
                         cx,
