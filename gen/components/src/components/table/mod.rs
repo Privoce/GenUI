@@ -100,6 +100,16 @@ impl Widget for GTable {
         self.draw_table.end(cx);
         DrawStep::done()
     }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        match self.mode{
+            ComponentMode::Real => {
+                self.body.handle_event(cx, event, scope);
+            },
+            ComponentMode::Virtual => {
+                self.body_virtual.handle_event(cx, event, scope);
+            },
+        }   
+    }
 
     fn is_visible(&self) -> bool {
         self.visible

@@ -39,6 +39,13 @@ impl Widget for GVTableBody {
         self.draw_table_body.end(cx);
         DrawStep::done()
     }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        for (_index, (_id, child)) in self.children.iter().enumerate() {
+            if child.is_visible() {
+                child.handle_event(cx, event, scope);
+            }
+        }
+    }
 }
 
 impl LiveHook for GVTableBody {}

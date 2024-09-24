@@ -100,6 +100,13 @@ impl Widget for GTableBody {
     // fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
     //     self.deref_widget.handle_event(cx, event, scope)
     // }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        for (index, (id, row))  in self.children.iter().enumerate() {
+            if row.is_visible(){
+                row.handle_event(cx, event, scope);
+            }
+        }
+    }
 
     fn is_visible(&self) -> bool {
         self.visible

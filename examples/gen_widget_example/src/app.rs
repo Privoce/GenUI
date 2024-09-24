@@ -57,9 +57,61 @@ live_design! {
                     width: All,
                     flow: Down,
                     padding: 16.0,
-                    
+                    <GSvg>{
+                        height: 16.0,
+                        width: 16.0,
+                        src: dep("crate://self/resources/upload.svg")
+                    }
+                    <GTBody>{
+                        <GTRow>{
+                            height: 32.0,
+                            width: Fill,
+                            <GTCell>{
+                                height: Fill,
+                                width: 140.0,
+                                align: {x: 0.1, y: 0.5},
+                                <GButton>{
+                                    
+                                }
+                            }
+                        }
+                    }
+                    <GTable>{
+                        header: {
+                            height: Fit,
+                            <GTRow>{
+                                height: 32.0,
+                                width: Fill,
+                                <GTCell>{
+                                    height: Fill,
+                                    width: 140.0,
+                                    align: {x: 0.1, y: 0.5},
+                                    <GLabel>{
+                                        color: #E36640,
+                                        text: "Name",
+                                        
+                                    }
+                                }
+                            }
+                        }
+                        body: {
+                            height: Fit,
+                            <GTRow>{
+                                height: 32.0,
+                                width: Fill,
+                                <GTCell>{
+                                    height: Fill,
+                                    width: 140.0,
+                                    align: {x: 0.1, y: 0.5},
+                                    <GButton>{
+                                        
+                                    }
+                                }
+                            }
+                        }
+                    }
                     <GTabbarItem>{
-                        selected: true
+                        selected: false
                     }
                     <GVLayout>{
                         

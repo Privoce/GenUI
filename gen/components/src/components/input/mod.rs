@@ -73,7 +73,6 @@ live_design! {
         },
 
         draw_text: {
-            instance hover: 0.0;
             instance focus: 0.0;
             instance placeholder_color: vec4;
             fn get_color(self) -> vec4 {

@@ -176,6 +176,7 @@ live_design! {
         width: Fit,
         padding: 0,
         font_size: (FONT_SIZE),
+        font_family: (FONT_FAMILY),
         align: <ALIGN_CENTER_WALK>{},
     }
     // ## GButton
