@@ -32,8 +32,11 @@ impl Widget for GTableCell {
     }
 }
 
-impl GTableCell{
+impl GTableCell {
     widget_area! {
         area, draw_card
+    }
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.deref_widget.redraw(cx);
     }
 }

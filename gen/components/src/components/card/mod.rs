@@ -727,7 +727,7 @@ impl WidgetNode for GCard {
 
     fn redraw(&mut self, cx: &mut Cx) {
         self.area.redraw(cx);
-        for (_, child) in &mut self.children {
+        for (_, child) in &self.children {
             child.redraw(cx);
         }
     }

@@ -49,3 +49,14 @@ impl Widget for GVTableBody {
 }
 
 impl LiveHook for GVTableBody {}
+
+impl GVTableBody {
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.draw_table_body.redraw(cx);
+        for (_, row) in self.children.iter() {
+            row.borrow_mut().map(|mut row| {
+                row.redraw(cx);
+            });
+        }
+    }
+}

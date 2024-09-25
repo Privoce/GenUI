@@ -101,8 +101,8 @@ impl Widget for GTableBody {
     //     self.deref_widget.handle_event(cx, event, scope)
     // }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        for (index, (id, row))  in self.children.iter().enumerate() {
-            if row.is_visible(){
+        for (index, (id, row)) in self.children.iter().enumerate() {
+            if row.is_visible() {
                 row.handle_event(cx, event, scope);
             }
         }
@@ -143,6 +143,17 @@ impl LiveHook for GTableBody {
                 }
             }
             _ => nodes.skip_node(index),
+        }
+    }
+}
+
+impl GTableBody {
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.draw_table_body.redraw(cx);
+        for (_, child) in self.children.iter() {
+            child.borrow_mut().map(|mut child| {
+                child.redraw(cx);
+            });
         }
     }
 }

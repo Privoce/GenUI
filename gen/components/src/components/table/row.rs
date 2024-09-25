@@ -133,3 +133,14 @@ impl LiveHook for GTableRow {
         }
     }
 }
+
+impl GTableRow {
+    pub fn redraw(&mut self, cx:&mut Cx){
+        self.draw_table_row.redraw(cx);
+        for (_,cell) in self.children.iter() {
+            cell.borrow_mut().map(|mut cell|{
+                cell.redraw(cx);
+            });
+        }
+    }
+}
