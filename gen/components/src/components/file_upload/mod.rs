@@ -6,6 +6,7 @@ pub use register::register;
 use std::{path::PathBuf, str::FromStr};
 
 use makepad_widgets::*;
+#[cfg(not(target_arch = "wasm32"))]
 use rfd::FileDialog;
 
 use crate::{
@@ -176,32 +177,37 @@ impl GUpload {
                     GFileUploadEvent::BeforeSelect(self.mode.is_multi()),
                 );
                 // call system file picker
-                let f = FileDialog::new()
-                    .add_filter("allow", &self.filters)
-                    .set_directory(self.real_path.as_path());
+                #[cfg(not(target_arch = "wasm32"))]
+                let mut  f_upload = || {
+                    let f = FileDialog::new()
+                        .add_filter("allow", &self.filters)
+                        .set_directory(self.real_path.as_path());
 
-                match self.mode {
-                    UploadMode::Folder => {
-                        f.pick_folder().map(|p| {
-                            self.selected.push(p);
-                        });
+                    match self.mode {
+                        UploadMode::Folder => {
+                            f.pick_folder().map(|p| {
+                                self.selected.push(p);
+                            });
+                        }
+                        UploadMode::Folders => {
+                            f.pick_folders().map(|p| {
+                                self.selected.extend(p.into_iter());
+                            });
+                        }
+                        UploadMode::File => {
+                            f.pick_file().map(|p| {
+                                self.selected.push(p);
+                            });
+                        }
+                        UploadMode::Files => {
+                            f.pick_files().map(|p| {
+                                self.selected.extend(p.into_iter());
+                            });
+                        }
                     }
-                    UploadMode::Folders => {
-                        f.pick_folders().map(|p| {
-                            self.selected.extend(p.into_iter());
-                        });
-                    }
-                    UploadMode::File => {
-                        f.pick_file().map(|p| {
-                            self.selected.push(p);
-                        });
-                    }
-                    UploadMode::Files => {
-                        f.pick_files().map(|p| {
-                            self.selected.extend(p.into_iter());
-                        });
-                    }
-                }
+                };
+                #[cfg(not(target_arch = "wasm32"))]
+                f_upload();
 
                 // call after selected
                 cx.widget_action(

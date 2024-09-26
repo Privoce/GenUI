@@ -86,6 +86,15 @@ impl GDropDown {
         self.redraw(cx);
         cx.sweep_unlock(self.area());
     }
+    pub fn popup<F>(&mut self, cx: &mut Cx, mut f: F) -> ()
+    where
+        F: FnMut(&mut Cx, &mut GPopup),
+    {
+        let global = cx.global::<PopupMenuGlobal>().clone();
+        let mut map = global.map.borrow_mut();
+        let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
+        let _ = f(cx, popup_menu);
+    }
 }
 
 impl Widget for GDropDown {

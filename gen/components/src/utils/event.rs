@@ -23,6 +23,7 @@ pub fn filter_widget_actions(
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn open_browser(url: &str) -> Result<(), std::io::Error> {
     open::that(url)
 }

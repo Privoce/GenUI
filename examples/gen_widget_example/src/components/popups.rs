@@ -69,9 +69,9 @@ live_design! {
                 mode: ToolTip,
                 height: Fit,
                 width: Fit,
-                trigger = <GButton>{slot: {
-                    text:"open bottom"
-                }},
+                trigger = <GIcon>{
+                    icon_type: Add,
+                },
                 popup :<GToolTip> {
                     height: 150.0,
                     width: 200.0,

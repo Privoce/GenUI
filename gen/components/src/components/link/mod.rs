@@ -9,7 +9,9 @@ pub use register::register;
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
 use crate::themes::Themes;
-use crate::utils::{get_font_family, open_browser, set_cursor, BoolToF32, ThemeColor};
+use crate::utils::{get_font_family, set_cursor, BoolToF32, ThemeColor};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::utils::open_browser;
 use crate::{animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, widget_area};
 use makepad_widgets::*;
 
@@ -319,6 +321,7 @@ impl GLink {
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
                     self.href.as_ref().map(|x|{
+                        #[cfg(not(target_arch = "wasm32"))]
                         open_browser(&x)
                     });
                     

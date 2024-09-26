@@ -148,8 +148,8 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    <GPopupExample>{}
-                    // <GInputExample>{}
+                    // <GPopupExample>{}
+                    <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}
                     // <GProgressExample>{}
@@ -170,23 +170,24 @@ live_design! {
                     // <GHLayoutExample>{}
                     // <GVLayoutExample>{}
                     // <GTagExample>{}
-                    // <GCard>{
-                    //     theme: Dark,
-                    //     height: 100.0,
-                    //     width: 300.0,
-                    //     flow: Down,
-                    //     align: {x: 0.5, y: 0.5},
-                    //     <GUpload>{
-                    //         height: 70.0,
-                    //         filters: ["png"]
-                    //     }
-                    //     <GLabel>{
-                    //         height: Fit,
-                    //         text: "Upload!",
-                    //     }
-                    // }
+                    <GCard>{
+                        theme: Dark,
+                        height: 100.0,
+                        width: 300.0,
+                        flow: Down,
+                        align: {x: 0.5, y: 0.5},
+                        <GUpload>{
+                            height: 70.0,
+                            // filters: ["png"],
+                            mode: Folder
+                        }
+                        <GLabel>{
+                            height: Fit,
+                            text: "Upload!",
+                        }
+                    }
                     // <GBreadCrumbExample>{}
-                    // <GLinkExample>{}
+                    <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
                     // <GButtonExample>{}
