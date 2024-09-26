@@ -181,7 +181,6 @@ impl Widget for GDropDown {
                     area.set_rect(cx, &rect);
                     let _ =
                         popup_menu.draw_container_drawer(cx, scope, self.position, self.proportion);
-                    // popup_menu.draw_container(cx, scope, None);
                     popup_menu.end(cx, scope, area, DVec2::default());
                 }
             }

@@ -310,7 +310,7 @@ impl Widget for GCard {
             EventOrder::Down => {
                 for (id, child) in self.children.iter_mut().rev() {
                     scope.with_id(*id, |scope| {
-                        child.handle_event(cx, event, scope);
+                        child.handle_event_with(cx, event, scope, sweep_area);
                     });
                 }
             }
@@ -318,7 +318,7 @@ impl Widget for GCard {
                 // the default event order is Up
                 for (id, child) in self.children.iter_mut().rev() {
                     scope.with_id(*id, |scope| {
-                        child.handle_event(cx, event, scope);
+                        child.handle_event_with(cx, event, scope, sweep_area);
                     });
                 }
             }
@@ -326,7 +326,7 @@ impl Widget for GCard {
                 for id in list {
                     if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
                         scope.with_id(*id, |scope| {
-                            child.handle_event(cx, event, scope);
+                            child.handle_event_with(cx, event, scope, sweep_area);
                         })
                     }
                 }

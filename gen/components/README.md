@@ -1,7 +1,7 @@
 # GEN Components (v0.1.0)
 
 - version: `v0.1.0`
-- update date: 2024-09-18
+- update date: 2024-09-26
 - author: [Will-YiFei Sheng](syf20020816@outlook.com)
 - makepad_widget version: `v0.6.0`
 - makepad branch: `rik`
@@ -48,6 +48,7 @@
 - [ ] CheckBoxGroup
 - [ ] Virtual CheckBoxGroup
 - [x] Select
+- [x] Drawer
 
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
 
@@ -55,7 +56,7 @@
 - [ ] Route (用于路由跳转) 🔼
 - [x] ToolButton (用于处理界面控制事件，如：放大，缩小，全屏，关闭等) 🔼
 - [ ] Notification (用于编程式弹出通知) (测试成功, 思路cx.global绑定到窗口或Root上，可能需要后续自己实现一个Root) 🔼
-- [ ] Drawer (用于侧面展开) 
+- [x] Drawer (用于侧面展开) 
 - [ ] ColorPicker (颜色选择器)
 - [ ] DatePicker(日期选择器)
 - [ ] TimePicker(时间选择器)

@@ -24,7 +24,7 @@ live_design! {
                 offset: 6.0,
                 height: Fit,
                 width: Fit,
-                trigger_mode: Hover,
+                // trigger_mode: Hover,
                 trigger = <GButton>{
                     slot: {
                         text:"open"
@@ -451,11 +451,22 @@ live_design! {
                         flow: Down,
                         spacing: 10.0,
                         padding: 10.0,
+                        background_visible: false,
                         <GLabel>{
                             text:"This is a popup",
+                            abs_pos: vec2(132.0, 120.0),
                         }
-                        <GButton>{
-                            theme: Dark,
+                        <GLabel>{
+                            text:"666",
+                            abs_pos: vec2(262.0, 60.0),
+                        }
+                        <GLabel>{
+                            text:"amazing....",
+                            abs_pos: vec2(445.0, 84.0),
+                        }
+                        <GLabel>{
+                            text:"I want see more!",
+                            abs_pos: vec2(32.0, 100.0),
                         }
                     }
                 }
