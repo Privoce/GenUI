@@ -258,18 +258,22 @@ impl GPopup {
         let popup_size = self.virtual_box.area().rect(cx).size;
         let (adjust_size, adjust_pos) = match position {
             Position::Left | Position::LeftTop | Position::LeftBottom => {
-                let size = DVec2 {
-                    x: proportion as f64 * popup_size.x,
-                    y: popup_size.y,
+                let x = if proportion > 1.0 {
+                    proportion as f64
+                } else {
+                    proportion as f64 * popup_size.x
                 };
+                let size = DVec2 { x, y: popup_size.y };
                 let pos = DVec2 { x: 0.0, y: 0.0 };
                 (size, pos)
             }
             Position::Right | Position::RightTop | Position::RightBottom => {
-                let size = DVec2 {
-                    x: proportion as f64 * popup_size.x,
-                    y: popup_size.y,
+                let x = if proportion > 1.0 {
+                    proportion as f64
+                } else {
+                    proportion as f64 * popup_size.x
                 };
+                let size = DVec2 { x, y: popup_size.y };
                 let pos = DVec2 {
                     x: (1.0 - proportion) as f64 * popup_size.x,
                     y: 0.0,
@@ -277,18 +281,22 @@ impl GPopup {
                 (size, pos)
             }
             Position::Top | Position::TopLeft | Position::TopRight => {
-                let size = DVec2 {
-                    x: popup_size.x,
-                    y: proportion as f64 * popup_size.y,
+                let y = if proportion > 1.0 {
+                    proportion as f64
+                } else {
+                    proportion as f64 * popup_size.y
                 };
+                let size = DVec2 { x: popup_size.x, y };
                 let pos = DVec2 { x: 0.0, y: 0.0 };
                 (size, pos)
             }
             Position::Bottom | Position::BottomLeft | Position::BottomRight => {
-                let size = DVec2 {
-                    x: popup_size.x,
-                    y: proportion as f64 * popup_size.y,
+                let y = if proportion > 1.0 {
+                    proportion as f64
+                } else {
+                    proportion as f64 * popup_size.y
                 };
+                let size = DVec2 { x: popup_size.x, y };
                 let pos = DVec2 {
                     x: 0.0,
                     y: (1.0 - proportion) as f64 * popup_size.y,

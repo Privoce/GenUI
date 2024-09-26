@@ -39,6 +39,7 @@ pub struct GDropDown {
     // visible -------------------
     #[live(true)]
     pub visible: bool,
+    /// if proportion > 1.0, we think that is height/width (dep on position)
     #[live(0.4)]
     pub proportion: f32,
 }

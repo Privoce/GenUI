@@ -436,78 +436,78 @@ live_design! {
                     }
                 }
             }
-            // <GDropDown>{
-            //     mode: Drawer,
-            //     height: Fit,
-            //     width: Fit,
-            //     position: Top,
-            //     trigger = <GButton>{
-            //         slot: {
-            //             text:"top"
-            //         }
-            //     },
-            //     popup :<GDrawer> {
-            //         container: {
-            //             flow: Down,
-            //             spacing: 10.0,
-            //             padding: 10.0,
-            //             <GLabel>{
-            //                 text:"This is a popup",
-            //             }
-            //             <GButton>{
-            //                 theme: Dark,
-            //             }
-            //         }
-            //     }
-            // }
-            // <GDropDown>{
-            //     mode: Drawer,
-            //     height: Fit,
-            //     width: Fit,
-            //     position: Left,
-            //     trigger = <GButton>{
-            //         slot: {
-            //             text:"left"
-            //         }
-            //     },
-            //     popup :<GDrawer> {
-            //         container: {
-            //             flow: Down,
-            //             spacing: 10.0,
-            //             padding: 10.0,
-            //             <GLabel>{
-            //                 text:"This is a popup",
-            //             }
-            //             <GButton>{
-            //                 theme: Dark,
-            //             }
-            //         }
-            //     }
-            // }
-            // <GDropDown>{
-            //     mode: Drawer,
-            //     height: Fit,
-            //     width: Fit,
-            //     position: Right,
-            //     trigger = <GButton>{
-            //         slot: {
-            //             text:"right"
-            //         }
-            //     },
-            //     popup :<GDrawer> {
-            //         container: {
-            //             flow: Down,
-            //             spacing: 10.0,
-            //             padding: 10.0,
-            //             <GLabel>{
-            //                 text:"This is a popup",
-            //             }
-            //             <GButton>{
-            //                 theme: Dark,
-            //             }
-            //         }
-            //     }
-            // }
+            <GDropDown>{
+                mode: Drawer,
+                height: Fit,
+                width: Fit,
+                position: Top,
+                trigger = <GButton>{
+                    slot: {
+                        text:"top"
+                    }
+                },
+                popup :<GDrawer> {
+                    container: {
+                        flow: Down,
+                        spacing: 10.0,
+                        padding: 10.0,
+                        <GLabel>{
+                            text:"This is a popup",
+                        }
+                        <GButton>{
+                            theme: Dark,
+                        }
+                    }
+                }
+            }
+            <GDropDown>{
+                mode: Drawer,
+                height: Fit,
+                width: Fit,
+                position: Left,
+                trigger = <GButton>{
+                    slot: {
+                        text:"left"
+                    }
+                },
+                popup :<GDrawer> {
+                    container: {
+                        flow: Down,
+                        spacing: 10.0,
+                        padding: 10.0,
+                        <GLabel>{
+                            text:"This is a popup",
+                        }
+                        <GButton>{
+                            theme: Dark,
+                        }
+                    }
+                }
+            }
+            <GDropDown>{
+                mode: Drawer,
+                height: Fit,
+                width: Fit,
+                position: Right,
+                trigger = <GButton>{
+                    slot: {
+                        text:"right"
+                    }
+                },
+                popup :<GDrawer> {
+                    container: {
+                        flow: Down,
+                        spacing: 10.0,
+                        padding: 10.0,
+                        <GLabel>{
+                            text:"This is a popup",
+                        }
+                        <GButton>{
+                            theme: Dark,
+                        }
+                    }
+                }
+            }
         }
     }
 }

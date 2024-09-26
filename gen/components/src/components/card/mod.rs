@@ -57,7 +57,7 @@ live_design! {
 
 #[derive(Live, LiveRegisterWidget, WidgetRef, WidgetSet)]
 pub struct GCard {
-    #[live]
+    #[live(Themes::Dark)]
     pub theme: Themes,
     #[live]
     pub background_color: Option<Vec4>,
