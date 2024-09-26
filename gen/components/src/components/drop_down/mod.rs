@@ -167,21 +167,13 @@ impl Widget for GDropDown {
                 }
 
                 PopupMode::Dialog => {
-                    let area = self.area();
-                    let mut rect = area.rect(cx);
-                    rect.pos = DVec2::default();
-                    area.set_rect(cx, &rect);
                     popup_menu.draw_container(cx, scope, None);
-                    popup_menu.end(cx, scope, area, DVec2::default());
+                    popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
                 PopupMode::Drawer => {
-                    let area = self.area();
-                    let mut rect = area.rect(cx);
-                    rect.pos = DVec2::default();
-                    area.set_rect(cx, &rect);
                     let _ =
                         popup_menu.draw_container_drawer(cx, scope, self.position, self.proportion);
-                    popup_menu.end(cx, scope, area, DVec2::default());
+                    popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
             }
         }

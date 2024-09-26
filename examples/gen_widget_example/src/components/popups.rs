@@ -471,6 +471,9 @@ live_design! {
                     }
                 }
             }
+            <GCard>{
+                width: Fill,
+            }
             <GDropDown>{
                 mode: Drawer,
                 height: Fit,
