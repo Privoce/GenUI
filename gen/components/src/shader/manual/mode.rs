@@ -9,6 +9,7 @@ pub enum PopupMode {
     Popup = shader_enum(1),
     ToolTip,
     Dialog,
+    Drawer,
 }
 
 /// The `TriggerMode` enum represents the different modes for a trigger

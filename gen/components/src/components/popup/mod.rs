@@ -4,7 +4,10 @@ use makepad_widgets::*;
 pub use register::register;
 
 use crate::{
-    shader::{draw_popup::DrawGPopup, manual::{PopupMode, Position}},
+    shader::{
+        draw_popup::DrawGPopup,
+        manual::{PopupMode, Position},
+    },
     themes::Themes,
     utils::{BoolToF32, ThemeColor},
 };
@@ -22,7 +25,7 @@ live_design! {
 pub struct GPopupContainer {
     #[live]
     #[deref]
-    pub super_widget: GCard,
+    pub deref_widget: GCard,
 }
 
 impl LiveHook for GPopupContainer {
@@ -72,9 +75,11 @@ impl GPopupContainer {
         self.area
     }
     pub fn draw_item(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
-        let _ = self.super_widget.draw_walk(cx, scope, self.walk);
+        let _ = self.deref_widget.draw_walk(cx, scope, self.walk);
     }
-
+    pub fn draw_item_drawer(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) {
+        let _ = self.deref_widget.draw_walk(cx, scope, walk);
+    }
     pub fn handle_event_with(
         &mut self,
         cx: &mut Cx,
@@ -83,7 +88,7 @@ impl GPopupContainer {
         scope: &mut Scope,
     ) {
         let _ = self
-            .super_widget
+            .deref_widget
             .handle_event_with(cx, event, scope, sweep_area);
     }
 }
@@ -127,6 +132,8 @@ pub struct GPopup {
     // deref ---------------------
     #[live]
     pub draw_popup: DrawGPopup,
+    #[live]
+    pub virtual_box: GCard,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -139,6 +146,8 @@ pub struct GPopup {
     /// actually it's for all the drawing that needs to be on top of everything!!!
     #[live]
     draw_list: DrawList2d,
+    #[rust]
+    container_walk: Option<Walk>,
 }
 
 impl LiveHook for GPopup {
@@ -228,6 +237,80 @@ impl GPopup {
         });
         self.container.draw_item(cx, scope);
     }
+    pub fn draw_container_drawer(
+        &mut self,
+        cx: &mut Cx2d,
+        scope: &mut Scope,
+        position: Position,
+        proportion: f32,
+    ) {
+        self.draw_popup.position = position;
+        let _ = self.virtual_box.draw_walk(
+            cx,
+            scope,
+            Walk {
+                height: Size::All,
+                width: Size::All,
+                ..Default::default()
+            },
+        );
+        // now get virtual box as rect
+        let popup_size = self.virtual_box.area().rect(cx).size;
+        let (adjust_size, adjust_pos) = match position {
+            Position::Left | Position::LeftTop | Position::LeftBottom => {
+                let size = DVec2 {
+                    x: proportion as f64 * popup_size.x,
+                    y: popup_size.y,
+                };
+                let pos = DVec2 { x: 0.0, y: 0.0 };
+                (size, pos)
+            }
+            Position::Right | Position::RightTop | Position::RightBottom => {
+                let size = DVec2 {
+                    x: proportion as f64 * popup_size.x,
+                    y: popup_size.y,
+                };
+                let pos = DVec2 {
+                    x: (1.0 - proportion) as f64 * popup_size.x,
+                    y: 0.0,
+                };
+                (size, pos)
+            }
+            Position::Top | Position::TopLeft | Position::TopRight => {
+                let size = DVec2 {
+                    x: popup_size.x,
+                    y: proportion as f64 * popup_size.y,
+                };
+                let pos = DVec2 { x: 0.0, y: 0.0 };
+                (size, pos)
+            }
+            Position::Bottom | Position::BottomLeft | Position::BottomRight => {
+                let size = DVec2 {
+                    x: popup_size.x,
+                    y: proportion as f64 * popup_size.y,
+                };
+                let pos = DVec2 {
+                    x: 0.0,
+                    y: (1.0 - proportion) as f64 * popup_size.y,
+                };
+                (size, pos)
+            }
+        };
+        self.virtual_box.visible = false;
+
+        if self.container_walk.is_none() {
+            self.container_walk.replace(Walk {
+                abs_pos: Some(adjust_pos),
+                width: Size::Fixed(adjust_size.x),
+                height: Size::Fixed(adjust_size.y),
+                ..Default::default()
+            });
+        }
+
+        self.container
+            .draw_item_drawer(cx, scope, self.container_walk.unwrap());
+    }
+
     pub fn container_area(&self) -> Area {
         self.container.area()
     }

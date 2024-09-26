@@ -18,16 +18,16 @@ pub mod notification;
 pub mod popup;
 pub mod progress;
 pub mod radio;
+pub mod select;
 pub mod shader;
 pub mod svg;
 pub mod tab;
+pub mod tabbar;
 pub mod table;
 pub mod tag;
 pub mod toggle;
 pub mod tool_btn;
 pub mod window;
-pub mod select;
-pub mod tabbar;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -591,6 +591,31 @@ live_design! {
             clip_x: false,
             clip_y: false,
             background_visible: false,
+        }
+    }
+    GDrawer = <GPopup>{
+        // align: <ALIGN_CENTER_WALK>{},
+        mode: Drawer,
+        height: All,
+        width: All,
+        theme: Dark,
+        draw_popup: {
+            // this is a mask
+            fn pixel(self) -> vec4{
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                sdf.rect(self.pos.x, self.pos.y, self.rect_size.x, self.rect_size.y);
+                let color = self.get_color();
+                sdf.fill(vec4(color.r, color.g, color.b, self.opacity));
+                
+                return sdf.result;
+            }
+        }
+        container: <GPopupContainer>{
+            theme: Dark,
+            clip_x: false,
+            clip_y: false,
+            background_visible: true,
+            border_radius: 0.0
         }
     }
     GDropDown = <GDropDownBase>{

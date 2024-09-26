@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
 
     GCollapseExample = <ScrollYView>{
-        height: 300.0,
+        height: 400.0,
         width: Fill,
         flow: Down,
         spacing: 10.0,

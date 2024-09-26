@@ -39,6 +39,8 @@ pub struct GDropDown {
     // visible -------------------
     #[live(true)]
     pub visible: bool,
+    #[live(0.4)]
+    pub proportion: f32,
 }
 
 #[derive(Default, Clone)]
@@ -101,72 +103,86 @@ impl Widget for GDropDown {
             let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
             popup_menu.begin(cx);
 
-            if let PopupMode::Dialog = self.mode {
-                let area = self.area();
-                let mut rect = area.rect(cx);
-                rect.pos = DVec2::default();
-                area.set_rect(cx, &rect);
-                popup_menu.draw_container(cx, scope, None);
-                popup_menu.end(cx, scope, area, DVec2::default());
-            } else {
-                let area = self.area().rect(cx);
-                popup_menu.draw_container(cx, scope, Some(self.position.clone()));
-                let container = popup_menu.container_area().rect(cx);
-                let mut shift = match self.position {
-                    Position::Bottom => DVec2 {
-                        x: -container.size.x / 2.0 + area.size.x / 2.0,
-                        y: area.size.y + self.offset as f64,
-                    },
-                    Position::BottomLeft => DVec2 {
-                        x: 0.0,
-                        y: area.size.y + self.offset as f64,
-                    },
-                    Position::BottomRight => DVec2 {
-                        x: area.size.x - container.size.x,
-                        y: area.size.y + self.offset as f64,
-                    },
-                    Position::Top => DVec2 {
-                        x: 0.0 - area.size.x / 2.0,
-                        y: -self.offset as f64 - container.size.y,
-                    },
-                    Position::TopLeft => DVec2 {
-                        x: 0.0,
-                        y: -self.offset as f64 - container.size.y,
-                    },
-                    Position::TopRight => DVec2 {
-                        x: area.size.x - container.size.x,
-                        y: -self.offset as f64 - container.size.y,
-                    },
-                    Position::Left => DVec2 {
-                        x: -self.offset as f64 - container.size.x,
-                        y: area.size.y / 2.0 - container.size.y / 2.0,
-                    },
-                    Position::LeftTop => DVec2 {
-                        x: -self.offset as f64 - container.size.x,
-                        y: 0.0,
-                    },
-                    Position::LeftBottom => DVec2 {
-                        x: -self.offset as f64 - container.size.x,
-                        y: 0.0 - container.size.y + area.size.y,
-                    },
-                    Position::Right => DVec2 {
-                        x: area.size.x + self.offset as f64,
-                        y: area.size.y / 2.0 - container.size.y / 2.0,
-                    },
-                    Position::RightTop => DVec2 {
-                        x: area.size.x + self.offset as f64,
-                        y: 0.0,
-                    },
-                    Position::RightBottom => DVec2 {
-                        x: area.size.x + self.offset as f64,
-                        y: 0.0 - container.size.y + area.size.y,
-                    },
-                };
+            match self.mode {
+                PopupMode::Popup | PopupMode::ToolTip => {
+                    let area = self.area().rect(cx);
+                    popup_menu.draw_container(cx, scope, Some(self.position.clone()));
+                    let container = popup_menu.container_area().rect(cx);
+                    let mut shift = match self.position {
+                        Position::Bottom => DVec2 {
+                            x: -container.size.x / 2.0 + area.size.x / 2.0,
+                            y: area.size.y + self.offset as f64,
+                        },
+                        Position::BottomLeft => DVec2 {
+                            x: 0.0,
+                            y: area.size.y + self.offset as f64,
+                        },
+                        Position::BottomRight => DVec2 {
+                            x: area.size.x - container.size.x,
+                            y: area.size.y + self.offset as f64,
+                        },
+                        Position::Top => DVec2 {
+                            x: 0.0 - area.size.x / 2.0,
+                            y: -self.offset as f64 - container.size.y,
+                        },
+                        Position::TopLeft => DVec2 {
+                            x: 0.0,
+                            y: -self.offset as f64 - container.size.y,
+                        },
+                        Position::TopRight => DVec2 {
+                            x: area.size.x - container.size.x,
+                            y: -self.offset as f64 - container.size.y,
+                        },
+                        Position::Left => DVec2 {
+                            x: -self.offset as f64 - container.size.x,
+                            y: area.size.y / 2.0 - container.size.y / 2.0,
+                        },
+                        Position::LeftTop => DVec2 {
+                            x: -self.offset as f64 - container.size.x,
+                            y: 0.0,
+                        },
+                        Position::LeftBottom => DVec2 {
+                            x: -self.offset as f64 - container.size.x,
+                            y: 0.0 - container.size.y + area.size.y,
+                        },
+                        Position::Right => DVec2 {
+                            x: area.size.x + self.offset as f64,
+                            y: area.size.y / 2.0 - container.size.y / 2.0,
+                        },
+                        Position::RightTop => DVec2 {
+                            x: area.size.x + self.offset as f64,
+                            y: 0.0,
+                        },
+                        Position::RightBottom => DVec2 {
+                            x: area.size.x + self.offset as f64,
+                            y: 0.0 - container.size.y + area.size.y,
+                        },
+                    };
 
-                shift.x += self.offset_x as f64;
-                shift.y += self.offset_y as f64;
-                popup_menu.redraw(cx);
-                popup_menu.end(cx, scope, self.area(), shift);
+                    shift.x += self.offset_x as f64;
+                    shift.y += self.offset_y as f64;
+                    popup_menu.redraw(cx);
+                    popup_menu.end(cx, scope, self.area(), shift);
+                }
+
+                PopupMode::Dialog => {
+                    let area = self.area();
+                    let mut rect = area.rect(cx);
+                    rect.pos = DVec2::default();
+                    area.set_rect(cx, &rect);
+                    popup_menu.draw_container(cx, scope, None);
+                    popup_menu.end(cx, scope, area, DVec2::default());
+                }
+                PopupMode::Drawer => {
+                    let area = self.area();
+                    let mut rect = area.rect(cx);
+                    rect.pos = DVec2::default();
+                    area.set_rect(cx, &rect);
+                    let _ =
+                        popup_menu.draw_container_drawer(cx, scope, self.position, self.proportion);
+                    // popup_menu.draw_container(cx, scope, None);
+                    popup_menu.end(cx, scope, area, DVec2::default());
+                }
             }
         }
 
@@ -179,22 +195,20 @@ impl Widget for GDropDown {
             let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
             popup_menu.handle_event_with(cx, event, scope, self.area());
             if let Event::MouseDown(e) = event {
-                // if !popup_menu.menu_contains_pos(cx, e.abs) {
-                //     self.close(cx);
-                //     self.animator_play(cx, id!(hover.off));
-                //     return;
-                // }
-                if let PopupMode::Dialog = self.mode {
-                    if !popup_menu.container_contains_pos(cx, e.abs) {
-                        self.close(cx);
-                        self.animator_play(cx, id!(hover.off));
-                        return;
+                match self.mode {
+                    PopupMode::Popup | PopupMode::ToolTip => {
+                        if !popup_menu.menu_contains_pos(cx, e.abs) {
+                            self.close(cx);
+                            self.animator_play(cx, id!(hover.off));
+                            return;
+                        }
                     }
-                } else {
-                    if !popup_menu.menu_contains_pos(cx, e.abs) {
-                        self.close(cx);
-                        self.animator_play(cx, id!(hover.off));
-                        return;
+                    PopupMode::Dialog | PopupMode::Drawer => {
+                        if !popup_menu.container_contains_pos(cx, e.abs) {
+                            self.close(cx);
+                            self.animator_play(cx, id!(hover.off));
+                            return;
+                        }
                     }
                 }
             }
