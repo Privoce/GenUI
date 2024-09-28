@@ -50,7 +50,7 @@ impl Widget for GLoading {
         }
         self.draw_loading.draw_walk(cx, walk);
         // redraw is important when changing visible or animation open state
-        self.draw_loading.redraw(cx);
+        self.redraw(cx);
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
@@ -114,6 +114,9 @@ impl GLoading {
     event_bool!{
         open: GLoadingEvent::Open,
         close: GLoadingEvent::Close
+    }
+    pub fn redraw(&mut self, cx: &mut Cx){
+        self.draw_loading.redraw(cx);
     }
 }
 

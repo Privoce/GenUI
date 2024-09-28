@@ -987,6 +987,7 @@ live_design! {
         },
     }
     GSelect = <GSelectBase>{
+        font_family: (FONT_FAMILY),
         flow: Down,
         select_item: <GSelectItem>{},
         select_options: <GSelectOptions>{}

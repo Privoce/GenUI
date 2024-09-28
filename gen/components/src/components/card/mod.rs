@@ -308,7 +308,7 @@ impl Widget for GCard {
 
         match &self.event_order {
             EventOrder::Down => {
-                for (id, child) in self.children.iter_mut().rev() {
+                for (id, child) in self.children.iter_mut() {
                     scope.with_id(*id, |scope| {
                         child.handle_event_with(cx, event, scope, sweep_area);
                     });
@@ -327,7 +327,7 @@ impl Widget for GCard {
                     if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
                         scope.with_id(*id, |scope| {
                             child.handle_event_with(cx, event, scope, sweep_area);
-                        })
+                        });
                     }
                 }
             }
@@ -341,12 +341,12 @@ impl Widget for GCard {
         ) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e));
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e));
                 }
             }
             // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerScroll(e)),
@@ -370,7 +370,7 @@ impl Widget for GCard {
             Hit::FingerHoverOut(e) => {
                 cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOut(e));
                 if self.animator.live_ptr.is_some() && self.animation_open {
-                    self.animator_play(cx, id!(hover.off))
+                    self.animator_play(cx, id!(hover.off));
                 }
             }
             Hit::FingerUp(e) => {
@@ -599,9 +599,10 @@ impl Widget for GCard {
             }
             EventOrder::Down => {
                 for (id, child) in self.children.iter_mut() {
-                    scope.with_id(*id, |scope| {
-                        child.handle_event(cx, event, scope);
-                    })
+                    // scope.with_id(*id, |scope| {
+                    //     child.handle_event(cx, event, scope);
+                    // });
+                    child.handle_event(cx, event, scope);
                 }
             }
             EventOrder::List(list) => {
@@ -609,7 +610,7 @@ impl Widget for GCard {
                     if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
                         scope.with_id(*id, |scope| {
                             child.handle_event(cx, event, scope);
-                        })
+                        });
                     }
                 }
             }
@@ -619,12 +620,12 @@ impl Widget for GCard {
         match event.hits(cx, self.area()) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e));
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e))
+                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e));
                 }
             }
             // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerScroll(e)),
@@ -639,7 +640,7 @@ impl Widget for GCard {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverIn(e));
                 if self.animator.live_ptr.is_some() && self.animation_open {
-                    self.animator_play(cx, id!(hover.on))
+                    self.animator_play(cx, id!(hover.on));
                 }
             }
             Hit::FingerHoverOver(e) => {
@@ -648,7 +649,7 @@ impl Widget for GCard {
             Hit::FingerHoverOut(e) => {
                 cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOut(e));
                 if self.animator.live_ptr.is_some() && self.animation_open {
-                    self.animator_play(cx, id!(hover.off))
+                    self.animator_play(cx, id!(hover.off));
                 }
             }
             Hit::FingerUp(e) => {
@@ -727,6 +728,7 @@ impl WidgetNode for GCard {
 
     fn redraw(&mut self, cx: &mut Cx) {
         self.area.redraw(cx);
+        self.draw_card.redraw(cx);
         for (_, child) in &self.children {
             child.redraw(cx);
         }
