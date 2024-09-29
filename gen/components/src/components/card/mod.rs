@@ -133,6 +133,8 @@ pub struct GCard {
     pub texture_cache: Option<ViewTextureCache>,
     #[rust]
     pub area: Area,
+    #[rust]
+    pub scope_path: HeapLiveIdPath
 }
 
 pub struct ViewTextureCache {
@@ -341,12 +343,26 @@ impl Widget for GCard {
         ) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GCardEvent::KeyDown(GCardKeyEventParam {
+                            e,
+                            path: scope.path.clone(),
+                        }),
+                    );
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GCardEvent::KeyUp(GCardKeyEventParam {
+                            e,
+                            path: scope.path.clone(),
+                        }),
+                    );
                 }
             }
             // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerScroll(e)),
@@ -354,27 +370,69 @@ impl Widget for GCard {
                 if self.grab_key_focus {
                     cx.set_key_focus(sweep_area);
                 }
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerDown(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerDown(GCardFingerDownParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
             }
-            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerMove(e)),
+            Hit::FingerMove(e) => cx.widget_action(
+                uid,
+                &scope.path,
+                GCardEvent::FingerMove(GCardFingerMoveParam {
+                    e,
+                    path: scope.path.clone(),
+                }),
+            ),
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverIn(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerHoverIn(GCardFingerHoverParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
                 if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.on))
                 }
             }
             Hit::FingerHoverOver(e) => {
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOver(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerHoverOver(GCardFingerHoverParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
             }
             Hit::FingerHoverOut(e) => {
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOut(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerHoverOut(GCardFingerHoverParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
                 if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.off));
                 }
             }
             Hit::FingerUp(e) => {
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerUp(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerUp(GCardFingerUpParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
             }
             _ => (),
         }
@@ -385,6 +443,7 @@ impl Widget for GCard {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         // begin the draw state
         if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
+            self.scope_path = scope.path.clone();
             if !self.visible {
                 // visible is false, so we are done
                 self.draw_state.end();
@@ -620,12 +679,26 @@ impl Widget for GCard {
         match event.hits(cx, self.area()) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyDown(e));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GCardEvent::KeyDown(GCardKeyEventParam {
+                            e,
+                            path: scope.path.clone(),
+                        }),
+                    );
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, GCardEvent::KeyUp(e));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GCardEvent::KeyUp(GCardKeyEventParam {
+                            e,
+                            path: scope.path.clone(),
+                        }),
+                    );
                 }
             }
             // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerScroll(e)),
@@ -633,27 +706,69 @@ impl Widget for GCard {
                 if self.grab_key_focus {
                     cx.set_key_focus(self.area());
                 }
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerDown(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerDown(GCardFingerDownParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
             }
-            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, GCardEvent::FingerMove(e)),
+            Hit::FingerMove(e) => cx.widget_action(
+                uid,
+                &scope.path,
+                GCardEvent::FingerMove(GCardFingerMoveParam {
+                    e,
+                    path: scope.path.clone(),
+                }),
+            ),
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverIn(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerHoverIn(GCardFingerHoverParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
                 if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.on));
                 }
             }
             Hit::FingerHoverOver(e) => {
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOver(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerHoverOver(GCardFingerHoverParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
             }
             Hit::FingerHoverOut(e) => {
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerHoverOut(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerHoverOut(GCardFingerHoverParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
                 if self.animator.live_ptr.is_some() && self.animation_open {
                     self.animator_play(cx, id!(hover.off));
                 }
             }
             Hit::FingerUp(e) => {
-                cx.widget_action(uid, &scope.path, GCardEvent::FingerUp(e));
+                cx.widget_action(
+                    uid,
+                    &scope.path,
+                    GCardEvent::FingerUp(GCardFingerUpParam {
+                        e,
+                        path: scope.path.clone(),
+                    }),
+                );
             }
             _ => (),
         }
@@ -740,14 +855,14 @@ impl WidgetNode for GCard {
 
 impl GCard {
     event_option! {
-        finger_down: GCardEvent::FingerDown => FingerDownEvent,
-        finger_up: GCardEvent::FingerUp => FingerUpEvent,
-        finger_move : GCardEvent::FingerMove => FingerMoveEvent,
-        finger_hover_in: GCardEvent::FingerHoverIn => FingerHoverEvent,
-        finger_hover_out: GCardEvent::FingerHoverOut => FingerHoverEvent,
-        finger_hover_over: GCardEvent::FingerHoverOver => FingerHoverEvent,
-        key_down: GCardEvent::KeyDown => KeyEvent,
-        key_up: GCardEvent::KeyUp => KeyEvent
+        finger_down: GCardEvent::FingerDown => GCardFingerDownParam,
+        finger_up: GCardEvent::FingerUp => GCardFingerUpParam,
+        finger_move : GCardEvent::FingerMove => GCardFingerMoveParam,
+        finger_hover_in: GCardEvent::FingerHoverIn => GCardFingerHoverParam,
+        finger_hover_out: GCardEvent::FingerHoverOut => GCardFingerHoverParam,
+        finger_hover_over: GCardEvent::FingerHoverOver => GCardFingerHoverParam,
+        key_down: GCardEvent::KeyDown => GCardKeyEventParam,
+        key_up: GCardEvent::KeyUp => GCardKeyEventParam
     }
     pub fn walk_from_previous_size(&self, walk: Walk) -> Walk {
         let view_size = self.view_size.unwrap_or(DVec2::default());
@@ -807,14 +922,14 @@ impl GCard {
 
 impl GCardRef {
     ref_event_option! {
-        finger_down => FingerDownEvent,
-        finger_up => FingerUpEvent,
-        finger_move => FingerMoveEvent,
-        finger_hover_in => FingerHoverEvent,
-        finger_hover_out => FingerHoverEvent,
-        finger_hover_over => FingerHoverEvent,
-        key_down => KeyEvent,
-        key_up => KeyEvent
+        finger_down => GCardFingerDownParam,
+        finger_up => GCardFingerUpParam,
+        finger_move => GCardFingerMoveParam,
+        finger_hover_in => GCardFingerHoverParam,
+        finger_hover_out => GCardFingerHoverParam,
+        finger_hover_over => GCardFingerHoverParam,
+        key_down => GCardKeyEventParam,
+        key_up => GCardKeyEventParam
     }
     animatie_fn! {
         animate_hover_on,
@@ -954,13 +1069,13 @@ impl GCardSet {
         }
     }
     set_event! {
-        finger_down => FingerDownEvent,
-        finger_up => FingerUpEvent,
-        finger_move => FingerMoveEvent,
-        finger_hover_in => FingerHoverEvent,
-        finger_hover_out => FingerHoverEvent,
-        finger_hover_over => FingerHoverEvent,
-        key_down => KeyEvent,
-        key_up => KeyEvent
+        finger_down => GCardFingerDownParam,
+        finger_up => GCardFingerUpParam,
+        finger_move => GCardFingerMoveParam,
+        finger_hover_in => GCardFingerHoverParam,
+        finger_hover_out => GCardFingerHoverParam,
+        finger_hover_over => GCardFingerHoverParam,
+        key_down => GCardKeyEventParam,
+        key_up => GCardKeyEventParam
     }
 }
