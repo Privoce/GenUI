@@ -3,7 +3,7 @@
 /// #[derive(Live, Widget)]
 /// pub struct SiginPage {
 ///     #[deref]
-///     pub super_widget: GCard,
+///     pub super_widget: GView,
 ///     #[rust]
 ///     pub lifetime: Lifetime,
 /// }

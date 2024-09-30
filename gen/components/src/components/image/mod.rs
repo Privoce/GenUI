@@ -7,7 +7,7 @@ use event::GImageEvent;
 use image_cache::{ImageCacheImpl, ImageFit};
 use makepad_widgets::*;
 
-use crate::{event_option, ref_event_option, set_event, shader::draw_card::DrawGCard, utils::set_cursor, widget_area};
+use crate::{event_option, ref_event_option, set_event, shader::draw_view::DrawGView, utils::set_cursor, widget_area};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -133,7 +133,7 @@ pub struct GImage {
     pub layout: Layout,
     #[redraw]
     #[live]
-    pub draw_image: DrawGCard,
+    pub draw_image: DrawGView,
     #[live]
     pub src: LiveDependency,
     #[rust(Texture::new(cx))]

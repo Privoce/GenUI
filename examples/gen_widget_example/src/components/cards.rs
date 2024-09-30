@@ -5,33 +5,33 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*; 
     import gen_components::components::*;
 
-    GCardExample = <ScrollYView>{
+    GViewExample = <ScrollYView>{
         height: 200.0,
         width: Fill,
         flow: Down,
         spacing: 10.0,
         <Label>{
-            text: "GCard",
+            text: "GView",
         }
         <GHLayout>{
             height:Fit,
             width: Fill,
             spacing: 10.0,
-            <GCard>{
+            <GView>{
                 height: 30.0,
                 width: 30.0,
             }
-            <GCard>{
+            <GView>{
                 theme: Dark,
                 height: 30.0,
                 width: 30.0,
             }
-            <GCard>{
+            <GView>{
                 theme: Error,
                 height: 30.0,
                 width: 30.0,
             }
-            <GCard>{
+            <GView>{
                 theme: Warning,
                 height: 30.0,
                 width: 30.0,
@@ -42,7 +42,7 @@ live_design! {
                 clip_y: false,
                 cursor: Hand
             }
-            <GCard>{
+            <GView>{
                 theme: Success,
                 height: 30.0,
                 width: 160.0,
@@ -52,7 +52,7 @@ live_design! {
                     text: "cursor: Help",
                 }
             }
-            <GCard>{
+            <GView>{
                 theme: Error,
                 height: Fit,
                 width: 180.0,
@@ -62,10 +62,10 @@ live_design! {
                 align: {x: 0.5, y: 0.5},
                 <GLabel>{
                     margin: 20.0,
-                    text: "Transparent GCard",
+                    text: "Transparent GView",
                 }
             }
-            <GCard>{
+            <GView>{
                 theme: Success,
                 height: 60.0,
                 width: 60.0,
@@ -80,23 +80,23 @@ live_design! {
             height:Fit,
             width: Fill,
             spacing: 10.0,
-            <GCard>{
+            <GView>{
                 height: Fit,
                 width: 300,
                 flow: Down,
                 background_color: #FFFFFF,
                 spacing: 10.0,
                 <GLabel>{
-                    text: "GCard flow Down",
+                    text: "GView flow Down",
                     color: #0,
                     margin: 10.0,
                 }
-                <GCard>{
+                <GView>{
                     theme: Error,
                     height: 30.0,
                     width: 30.0,
                 }
-                <GCard>{
+                <GView>{
                     theme: Warning,
                     height: 30.0,
                     width: 30.0,
@@ -106,7 +106,7 @@ live_design! {
                 }
             }
             
-            <GCard>{
+            <GView>{
                 height: 100.0,
                 width: 300,
                 flow: Down,
@@ -119,12 +119,12 @@ live_design! {
                     color: #0,
                     margin: 10.0,
                 }
-                <GCard>{
+                <GView>{
                     theme: Error,
                     height: 30.0,
                     width: 30.0,
                 }
-                <GCard>{
+                <GView>{
                     theme: Warning,
                     height: 30.0,
                     width: 30.0,

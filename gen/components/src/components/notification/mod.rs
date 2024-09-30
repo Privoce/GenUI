@@ -4,7 +4,7 @@ pub use register::register;
 
 use makepad_widgets::*;
 
-use super::card::GCard;
+use super::view::GView;
 
 live_design!{
     GNotificationBase = {{GNotification}} {}
@@ -14,7 +14,7 @@ live_design!{
 pub struct GNotification{
     #[deref]
     #[live]
-    pub card: GCard,
+    pub view: GView,
 }
 
 impl Widget for GNotification{

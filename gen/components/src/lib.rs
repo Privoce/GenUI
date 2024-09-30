@@ -9,7 +9,7 @@ pub fn live_design(cx: &mut Cx) {
     // components ---------------------------------------------
     crate::components::label::register(cx);
     crate::components::link::register(cx);
-    crate::components::card::register(cx);
+    crate::components::view::register(cx);
     crate::components::svg::register(cx);
     crate::components::icon::register(cx);
     crate::components::button::register(cx);
@@ -54,7 +54,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::icon_lib::tool::live_design(cx);
     crate::shader::icon_lib::ui::live_design(cx);
     crate::shader::draw_button::live_design(cx);
-    crate::shader::draw_card::live_design(cx);
+    crate::shader::draw_view::live_design(cx);
     crate::shader::draw_link::live_design(cx);
     crate::shader::draw_text::live_design(cx);
     crate::shader::draw_radio::live_design(cx);

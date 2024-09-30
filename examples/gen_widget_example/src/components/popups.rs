@@ -378,7 +378,7 @@ live_design! {
                         flow: Down,
                         spacing: 10.0,
                         padding: 10.0,
-                        <GCard>{
+                        <GView>{
                             height: Fill,
                             width: Fill,
                             spread_radius: 4.6,
@@ -471,7 +471,7 @@ live_design! {
                     }
                 }
             }
-            <GCard>{
+            <GView>{
                 width: Fill,
             }
             <GDropDown>{

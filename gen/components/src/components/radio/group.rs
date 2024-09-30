@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::GCard, event_option, ref_event_option, set_event};
+use crate::{components::view::GView, event_option, ref_event_option, set_event};
 
 use super::{
     event::{GRadioGroupEvent, GRadioGroupEventParam},
@@ -23,7 +23,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GRadioGroup {
     #[deref]
-    pub deref_widget: GCard,
+    pub deref_widget: GView,
     #[live(-1)]
     pub selected: i32,
 }

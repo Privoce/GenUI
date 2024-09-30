@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::draw_card::DrawGCard;
+use super::draw_view::DrawGView;
 
 live_design!{
     import makepad_draw::shader::std::*;
@@ -58,6 +58,6 @@ live_design!{
 #[derive(Live, LiveRegister, LiveHook)]
 #[repr(C)]
 pub struct DrawTabPane{
-    #[deref] pub draw_super: DrawGCard,
+    #[deref] pub draw_super: DrawGView,
    
 }

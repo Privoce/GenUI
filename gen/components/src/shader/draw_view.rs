@@ -2,7 +2,7 @@ use makepad_widgets::*;
 
 live_design!{
     import makepad_draw::shader::std::*;
-    DrawGCard = {{DrawGCard}}{
+    DrawGView = {{DrawGView}}{
         instance hover: 0.0,
         instance pressed: 0.0,
                             
@@ -82,7 +82,7 @@ live_design!{
 
 #[derive(Live, LiveRegister, LiveHook)]
 #[repr(C)]
-pub struct DrawGCard{
+pub struct DrawGView{
     #[deref] pub draw_super: DrawQuad,
     #[live] pub background_color: Vec4,
     #[live] pub border_color: Vec4,

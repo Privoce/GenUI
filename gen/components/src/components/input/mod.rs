@@ -8,7 +8,7 @@ use types::{Edit, EditKind, History};
 use unicode_segmentation::{GraphemeCursor, UnicodeSegmentation};
 
 use crate::{
-    animatie_fn, event_bool, event_option, ref_event_bool, ref_event_option, set_event, set_event_bool, shader::{draw_card::DrawGCard, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, BoolToF32, ThemeColor}, widget_area
+    animatie_fn, event_bool, event_option, ref_event_bool, ref_event_option, set_event, set_event_bool, shader::{draw_view::DrawGView, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -201,13 +201,13 @@ pub struct GInput {
     animator: Animator,
     #[redraw]
     #[live]
-    draw_input: DrawGCard,
+    draw_input: DrawGView,
     #[live]
     draw_text: DrawGText,
     #[live]
-    draw_selection: DrawGCard,
+    draw_selection: DrawGView,
     #[live]
-    draw_cursor: DrawGCard,
+    draw_cursor: DrawGView,
     #[layout]
     layout: Layout,
     #[walk]

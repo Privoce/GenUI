@@ -4,41 +4,41 @@ use makepad_widgets::{
 };
 
 #[derive(Clone, Debug, DefaultNone)]
-pub enum GCardEvent {
-    KeyDown(GCardKeyEventParam),
-    KeyUp(GCardKeyEventParam),
-    FingerDown(GCardFingerDownParam),
-    FingerMove(GCardFingerMoveParam),
-    FingerHoverIn(GCardFingerHoverParam),
-    FingerHoverOver(GCardFingerHoverParam),
-    FingerHoverOut(GCardFingerHoverParam),
-    FingerUp(GCardFingerUpParam),
+pub enum GViewEvent {
+    KeyDown(GViewKeyEventParam),
+    KeyUp(GViewKeyEventParam),
+    FingerDown(GViewFingerDownParam),
+    FingerMove(GViewFingerMoveParam),
+    FingerHoverIn(GViewFingerHoverParam),
+    FingerHoverOver(GViewFingerHoverParam),
+    FingerHoverOut(GViewFingerHoverParam),
+    FingerUp(GViewFingerUpParam),
     None,
 }
 
 #[derive(Debug, Clone)]
-pub struct GCardKeyEventParam {
+pub struct GViewKeyEventParam {
     pub e: KeyEvent,
     pub path: HeapLiveIdPath,
 }
 
 #[derive(Debug, Clone)]
-pub struct GCardFingerDownParam {
+pub struct GViewFingerDownParam {
     pub e: FingerDownEvent,
     pub path: HeapLiveIdPath,
 }
 #[derive(Debug, Clone)]
-pub struct GCardFingerMoveParam {
+pub struct GViewFingerMoveParam {
     pub e: FingerMoveEvent,
     pub path: HeapLiveIdPath,
 }
 #[derive(Debug, Clone)]
-pub struct GCardFingerHoverParam {
+pub struct GViewFingerHoverParam {
     pub e: FingerHoverEvent,
     pub path: HeapLiveIdPath,
 }
 #[derive(Debug, Clone)]
-pub struct GCardFingerUpParam {
+pub struct GViewFingerUpParam {
     pub e: FingerUpEvent,
     pub path: HeapLiveIdPath,
 }

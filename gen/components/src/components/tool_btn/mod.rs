@@ -11,7 +11,7 @@ use types::{GOsType, GToolButtonType};
 use crate::{
     animatie_fn, event_option, ref_event_option, set_event,
     shader::{
-        draw_card::DrawGCard,
+        draw_view::DrawGView,
         icon_lib::{base::DrawGIconBase, types::base::Base},
     },
     utils::{set_cursor, ThemeColor},
@@ -87,7 +87,7 @@ pub struct GToolButton {
     pub stroke_pressed_color: Option<Vec4>,
     #[redraw]
     #[live]
-    pub draw_tool_btn: DrawGCard,
+    pub draw_tool_btn: DrawGView,
     #[redraw]
     #[live]
     pub draw_icon: DrawGIconBase,

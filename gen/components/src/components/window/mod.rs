@@ -8,7 +8,7 @@ use nav_control::NavControl;
 pub use register::register;
 
 use super::{
-    card::{GCard, GCardWidgetExt},
+    view::{GView, GViewWidgetExt},
     image::GImageWidgetExt,
     label::GLabelWidgetExt,
     tool_btn::{types::GOsType, GToolButtonWidgetExt},
@@ -67,7 +67,7 @@ pub struct GWindow {
     #[live]
     pub pass: Pass,
     #[deref]
-    pub deref_widget: GCard,
+    pub deref_widget: GView,
     #[live]
     pub show_title: Option<bool>,
     #[live]
@@ -331,7 +331,7 @@ impl GWindow {
 
         match self.current_os {
             OsType::Windows => {
-                self.gcard(id!(window_bar.win_btns_wrap)).borrow().map(|x| {
+                self.gview(id!(window_bar.win_btns_wrap)).borrow().map(|x| {
                     if let Size::Fixed(s) = x.walk.width {
                         self.btns_width = s;
                     } else {
@@ -340,7 +340,7 @@ impl GWindow {
                 });
             }
             OsType::Macos => {
-                self.gcard(id!(window_bar.mac_btns_wrap)).borrow().map(|x| {
+                self.gview(id!(window_bar.mac_btns_wrap)).borrow().map(|x| {
                     if let Size::Fixed(s) = x.walk.width {
                         self.btns_width = s;
                     } else {
@@ -353,7 +353,7 @@ impl GWindow {
                 });
             }
             OsType::LinuxDirect | OsType::LinuxWindow(_) => {
-                self.gcard(id!(window_bar.linux_btns_wrap))
+                self.gview(id!(window_bar.linux_btns_wrap))
                     .borrow()
                     .map(|x| {
                         if let Size::Fixed(s) = x.walk.width {
@@ -392,7 +392,7 @@ impl GWindow {
         self.pre_btns_width = self.btns_width;
     }
     pub fn show_btns(&mut self, id: &[LiveId], show: bool) {
-        self.gcard(id).borrow_mut().map(|mut x| {
+        self.gview(id).borrow_mut().map(|mut x| {
             x.visible = show;
         });
     }
@@ -437,15 +437,15 @@ impl GWindow {
         self.main_draw_list.end(cx);
         cx.end_pass(&self.pass);
         let _ = self.get_btns_width(cx);
-        self.gcard(id!(window_bar.window_title))
+        self.gview(id!(window_bar.window_title))
             .borrow_mut()
-            .map(|mut card| {
+            .map(|mut view| {
                 if self.redraw_flag {
-                    card.layout.align = Align {
+                    view.layout.align = Align {
                         x: self.offset,
-                        y: card.layout.align.y,
+                        y: view.layout.align.y,
                     };
-                    card.redraw(cx);
+                    view.redraw(cx);
                 }
             });
     }

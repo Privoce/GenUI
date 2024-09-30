@@ -13,7 +13,7 @@ pub use register::register;
 use virt::GVTableBody;
 
 use crate::{
-    shader::{draw_card::DrawGCard, manual::ComponentMode},
+    shader::{draw_view::DrawGView, manual::ComponentMode},
     themes::Themes,
     utils::{BoolToF32, ThemeColor},
     widget_area,
@@ -57,7 +57,7 @@ pub struct GTable {
     pub shadow_offset: Vec2,
     #[redraw]
     #[live]
-    pub draw_table: DrawGCard,
+    pub draw_table: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]

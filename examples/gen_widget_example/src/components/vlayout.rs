@@ -23,12 +23,12 @@ live_design! {
                 color: #0,
                 margin: 10.0,
             }
-            <GCard>{
+            <GView>{
                 theme: Error,
                 height: 30.0,
                 width: 30.0,
             }
-            <GCard>{
+            <GView>{
                 theme: Warning,
                 height: 30.0,
                 width: 30.0,

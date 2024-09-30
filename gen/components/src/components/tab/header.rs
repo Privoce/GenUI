@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawGCard,
+    shader::draw_view::DrawGView,
     themes::{hex_to_vec4, Themes},
 };
 
@@ -49,7 +49,7 @@ pub struct GTabHeader {
     draw_drag: DrawColor,
     #[redraw]
     #[live]
-    draw_header: DrawGCard,
+    draw_header: DrawGView,
     #[live]
     pub selected: usize,
     #[live]

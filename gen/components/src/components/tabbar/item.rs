@@ -1,7 +1,7 @@
 use super::event::*;
 use crate::{
     components::{label::GLabel, svg::GSvg},
-    shader::{draw_card::DrawGCard, draw_svg::DrawGSvg, draw_text::DrawGText},
+    shader::{draw_view::DrawGView, draw_svg::DrawGSvg, draw_text::DrawGText},
     themes::Themes,
     utils::{get_font_family, set_cursor, BoolToF32, ThemeColor},
     widget_area,
@@ -129,7 +129,7 @@ pub struct GTabbarItem {
     pub icon: LiveDependency,
     #[redraw]
     #[live]
-    pub draw_item: DrawGCard,
+    pub draw_item: DrawGView,
     #[redraw]
     #[live]
     #[find]

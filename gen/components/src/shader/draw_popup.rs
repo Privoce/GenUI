@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{draw_card::DrawGCard, manual::Position};
+use super::{draw_view::DrawGView, manual::Position};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -12,7 +12,7 @@ live_design! {
 #[repr(C)]
 pub struct DrawGPopup {
     #[deref]
-    pub deref_draw: DrawGCard,
+    pub deref_draw: DrawGView,
     #[live]
     pub position: Position,
     #[live(0.6)]

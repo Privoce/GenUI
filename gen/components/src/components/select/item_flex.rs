@@ -1,9 +1,9 @@
 use makepad_widgets::*;
 
 use crate::{
-    components::{card::GCard, image::GImage, label::GLabel},
+    components::{view::GView, image::GImage, label::GLabel},
     shader::{
-        draw_card::DrawGCard,
+        draw_view::DrawGView,
         icon_lib::{base::DrawGIconBase, types::base::Base},
     },
     themes::{hex_to_vec4, Themes},
@@ -116,7 +116,7 @@ pub struct GSelectItem {
     pub right_visible: bool,
     #[redraw]
     #[live]
-    pub draw_item: DrawGCard,
+    pub draw_item: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -124,14 +124,14 @@ pub struct GSelectItem {
     #[live]
     #[redraw]
     #[find]
-    pub left: GCard,
+    pub left: GView,
     #[live]
     #[redraw]
     #[find]
-    pub center: GCard,
+    pub center: GView,
     #[live]
     #[redraw]
-    pub right: GCard,
+    pub right: GView,
     #[live]
     #[redraw]
     pub draw_select: DrawGIconBase,

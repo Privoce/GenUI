@@ -10,7 +10,7 @@ use makepad_widgets::*;
 
 use crate::{
     animatie_fn, event_option, ref_event_option, set_event,
-    shader::{draw_card::DrawGCard, manual::Position4},
+    shader::{draw_view::DrawGView, manual::Position4},
     utils::{set_cursor, BoolToF32},
     widget_area,
 };
@@ -55,7 +55,7 @@ pub struct GCollapse {
     pub body: WidgetRef,
     #[redraw]
     #[live]
-    pub draw_collapse: DrawGCard,
+    pub draw_collapse: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]

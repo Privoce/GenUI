@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::components::card::GCard;
+use crate::components::view::GView;
 
 live_design! {
     GTabBodyBase = {{GTabBody}}{
@@ -18,7 +18,7 @@ pub struct GTabBody {
     pub text: ArcStringMut,
     #[live]
     #[deref]
-    pub deref_widget: GCard,
+    pub deref_widget: GView,
 }
 
 impl Widget for GTabBody {

@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawGCard;
+use crate::shader::draw_view::DrawGView;
 
 use super::row::GTableRowRef;
 
@@ -18,7 +18,7 @@ pub struct GVTableBody {
     pub visible: bool,
     #[redraw]
     #[live]
-    pub draw_table_body: DrawGCard,
+    pub draw_table_body: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]

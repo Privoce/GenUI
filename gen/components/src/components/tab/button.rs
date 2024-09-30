@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::{draw_card::DrawGCard, draw_icon_pixel::DrawGIconPixel, draw_tab::DrawTabBtn},
+    shader::{draw_view::DrawGView, draw_icon_pixel::DrawGIconPixel, draw_tab::DrawTabBtn},
     themes::{get_color, hex_to_vec4, Themes},
     utils::{get_font_family, set_cursor, AbsExt, DefaultTextStyle},
 };
@@ -94,7 +94,7 @@ pub struct GTabButton {
     #[live]
     pub draw_msg_count: DrawText,
     #[live]
-    pub draw_msg_wrap: DrawGCard,
+    pub draw_msg_wrap: DrawGView,
     #[live]
     pub draw_close: DrawGIconPixel,
     #[redraw]

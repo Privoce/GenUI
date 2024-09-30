@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::DrawState, shader::draw_card::DrawGCard};
+use crate::{components::view::DrawState, shader::draw_view::DrawGView};
 
 use super::cell::{GTableCellRef, GTableCellWidgetRefExt};
 
@@ -15,7 +15,7 @@ pub struct GTableRow {
     pub draw_order: Vec<LiveId>,
     #[redraw]
     #[live]
-    pub draw_table_row: DrawGCard,
+    pub draw_table_row: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -41,7 +41,7 @@ impl Widget for GTableRow {
             }
             self.defer_walks.clear();
 
-            // begin draw the card
+            // begin draw the view
             let _ = self.draw_table_row.begin(cx, walk, self.layout);
         }
 

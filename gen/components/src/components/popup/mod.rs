@@ -12,7 +12,7 @@ use crate::{
     utils::{BoolToF32, ThemeColor},
 };
 
-use super::card::GCard;
+use super::view::GView;
 
 live_design! {
     GPopupContainerBase = {{GPopupContainer}} {
@@ -25,7 +25,7 @@ live_design! {
 pub struct GPopupContainer {
     #[live]
     #[deref]
-    pub deref_widget: GCard,
+    pub deref_widget: GView,
 }
 
 impl LiveHook for GPopupContainer {
@@ -50,7 +50,7 @@ impl LiveHook for GPopupContainer {
         let shadow_offset = self.shadow_offset;
         let spread_radius = self.spread_radius;
         let blur_radius = self.blur_radius;
-        self.draw_card.apply_over(
+        self.draw_view.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
@@ -66,7 +66,7 @@ impl LiveHook for GPopupContainer {
                 blur_radius: (blur_radius)
             },
         );
-        self.draw_card.redraw(cx);
+        self.draw_view.redraw(cx);
     }
 }
 
@@ -133,7 +133,7 @@ pub struct GPopup {
     #[live]
     pub draw_popup: DrawGPopup,
     #[live]
-    pub virtual_box: GCard,
+    pub virtual_box: GView,
     #[walk]
     pub walk: Walk,
     #[layout]

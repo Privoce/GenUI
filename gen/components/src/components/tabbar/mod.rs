@@ -7,7 +7,7 @@ pub use register::register;
 
 use makepad_widgets::*;
 
-use crate::shader::draw_card::DrawGCard;
+use crate::shader::draw_view::DrawGView;
 
 live_design!{
     GTabbarBase = {{GTabbar}}{
@@ -19,7 +19,7 @@ live_design!{
 pub struct GTabbar{
     #[redraw]
     #[live]
-    pub draw_tabbar: DrawGCard,
+    pub draw_tabbar: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]

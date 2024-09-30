@@ -12,7 +12,7 @@
 - [x] Label 🆗
 - [x] Link 🆗
 - [x] Button 🆗
-- [x] Card 🆗
+- [x] View 🆗
   - [x] VLayout 🆗
   - [x] HLayout 🆗
 - [x] Radio 🆗
@@ -69,6 +69,7 @@
 - [ ] Audio
 - [ ] Video
 - [ ] Virtual Select(提供抽象与扩展能力，自定义模型)
+- [ ] Animation Optimize
 
 ## Experimental function (v0.1.0 ~ v0.5.0)
 
@@ -76,7 +77,7 @@
 - [x] Link to Web src (点击link跳转网页) (See Link)
 - [ ] Text UnderLine (通过文字下划线实现文字下划线, 划除, 上划线效果)
 - [ ] Powerful Input (更强大的输入框, 支持多种输入模式, 清除, 数据检验等功能)
-- [ ] Expandable Card (可拖动拉伸)
+- [ ] Expandable View (可拖动拉伸)
 - [ ] Audio Api
 - [ ] Video Api
 - [ ] Theme Config (通过toml配置的方式设置主题色等默认样式)
@@ -96,7 +97,7 @@
 - [x] animatie_fn!
 
 ## Example Project
-- [ ] AWS Personal Cloud Drive GUI (亚马逊个人云盘GUI界面, 仅实现上传，查看，验证功能)
+- [x] AWS Personal Cloud Drive GUI (亚马逊个人云盘GUI界面, 仅实现上传，查看，验证功能)
 - [ ] GenUI Builtin Component Lib (GenUI内置组件库学习页面)
 - [ ] Fake Phone (仿手机系统)
 

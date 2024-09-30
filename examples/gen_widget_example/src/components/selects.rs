@@ -1,5 +1,5 @@
 use gen_components::components::{
-    card::GCard,
+    view::GView,
     select::{event::GSelectEvent, GSelectWidgetExt},
 };
 use makepad_widgets::*;
@@ -25,7 +25,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GSelectExample {
     #[deref]
-    pub view: GCard,
+    pub view: GView,
 }
 
 impl LiveHook for GSelectExample {

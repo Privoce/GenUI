@@ -2,10 +2,10 @@ use makepad_widgets::*;
 
 use crate::{
     components::{
-        card::DrawState,
+        view::DrawState,
         table::row::{GTableRowRef, GTableRowWidgetRefExt},
     },
-    shader::draw_card::DrawGCard,
+    shader::draw_view::DrawGView,
     utils::{BoolToF32, ThemeColor}, widget_area,
 };
 
@@ -43,7 +43,7 @@ pub struct GTableHeader {
     pub shadow_offset: Vec2,
     #[redraw]
     #[live]
-    pub draw_table_header: DrawGCard,
+    pub draw_table_header: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -69,7 +69,7 @@ impl Widget for GTableHeader {
             }
             self.defer_walks.clear();
 
-            // begin draw the card
+            // begin draw the view
             let _ = self.draw_table_header.begin(cx, walk, self.layout);
         }
 

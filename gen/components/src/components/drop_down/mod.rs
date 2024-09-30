@@ -9,7 +9,7 @@ use std::rc::Rc;
 use crate::shader::manual::{PopupMode, Position, TriggerMode};
 use icon_atlas::RefCell;
 
-use super::{card::GCard, popup::GPopup};
+use super::{view::GView, popup::GPopup};
 
 live_design! {
     GDropDownBase = {{GDropDown}} {}
@@ -21,7 +21,7 @@ pub struct GDropDown {
     pub mode: PopupMode,
     #[deref]
     #[live]
-    pub card: GCard,
+    pub view: GView,
     #[live]
     pub popup: Option<LivePtr>,
     #[live]
@@ -60,7 +60,7 @@ impl LiveHook for GDropDown {
         if !self.visible {
             return;
         }
-        self.card.after_apply(cx, apply, index, nodes);
+        self.view.after_apply(cx, apply, index, nodes);
         if self.popup.is_none() || !apply.from.is_from_doc() {
             return;
         }
@@ -74,7 +74,7 @@ impl LiveHook for GDropDown {
 
 impl GDropDown {
     fn area(&self) -> Area {
-        self.card.area
+        self.view.area
     }
     pub fn open(&mut self, cx: &mut Cx) {
         self.opened = true;
@@ -103,7 +103,7 @@ impl Widget for GDropDown {
             return DrawStep::done();
         }
 
-        let _ = self.card.draw_walk(cx, scope, walk);
+        let _ = self.view.draw_walk(cx, scope, walk);
 
         cx.add_nav_stop(self.area(), NavRole::DropDown, Margin::default());
 
@@ -222,7 +222,7 @@ impl Widget for GDropDown {
             Hit::KeyFocusLost(_) => {
                 self.close(cx);
                 self.animator_play(cx, id!(hover.off));
-                self.draw_card.redraw(cx);
+                self.draw_view.redraw(cx);
             }
             Hit::FingerDown(_) => {
                 cx.set_key_focus(self.area());

@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawGCard,
+    shader::draw_view::DrawGView,
     themes::Themes,
     utils::{BoolToF32, ThemeColor},
 };
@@ -41,7 +41,7 @@ pub struct GSelectOptions {
     #[live(2.0)]
     pub border_radius: f32,
     #[live]
-    pub draw_options: DrawGCard,
+    pub draw_options: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]

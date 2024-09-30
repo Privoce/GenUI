@@ -9,7 +9,7 @@ use crate::shader::draw_svg::DrawGSvg;
 use crate::shader::draw_text::DrawGText;
 use crate::utils::{get_font_family, set_cursor, BoolToF32, ThemeColor};
 use crate::{animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, widget_area};
-use crate::{shader::draw_card::DrawGCard, themes::Themes};
+use crate::{shader::draw_view::DrawGView, themes::Themes};
 use makepad_widgets::*;
 
 live_design! {
@@ -151,7 +151,7 @@ pub struct GTag {
     // deref -----------------
     #[redraw]
     #[live]
-    draw_tag: DrawGCard,
+    draw_tag: DrawGView,
     #[walk]
     walk: Walk,
     #[layout]

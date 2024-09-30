@@ -23,8 +23,8 @@ live_design!{
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
             // let progress_height = self.rect_size.y - 2.0 * self.border_width;
             // let progress_width = self.rect_size.x - 2.0 * self.border_width;
-            let progress_height = self.rect_size.y - self.border_width;
-            let progress_width = self.rect_size.x;
+            let progress_height = self.rect_size.y - self.border_width * 2.0;
+            let progress_width = self.rect_size.x - self.border_width * 2.0;
             let progress_bg = self.get_background_color();
             let progress_in_bg = self.get_stroke_color();
             sdf.box(self.pos.x, self.pos.y, progress_width, progress_height, self.border_radius);
@@ -34,24 +34,24 @@ live_design!{
             sdf.stroke(self.border_color, self.border_width);
             match self.progress_type {
                 GProgressType::Horizontal => {
-                    let box_radius = self.border_radius - self.border_width * 0.5;
+                    let box_radius = self.border_radius - self.border_width * 0.25;
                     sdf.box(
                             self.pos.x,
                             self.pos.y,
-                            self.position * self.rect_size.x,
+                            self.position * self.rect_size.x - self.border_width * 2.0,
                             progress_height,
                             box_radius
                     )
                     sdf.fill(progress_in_bg);
                 }
                 GProgressType::Vertical => {
-                    let box_radius = self.border_radius - self.border_width * 0.5;
+                    let box_radius = self.border_radius - self.border_width * 0.25;
                     // pos should be end of progress
                     sdf.box(
                         self.pos.x,
-                        self.rect_size.y - self.rect_size.y * self.position,
-                        self.rect_size.x,
-                        self.rect_size.y * self.position,
+                        self.rect_size.y - self.rect_size.y * self.position ,
+                        self.rect_size.x - self.border_width * 2.0,
+                        self.rect_size.y * self.position - self.border_width * 1.0,
                         box_radius
                     )
                     sdf.fill(progress_in_bg);

@@ -27,7 +27,7 @@ live_design! {
                 theme: Dark,
                 height: 40.0;
                 width: Fill;
-                <GCard>{
+                <GView>{
                     height: Fit,
                     width: Fit,
                     background_color: #888888,
@@ -54,7 +54,7 @@ live_design! {
             //         x: 0.5,
             //         y: 0.5,
             //     },
-            //     <GCard>{
+            //     <GView>{
             //         height: 4.0,
             //         width: 60.0,
             //         border_radius: 0.0,
@@ -62,7 +62,7 @@ live_design! {
             //     <GLabel>{
             //         text: "Hello",
             //     }
-            //     <GCard>{
+            //     <GView>{
             //         height: 4.0,
             //         width: 60.0,
             //         border_radius: 0.0,

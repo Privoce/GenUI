@@ -2,10 +2,10 @@ use makepad_widgets::*;
 
 use crate::{
     components::{
-        card::DrawState,
+        view::DrawState,
         table::row::{GTableRowRef, GTableRowWidgetRefExt},
     },
-    shader::draw_card::DrawGCard,
+    shader::draw_view::DrawGView,
 };
 
 live_design! {
@@ -25,7 +25,7 @@ pub struct GTableBody {
     pub visible: bool,
     #[redraw]
     #[live]
-    pub draw_table_body: DrawGCard,
+    pub draw_table_body: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -51,7 +51,7 @@ impl Widget for GTableBody {
             }
             self.defer_walks.clear();
 
-            // begin draw the card
+            // begin draw the view
             let _ = self.draw_table_body.begin(cx, walk, self.layout);
         }
         // loop handle the inner children

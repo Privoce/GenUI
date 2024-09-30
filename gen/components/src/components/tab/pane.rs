@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::DrawState, shader::draw_tab_pane::DrawTabPane};
+use crate::{components::view::DrawState, shader::draw_tab_pane::DrawTabPane};
 
 use super::body::{GTabBodyRef, GTabBodyWidgetRefExt};
 

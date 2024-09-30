@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use crate::{components::card::GCard, widget_area};
+use crate::{components::view::GView, widget_area};
 
 live_design! {
     GTableCellBase = {{GTableCell}}{
@@ -18,7 +18,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GTableCell {
     #[deref]
-    pub deref_widget: GCard,
+    pub deref_widget: GView,
 }
 
 impl LiveHook for GTableCell {}
@@ -34,7 +34,7 @@ impl Widget for GTableCell {
 
 impl GTableCell {
     widget_area! {
-        area, draw_card
+        area, draw_view
     }
     pub fn redraw(&mut self, cx: &mut Cx) {
         self.deref_widget.redraw(cx);

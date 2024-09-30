@@ -2,7 +2,7 @@ use makepad_widgets::*;
 
 pub mod breadcrumb;
 pub mod button;
-pub mod card;
+pub mod view;
 pub mod checkbox;
 pub mod collapse;
 pub mod divider;
@@ -34,7 +34,7 @@ live_design! {
     // imports -----------------------------------------------------
     import crate::components::label::GLabelBase;
     import crate::components::button::GButtonBase;
-    import crate::components::card::GCardBase;
+    import crate::components::view::GViewBase;
     import crate::components::link::GLinkBase;
     import crate::components::icon::GIconBase;
     import crate::components::radio::GRadioBase;
@@ -182,8 +182,8 @@ live_design! {
     }
     // ## GButton
     // A button component which only has a text
-    // if you wanna add some other components like icon, you can create a new component use CardBase
-    // CardBase can help you create a wonderful button quickly and easily
+    // if you wanna add some other components like icon, you can create a new component use ViewBase
+    // ViewBase can help you create a wonderful button quickly and easily
     GButton = <GButtonBase>{
         height: Fit,
         width: Fit,
@@ -194,17 +194,17 @@ live_design! {
             text: "GButton"
         }
     }
-    // ## GCard
-    // A card component that you can use to wrap other components
-    // card has default styles for border, background color, ...
-    GCard = <GCardBase>{
+    // ## GView
+    // A view component that you can use to wrap other components
+    // view has default styles for border, background color, ...
+    GView = <GViewBase>{
         width: 300.0,
         height: 200.0,
     }
     // ## GHLayout
-    // A horizontal layout component use CardBase
+    // A horizontal layout component use ViewBase
     // layout don't have border, background color, border-radius, ... (but you can add if you want)
-    GHLayout = <GCardBase>{
+    GHLayout = <GViewBase>{
         height: Fill,
         width: Fill,
         flow: Right,
@@ -216,8 +216,8 @@ live_design! {
         margin: 0,
     }
     // ## GVLayout
-    // A vertical layout component use CardBase
-    GVLayout = <GCardBase>{
+    // A vertical layout component use ViewBase
+    GVLayout = <GViewBase>{
         height: Fill,
         width: Fill,
         flow: Down,
@@ -315,7 +315,7 @@ live_design! {
     }
     // ## GScrollBars
     // A scroll bars component use ScrollBarsBase, it has two scroll bars (x, y)
-    // It often use in a Card
+    // It often use in a View
     GScrollBars = <ScrollBarsBase> {
         show_scroll_x: true,
         show_scroll_y: true,
@@ -818,7 +818,7 @@ live_design! {
         width: Fill,
         flow: Down,
         opened: false,
-        header: <GCard>{
+        header: <GView>{
             height: 24.0,
             padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
             flow: Right,
@@ -827,7 +827,7 @@ live_design! {
             margin: 0.0,
             border_radius: 0.0,
         },
-        body: <GCard>{
+        body: <GView>{
             height: 80.0,
             width: Fill,
             padding: {left: 6.0, right: 6.0, top: 3.0, bottom: 3.0},
@@ -943,7 +943,7 @@ live_design! {
     //         align: {x: 0.5, y: 0.5},
     //         height: Fill,
     //         width: Fit,
-    //         left_slot = <GCard>{
+    //         left_slot = <GView>{
     //             height: 10.0,
     //             width: 10.0,
     //             border_radius: 2.5,

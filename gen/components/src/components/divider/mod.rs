@@ -101,7 +101,7 @@ impl Widget for GDivider {
             }
             self.defer_walks.clear();
 
-            // begin draw the card
+            // begin draw the view
             let _ = self.draw_divider.begin(cx, walk, self.layout);
         }
 

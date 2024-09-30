@@ -17,7 +17,7 @@ live_design! {
             height: Fit,
             width: Fill,
             spacing: 20.0,
-            <GCard>{
+            <GView>{
                 height: 32.0,
                 width: 200.0,
                 background_visible: false,
@@ -27,7 +27,7 @@ live_design! {
                     text: "esdsadasdsa"
                 }
             }
-            <GCard>{
+            <GView>{
                 height: 36.0,
                 width: 200.0,
                 background_visible: false,

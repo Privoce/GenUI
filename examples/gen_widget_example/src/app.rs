@@ -146,31 +146,31 @@ live_design! {
                     
                     // <GToolButtonExample>{}
                     // <Note>{}
-                    // <GTabsExample>{}
-                    // <GTableExample>{}
-                    // <GPopupExample>{}
+                    <GTabsExample>{}
+                    <GTableExample>{}
+                    <GPopupExample>{}
                     <GInputExample>{}
-                    // <GShaderExample>{}
-                    // <GCollapseExample>{}
-                    // <GProgressExample>{}
-                    // <GDividerExample>{}
-                    // <GCard>{
-                    //     width: 200.0,
-                    //     height: 200.0,
-                    //     <GSplitter>{
-                    //     }
-                    // }
-                    // <GLoadingExample>{}
-                    // <GRadioExample>{}
-                    // <GCheckBoxExample>{}
-                    // <GToggleExample>{}
-                    // <GImageExample>{}
-                    // <GStatesExample>{}
-                    // <GCardExample>{}
-                    // <GHLayoutExample>{}
-                    // <GVLayoutExample>{}
-                    // <GTagExample>{}
-                    <GCard>{
+                    <GShaderExample>{}
+                    <GCollapseExample>{}
+                    <GProgressExample>{}
+                    <GDividerExample>{}
+                    <GView>{
+                        width: 200.0,
+                        height: 200.0,
+                        <GSplitter>{
+                        }
+                    }
+                    <GLoadingExample>{}
+                    <GRadioExample>{}
+                    <GCheckBoxExample>{}
+                    <GToggleExample>{}
+                    <GImageExample>{}
+                    <GStatesExample>{}
+                    <GViewExample>{}
+                    <GHLayoutExample>{}
+                    <GVLayoutExample>{}
+                    <GTagExample>{}
+                    <GView>{
                         theme: Dark,
                         height: 100.0,
                         width: 300.0,
@@ -186,12 +186,12 @@ live_design! {
                             text: "Upload!",
                         }
                     }
-                    // <GBreadCrumbExample>{}
+                    <GBreadCrumbExample>{}
                     <GLinkExample>{}
-                    // <GSvgExample>{}
-                    // <GIconLibExample>{}
-                    // <GButtonExample>{}
-                    // <GLabelExample>{}
+                    <GSvgExample>{}
+                    <GIconLibExample>{}
+                    <GButtonExample>{}
+                    <GLabelExample>{}
                     //
                     // --------------------------------
                     // pop = <GPopup>{

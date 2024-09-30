@@ -2,7 +2,7 @@ use makepad_widgets::*;
 
 use crate::{
     shader::{
-        draw_card::DrawGCard,
+        draw_view::DrawGView,
         draw_text::DrawGText,
         icon_lib::{base::DrawGIconBase, types::base::Base},
     },
@@ -95,7 +95,7 @@ pub struct GSelectItem {
     #[live(1.0)]
     pub stroke_width: f32,
     #[live]
-    pub draw_item: DrawGCard,
+    pub draw_item: DrawGView,
     #[live]
     pub draw_text: DrawGText,
     #[live]

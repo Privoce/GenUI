@@ -14,7 +14,7 @@ use makepad_widgets::*;
 use types::SelectOption;
 
 use crate::{
-    shader::{draw_card::DrawGCard, draw_text::DrawGText},
+    shader::{draw_view::DrawGView, draw_text::DrawGText},
     themes::Themes,
     utils::{get_font_family, set_cursor, BoolToF32, ThemeColor},
     widget_area,
@@ -113,7 +113,7 @@ pub struct GSelect {
     pub cursor: Option<MouseCursor>,
     #[redraw]
     #[live]
-    pub draw_select: DrawGCard,
+    pub draw_select: DrawGView,
     #[redraw]
     #[live]
     pub draw_text: DrawGText,

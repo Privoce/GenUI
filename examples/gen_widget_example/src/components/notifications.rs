@@ -1,4 +1,4 @@
-use gen_components::components::{card::GCard, drop_down::PopupMenuGlobal, popup::GPopup};
+use gen_components::components::{view::GView, drop_down::PopupMenuGlobal, popup::GPopup};
 use makepad_widgets::*;
 
 live_design! {
@@ -26,7 +26,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct Note {
     #[deref]
-    pub super_widget: GCard,
+    pub super_widget: GView,
     #[live]
     pop: Option<LivePtr>,
 }
@@ -43,8 +43,8 @@ impl LiveHook for Note {
 
 impl Widget for Note {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, _walk: Walk) -> DrawStep {
-        let area = self.draw_card.area();
-        cx.add_nav_stop(self.draw_card.area(), NavRole::DropDown, Margin::default());
+        let area = self.draw_view.area();
+        cx.add_nav_stop(self.draw_view.area(), NavRole::DropDown, Margin::default());
         let global = cx.global::<PopupMenuGlobal>().clone();
         let mut map = global.map.borrow_mut();
         let popup_menu = map.get_mut(&self.pop.unwrap()).unwrap();
@@ -52,7 +52,7 @@ impl Widget for Note {
         popup_menu.draw_container(cx, scope, None);
         popup_menu.end(cx, scope, area, DVec2::default());
         self.redraw(cx);
-        cx.sweep_lock(self.draw_card.area());
+        cx.sweep_lock(self.draw_view.area());
         DrawStep::done()
     }
 }

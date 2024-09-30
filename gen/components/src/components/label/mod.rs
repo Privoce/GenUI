@@ -73,7 +73,7 @@ live_design! {
 
 /// ## GLabel component
 /// A component that displays text.
-/// This component has no events. If you need add event on this component, you should wrap a card outside
+/// This component has no events. If you need add event on this component, you should wrap a view outside
 #[derive(Live, Widget)]
 pub struct GLabel {
     #[live]
