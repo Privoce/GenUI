@@ -33,6 +33,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::window::register(cx);
     crate::components::select::register(cx);
     crate::components::tabbar::register(cx);
+    crate::components::router::register(cx);
 
     crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);

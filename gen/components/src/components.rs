@@ -74,6 +74,8 @@ live_design! {
     import crate::components::select::options::GSelectOptionsBase;
     import crate::components::tabbar::GTabbarBase;
     import crate::components::tabbar::item::GTabbarItemBase;
+    import crate::components::router::GRouterBase;
+    import crate::components::router::page::GPageBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -1008,6 +1010,50 @@ live_design! {
             text: "Home",
             stroke_hover_color: #FF7043,
             stroke_pressed_color: #FF7043,
+        }
+    }
+    GRouter = <GRouterBase>{}
+    GPage = <GPageBase>{
+        flow: Down,
+        header = <GHLayout>{
+            height: 24.0,
+            padding: {
+                left: 4.0,
+                right: 4.0,
+            },
+            spacing: 8.0,
+            align: {
+                x: 0.5,
+                y: 0.5
+            },
+            back = <GIcon>{
+                theme: Dark,
+                height: 18.0,
+                width: 18.0,
+                stroke_width: 1.4,
+                icon_type: Left,
+            }
+            title_wrap = <GHLayout>{
+                align: {
+                    x: 0.5,
+                    y: 0.5
+                },
+                title = <GLabel>{
+                    text: ""
+                }
+            }
+            tool_wrap = <GHLayout>{
+                width: 16.0,
+            }
+        }
+        body = <GView>{
+            border_radius: 0.0,
+            clip_x: true,
+            clip_y: true,
+            theme: Dark,
+            height: Fill,
+            width: Fill
+            padding: 4.0,
         }
     }
 }

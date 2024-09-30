@@ -56,8 +56,74 @@ live_design! {
                     height: All,
                     width: All,
                     flow: Down,
-                    padding: 16.0,
                     
+                    <GRouter>{
+                        app_page = <GView>{
+                            height: Fill,
+                            width: Fill,
+                            border_radius: 0.0,
+                            flow: Overlay,
+                            menu = <GView>{
+                                height: 36.0,
+                                width: Fill,
+                                <GButton>{
+                                    slot: {
+                                        text: "a"
+                                    }
+                                }
+                                <GButton>{
+                                    slot: {
+                                        text: "b"
+                                    }
+                                }
+                                <GButton>{
+                                    slot: {
+                                        text: "c"
+                                    }
+                                }
+                                <GButton>{
+                                    slot: {
+                                        text: "d"
+                                    }
+                                }
+                            }
+                            page1 = <GPage>{
+                                height: Fill,
+                                width: Fill,
+                                
+                                border_radius: 0.0,
+                                body = {
+                                    theme: Warning,
+                                    <GLabel>{
+                                        text: "APP PAGE1"
+                                    }
+                                }
+                            },
+                            page2 = <GView>{
+                                visible: false,
+                                height: Fill,
+                                width: Fill,
+                                theme: Error,
+                                border_radius: 0.0,
+                                <GLabel>{
+                                    text: "APP PAGE2"
+                                }
+                            },
+                            page3 = <GView>{
+                                visible: false,
+                                height: Fill,
+                                width: Fill,
+                                theme: Success,
+                                border_radius: 0.0,
+                                <GLabel>{
+                                    text: "APP PAGE3"
+                                }
+                            }
+                        }
+                        // register_pages: {
+
+                        // }
+                    }
                     // <GSvg>{
                     //     height: 16.0,
                     //     width: 16.0,
@@ -146,52 +212,52 @@ live_design! {
                     
                     // <GToolButtonExample>{}
                     // <Note>{}
-                    <GTabsExample>{}
-                    <GTableExample>{}
-                    <GPopupExample>{}
-                    <GInputExample>{}
-                    <GShaderExample>{}
-                    <GCollapseExample>{}
-                    <GProgressExample>{}
-                    <GDividerExample>{}
-                    <GView>{
-                        width: 200.0,
-                        height: 200.0,
-                        <GSplitter>{
-                        }
-                    }
-                    <GLoadingExample>{}
-                    <GRadioExample>{}
-                    <GCheckBoxExample>{}
-                    <GToggleExample>{}
-                    <GImageExample>{}
-                    <GStatesExample>{}
-                    <GViewExample>{}
-                    <GHLayoutExample>{}
-                    <GVLayoutExample>{}
-                    <GTagExample>{}
-                    <GView>{
-                        theme: Dark,
-                        height: 100.0,
-                        width: 300.0,
-                        flow: Down,
-                        align: {x: 0.5, y: 0.5},
-                        <GUpload>{
-                            height: 70.0,
-                            // filters: ["png"],
-                            mode: Folder
-                        }
-                        <GLabel>{
-                            height: Fit,
-                            text: "Upload!",
-                        }
-                    }
-                    <GBreadCrumbExample>{}
-                    <GLinkExample>{}
-                    <GSvgExample>{}
-                    <GIconLibExample>{}
-                    <GButtonExample>{}
-                    <GLabelExample>{}
+                    // <GTabsExample>{}
+                    // <GTableExample>{}
+                    // <GPopupExample>{}
+                    // <GInputExample>{}
+                    // <GShaderExample>{}
+                    // <GCollapseExample>{}
+                    // <GProgressExample>{}
+                    // <GDividerExample>{}
+                    // <GView>{
+                    //     width: 200.0,
+                    //     height: 200.0,
+                    //     <GSplitter>{
+                    //     }
+                    // }
+                    // <GLoadingExample>{}
+                    // <GRadioExample>{}
+                    // <GCheckBoxExample>{}
+                    // <GToggleExample>{}
+                    // <GImageExample>{}
+                    // <GStatesExample>{}
+                    // <GViewExample>{}
+                    // <GHLayoutExample>{}
+                    // <GVLayoutExample>{}
+                    // <GTagExample>{}
+                    // <GView>{
+                    //     theme: Dark,
+                    //     height: 100.0,
+                    //     width: 300.0,
+                    //     flow: Down,
+                    //     align: {x: 0.5, y: 0.5},
+                    //     <GUpload>{
+                    //         height: 70.0,
+                    //         // filters: ["png"],
+                    //         mode: Folder
+                    //     }
+                    //     <GLabel>{
+                    //         height: Fit,
+                    //         text: "Upload!",
+                    //     }
+                    // }
+                    // <GBreadCrumbExample>{}
+                    // <GLinkExample>{}
+                    // <GSvgExample>{}
+                    // <GIconLibExample>{}
+                    // <GButtonExample>{}
+                    // <GLabelExample>{}
                     //
                     // --------------------------------
                     // pop = <GPopup>{

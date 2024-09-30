@@ -1,33 +1,36 @@
 mod event;
+pub mod types;
+pub mod page;
+mod register;
 use makepad_widgets::*;
-
+pub use register::register;
 use super::view::GView;
 
 live_design! {
-    GRouter = {{GRouter}}{}
+    GRouterBase = {{GRouter}}{}
 }
 
 #[derive(Live, Widget)]
 pub struct GRouter {
     #[deref]
-    view: GView,
+    pub deref_widget: GView,
     #[rust]
     screen_width: f64,
-    #[rust]
-    active_stack_view: ActiveStackView,
-}
-
-#[derive(Default)]
-enum ActiveStackView {
-    #[default]
-    None,
-    Active(LiveId),
+    #[rust(id!(app_page)[0])]
+    active_router: LiveId,
+    // #[rust]
+    // register_routers: Option<Vec<LiveId>>
 }
 
 impl LiveHook for GRouter {}
 
 impl Widget for GRouter {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        self.widget(&[self.active_router]).draw_all(cx, scope);
         DrawStep::done()
     }
+}
+
+impl GRouter {
+    // pub fn
 }
