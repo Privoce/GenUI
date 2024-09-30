@@ -131,38 +131,39 @@ impl Widget for TPage {
         let router = self.grouter(id!(app_router));
 
         router.borrow_mut().map(|mut router| {
-            let _ = router.init(ids!(page1, page2, page3), Some(
-                ids!(nav_page1)
-            ));
+            let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1)));
         });
 
         if self.gbutton(id!(to_a)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                let page1_path = x.bar_scope_path(id!(page1));
-                x.nav_to(cx, &page1_path);
+                // let page1_path = x.bar_scope_path(id!(page1));
+                // x.nav_to(cx, &page1_path);
+                x.nav_to(cx, id!(page1));
             });
         }
         if self.gbutton(id!(to_b)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                let page2_path = x.bar_scope_path(id!(page2));
-                x.nav_to(cx, &page2_path);
+                // let page2_path = x.bar_scope_path(id!(page2));
+                // x.nav_to(cx, &page2_path);
+                x.nav_to(cx, id!(page2));
             });
         }
         if self.gbutton(id!(to_c)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                let page3_path = x.bar_scope_path(id!(page3));
-                x.nav_to(cx, &page3_path);
+                // let page3_path = x.bar_scope_path(id!(page3));
+                x.nav_to(cx, id!(page3));
             });
         }
         if self.gbutton(id!(to_d)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                let nav1 = x.nav_scope_path(id!(nav_page1));
-                x.nav_to(cx, &nav1);
+                // let nav1 = x.nav_scope_path(id!(nav_page1));
+                // x.nav_to(cx, &nav1);
+                x.nav_to(cx, id!(nav_page1));
             });
         }
         // if !actions.is_empty(){
         //     dbg!(&actions);
         // }
-        router.handle_event(cx, event, scope);
+        // router.handle_event(cx, event, scope);
     }
 }

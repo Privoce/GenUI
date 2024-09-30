@@ -955,7 +955,7 @@ impl GView {
                 blur_radius: (self.blur_radius)
             },
         );
-        self.draw_view.redraw(cx);
+        // self.draw_view.redraw(cx);
     }
 }
 

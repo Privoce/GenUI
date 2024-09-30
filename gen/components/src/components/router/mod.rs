@@ -8,7 +8,7 @@ use event::GRouterEvent;
 use makepad_widgets::*;
 use page::GPageWidgetRefExt;
 pub use register::register;
-use types::PageType;
+use types::{PageType, RouterStack, RouterStackItem};
 
 use super::view::{GView, GViewWidgetRefExt};
 
@@ -24,10 +24,8 @@ pub struct GRouter {
     screen_width: f64,
     #[rust(id!(bar_pages)[0])]
     pub active_router: LiveId,
-    // #[rust]
-    // register_routers: Option<Vec<LiveId>>
     #[rust]
-    pub pre_router: Option<Vec<LiveId>>,
+    pub stack: RouterStack,
     #[rust]
     bar_pages: Vec<HeapLiveIdPath>,
     #[rust]
@@ -40,8 +38,8 @@ impl LiveHook for GRouter {}
 
 impl Widget for GRouter {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        self.scope_path = scope.path.clone();
         match self.page_type {
-           
             PageType::Bar | PageType::Nav => self
                 .widget(&[self.active_router])
                 .draw_walk(cx, scope, walk),
@@ -53,22 +51,26 @@ impl Widget for GRouter {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         for action in actions {
             if let GRouterEvent::NavBack(current) = action.as_widget_action().cast() {
-                dbg!("do back");
-                self.pre_router.as_ref().map(|pre| {
-                    // show pre
-                    self.gview(pre.as_slice()).set_visible(true);
+                // get last item from stack
+                self.stack.pop().map(|last| {
+                    // if exist back to last and then push current (before do check)
+                    let ty = self.check_route_live_id(&current.last());
+
+                    self.nav_to_path(cx, &last.path);
+                    let mut path = self.scope_path.clone();
+                    // path.push(current.last());
+                    // self.stack.push(RouterStackItem { path, ty });
+                    // dbg!(&self.stack);
                 });
-                // scope.path.trim_matches(&current)
-                self.pre_router.replace(current.trim_matches(&scope.path));
+
                 break;
             }
-            if let GRouterEvent::NavTo(to_path) = action.as_widget_action().cast() {
-                dbg!("nav to");
-                let to_path = to_path.trim_matches(&scope.path);
-                self.gview(&to_path.as_slice())
-                    .set_visible_and_redraw(cx, true);
-                break;
-            }
+            // if let GRouterEvent::NavTo(to_path) = action.as_widget_action().cast() {
+            //     let to_path = to_path.trim_matches(&scope.path);
+            //     self.gview(&to_path.as_slice())
+            //         .set_visible_and_redraw(cx, true);
+            //     break;
+            // }
         }
     }
 }
@@ -76,14 +78,16 @@ impl Widget for GRouter {
 impl GRouter {
     pub fn set_visible(&mut self, cx: &mut Cx, target: &HeapLiveIdPath) {
         // first check route
-        let _ = self.check_route(target);
-        dbg!(self.page_type, &self.active_router);
+        self.page_type = self.check_route(target);
+        self.active_router = self.page_type.live_id();
+        // dbg!(self.page_type, self.active_router, target);
+
         self.gview(&[self.active_router])
-            .borrow_mut()
-            .map(|mut active_router| match self.page_type {
+            .borrow()
+            .map(|active_router| match self.page_type {
                 PageType::Bar => {
                     let mut bar_pages = active_router.children.iter().zip(self.bar_pages.iter());
-                    for ((id, child), path) in bar_pages {
+                    for ((_id, child), path) in bar_pages {
                         child.as_gview().borrow_mut().map(|mut child| {
                             if path.eq(target) {
                                 child.visible = true;
@@ -96,7 +100,7 @@ impl GRouter {
                 }
                 PageType::Nav => {
                     let mut nav_pages = active_router.children.iter().zip(self.nav_pages.iter());
-                    for ((id, child), path) in nav_pages {
+                    for ((_id, child), path) in nav_pages {
                         child.as_gpage().borrow_mut().map(|mut child| {
                             if path.eq(target) {
                                 child.visible = true;
@@ -110,22 +114,67 @@ impl GRouter {
                 PageType::None => {}
             });
     }
-    pub fn nav_to(&mut self, cx: &mut Cx, path: &HeapLiveIdPath) {
-        // let to_path = path.trim_matches(&self.scope_path);
-        self.set_visible(cx, path);
-        // dbg!(to_path);
+    fn get_visible(&self) -> Option<HeapLiveIdPath> {
+        // find the visible page
+        if let Some(active_router) = self.gview(&[self.active_router]).borrow() {
+            let mut res = None;
+            for (id, child) in active_router.children.iter() {
+                if child.is_visible() {
+                    let mut p = self.scope_path.clone();
+                    p.push(*id);
+                    res.replace(p);
+                    break;
+                }
+            }
+            res
+        } else {
+            None
+        }
     }
-    pub fn check_route(&mut self, path: &HeapLiveIdPath) {
-        if !self.bar_pages.iter().any(|x| x.contains(path)) {
-            if self.nav_pages.iter().any(|x| x.contains(path)) {
-                self.page_type = PageType::Nav;
-                self.active_router = id!(nav_pages)[0].clone();
+    pub fn nav_to(&mut self, cx: &mut Cx, path: &[LiveId]) {
+        let path = self.bar_scope_path(path);
+        self.get_visible().map(|path| {
+            // push stack
+            self.stack.push(RouterStackItem {
+                path,
+                ty: self.page_type,
+            });
+        });
+
+        self.set_visible(cx, &path);
+    }
+    fn nav_to_path(&mut self, cx: &mut Cx, path: &HeapLiveIdPath) {
+        self.get_visible().map(|path| {
+            // push stack
+            self.stack.push(RouterStackItem {
+                path,
+                ty: self.page_type,
+            });
+        });
+
+        self.set_visible(cx, path);
+    }
+    pub fn check_route(&mut self, path: &HeapLiveIdPath) -> PageType {
+        if !self.bar_pages.iter().any(|x| x.contains(path).unwrap()) {
+            if self.nav_pages.iter().any(|x| x.contains(path).unwrap()) {
+                PageType::Nav
             } else {
-                panic!("unregister page path!: {:?}", path)
+                panic!("unregister page path!: {:?}", path);
             }
         } else {
-            self.page_type = PageType::Bar;
-            self.active_router = id!(bar_pages)[0].clone();
+            PageType::Bar
+        }
+    }
+    pub fn check_route_live_id(&mut self, path: &LiveId) -> PageType {
+        if !self.bar_pages.iter().any(|x| x.contains_id(path)) {
+            if self.nav_pages.iter().any(|x| x.contains_id(path)) {
+                PageType::Nav
+                // self.active_router = id!(nav_pages)[0].clone();
+            } else {
+                panic!("unregister page path!: {:?}", path);
+            }
+        } else {
+            PageType::Bar
         }
     }
     pub fn bar_scope_path(&self, child: &[LiveId]) -> HeapLiveIdPath {
@@ -144,6 +193,8 @@ impl GRouter {
         path
     }
     pub fn init(&mut self, bar_pages: &[&[LiveId]], nav_pages: Option<&[&[LiveId]]>) -> &mut Self {
+        self.nav_pages.clear();
+        self.bar_pages.clear();
         bar_pages.iter().for_each(|x| {
             let bar_path = self.bar_scope_path(x);
 
@@ -152,7 +203,6 @@ impl GRouter {
         nav_pages.map(|x| {
             x.iter().for_each(|x| {
                 let nav_path = self.nav_scope_path(x);
-
                 self.nav_pages.push(nav_path);
             });
         });

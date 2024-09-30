@@ -32,14 +32,15 @@ pub fn open_browser(url: &str) -> Result<(), std::io::Error> {
 
 pub trait HeapLiveIdPathExp {
     // body.navigation.application_pages.upload_frame.UniqueId 3.s3_list.UniqueId 3.UniqueId 1.share_wrap
-    fn contains(&self, child: &HeapLiveIdPath) -> bool;
+    fn contains(&self, child: &HeapLiveIdPath) -> Result<bool, String>;
+    fn contains_id(&self, id: &LiveId) -> bool;
     fn to_live_id(&self) -> Vec<LiveId>;
     fn trim_matches(&self, target: &HeapLiveIdPath) -> Vec<LiveId>;
     fn eq(&self, target: &HeapLiveIdPath) -> bool;
 }
 
 impl HeapLiveIdPathExp for HeapLiveIdPath {
-    fn contains(&self, child: &HeapLiveIdPath) -> bool {
+    fn contains(&self, child: &HeapLiveIdPath) -> Result<bool, String> {
         // do format then split by `.`
         let father = format!("{:?}", self);
         let child = format!("{:?}", child);
@@ -49,7 +50,7 @@ impl HeapLiveIdPathExp for HeapLiveIdPath {
         // eat one by one till `UniqueId`
 
         if father.len() < child.len() {
-            panic!("father LiveIdPath length smaller than child");
+            return Err("father LiveIdPath length smaller than child".to_string());
         }
 
         let mut flag = true;
@@ -66,7 +67,7 @@ impl HeapLiveIdPathExp for HeapLiveIdPath {
                 break;
             }
         }
-        flag
+        Ok(flag)
     }
 
     /// not complete!!!
@@ -89,6 +90,11 @@ impl HeapLiveIdPathExp for HeapLiveIdPath {
 
     fn eq(&self, target: &HeapLiveIdPath) -> bool {
         format!("{:?}", self) == format!("{:?}", target)
+    }
+
+    fn contains_id(&self, id: &LiveId) -> bool {
+        
+        format!("{:?}", self).contains(&id.to_string())
     }
 }
 
