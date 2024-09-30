@@ -1,4 +1,6 @@
-use makepad_widgets::{Actions, HeapLiveIdPath, WidgetAction, WidgetUid};
+use makepad_widgets::{id, Actions, HeapLiveIdPath, LiveId, WidgetAction, WidgetUid};
+
+use super::from_str_unchecked;
 
 pub fn filter_widget_actions(
     actions: &Actions,
@@ -31,6 +33,9 @@ pub fn open_browser(url: &str) -> Result<(), std::io::Error> {
 pub trait HeapLiveIdPathExp {
     // body.navigation.application_pages.upload_frame.UniqueId 3.s3_list.UniqueId 3.UniqueId 1.share_wrap
     fn contains(&self, child: &HeapLiveIdPath) -> bool;
+    fn to_live_id(&self) -> Vec<LiveId>;
+    fn trim_matches(&self, target: &HeapLiveIdPath) -> Vec<LiveId>;
+    fn eq(&self, target: &HeapLiveIdPath) -> bool;
 }
 
 impl HeapLiveIdPathExp for HeapLiveIdPath {
@@ -38,7 +43,7 @@ impl HeapLiveIdPathExp for HeapLiveIdPath {
         // do format then split by `.`
         let father = format!("{:?}", self);
         let child = format!("{:?}", child);
-        
+
         let father = father.split('.').collect::<Vec<&str>>();
         let child = child.split('.').collect::<Vec<&str>>();
         // eat one by one till `UniqueId`
@@ -62,5 +67,39 @@ impl HeapLiveIdPathExp for HeapLiveIdPath {
             }
         }
         flag
+    }
+
+    /// not complete!!!
+    fn to_live_id(&self) -> Vec<LiveId> {
+        let path = format!("{:?}", self);
+        path.split('.')
+            .map(|x| LiveId(from_str_unchecked(x)))
+            .collect()
+    }
+
+    fn trim_matches(&self, target: &HeapLiveIdPath) -> Vec<LiveId> {
+        format!("{:?}", self)
+            .trim_start_matches(&format!("{:?}", target))
+            .split('.')
+            .collect::<Vec<&str>>()
+            .iter()
+            .map(|x| LiveId(from_str_unchecked(x.trim_matches('.'))))
+            .collect()
+    }
+
+    fn eq(&self, target: &HeapLiveIdPath) -> bool {
+        format!("{:?}", self) == format!("{:?}", target)
+    }
+}
+
+#[cfg(test)]
+mod e {
+    use makepad_widgets::LiveId;
+
+    use crate::utils::from_str_unchecked;
+
+    #[test]
+    fn r() {
+        dbg!(LiveId(from_str_unchecked("hello")));
     }
 }

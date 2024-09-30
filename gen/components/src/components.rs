@@ -1014,6 +1014,8 @@ live_design! {
     }
     GRouter = <GRouterBase>{}
     GPage = <GPageBase>{
+        background_visible: false,
+        border_radius: 0.0,
         flow: Down,
         header = <GHLayout>{
             height: 24.0,
@@ -1026,12 +1028,21 @@ live_design! {
                 x: 0.5,
                 y: 0.5
             },
-            back = <GIcon>{
-                theme: Dark,
-                height: 18.0,
-                width: 18.0,
-                stroke_width: 1.4,
-                icon_type: Left,
+            back_wrap = <GHLayout>{
+                height: Fill,
+                width: 24.0,
+                align: {
+                    x: 0.5,
+                    y: 0.5,
+                },
+                back = <GIcon>{
+                    cursor: Hand,
+                    theme: Dark,
+                    height: 18.0,
+                    width: 18.0,
+                    stroke_width: 1.2,
+                    icon_type: Left,
+                }
             }
             title_wrap = <GHLayout>{
                 align: {
@@ -1043,7 +1054,12 @@ live_design! {
                 }
             }
             tool_wrap = <GHLayout>{
-                width: 16.0,
+                height: Fill,
+                width: 24.0,
+                align: {
+                    x: 0.5,
+                    y: 0.5,
+                },
             }
         }
         body = <GView>{

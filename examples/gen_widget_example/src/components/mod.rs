@@ -26,3 +26,4 @@ pub mod collapses;
 pub mod notifications;
 pub mod tool_btns;
 pub mod selects;
+pub mod router_page;

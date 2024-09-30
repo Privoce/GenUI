@@ -32,6 +32,7 @@ live_design! {
     import crate::components::notifications::*;
     import crate::components::tool_btns::*;
     import crate::components::selects::*;
+    import crate::components::router_page::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
 
     App = {{App}}{
@@ -56,74 +57,7 @@ live_design! {
                     height: All,
                     width: All,
                     flow: Down,
-                    
-                    <GRouter>{
-                        app_page = <GView>{
-                            height: Fill,
-                            width: Fill,
-                            border_radius: 0.0,
-                            flow: Overlay,
-                            menu = <GView>{
-                                height: 36.0,
-                                width: Fill,
-                                <GButton>{
-                                    slot: {
-                                        text: "a"
-                                    }
-                                }
-                                <GButton>{
-                                    slot: {
-                                        text: "b"
-                                    }
-                                }
-                                <GButton>{
-                                    slot: {
-                                        text: "c"
-                                    }
-                                }
-                                <GButton>{
-                                    slot: {
-                                        text: "d"
-                                    }
-                                }
-                            }
-                            page1 = <GPage>{
-                                height: Fill,
-                                width: Fill,
-                                
-                                border_radius: 0.0,
-                                body = {
-                                    theme: Warning,
-                                    <GLabel>{
-                                        text: "APP PAGE1"
-                                    }
-                                }
-                            },
-                            page2 = <GView>{
-                                visible: false,
-                                height: Fill,
-                                width: Fill,
-                                theme: Error,
-                                border_radius: 0.0,
-                                <GLabel>{
-                                    text: "APP PAGE2"
-                                }
-                            },
-                            page3 = <GView>{
-                                visible: false,
-                                height: Fill,
-                                width: Fill,
-                                theme: Success,
-                                border_radius: 0.0,
-                                <GLabel>{
-                                    text: "APP PAGE3"
-                                }
-                            }
-                        }
-                        // register_pages: {
-
-                        // }
-                    }
+                    <TPage>{}
                     // <GSvg>{
                     //     height: 16.0,
                     //     width: 16.0,
@@ -319,6 +253,7 @@ impl LiveRegister for App {
         crate::components::notifications::live_design(cx);
         crate::components::tool_btns::live_design(cx);
         crate::components::selects::live_design(cx);
+        crate::components::router_page::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }
