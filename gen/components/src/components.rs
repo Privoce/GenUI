@@ -28,6 +28,7 @@ pub mod tag;
 pub mod toggle;
 pub mod tool_btn;
 pub mod window;
+pub mod router;
 
 live_design! {
     // imports -----------------------------------------------------
