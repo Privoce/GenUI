@@ -48,30 +48,32 @@ impl Widget for GRouter {
         }
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-        for action in actions {
-            if let GRouterEvent::NavBack(current) = action.as_widget_action().cast() {
-                // get last item from stack
-                self.stack.pop().map(|last| {
-                    // if exist back to last and then push current (before do check)
-                    let ty = self.check_route_live_id(&current.last());
+        self.deref_widget.handle_event(cx, event, scope);
+        if let Event::Actions(actions) = event {
+            for action in actions {
+                if let GRouterEvent::NavBack(current) = action.as_widget_action().cast() {
+                    // get last item from stack
+                    self.stack.pop().map(|last| {
+                        // if exist back to last and then push current (before do check)
+                        let ty = self.check_route_live_id(&current.last());
 
-                    self.nav_to_path(cx, &last.path);
-                    let mut path = self.scope_path.clone();
-                    // path.push(current.last());
-                    // self.stack.push(RouterStackItem { path, ty });
-                    // dbg!(&self.stack);
-                });
+                        self.nav_to_path(cx, &last.path);
+                        let mut path = self.scope_path.clone();
+                        // path.push(current.last());
+                        // self.stack.push(RouterStackItem { path, ty });
+                        // dbg!(&self.stack);
+                    });
 
-                break;
+                    break;
+                }
+                if let GRouterEvent::NavTo(to_path) = action.as_widget_action().cast() {
+                    dbg!(to_path);
+                    break;
+                }
             }
-            // if let GRouterEvent::NavTo(to_path) = action.as_widget_action().cast() {
-            //     let to_path = to_path.trim_matches(&scope.path);
-            //     self.gview(&to_path.as_slice())
-            //         .set_visible_and_redraw(cx, true);
-            //     break;
-            // }
         }
+        
+        // let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
     }
 }
 

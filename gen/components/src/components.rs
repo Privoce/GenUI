@@ -1001,10 +1001,11 @@ live_design! {
             width: 18.0,
             color: #161616,
             src: dep("crate://self/resources/icons/home.svg"),
-            stroke_hover_color: #FF7043
+            stroke_hover_color: #FF7043,
+            animation_open: true,
         }
         text_slot: <GLabel>{
-            font_size: 6.0,
+            font_size: 8.0,
             color: #161616,
             animation_open: true,
             text: "Home",
@@ -1012,7 +1013,7 @@ live_design! {
             stroke_pressed_color: #FF7043,
         }
     }
-    GRouter = <GRouterBase>{}
+    
     GPage = <GPageBase>{
         background_visible: false,
         border_radius: 0.0,
@@ -1070,6 +1071,20 @@ live_design! {
             height: Fill,
             width: Fill
             padding: 4.0,
+        }
+    }
+    GRouter = <GRouterBase>{
+        bar_pages = <GView>{
+            height: Fill,
+            width: Fill,
+            border_radius: 0.0,
+            background_visible: false,
+        }
+        nav_pages = <GView>{
+            height: Fill,
+            width: Fill,
+            border_radius: 0.0,
+            background_visible: false,
         }
     }
 }

@@ -146,7 +146,7 @@ impl LiveHook for GSvg {
 
         self.draw_svg.set_src(self.src.clone());
 
-        self.draw_svg.redraw(cx);
+        // self.draw_svg.redraw(cx);
     }
 }
 

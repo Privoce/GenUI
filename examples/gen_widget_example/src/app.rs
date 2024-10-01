@@ -57,12 +57,8 @@ live_design! {
                     height: All,
                     width: All,
                     flow: Down,
-                    <TPage>{}
-                    // <GSvg>{
-                    //     height: 16.0,
-                    //     width: 16.0,
-                    //     src: dep("crate://self/resources/all.svg")
-                    // }
+                    // <TPage>{}
+                    
                     // <GSvg>{
                     //     height: 100.0,
                     //     width: 32.0,
@@ -116,9 +112,29 @@ live_design! {
                     //         }
                     //     }
                     // }
-                    // <GTabbarItem>{
-                    //     selected: false
+                    // <GSvg>{
+                    //     height: 16.0,
+                    //     width: 16.0,
+                    //     src: dep("crate://self/resources/all.svg")
                     // }
+                    // <GSvg>{
+                    //     height: 36.0,
+                    //     width: 36.0,
+                    //     color: #FFFFFF,
+                    //     src: dep("crate://self/resources/all.svg"),
+                    //     stroke_hover_color: #FF7043,
+                    //     animation_open: true,
+                    // }
+                    <GTabbarItem>{}
+                    <GTabbarItem>{
+                        selected: true;
+                        icon_slot: {
+                            src: dep("crate://self/resources/all.svg"),
+                        }
+                        text_slot: {
+                            text: "All"
+                        }
+                    }
                     
                     // <GSelectExample>{}
                     

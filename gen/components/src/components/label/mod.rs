@@ -211,4 +211,31 @@ impl GLabel {
     pub fn redraw(&self, cx: &mut Cx) -> () {
         self.draw_text.redraw(cx);
     }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_pressed(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                pressed: 1.0
+            },
+        );
+    }
 }

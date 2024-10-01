@@ -1,9 +1,9 @@
 use super::event::*;
 use crate::{
     components::{label::GLabel, svg::GSvg},
-    shader::{draw_view::DrawGView, draw_svg::DrawGSvg, draw_text::DrawGText},
+    shader::draw_view::DrawGView,
     themes::Themes,
-    utils::{get_font_family, set_cursor, BoolToF32, ThemeColor},
+    utils::{set_cursor, BoolToF32, ThemeColor},
     widget_area,
 };
 use makepad_widgets::*;
@@ -22,76 +22,6 @@ live_design! {
         },
         cursor: Hand,
         spacing: 2.0,
-        animator: {
-            hover = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        draw_item: {pressed: 0.0, hover: 0.0},
-                        text_slot: {
-                            draw_text: {pressed: 0.0, hover: 0.0}
-                        },
-                        icon_slot: {
-                            draw_svg: {hover: 0.0}
-                        }
-                    }
-                }
-
-                on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        draw_item: {pressed: 0.0, hover: 1.0,},
-                        text_slot: {
-                            draw_text: {pressed: 0.0, hover: 1.0}
-                        },
-                        icon_slot: {
-                            draw_svg: {hover: 1.0}
-                        }
-                    }
-                }
-
-                pressed = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        draw_item: {pressed: 1.0, hover: 0.0,},
-                        text_slot: {
-                            draw_text: {pressed: 1.0, hover: 0.0}
-                        },
-                        icon_slot: {
-                            draw_svg: {hover: 1.0}
-                        }
-                    }
-                }
-            },
-            // focus = {
-            //     default: off,
-            //     off = {
-            //         from: {all: Forward {duration: (GLOBAL_DURATION)}}
-            //         apply: {
-            //             draw_item: {pressed: 0.0, hover: 0.0},
-            //             text_slot: {
-            //                 draw_text: {pressed: 0.0, hover: 0.0}
-            //             }
-            //         }
-            //     }
-
-            //     on = {
-            //         from: {
-            //             all: Forward {duration: (GLOBAL_DURATION)}
-            //         }
-            //         apply: {
-            //             draw_item: {pressed: 1.0, hover: 0.0,},
-            //             text_slot: {
-            //                 draw_text: {pressed: 1.0, hover: 0.0}
-            //             }
-            //         }
-            //     }
-            // }
-        }
     }
 }
 
@@ -174,37 +104,35 @@ impl Widget for GTabbarItem {
         let uid = self.widget_uid();
 
         if self.animation_open {
-            if self.animator_handle_event(cx, event).must_redraw() {
-                self.draw_item.redraw(cx);
-                self.text_slot.redraw(cx);
-            }
+            self.animator_handle_event(cx, event);
         }
         match event.hits(cx, self.area()) {
             Hit::FingerDown(f_down) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(self.area());
                 }
-                cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
-                self.animator_play(cx, id!(hover.pressed));
+                if !self.selected {
+                    self.animation_pressed(cx);
+                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
+                }
             }
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GTabbarItemEvent::Hover(h.clone()));
+
+                if !self.selected {
+                    self.animation_hover_on(cx);
+                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Hover(h.clone()));
+                }
             }
             Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
+                if !self.selected {
+                    self.animation_hover_off(cx);
+                }
             }
             Hit::FingerUp(f_up) => {
-                if f_up.is_over {
+                if !self.selected {
+                    self.animation_selected(cx);
                     cx.widget_action(uid, &scope.path, GTabbarItemEvent::Clicked(f_up.clone()));
-                    if f_up.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
-                    } else {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                } else {
-                    self.animator_play(cx, id!(hover.off));
                 }
             }
             _ => (),
@@ -217,6 +145,15 @@ impl LiveHook for GTabbarItem {
         if !self.visible {
             return;
         }
+        self.render(cx);
+    }
+}
+
+impl GTabbarItem {
+    widget_area! {
+        area, draw_item
+    }
+    pub fn render(&mut self, cx: &mut Cx) -> () {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.use_or("#FFFFFF");
         // ------------------ hover color -----------------------------------------------
@@ -245,16 +182,28 @@ impl LiveHook for GTabbarItem {
                 pressed: (selected)
             },
         );
-        self.draw_item.redraw(cx);
+
         self.text_slot.draw_text.pressed = selected;
         self.icon_slot.draw_svg.hover = selected;
-        self.text_slot.redraw(cx);
-        self.icon_slot.redraw(cx);
     }
-}
-
-impl GTabbarItem {
-    widget_area! {
-        area, draw_item
+    pub fn animation_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.icon_slot.animate_hover_on(cx);
+        self.text_slot.animate_hover_on(cx);
+    }
+    pub fn animation_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.icon_slot.animate_hover_off(cx);
+        self.text_slot.animate_hover_off(cx);
+    }
+    pub fn animation_pressed(&mut self, cx: &mut Cx) -> () {
+        self.icon_slot.animate_hover_on(cx);
+        self.text_slot.animate_hover_pressed(cx);
+    }
+    pub fn animation_selected(&mut self, cx: &mut Cx) -> () {
+        self.selected = true;
+        self.render(cx);
+    }
+    pub fn animation_unselected(&mut self, cx: &mut Cx) -> () {
+        self.selected = false;
+        self.render(cx);
     }
 }
