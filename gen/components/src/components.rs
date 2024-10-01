@@ -1013,7 +1013,21 @@ live_design! {
             stroke_pressed_color: #FF7043,
         }
     }
-    
+    GTabbar = <GTabbarBase>{
+        height: 42.0,
+        width: Fill,
+        align: {
+            x: 0.5,
+            y: 0.5,
+        },
+        spacing: 0.0,
+        padding: {
+            left: 8.0,
+            right: 8.0
+        },
+        border_radius: 0.0,
+        
+    }
     GPage = <GPageBase>{
         background_visible: false,
         border_radius: 0.0,

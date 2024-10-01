@@ -1,10 +1,6 @@
 use super::event::*;
 use crate::{
-    components::{label::GLabel, svg::GSvg},
-    shader::draw_view::DrawGView,
-    themes::Themes,
-    utils::{set_cursor, BoolToF32, ThemeColor},
-    widget_area,
+    components::{label::GLabel, svg::GSvg}, event_option, ref_event_option, shader::draw_view::DrawGView, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
 };
 use makepad_widgets::*;
 
@@ -113,7 +109,7 @@ impl Widget for GTabbarItem {
                 }
                 if !self.selected {
                     self.animation_pressed(cx);
-                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
+                    // cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
                 }
             }
             Hit::FingerHoverIn(h) => {
@@ -121,7 +117,10 @@ impl Widget for GTabbarItem {
 
                 if !self.selected {
                     self.animation_hover_on(cx);
-                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Hover(h.clone()));
+                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Hover(GTabbarItemHoverParam{
+                        value: self.selected,
+                        e: h.clone(),
+                    }));
                 }
             }
             Hit::FingerHoverOut(_) => {
@@ -132,7 +131,10 @@ impl Widget for GTabbarItem {
             Hit::FingerUp(f_up) => {
                 if !self.selected {
                     self.animation_selected(cx);
-                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Clicked(f_up.clone()));
+                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Clicked(GTabbarItemClickedParam{
+                        value: self.selected,
+                        e: f_up.clone(),
+                    }));
                 }
             }
             _ => (),
@@ -151,7 +153,13 @@ impl LiveHook for GTabbarItem {
 
 impl GTabbarItem {
     widget_area! {
-        area, draw_item
+        area, draw_item,
+        area_icon, icon_slot,
+        area_text, text_slot
+    }
+    event_option! {
+        clicked: GTabbarItemEvent::Clicked => GTabbarItemClickedParam,
+        hover: GTabbarItemEvent::Hover => GTabbarItemHoverParam
     }
     pub fn render(&mut self, cx: &mut Cx) -> () {
         // ----------------- background color -------------------------------------------
@@ -205,5 +213,16 @@ impl GTabbarItem {
     pub fn animation_unselected(&mut self, cx: &mut Cx) -> () {
         self.selected = false;
         self.render(cx);
+    }
+    pub fn toggle(&mut self, cx: &mut Cx, selected: bool) ->(){
+        self.selected = selected;
+        self.render(cx);
+    }
+}
+
+impl GTabbarItemRef {
+    ref_event_option! {
+        clicked => GTabbarItemClickedParam,
+        hover => GTabbarItemHoverParam
     }
 }

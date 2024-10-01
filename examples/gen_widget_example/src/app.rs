@@ -125,14 +125,28 @@ live_design! {
                     //     stroke_hover_color: #FF7043,
                     //     animation_open: true,
                     // }
-                    <GTabbarItem>{}
-                    <GTabbarItem>{
-                        selected: true;
-                        icon_slot: {
-                            src: dep("crate://self/resources/all.svg"),
-                        }
-                        text_slot: {
-                            text: "All"
+                   
+                    <GHLayout>{
+                        height: 46.0,
+                        width: 300.0,
+                        <GTabbar>{
+                            <GTabbarItem>{
+                                icon_slot: {
+                                    src: dep("crate://self/resources/config.svg"),
+                                }
+                                text_slot: {
+                                    text: "Config"
+                                }
+                            }
+                            <GTabbarItem>{}
+                            <GTabbarItem>{
+                                icon_slot: {
+                                    src: dep("crate://self/resources/all.svg"),
+                                }
+                                text_slot: {
+                                    text: "All"
+                                }
+                            }
                         }
                     }
                     
@@ -177,7 +191,7 @@ live_design! {
                     //     }
                     // }
                     // <GLoadingExample>{}
-                    // <GRadioExample>{}
+                    <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
                     // <GImageExample>{}
