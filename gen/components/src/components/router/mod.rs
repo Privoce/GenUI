@@ -22,6 +22,8 @@ pub struct GRouter {
     pub deref_widget: GView,
     #[rust(id!(bar_pages)[0])]
     pub active_router: LiveId,
+    #[rust(id!(tabbar)[0])]
+    pub bar_id: LiveId,
     #[rust]
     pub active_page: Option<HeapLiveIdPath>,
     #[rust]
@@ -102,7 +104,7 @@ impl GRouter {
                 }
                 PageType::None => {}
             });
-        
+
         // after all change active_page
         self.active_page.replace(target.clone());
     }
@@ -111,7 +113,7 @@ impl GRouter {
         if let Some(active_router) = self.gview(&[self.active_router]).borrow() {
             let mut res = None;
             for (id, child) in active_router.children.iter() {
-                if child.is_visible() {
+                if child.is_visible() && id != &self.bar_id {
                     let mut p = self.scope_path.clone();
                     p.push(*id);
                     res.replace(p);
@@ -205,7 +207,12 @@ impl GRouter {
     ///     })
     /// });
     /// ```
-    pub fn init(&mut self, bar_pages: &[&[LiveId]], nav_pages: Option<&[&[LiveId]]>) -> &mut Self {
+    pub fn init(
+        &mut self,
+        bar_pages: &[&[LiveId]],
+        nav_pages: Option<&[&[LiveId]]>,
+        tabbar_id: Option<&[LiveId]>,
+    ) -> &mut Self {
         if !self.scope_path.is_empty() {
             self.nav_pages.clear();
             self.bar_pages.clear();
@@ -219,8 +226,79 @@ impl GRouter {
                     self.nav_pages.push(nav_path);
                 });
             });
+            tabbar_id.map(|bar_id| {
+                self.bar_id = bar_id[0].clone();
+            });
+            self.after_init_check();
         }
         self
+    }
+    /// ## Auto init Router by inner children (bar_pages, nav_pages)
+    /// this fn consider bar_id is tabbar(it will never change)
+    pub fn init_auto(&mut self) -> &mut Self {
+        // do loop to get need children
+        if !self.scope_path.is_empty() {
+            self.nav_pages.clear();
+            self.bar_pages.clear();
+            let mut flag = true; // let it do only once
+            self.gview(id!(bar_pages)).borrow().map(|bar| {
+                for (id, child) in bar.children.iter() {
+                    if id != &self.bar_id {
+                        let bar_path = self.bar_scope_path(&[id.clone()]);
+                        if child.is_visible() && flag {
+                            self.ty(PageType::Bar);
+                            self.active_page.replace(bar_path.clone());
+                            flag = false;
+                        }
+                        self.bar_pages.push(bar_path);
+                    }
+                }
+            });
+            self.gview(id!(nav_pages)).borrow().map(|nav| {
+                for (id, child) in nav.children.iter() {
+                    let nav_path = self.nav_scope_path(&[id.clone()]);
+                    if child.is_visible() && flag {
+                        self.ty(PageType::Nav);
+                        self.active_page.replace(nav_path.clone());
+                        flag = false;
+                    }
+                    self.nav_pages.push(nav_path);
+                }
+            });
+        }
+        self
+    }
+    /// ## check router page type and active page
+    fn after_init_check(&mut self) -> () {
+        // let it do only once
+        let mut flag = true;
+        // loop bar_pages and nav_pages
+        for bar in self.bar_pages.clone().iter() {
+            if flag {
+                self.gview(id!(bar_pages)).borrow().map(|container| {
+                    if container.widget(&[bar.last()]).is_visible() {
+                        self.ty(PageType::Bar);
+                        self.active_page.replace(bar.clone());
+                        flag = false;
+                    }
+                });
+            } else {
+                break;
+            }
+        }
+        for nav in self.nav_pages.clone().iter() {
+            if flag {
+                self.gview(id!(nav_pages)).borrow().map(|container| {
+                    if container.widget(&[nav.last()]).is_visible() {
+                        self.ty(PageType::Nav);
+                        self.active_page.replace(nav.clone());
+                    }
+                    flag = false;
+                });
+            } else {
+                break;
+            }
+        }
     }
     /// ## Set default active page
     /// set page as active page, you can use this if you need to control
@@ -245,7 +323,8 @@ impl GRouter {
             let _ = self.set_visible_page(cx, &active);
         }
     }
-    pub fn ty(&mut self, ty: PageType) {
+    pub fn ty(&mut self, ty: PageType) -> &mut Self {
         self.page_type = ty;
+        self
     }
 }

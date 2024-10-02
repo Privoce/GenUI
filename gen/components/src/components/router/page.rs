@@ -25,7 +25,6 @@ impl Widget for GPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         if self.gicon(id!(back_wrap.back)).clicked(&actions).is_some(){
-            dbg!("back");
             cx.widget_action(self.widget_uid(), &scope.path, GRouterEvent::NavBack(scope.path.clone()));
         }
     }

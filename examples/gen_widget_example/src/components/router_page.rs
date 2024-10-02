@@ -55,7 +55,7 @@ live_design! {
                 flow: Down,
                 background_visible: false,
                 page1 = <GView>{
-                    visible: true,
+                    visible:false,
                     height: Fill,
                     width: Fill,
                     theme: Warning,
@@ -85,7 +85,6 @@ live_design! {
                     }
                 }
                 tabbar = <GTabbar>{
-
                     height: 46.0,
                     width: Fill,
                     selected: 0,
@@ -115,7 +114,7 @@ live_design! {
                 // flow: Overlay,
                 background_visible: false,
                 nav_page1 = <GPage>{
-                    visible: false,
+                    visible: true,
                     height: Fill,
                     width: Fill,
                     border_radius: 0.0,
@@ -166,9 +165,10 @@ impl Widget for TPage {
 
                 router.borrow_mut().map(|mut router| {
                     let _ = router
-                        .init(ids!(page1, page2, page3), Some(ids!(nav_page1)))
-                        .active(id!(nav_page1))
+                        .init(ids!(page1, page2, page3), Some(ids!(nav_page1)), None)
+                        .active(id!(page2))
                         .build(cx);
+                    // let _ = router.init_auto().build(cx);
                 });
             })
             .map(|_| {
