@@ -18,7 +18,7 @@ live_design! {
 pub struct GTabbar {
     #[deref]
     pub deref_widget: GView,
-    #[live(0)]
+    #[live(-1)]
     pub selected: i32,
 }
 
@@ -71,7 +71,11 @@ impl Widget for GTabbar {
 impl LiveHook for GTabbar {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
-        let _ = self.find_selected(cx);
+        if self.selected < 0 {
+            let _ = self.find_selected(cx);
+        } else {
+            self.set_selected(cx, self.selected as usize);
+        }
     }
 }
 

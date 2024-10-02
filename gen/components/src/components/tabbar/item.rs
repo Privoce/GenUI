@@ -9,7 +9,7 @@ live_design! {
     GLOBAL_DURATION = 0.25;
     GTabbarItemBase = {{GTabbarItem}}{
         height: 36.0,
-        width: 60.0,
+        width: Fill,
         flow: Down,
         background_visible: false,
         align: {
@@ -103,7 +103,7 @@ impl Widget for GTabbarItem {
             self.animator_handle_event(cx, event);
         }
         match event.hits(cx, self.area()) {
-            Hit::FingerDown(f_down) => {
+            Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(self.area());
                 }

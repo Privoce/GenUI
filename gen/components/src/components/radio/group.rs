@@ -76,7 +76,11 @@ impl Widget for GRadioGroup {
 impl LiveHook for GRadioGroup {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
-        let _ = self.find_selected(cx);
+        if self.selected < 0{
+            let _ = self.find_selected(cx);
+        }else{
+            self.set_selected(cx, self.selected as usize);
+        }
     }
 }
 
@@ -124,10 +128,11 @@ impl GRadioGroup {
 
         if !flag {
             self.selected = selected as i32;
-        }else{
-            // here means no radio is selected
-            self.set_selected(cx, 0);
         }
+        // else{
+        //     // here means no radio is selected
+        //     self.set_selected(cx, 0);
+        // }
     }
     pub fn area(&self) -> Area {
         self.area

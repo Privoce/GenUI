@@ -129,7 +129,9 @@ live_design! {
                     <GHLayout>{
                         height: 46.0,
                         width: 300.0,
+                        
                         <GTabbar>{
+                            selected: 1,
                             <GTabbarItem>{
                                 icon_slot: {
                                     src: dep("crate://self/resources/config.svg"),
@@ -191,7 +193,7 @@ live_design! {
                     //     }
                     // }
                     // <GLoadingExample>{}
-                    <GRadioExample>{}
+                    // <GRadioExample>{}
                     // <GCheckBoxExample>{}
                     // <GToggleExample>{}
                     // <GImageExample>{}
