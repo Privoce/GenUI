@@ -1,4 +1,4 @@
-use makepad_widgets::{id, Actions, HeapLiveIdPath, LiveId, WidgetAction, WidgetUid};
+use makepad_widgets::{Actions, HeapLiveIdPath, LiveId, WidgetAction, WidgetUid};
 
 use super::from_str_unchecked;
 
@@ -37,6 +37,7 @@ pub trait HeapLiveIdPathExp {
     fn to_live_id(&self) -> Vec<LiveId>;
     fn trim_matches(&self, target: &HeapLiveIdPath) -> Vec<LiveId>;
     fn eq(&self, target: &HeapLiveIdPath) -> bool;
+    fn is_empty(&self) -> bool;
 }
 
 impl HeapLiveIdPathExp for HeapLiveIdPath {
@@ -93,8 +94,11 @@ impl HeapLiveIdPathExp for HeapLiveIdPath {
     }
 
     fn contains_id(&self, id: &LiveId) -> bool {
-        
         format!("{:?}", self).contains(&id.to_string())
+    }
+
+    fn is_empty(&self) -> bool {
+        format!("{:?}", self).is_empty()
     }
 }
 

@@ -20,16 +20,16 @@ live_design! {
 pub struct GRouter {
     #[deref]
     pub deref_widget: GView,
-    #[rust]
-    screen_width: f64,
     #[rust(id!(bar_pages)[0])]
     pub active_router: LiveId,
     #[rust]
+    pub active_page: Option<HeapLiveIdPath>,
+    #[rust]
     pub stack: RouterStack,
     #[rust]
-    bar_pages: Vec<HeapLiveIdPath>,
+    pub bar_pages: Vec<HeapLiveIdPath>,
     #[rust]
-    nav_pages: Vec<HeapLiveIdPath>,
+    pub nav_pages: Vec<HeapLiveIdPath>,
     #[rust]
     pub page_type: PageType,
 }
@@ -49,36 +49,23 @@ impl Widget for GRouter {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         self.deref_widget.handle_event(cx, event, scope);
-        if let Event::Actions(actions) = event {
-            for action in actions {
-                if let GRouterEvent::NavBack(current) = action.as_widget_action().cast() {
-                    // get last item from stack
-                    self.stack.pop().map(|last| {
-                        // if exist back to last and then push current (before do check)
-                        let ty = self.check_route_live_id(&current.last());
-
-                        self.nav_to_path(cx, &last.path);
-                        let mut path = self.scope_path.clone();
-                        // path.push(current.last());
-                        // self.stack.push(RouterStackItem { path, ty });
-                        // dbg!(&self.stack);
-                    });
-
-                    break;
-                }
-                if let GRouterEvent::NavTo(to_path) = action.as_widget_action().cast() {
-                    dbg!(to_path);
-                    break;
-                }
-            }
-        }
-        
-        // let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
     }
 }
 
 impl GRouter {
-    pub fn set_visible(&mut self, cx: &mut Cx, target: &HeapLiveIdPath) {
+    pub fn handle_nav_back(&mut self, cx: &mut Cx, actions: &Actions) {
+        for action in actions {
+            if let GRouterEvent::NavBack(_current) = action.as_widget_action().cast() {
+                // get last item from stack
+                self.stack.pop().map(|last| {
+                    self.nav_to_path(cx, &last.path);
+                });
+
+                break;
+            }
+        }
+    }
+    pub fn set_visible_page(&mut self, cx: &mut Cx, target: &HeapLiveIdPath) {
         // first check route
         self.page_type = self.check_route(target);
         self.active_router = self.page_type.live_id();
@@ -88,7 +75,7 @@ impl GRouter {
             .borrow()
             .map(|active_router| match self.page_type {
                 PageType::Bar => {
-                    let mut bar_pages = active_router.children.iter().zip(self.bar_pages.iter());
+                    let bar_pages = active_router.children.iter().zip(self.bar_pages.iter());
                     for ((_id, child), path) in bar_pages {
                         child.as_gview().borrow_mut().map(|mut child| {
                             if path.eq(target) {
@@ -101,7 +88,7 @@ impl GRouter {
                     }
                 }
                 PageType::Nav => {
-                    let mut nav_pages = active_router.children.iter().zip(self.nav_pages.iter());
+                    let nav_pages = active_router.children.iter().zip(self.nav_pages.iter());
                     for ((_id, child), path) in nav_pages {
                         child.as_gpage().borrow_mut().map(|mut child| {
                             if path.eq(target) {
@@ -115,8 +102,11 @@ impl GRouter {
                 }
                 PageType::None => {}
             });
+        
+        // after all change active_page
+        self.active_page.replace(target.clone());
     }
-    fn get_visible(&self) -> Option<HeapLiveIdPath> {
+    fn get_visible_page(&self) -> Option<HeapLiveIdPath> {
         // find the visible page
         if let Some(active_router) = self.gview(&[self.active_router]).borrow() {
             let mut res = None;
@@ -135,26 +125,24 @@ impl GRouter {
     }
     pub fn nav_to(&mut self, cx: &mut Cx, path: &[LiveId]) {
         let path = self.bar_scope_path(path);
-        self.get_visible().map(|path| {
+        self.active_page.as_ref().map(|path| {
             // push stack
             self.stack.push(RouterStackItem {
-                path,
+                path: path.clone(),
                 ty: self.page_type,
             });
         });
-
-        self.set_visible(cx, &path);
+        self.set_visible_page(cx, &path);
     }
     fn nav_to_path(&mut self, cx: &mut Cx, path: &HeapLiveIdPath) {
-        self.get_visible().map(|path| {
+        self.active_page.as_ref().map(|path| {
             // push stack
             self.stack.push(RouterStackItem {
-                path,
+                path: path.clone(),
                 ty: self.page_type,
             });
         });
-
-        self.set_visible(cx, path);
+        self.set_visible_page(cx, path);
     }
     pub fn check_route(&mut self, path: &HeapLiveIdPath) -> PageType {
         if !self.bar_pages.iter().any(|x| x.contains(path).unwrap()) {
@@ -194,21 +182,68 @@ impl GRouter {
         });
         path
     }
+    /// ## Init Router
+    /// This fn help you init a router by setting bar_pages and nav_pages
+    /// ### Example (in `draw_walk()`)
+    /// ```rust
+    /// self.lifetime
+    /// .init()
+    /// .execute(|| {
+    ///     let router = self.grouter(id!(app_router));
+    ///
+    ///     router.borrow_mut().map(|mut router| {
+    ///         let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1)));
+    ///     });
+    /// })
+    /// .map(|_| {
+    ///     let router = self.grouter(id!(app_router));
+    ///     router.borrow().map(|router| {
+    ///         if !router.scope_path.is_empty() {
+    ///             // if is empty do not do next
+    ///             self.lifetime.next();
+    ///         }
+    ///     })
+    /// });
+    /// ```
     pub fn init(&mut self, bar_pages: &[&[LiveId]], nav_pages: Option<&[&[LiveId]]>) -> &mut Self {
-        self.nav_pages.clear();
-        self.bar_pages.clear();
-        bar_pages.iter().for_each(|x| {
-            let bar_path = self.bar_scope_path(x);
-
-            self.bar_pages.push(bar_path);
-        });
-        nav_pages.map(|x| {
-            x.iter().for_each(|x| {
-                let nav_path = self.nav_scope_path(x);
-                self.nav_pages.push(nav_path);
+        if !self.scope_path.is_empty() {
+            self.nav_pages.clear();
+            self.bar_pages.clear();
+            bar_pages.iter().for_each(|x| {
+                let bar_path = self.bar_scope_path(x);
+                self.bar_pages.push(bar_path);
             });
-        });
+            nav_pages.map(|x| {
+                x.iter().for_each(|x| {
+                    let nav_path = self.nav_scope_path(x);
+                    self.nav_pages.push(nav_path);
+                });
+            });
+        }
         self
+    }
+    /// ## Set default active page
+    /// set page as active page, you can use this if you need to control
+    pub fn active(&mut self, id: &[LiveId]) -> &mut Self {
+        // if scope is empty, do nothing
+        if !self.scope_path.is_empty() {
+            let mut path = self.scope_path.clone();
+            path.push(id[0].clone());
+            self.active_page.replace(path);
+        }
+        self
+    }
+    /// ## Finish Router Build
+    pub fn build(&mut self, cx: &mut Cx) -> () {
+        if self.active_page.as_ref().is_none() {
+            // do get_visible_page and set as active_page
+            self.get_visible_page()
+                .map(|page| self.active_page.replace(page));
+        } else {
+            // do set visible page
+            let active = self.active_page.clone().unwrap();
+            let _ = self.set_visible_page(cx, &active);
+        }
     }
     pub fn ty(&mut self, ty: PageType) {
         self.page_type = ty;

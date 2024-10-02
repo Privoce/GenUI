@@ -77,7 +77,7 @@ impl LiveHook for GRadioGroup {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
         if self.selected < 0{
-            let _ = self.find_selected(cx);
+            let _ = self.find_selected();
         }else{
             self.set_selected(cx, self.selected as usize);
         }
@@ -100,7 +100,7 @@ impl GRadioGroup {
                 }
             });
     }
-    fn find_selected(&mut self, cx: &mut Cx) -> () {
+    fn find_selected(&mut self) -> () {
         let mut flag = true;
         let mut selected = 0;
         let _ = self

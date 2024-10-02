@@ -1088,6 +1088,9 @@ live_design! {
         }
     }
     GRouter = <GRouterBase>{
+        background_visible: false,
+        height: Fill,
+        width: Fill,
         bar_pages = <GView>{
             height: Fill,
             width: Fill,

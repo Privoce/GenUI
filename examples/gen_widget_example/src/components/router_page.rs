@@ -1,7 +1,14 @@
-use gen_components::components::{
-    button::GButtonWidgetExt,
-    router::{event::GRouterEvent, page::GPageWidgetExt, GRouterWidgetExt},
-    view::{GView, GViewWidgetExt},
+use gen_components::{
+    components::{
+        button::GButtonWidgetExt,
+        router::{event::GRouterEvent, page::GPageWidgetExt, GRouterWidgetExt},
+        tabbar::GTabbarWidgetExt,
+        view::{GView, GViewWidgetExt},
+    },
+    utils::{
+        lifetime::{Executor, Lifetime},
+        HeapLiveIdPathExp,
+    },
 };
 use makepad_widgets::*;
 
@@ -13,6 +20,7 @@ live_design! {
         height: Fill,
         width: Fill,
         flow: Down,
+
         menu = <GView>{
             height: 36.0,
             width: Fill,
@@ -39,11 +47,12 @@ live_design! {
             }
         }
         app_router = <GRouter>{
+            background_visible: false,
             bar_pages = <GView>{
                 height: Fill,
                 width: Fill,
                 border_radius: 0.0,
-                // flow: Overlay,
+                flow: Down,
                 background_visible: false,
                 page1 = <GView>{
                     visible: true,
@@ -73,6 +82,29 @@ live_design! {
                     border_radius: 0.0,
                     <GLabel>{
                         text: "APP PAGE3"
+                    }
+                }
+                tabbar = <GTabbar>{
+
+                    height: 46.0,
+                    width: Fill,
+                    selected: 0,
+                    <GTabbarItem>{
+                        icon_slot: {
+                            src: dep("crate://self/resources/config.svg"),
+                        }
+                        text_slot: {
+                            text: "Config"
+                        }
+                    }
+                    <GTabbarItem>{}
+                    <GTabbarItem>{
+                        icon_slot: {
+                            src: dep("crate://self/resources/all.svg"),
+                        }
+                        text_slot: {
+                            text: "All"
+                        }
                     }
                 }
             }
@@ -118,20 +150,55 @@ live_design! {
 pub struct TPage {
     #[deref]
     pub deref_widget: GView,
+    #[rust]
+    pub lifetime: Lifetime,
 }
 
 impl LiveHook for TPage {}
 
 impl Widget for TPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.deref_widget.draw_walk(cx, scope, walk)
+        let _ = self.deref_widget.draw_walk(cx, scope, walk);
+        self.lifetime
+            .init()
+            .execute(|| {
+                let router = self.grouter(id!(app_router));
+
+                router.borrow_mut().map(|mut router| {
+                    let _ = router
+                        .init(ids!(page1, page2, page3), Some(ids!(nav_page1)))
+                        .active(id!(nav_page1))
+                        .build(cx);
+                });
+            })
+            .map(|_| {
+                let router = self.grouter(id!(app_router));
+                router.borrow().map(|router| {
+                    if !router.scope_path.is_empty() {
+                        // if is empty do not do next
+                        self.lifetime.next();
+                    }
+                })
+            });
+        DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let router = self.grouter(id!(app_router));
 
-        router.borrow_mut().map(|mut router| {
-            let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1)));
+        // router.borrow_mut().map(|mut router| {
+        //     let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1)));
+        // });
+
+        // you can handle in here
+        self.gtabbar(id!(tabbar)).borrow().map(|x| {
+            if let Some(e) = x.changed(&actions) {
+                // call nav to
+                router.borrow_mut().map(|mut route| {
+                    let path = route.bar_pages[e.selected].last();
+                    route.nav_to(cx, &[path]);
+                });
+            }
         });
 
         if self.gbutton(id!(to_a)).clicked(&actions).is_some() {
@@ -161,6 +228,14 @@ impl Widget for TPage {
                 x.nav_to(cx, id!(nav_page1));
             });
         }
+        router.borrow_mut().map(|mut route| {
+            route.handle_nav_back(cx, &actions);
+        });
+        // for action in actions {
+        //     if let GRouterEvent::NavBack(current) = action.as_widget_action().cast(){
+        //         dbg!(&current);
+        //     }
+        // }
         // if !actions.is_empty(){
         //     dbg!(&actions);
         // }

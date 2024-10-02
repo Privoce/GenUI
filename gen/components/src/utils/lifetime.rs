@@ -22,12 +22,15 @@ impl Default for Lifetime {
 }
 
 impl Lifetime {
-    pub fn next(&self) -> Self {
-        match self {
-            Lifetime::Init => Lifetime::InProcess,
-            Lifetime::InProcess => Lifetime::Destroy,
-            Lifetime::Destroy => Lifetime::Init,
-        }
+    pub fn next(&mut self) -> () {
+        let _ = std::mem::replace(
+            self,
+            match self {
+                Lifetime::Init => Lifetime::InProcess,
+                Lifetime::InProcess => Lifetime::Destroy,
+                Lifetime::Destroy => Lifetime::Init,
+            },
+        );
     }
     /// ```
     /// fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
@@ -63,8 +66,7 @@ impl Lifetime {
 }
 
 pub trait Executor {
-    type Item;
-    fn execute<F>(&self, f: F) -> Option<Self::Item>
+    fn execute<F>(&self, f: F) -> Option<()>
     where
         F: FnOnce();
 }
@@ -74,16 +76,13 @@ pub struct LifetimeExecutor {
     target: Lifetime,
 }
 impl Executor for LifetimeExecutor {
-    type Item = Lifetime;
-
-    fn execute<F>(&self, f: F) -> Option<Self::Item>
+    fn execute<F>(&self, f: F) -> Option<()>
     where
         F: FnOnce(),
     {
         if self.current == self.target {
             f();
-            //back next
-            Some(self.current.next())
+            Some(())
         } else {
             None
         }

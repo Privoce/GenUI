@@ -54,10 +54,10 @@ live_design! {
                 height: Fill,
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
-                    height: All,
-                    width: All,
+                    height: Fill,
+                    width: Fill,
                     flow: Down,
-                    // <TPage>{}
+                    <TPage>{}
                     
                     // <GSvg>{
                     //     height: 100.0,
@@ -126,31 +126,31 @@ live_design! {
                     //     animation_open: true,
                     // }
                    
-                    <GHLayout>{
-                        height: 46.0,
-                        width: 300.0,
+                    // <GHLayout>{
+                    //     height: 46.0,
+                    //     width: 300.0,
                         
-                        <GTabbar>{
-                            selected: 1,
-                            <GTabbarItem>{
-                                icon_slot: {
-                                    src: dep("crate://self/resources/config.svg"),
-                                }
-                                text_slot: {
-                                    text: "Config"
-                                }
-                            }
-                            <GTabbarItem>{}
-                            <GTabbarItem>{
-                                icon_slot: {
-                                    src: dep("crate://self/resources/all.svg"),
-                                }
-                                text_slot: {
-                                    text: "All"
-                                }
-                            }
-                        }
-                    }
+                    //     <GTabbar>{
+                    //         selected: 1,
+                    //         <GTabbarItem>{
+                    //             icon_slot: {
+                    //                 src: dep("crate://self/resources/config.svg"),
+                    //             }
+                    //             text_slot: {
+                    //                 text: "Config"
+                    //             }
+                    //         }
+                    //         <GTabbarItem>{}
+                    //         <GTabbarItem>{
+                    //             icon_slot: {
+                    //                 src: dep("crate://self/resources/all.svg"),
+                    //             }
+                    //             text_slot: {
+                    //                 text: "All"
+                    //             }
+                    //         }
+                    //     }
+                    // }
                     
                     // <GSelectExample>{}
                     

@@ -8,6 +8,8 @@ pub use register::register;
 
 use makepad_widgets::*;
 
+use crate::{event_option, ref_event_option, set_event};
+
 use super::view::GView;
 
 live_design! {
@@ -80,6 +82,9 @@ impl LiveHook for GTabbar {
 }
 
 impl GTabbar {
+    event_option! {
+        changed: GTabbarEvent::Changed => GTabbarEventParam
+    }
     pub fn set_selected(&mut self, cx: &mut Cx, selected: usize) -> () {
         self.selected = selected as i32;
 
@@ -127,5 +132,17 @@ impl GTabbar {
             // here means no tabbar_item is selected
             self.set_selected(cx, 0);
         }
+    }
+}
+
+impl GTabbarRef {
+    ref_event_option! {
+        changed => GTabbarEventParam
+    }
+}
+
+impl GTabbarSet {
+    set_event! {
+        changed => GTabbarEventParam
     }
 }

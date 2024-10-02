@@ -3,7 +3,7 @@ mod widget;
 mod prop_default;
 mod prop;
 mod abs;
-mod lifetime;
+pub mod lifetime;
 mod tools;
 
 pub use event::*;
