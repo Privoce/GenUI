@@ -110,7 +110,6 @@ impl GRouter {
         // first check route
         self.page_type = self.check_route(target);
         self.active_router = self.page_type.live_id();
-
         self.gview(&[self.active_router])
             .borrow()
             .map(|active_router| match self.page_type {
@@ -235,7 +234,7 @@ impl GRouter {
     ///     let router = self.grouter(id!(app_router));
     ///
     ///     router.borrow_mut().map(|mut router| {
-    ///         let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1)));
+    ///         let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1), None));
     ///     });
     /// })
     /// .map(|_| {
@@ -252,7 +251,6 @@ impl GRouter {
         &mut self,
         bar_pages: &[&[LiveId]],
         nav_pages: Option<&[&[LiveId]]>,
-        // tabbar_id: Option<&[LiveId]>,
         mode: Option<RouterIndicatorMode>,
     ) -> &mut Self {
         if !self.scope_path.is_empty() {
@@ -268,9 +266,6 @@ impl GRouter {
                     self.nav_pages.push(nav_path);
                 });
             });
-            // tabbar_id.map(|bar_id| {
-            //     self.bar_id = bar_id[0].clone();
-            // });
             mode.map(|mode| self.mode = mode);
             self.after_init_check();
         }
@@ -370,7 +365,7 @@ impl GRouter {
         self.page_type = ty;
         self
     }
-    pub fn handle_nav_events(&mut self, cx: &mut Cx, actions: &Actions) -> (){
+    pub fn handle_nav_events(&mut self, cx: &mut Cx, actions: &Actions) -> () {
         self.handle_nav_back(cx, actions);
         self.indicator_nav_to(cx, &actions).map(|_| {
             return;

@@ -658,7 +658,7 @@ impl Widget for GView {
                 }
             }
             EventOrder::Down => {
-                for (id, child) in self.children.iter_mut() {
+                for (_id, child) in self.children.iter_mut() {
                     // scope.with_id(*id, |scope| {
                     //     child.handle_event(cx, event, scope);
                     // });

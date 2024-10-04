@@ -40,15 +40,15 @@ live_design! {
                     text: "d"
                 }
             }
+            to_e= <GButton>{
+                slot: {
+                    text: "e"
+                }
+            }
         }
         app_router = <GRouter>{
             background_visible: false,
-            bar_pages = <GView>{
-                height: Fill,
-                width: Fill,
-                border_radius: 0.0,
-                flow: Down,
-                background_visible: false,
+            bar_pages = {
                 page1 = <GView>{
                     visible:false,
                     height: Fill,
@@ -102,14 +102,11 @@ live_design! {
                     }
                 }
             }
-            nav_pages = <GView>{
-                height: Fill,
-                width: Fill,
-                border_radius: 0.0,
-                // flow: Overlay,
-                background_visible: false,
+            nav_pages = {
+                background_visible: true,
+                background_color:#FF0000,
                 nav_page1 = <GPage>{
-                    visible: true,
+                    visible: false,
                     height: Fill,
                     width: Fill,
                     border_radius: 0.0,
@@ -133,6 +130,33 @@ live_design! {
                             text: "APP PAGE1"
                         }
                         <GButton>{}
+                    }
+                },
+                nav_page2 = <GPage>{
+                    visible: false,
+                    height: Fill,
+                    width: Fill,
+                    border_radius: 0.0,
+                    header = {
+                        title_wrap = {
+                            title = {
+                                text: "Page2"
+                            }
+                        }
+                        tool_wrap = {
+                            <GIcon>{
+                                theme: Dark,
+                                icon_type: OpenBottom,
+                                stroke_width: 1.2
+                            }
+                        }
+                    }
+                    body = {
+                        theme: Warning,
+                        <GLabel>{
+                            text: "APP PAGE2"
+                        }
+
                     }
                 },
             }
@@ -160,8 +184,12 @@ impl Widget for TPage {
 
                 router.borrow_mut().map(|mut router| {
                     let _ = router
-                        .init(ids!(page1, page2, page3), Some(ids!(nav_page1)), None)
-                        .active(id!(page2))
+                        .init(
+                            ids!(page1, page2, page3),
+                            Some(ids!(nav_page1, nav_page2)),
+                            None,
+                        )
+                        .active(id!(page1))
                         .build(cx);
                     // let _ = router.init_auto().build(cx);
                 });
@@ -209,6 +237,11 @@ impl Widget for TPage {
         if self.gbutton(id!(to_d)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
                 x.nav_to(cx, id!(nav_page1));
+            });
+        }
+        if self.gbutton(id!(to_e)).clicked(&actions).is_some() {
+            router.borrow_mut().map(|mut x| {
+                x.nav_to(cx, id!(nav_page2));
             });
         }
         router.borrow_mut().map(|mut route| {

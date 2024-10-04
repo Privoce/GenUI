@@ -58,7 +58,6 @@ live_design! {
                     width: Fill,
                     flow: Down,
                     <TPage>{}
-                    
                     // <GSvg>{
                     //     height: 100.0,
                     //     width: 32.0,

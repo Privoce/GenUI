@@ -28,4 +28,7 @@ impl Widget for GPage {
             cx.widget_action(self.widget_uid(), &scope.path, GRouterEvent::NavBack(scope.path.clone()));
         }
     }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }

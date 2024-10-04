@@ -1032,6 +1032,8 @@ live_design! {
         background_visible: false,
         border_radius: 0.0,
         flow: Down,
+        height: Fill,
+        width: Fill,
         header = <GHLayout>{
             height: 24.0,
             padding: {
@@ -1096,12 +1098,14 @@ live_design! {
             width: Fill,
             border_radius: 0.0,
             background_visible: false,
+            flow: Down,
         }
         nav_pages = <GView>{
             height: Fill,
             width: Fill,
             border_radius: 0.0,
             background_visible: false,
+            flow: Down,
         }
     }
 }
