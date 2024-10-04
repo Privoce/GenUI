@@ -57,7 +57,7 @@ live_design! {
                     height: Fill,
                     width: Fill,
                     flow: Down,
-                    <TPage>{}
+                    // <TPage>{}
                     // <GSvg>{
                     //     height: 100.0,
                     //     width: 32.0,
@@ -179,7 +179,7 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    // <GPopupExample>{}
+                    <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}

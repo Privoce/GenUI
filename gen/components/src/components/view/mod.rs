@@ -192,7 +192,6 @@ impl LiveHook for GView {
         if !self.visible {
             return;
         }
-        // dbg!("after_apply", &self.scope_path);
         if self.optimize.needs_draw_list() && self.draw_list.is_none() {
             self.draw_list = Some(DrawList2d::new(cx));
         }
@@ -203,42 +202,7 @@ impl LiveHook for GView {
         //     }
         // }
         self.render(cx);
-        // // ----------------- background color -------------------------------------------
-        // let bg_color = self.background_color.get(self.theme, 500);
-        // let shadow_color = self.shadow_color.get(self.theme, 700);
-        // // ------------------ hover color -----------------------------------------------
-        // let hover_color = self.hover_color.get(self.theme, 400);
-        // // ------------------ pressed color ---------------------------------------------
-        // let pressed_color = self.pressed_color.get(self.theme, 600);
-        // // ------------------ border color ----------------------------------------------
-        // let border_color = self.border_color.get(self.theme, 600);
-        // // ------------------ is background_visible --------------------------------------------
-        // let background_visible = self.background_visible.to_f32();
-        // // ------------------ check scroll bar -------------------------------------------
-        // if self.scroll_bars.is_some() {
-        //     if self.scroll_bars_obj.is_none() {
-        //         self.scroll_bars_obj =
-        //             Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
-        //     }
-        // }
-        // // ------------------ apply draw_view --------------------------------------------
-        // self.draw_view.apply_over(
-        //     cx,
-        //     live! {
-        //         background_color: (bg_color),
-        //         background_visible: (background_visible),
-        //         border_color: (border_color),
-        //         border_width: (self.border_width),
-        //         border_radius: (self.border_radius),
-        //         pressed_color: (pressed_color),
-        //         hover_color: (hover_color),
-        //         shadow_color: (shadow_color),
-        //         shadow_offset: (self.shadow_offset),
-        //         spread_radius: (self.spread_radius),
-        //         blur_radius: (self.blur_radius)
-        //     },
-        // );
-        // self.draw_view.redraw(cx);
+        self.redraw(cx);
     }
     fn apply_value_instance(
         &mut self,
