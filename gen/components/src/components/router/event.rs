@@ -1,9 +1,8 @@
-use makepad_widgets::{DefaultNone, HeapLiveIdPath, LiveId};
+use makepad_widgets::{DefaultNone, LiveId};
 
 #[derive(Debug, Clone, DefaultNone)]
-pub enum GRouterEvent{
-    // NavTo(HeapLiveIdPath),
+pub enum GRouterEvent {
     NavTo(LiveId),
-    NavBack(HeapLiveIdPath),
-    None
+    NavBack(LiveId),
+    None,
 }

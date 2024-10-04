@@ -189,6 +189,10 @@ impl GRouter {
     pub fn nav_to_path(cx: &mut Cx, uid: WidgetUid, scope: &mut Scope, path: &[LiveId]) {
         cx.widget_action(uid, &scope.path, GRouterEvent::NavTo(path[0]));
     }
+    pub fn nav_back(cx: &mut Cx, uid: WidgetUid, scope: &mut Scope) {
+        let path = scope.path.clone();
+        cx.widget_action(uid, &scope.path, GRouterEvent::NavBack(path.last()));
+    }
     fn nav2(&mut self, cx: &mut Cx, path: &HeapLiveIdPath) {
         self.active_page.as_ref().map(|path| {
             // push stack

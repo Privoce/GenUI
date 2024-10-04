@@ -28,8 +28,14 @@ impl Widget for GPage {
 
         for action in &actions {
             if let Some(action) = action.as_widget_action() {
-                if let GRouterEvent::NavTo(path) = action.cast() {
-                    GRouter::nav_to_path(cx, self.widget_uid(), scope, path.as_slice());
+                match action.cast::<GRouterEvent>() {
+                    GRouterEvent::NavTo(path) => {
+                        GRouter::nav_to_path(cx, self.widget_uid(), scope, path.as_slice());
+                    }
+                    GRouterEvent::NavBack(_) => {
+                        GRouter::nav_back(cx, self.widget_uid(), scope);
+                    }
+                    GRouterEvent::None => (),
                 }
             }
         }
@@ -38,7 +44,7 @@ impl Widget for GPage {
             cx.widget_action(
                 self.widget_uid(),
                 &scope.path,
-                GRouterEvent::NavBack(scope.path.clone()),
+                GRouterEvent::NavBack(scope.path.clone().last()),
             );
         }
     }
