@@ -1028,6 +1028,13 @@ live_design! {
         border_radius: 0.0,
         
     }
+    GBarPage = <GView>{
+        visible:false,
+        height: Fill,
+        width: Fill,
+        background_visible: false,
+        border_radius: 0.0,
+    }
     GPage = <GPageBase>{
         background_visible: false,
         border_radius: 0.0,
@@ -1089,6 +1096,7 @@ live_design! {
             padding: 4.0,
         }
     }
+    GNavPage = <GPage>{}
     GRouter = <GRouterBase>{
         background_visible: false,
         height: Fill,
