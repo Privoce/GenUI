@@ -1,7 +1,7 @@
 # GEN Components (v0.1.0)
 
 - version: `v0.1.0`
-- update date: 2024-09-26
+- update date: 2024-10-04
 - author: [Will-YiFei Sheng](syf20020816@outlook.com)
 - makepad_widget version: `v0.6.0`
 - makepad branch: `rik`
@@ -49,11 +49,15 @@
 - [ ] Virtual CheckBoxGroup
 - [x] Select
 - [x] Drawer
+- [x] Router
+  - [x] Page
+- [x] Tabbar
+
 
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
 
 - [ ] Metric (用于数据统计)
-- [ ] Route (用于路由跳转) 🔼
+- [x] Route (用于路由跳转) 🔼
 - [x] ToolButton (用于处理界面控制事件，如：放大，缩小，全屏，关闭等) 🔼
 - [ ] Notification (用于编程式弹出通知) (测试成功, 思路cx.global绑定到窗口或Root上，可能需要后续自己实现一个Root) 🔼
 - [x] Drawer (用于侧面展开) 
@@ -82,6 +86,11 @@
 - [ ] Video Api
 - [ ] Theme Config (通过toml配置的方式设置主题色等默认样式)
 - [ ] Right mouse button event (鼠标右击事件展开组件)
+
+## after v0.5.0
+
+- [ ] Component Abstract
+- [ ] Virtual Component
 
 ## Macro
 

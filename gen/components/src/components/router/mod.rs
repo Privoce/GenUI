@@ -62,6 +62,17 @@ impl Widget for GRouter {
 }
 
 impl GRouter {
+    pub fn action_nav_to(&mut self, cx: &mut Cx, actions: &Actions) {
+        for action in actions {
+            if let Some(action) = action.as_widget_action() {
+                if let GRouterEvent::NavTo(path) = action.cast() {
+                    self.nav_to(cx, path.as_slice());
+                    break;
+                }
+            }
+        }
+    }
+
     pub fn indicator_nav_to(&mut self, cx: &mut Cx, actions: &Actions) -> Option<()> {
         let mut selected = None;
         if let RouterIndicatorMode::Bind(bind_id) = self.mode {
@@ -100,7 +111,7 @@ impl GRouter {
             if let GRouterEvent::NavBack(_current) = action.as_widget_action().cast() {
                 // get last item from stack
                 self.stack.pop().map(|last| {
-                    self.nav_to_path(cx, &last.path);
+                    self.nav2(cx, &last.path);
                 });
                 break;
             }
@@ -175,7 +186,10 @@ impl GRouter {
         });
         self.set_visible_page(cx, &path);
     }
-    fn nav_to_path(&mut self, cx: &mut Cx, path: &HeapLiveIdPath) {
+    pub fn nav_to_path(cx: &mut Cx, uid: WidgetUid, scope: &mut Scope, path: &[LiveId]) {
+        cx.widget_action(uid, &scope.path, GRouterEvent::NavTo(path[0]));
+    }
+    fn nav2(&mut self, cx: &mut Cx, path: &HeapLiveIdPath) {
         self.active_page.as_ref().map(|path| {
             // push stack
             self.stack.push(RouterStackItem {
@@ -367,6 +381,7 @@ impl GRouter {
     }
     pub fn handle_nav_events(&mut self, cx: &mut Cx, actions: &Actions) -> () {
         self.handle_nav_back(cx, actions);
+        self.action_nav_to(cx, actions);
         self.indicator_nav_to(cx, &actions).map(|_| {
             return;
         });
