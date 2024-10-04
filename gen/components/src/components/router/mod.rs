@@ -248,7 +248,7 @@ impl GRouter {
     ///     let router = self.grouter(id!(app_router));
     ///
     ///     router.borrow_mut().map(|mut router| {
-    ///         let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1), None));
+    ///         let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1), None)).build(cx);
     ///     });
     /// })
     /// .map(|_| {
