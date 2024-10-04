@@ -1,10 +1,5 @@
 use gen_components::{
-    components::{
-        button::GButtonWidgetExt,
-        router::{event::GRouterEvent, page::GPageWidgetExt, GRouterWidgetExt},
-        tabbar::GTabbarWidgetExt,
-        view::{GView, GViewWidgetExt},
-    },
+    components::{button::GButtonWidgetExt, router::GRouterWidgetExt, view::GView},
     utils::{
         lifetime::{Executor, Lifetime},
         HeapLiveIdPathExp,
@@ -185,60 +180,39 @@ impl Widget for TPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let router = self.grouter(id!(app_router));
-
-        // router.borrow_mut().map(|mut router| {
-        //     let _ = router.init(ids!(page1, page2, page3), Some(ids!(nav_page1)));
+        // you can handle in here if define tabbar----------------------
+        // self.gtabbar(id!(tabbar)).borrow().map(|x| {
+        //     if let Some(e) = x.changed(&actions) {
+        //         // call nav to
+        //         router.borrow_mut().map(|mut route| {
+        //             let path = route.bar_pages[e.selected].last();
+        //             route.nav_to(cx, &[path]);
+        //         });
+        //     }
         // });
-
-        // you can handle in here
-        self.gtabbar(id!(tabbar)).borrow().map(|x| {
-            if let Some(e) = x.changed(&actions) {
-                // call nav to
-                router.borrow_mut().map(|mut route| {
-                    let path = route.bar_pages[e.selected].last();
-                    route.nav_to(cx, &[path]);
-                });
-            }
-        });
-
+        // -------------------------------------------------------------
         if self.gbutton(id!(to_a)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                // let page1_path = x.bar_scope_path(id!(page1));
-                // x.nav_to(cx, &page1_path);
                 x.nav_to(cx, id!(page1));
             });
         }
         if self.gbutton(id!(to_b)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                // let page2_path = x.bar_scope_path(id!(page2));
-                // x.nav_to(cx, &page2_path);
                 x.nav_to(cx, id!(page2));
             });
         }
         if self.gbutton(id!(to_c)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                // let page3_path = x.bar_scope_path(id!(page3));
                 x.nav_to(cx, id!(page3));
             });
         }
         if self.gbutton(id!(to_d)).clicked(&actions).is_some() {
             router.borrow_mut().map(|mut x| {
-                // let nav1 = x.nav_scope_path(id!(nav_page1));
-                // x.nav_to(cx, &nav1);
                 x.nav_to(cx, id!(nav_page1));
             });
         }
         router.borrow_mut().map(|mut route| {
-            route.handle_nav_back(cx, &actions);
+            route.handle_nav_events(cx, &actions);
         });
-        // for action in actions {
-        //     if let GRouterEvent::NavBack(current) = action.as_widget_action().cast(){
-        //         dbg!(&current);
-        //     }
-        // }
-        // if !actions.is_empty(){
-        //     dbg!(&actions);
-        // }
-        // router.handle_event(cx, event, scope);
     }
 }

@@ -56,8 +56,40 @@ impl UploadMode {
 #[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
 #[live_ignore]
 #[repr(u32)]
-pub enum WindowButtonMode{
+pub enum WindowButtonMode {
     Desktop,
     #[pick]
-    Tool
+    Tool,
+}
+
+/// Router Tabbar(Indicator|Menu) Mode
+/// - VirtualMenu: virtual route use code to config GMenu (todo!)
+/// - VirtualTabbar: virtual route use code to config GTabbar (AbstractGTabbar)(todo!)
+/// - Bind: default mode, use dsl declare
+/// - Define: define a indicator to call router nav_to
+#[derive(Debug, Clone)]
+pub enum RouterIndicatorMode {
+    // VirtualMenu,
+    // VirtualTabbar,
+    Bind(LiveId),
+    Define,
+}
+
+impl Default for RouterIndicatorMode {
+    fn default() -> Self {
+        Self::Bind(id!(tabbar)[0])
+    }
+}
+
+impl RouterIndicatorMode {
+    /// judge self is bind and eq the input id
+    /// - if current is not bind -> false
+    /// - or back `bind_id == id`
+    pub fn eq_bind(&self, id: &LiveId) -> bool {
+        if let RouterIndicatorMode::Bind(bind_id) = self {
+            bind_id == id
+        } else {
+            false
+        }
+    }
 }

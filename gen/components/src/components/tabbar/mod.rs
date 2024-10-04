@@ -32,6 +32,28 @@ impl Widget for GTabbar {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let _ = self.animator_handle_event(cx, event);
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let _ = self.item_action(cx, scope, &actions).map(|_| {
+            return;
+        });
+    }
+}
+
+impl LiveHook for GTabbar {
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.deref_widget.after_apply(cx, apply, index, nodes);
+        if self.selected < 0 {
+            let _ = self.find_selected(cx);
+        } else {
+            self.set_selected(cx, self.selected as usize);
+        }
+    }
+}
+
+impl GTabbar {
+    event_option! {
+        changed: GTabbarEvent::Changed => GTabbarEventParam
+    }
+    fn item_action(&mut self, cx: &mut Cx, scope: &mut Scope, actions: &Actions) -> Option<()> {
         let mut flag = false;
         let mut selected = 0;
         let mut e = None;
@@ -66,24 +88,10 @@ impl Widget for GTabbar {
                     e: e.unwrap(),
                 }),
             );
-        }
-    }
-}
-
-impl LiveHook for GTabbar {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
-        self.deref_widget.after_apply(cx, apply, index, nodes);
-        if self.selected < 0 {
-            let _ = self.find_selected(cx);
+            Some(())
         } else {
-            self.set_selected(cx, self.selected as usize);
+            None
         }
-    }
-}
-
-impl GTabbar {
-    event_option! {
-        changed: GTabbarEvent::Changed => GTabbarEventParam
     }
     pub fn set_selected(&mut self, cx: &mut Cx, selected: usize) -> () {
         self.selected = selected as i32;
