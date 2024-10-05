@@ -71,6 +71,13 @@ impl GDropDown {
     fn area(&self) -> Area {
         self.view.area
     }
+    pub fn toggled(&mut self, actions: &Actions) -> Option<GDropDownEventParam> {
+        if let GDropDownEvent::Toggle(e) = actions.find_widget_action(self.widget_uid()).cast() {
+            Some(e)
+        } else {
+            None
+        }
+    }
     pub fn open(&mut self, cx: &mut Cx) {
         self.opened = true;
         self.redraw(cx);
