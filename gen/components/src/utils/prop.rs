@@ -171,9 +171,20 @@ pub trait HeapLiveIdPathExp {
     fn trim_matches(&self, target: &HeapLiveIdPath) -> Vec<LiveId>;
     fn eq(&self, target: &HeapLiveIdPath) -> bool;
     fn is_empty(&self) -> bool;
+    fn to_vec_str(&self) -> Vec<String>;
+    fn to_string(&self) -> String;
 }
 
 impl HeapLiveIdPathExp for HeapLiveIdPath {
+    fn to_vec_str(&self) -> Vec<String> {
+        format!("{:?}", self)
+            .split(".")
+            .map(|x| x.to_string())
+            .collect()
+    }
+    fn to_string(&self) -> String {
+        format!("{:?}", self)
+    }
     fn contains(&self, child: &HeapLiveIdPath) -> Result<bool, String> {
         // do format then split by `.`
         let father = format!("{:?}", self);

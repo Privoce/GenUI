@@ -1,6 +1,7 @@
 pub mod event;
 mod register;
 
+use event::{GDropDownEvent, GDropDownEventParam, GDropDownToggleKind};
 // use event::*;
 use makepad_widgets::*;
 pub use register::register;
@@ -9,7 +10,7 @@ use std::rc::Rc;
 use crate::shader::manual::{PopupMode, Position, TriggerMode};
 use icon_atlas::RefCell;
 
-use super::{view::GView, popup::GPopup};
+use super::{popup::GPopup, view::GView};
 
 live_design! {
     GDropDownBase = {{GDropDown}} {}
@@ -49,12 +50,6 @@ pub struct PopupMenuGlobal {
     pub map: Rc<RefCell<ComponentMap<LivePtr, GPopup>>>,
 }
 
-// #[derive(Clone, Debug, DefaultNone)]
-// pub enum GDropDownEvent {
-//     Clicked,
-//     None
-// }
-
 impl LiveHook for GDropDown {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         if !self.visible {
@@ -80,12 +75,39 @@ impl GDropDown {
         self.opened = true;
         self.redraw(cx);
         cx.sweep_lock(self.area());
+        self.action_toggle(cx, GDropDownToggleKind::Other, false);
     }
     pub fn close(&mut self, cx: &mut Cx) {
         self.opened = false;
         self.redraw(cx);
         cx.sweep_unlock(self.area());
+        self.action_toggle(cx, GDropDownToggleKind::Other, false);
     }
+    pub fn toggle(&mut self, cx: &mut Cx, opened: bool) {
+        if opened {
+            self.open(cx);
+        } else {
+            self.close(cx);
+        }
+    }
+    fn action_toggle(&mut self, cx: &mut Cx, e_kind: GDropDownToggleKind, opened: bool) {
+        cx.widget_action(
+            self.widget_uid(),
+            &self.scope_path,
+            GDropDownEvent::Toggle(GDropDownEventParam { e: e_kind, opened }),
+        );
+    }
+    fn toggle_inner(&mut self, cx: &mut Cx, e_kind: GDropDownToggleKind, opened: bool) {
+        self.opened = opened;
+        self.redraw(cx);
+        if opened {
+            cx.sweep_lock(self.area());
+        } else {
+            cx.sweep_unlock(self.area());
+        }
+        self.action_toggle(cx, e_kind, opened);
+    }
+
     pub fn popup<F>(&mut self, cx: &mut Cx, mut f: F) -> ()
     where
         F: FnMut(&mut Cx, &mut GPopup),
@@ -199,14 +221,14 @@ impl Widget for GDropDown {
                 match self.mode {
                     PopupMode::Popup | PopupMode::ToolTip => {
                         if !popup_menu.menu_contains_pos(cx, e.abs) {
-                            self.close(cx);
+                            self.toggle_inner(cx, GDropDownToggleKind::Other, false);
                             self.animator_play(cx, id!(hover.off));
                             return;
                         }
                     }
                     PopupMode::Dialog | PopupMode::Drawer => {
                         if !popup_menu.container_contains_pos(cx, e.abs) {
-                            self.close(cx);
+                            self.toggle_inner(cx, GDropDownToggleKind::Other, false);
                             self.animator_play(cx, id!(hover.off));
                             return;
                         }
@@ -219,31 +241,32 @@ impl Widget for GDropDown {
             Hit::KeyFocus(_) => {
                 // self.animator_play(cx, id!(focus.on));
             }
-            Hit::KeyFocusLost(_) => {
-                self.close(cx);
+            Hit::KeyFocusLost(k_e) => {
+                self.toggle_inner(cx, GDropDownToggleKind::KetFocusLost(k_e.clone()), false);
                 self.animator_play(cx, id!(hover.off));
-                self.draw_view.redraw(cx);
+                // self.draw_view.redraw(cx);
             }
             Hit::FingerDown(_) => {
                 cx.set_key_focus(self.area());
-                self.open(cx);
+                // self.open(cx);
             }
-            Hit::FingerHoverIn(_) => {
+            Hit::FingerHoverIn(e) => {
                 cx.set_cursor(MouseCursor::Hand);
                 if let TriggerMode::Hover = self.trigger_mode {
-                    self.open(cx);
+                    self.toggle_inner(cx, GDropDownToggleKind::Hover(e.clone()), true);
                 }
                 self.animator_play(cx, id!(hover.on));
             }
-            Hit::FingerHoverOut(_) => {
+            Hit::FingerHoverOut(f) => {
                 cx.set_cursor(MouseCursor::Default);
                 if let TriggerMode::Hover = self.trigger_mode {
-                    self.close(cx);
+                    self.toggle_inner(cx, GDropDownToggleKind::Hover(f.clone()), false);
                 }
                 self.animator_play(cx, id!(hover.off));
             }
             Hit::FingerUp(f) => {
                 if f.is_over && f.device.has_hovers() {
+                    self.toggle_inner(cx, GDropDownToggleKind::Clicked(f.clone()), true);
                     self.animator_play(cx, id!(hover.on));
                 }
                 if !f.is_over {

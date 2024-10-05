@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use makepad_widgets::DefaultNone;
+use rfd::FileDialog;
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GFileUploadEvent {
@@ -13,8 +14,12 @@ pub enum GFileUploadEvent {
 }
 
 #[derive(Debug, Clone)]
-pub struct PathError{
+pub struct PathError {
     pub err_msg: String,
     /// here pathbuf is not better
-    pub path: String
+    pub path: String,
+}
+
+pub fn new_file_dialog() -> FileDialog {
+    FileDialog::new()
 }
