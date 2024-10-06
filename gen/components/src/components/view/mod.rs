@@ -224,6 +224,10 @@ impl LiveHook for GView {
                 }
             }
             ApplyFrom::NewFromDoc { .. } | ApplyFrom::UpdateFromDoc { .. } => {
+                if !self.visible{
+                    nodes.skip_node(index);
+                }
+
                 if nodes[index].is_instance_prop() {
                     //self.draw_order.push(id);
                     if let Some((_, node)) = self.children.iter_mut().find(|(id2, _)| *id2 == id) {
@@ -406,6 +410,10 @@ impl Widget for GView {
         }
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible{
+            return DrawStep::done();
+        }
+
         // begin the draw state
         if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
             self.scope_path = scope.path.clone();

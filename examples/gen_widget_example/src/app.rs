@@ -38,25 +38,36 @@ live_design! {
     App = {{App}}{
         root: <Root>{
             
-            main_window = <GWindow>{
-                os_type: Windows,
-                window_bar = {
-                    window_title = {
-                        title = {
-                            text: "GenUI Builtin Components",
-                        }
-                        icon = {
-                            src: dep("crate://self/resources/google.png"),
-                        }
-                    }
-                }
-                width: Fill,
-                height: Fill,
+            main_window = <Window>{
+                // os_type: Windows,
+                // window_bar = {
+                //     window_title = {
+                //         title = {
+                //             text: "GenUI Builtin Components",
+                //         }
+                //         icon = {
+                //             src: dep("crate://self/resources/google.png"),
+                //         }
+                //     }
+                // }
+                // width: Fill,
+                // height: Fill,
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: Fill,
                     width: Fill,
                     flow: Down,
+                    // <GView>{
+                    //     theme: Primary,
+                    //     <GView>{
+                    //         visible: false,
+                    //         height: 60.0,
+                    //         width: 120.0,
+                    //         <GLabel>{
+                    //             text: "asdjskdj"
+                    //         }
+                    //     }
+                    // }
                     // <TPage>{}
                     // <GSvg>{
                     //     height: 100.0,
@@ -179,7 +190,7 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    <GPopupExample>{}
+                    // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}

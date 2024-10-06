@@ -41,6 +41,8 @@ pub struct GRouter {
     pub page_type: PageType,
     #[rust]
     pub mode: RouterIndicatorMode,
+    #[rust]
+    pub nav_actions: Option<Box<dyn FnMut(&mut GRouter)>>,
 }
 
 impl LiveHook for GRouter {}
@@ -185,6 +187,12 @@ impl GRouter {
             });
         });
         self.set_visible_page(cx, &path);
+
+        if let Some(mut actions) = self.nav_actions.take() {
+            let _ = actions(self);
+            // set back
+            self.nav_actions = Some(actions);
+        }
     }
     pub fn nav_to_path(cx: &mut Cx, uid: WidgetUid, scope: &mut Scope, path: &[LiveId]) {
         cx.widget_action(uid, &scope.path, GRouterEvent::NavTo(path[0]));
@@ -367,6 +375,13 @@ impl GRouter {
         }
         self
     }
+    pub fn nav_actions<F>(&mut self, f: F) -> &mut Self
+    where
+        F: FnMut(&mut Self) -> () + 'static,
+    {
+        self.nav_actions.replace(Box::new(f));
+        self
+    }
     /// ## Finish Router Build
     pub fn build(&mut self, cx: &mut Cx) -> () {
         if self.active_page.as_ref().is_none() {
@@ -389,5 +404,18 @@ impl GRouter {
         self.indicator_nav_to(cx, &actions).map(|_| {
             return;
         });
+    }
+    /// ## Judget page is eq active page?
+    /// - true: eq
+    /// - false:
+    ///     - not eq
+    ///     - active_page is none(almost impossible to happen)
+    pub fn eq_active_page(&self, page: &[LiveId]) -> bool {
+        let path = self.bar_scope_path(page);
+        if let Some(active) = self.active_page.as_ref() {
+            active.eq(&path)
+        } else {
+            false
+        }
     }
 }
