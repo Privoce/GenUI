@@ -42,7 +42,7 @@ pub struct GRouter {
     #[rust]
     pub mode: RouterIndicatorMode,
     #[rust]
-    pub nav_actions: Option<Box<dyn FnMut(&mut GRouter)>>,
+    pub nav_actions: Option<Box<dyn FnMut(&mut GRouter, &mut Cx)>>,
 }
 
 impl LiveHook for GRouter {}
@@ -189,7 +189,7 @@ impl GRouter {
         self.set_visible_page(cx, &path);
 
         if let Some(mut actions) = self.nav_actions.take() {
-            let _ = actions(self);
+            let _ = actions(self, cx);
             // set back
             self.nav_actions = Some(actions);
         }
@@ -210,6 +210,11 @@ impl GRouter {
             });
         });
         self.set_visible_page(cx, path);
+        if let Some(mut actions) = self.nav_actions.take() {
+            let _ = actions(self, cx);
+            // set back
+            self.nav_actions = Some(actions);
+        }
     }
     pub fn check_route(&mut self, path: &HeapLiveIdPath) -> PageType {
         if !self.bar_pages.iter().any(|x| x.contains(path).unwrap()) {
@@ -377,7 +382,7 @@ impl GRouter {
     }
     pub fn nav_actions<F>(&mut self, f: F) -> &mut Self
     where
-        F: FnMut(&mut Self) -> () + 'static,
+        F: FnMut(&mut Self, &mut Cx) -> () + 'static,
     {
         self.nav_actions.replace(Box::new(f));
         self
