@@ -31,8 +31,7 @@ use crate::{
     set_text_and_visible_fn,
     shader::draw_text::DrawGText,
     themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor},
-    widget_area,
+    utils::{get_font_family, ThemeColor},
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -142,7 +141,6 @@ impl Widget for GLabel {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
         if self.animation_open {
-            let uid = self.widget_uid();
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_text.redraw(cx);
             }
