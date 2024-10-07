@@ -93,8 +93,8 @@ pub struct GLabel {
     pub cursor: Option<MouseCursor>,
     #[live(1.5)]
     pub line_spacing: f64,
-    #[live(0.0)]
-    pub top_drop: f64,
+    // #[live(0.0)]
+    // pub top_drop: f64,
     #[live(0.0)]
     pub height_factor: f64,
     #[live(TextWrap::Word)]
@@ -191,7 +191,7 @@ impl LiveHook for GLabel {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
                     line_spacing: (self.line_spacing),
-                    top_drop: (self.top_drop),
+                    // top_drop: (self.top_drop),
                     font_size: (self.font_size),
                     height_factor: (self.height_factor),
                 }

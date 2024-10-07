@@ -105,8 +105,8 @@ pub struct GTag {
     pub color: Option<Vec4>,
     #[live]
     pub font_family: LiveDependency,
-    #[live(1.1)]
-    pub top_drop: f64,
+    // #[live(1.1)]
+    // pub top_drop: f64,
     #[live(1.3)]
     pub height_factor: f64,
     #[live(0.88)]
@@ -322,7 +322,7 @@ impl LiveHook for GTag {
                     // curve: (default_text_style.curve),
                     // line_spacing: (self.line_spacing),
                     line_scale: (self.line_scale)
-                    top_drop: (self.top_drop),
+                    // top_drop: (self.top_drop),
                     height_factor: (self.height_factor),
                 },
             },

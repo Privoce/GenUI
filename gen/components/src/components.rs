@@ -170,7 +170,7 @@ live_design! {
         height: Fit,
         color: (COLOR_WHITE),
         font_family: (FONT_FAMILY),
-        top_drop: 1.0,
+        // top_drop: 1.0,
         line_spacing: 1.5,
         font_size: (FONT_SIZE),
     }

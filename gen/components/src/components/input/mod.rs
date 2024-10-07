@@ -186,8 +186,8 @@ pub struct GInput {
     pub brightness: f32,
     #[live(0.5)]
     pub curve: f32,
-    #[live(1.2)]
-    pub top_drop: f64,
+    // #[live(1.2)]
+    // pub top_drop: f64,
     #[live(1.3)]
     pub height_factor: f64,
     #[live(TextWrap::Word)]
