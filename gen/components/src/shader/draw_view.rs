@@ -2,10 +2,7 @@ use makepad_widgets::*;
 
 live_design!{
     import makepad_draw::shader::std::*;
-    DrawGView = {{DrawGView}}{
-        instance hover: 0.0,
-        instance pressed: 0.0,
-                            
+    DrawGView = {{DrawGView}}{              
         varying rect_size2: vec2,
         varying rect_size3: vec2,
         varying rect_pos2: vec2,     
@@ -97,5 +94,7 @@ pub struct DrawGView{
     #[live(0.0)] pub background_visible: f32,
     #[live(1.0)] pub scale: f32,
     #[live(1.0)] pub opacity: f32,
-    #[live(0.0)] pub rotation: f32
+    #[live(0.0)] pub rotation: f32,
+    #[live] pub hover: f32,
+    #[live] pub pressed: f32,
 }
