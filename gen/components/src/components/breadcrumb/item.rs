@@ -78,10 +78,10 @@ pub struct GBreadCrumbItem {
     // pub brightness: f32,
     // #[live(0.5)]
     // pub curve: f32,
-    // #[live(1.5)]
-    // pub line_spacing: f64,
-    #[live(0.0)]
-    pub top_drop: f64,
+    #[live(1.5)]
+    pub line_spacing: f64,
+    // #[live(0.0)]
+    // pub top_drop: f64,
     #[live(0.0)]
     pub height_factor: f64,
     #[live(TextWrap::Line)]
@@ -208,8 +208,8 @@ impl LiveHook for GBreadCrumbItem {
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
-                    line_spacing: (self.layout.line_spacing),
-                    top_drop: (self.top_drop),
+                    line_spacing: (self.line_spacing),
+                    // top_drop: (self.top_drop),
                     font_size: (self.font_size),
                     height_factor: (self.height_factor),
                 }

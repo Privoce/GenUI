@@ -1,13 +1,16 @@
-mod register;
 pub mod event;
+mod register;
 
-pub use register::register;
 use event::GImageEvent;
+pub use register::register;
 
 use image_cache::{ImageCacheImpl, ImageFit};
 use makepad_widgets::*;
 
-use crate::{event_option, ref_event_option, set_event, shader::draw_view::DrawGView, utils::set_cursor, widget_area};
+use crate::{
+    event_option, ref_event_option, set_event, shader::draw_view::DrawGView, utils::set_cursor,
+    widget_area,
+};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -138,6 +141,8 @@ pub struct GImage {
     pub src: LiveDependency,
     #[rust(Texture::new(cx))]
     pub texture: Option<Texture>,
+    #[live(false)]
+    pub animation_open: bool,
 }
 
 impl ImageCacheImpl for GImage {
@@ -158,7 +163,7 @@ impl LiveHook for GImage {
         _index: usize,
         _nodes: &[LiveNode],
     ) {
-        if !self.visible{
+        if !self.visible {
             return;
         }
 
@@ -237,6 +242,9 @@ impl Widget for GImage {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.visible || !self.animation_open{
+            return;
+        }
         let hit = event.hits_with_options(
             cx,
             self.area(),
@@ -246,8 +254,11 @@ impl Widget for GImage {
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if !self.visible || !self.animation_open{
+            return;
+        }
         let focus_area = self.area();
-        let hit = event.hits(cx, self.area());
+        let hit = event.hits_with_capture_overload(cx, self.area(), true);
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
     fn is_visible(&self) -> bool {
@@ -295,7 +306,6 @@ impl GImage {
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
                     cx.widget_action(uid, &scope.path, GImageEvent::Clicked(f_up.clone()));
-
                 }
             }
             _ => (),

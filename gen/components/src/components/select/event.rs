@@ -1,4 +1,4 @@
-use makepad_widgets::{DefaultNone, FingerUpEvent};
+use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerUpEvent};
 
 #[derive(Debug, Clone, DefaultNone)]
 pub enum GSelectItemEvent {

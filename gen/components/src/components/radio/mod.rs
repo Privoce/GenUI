@@ -73,8 +73,8 @@ pub struct GRadio {
     pub color: Option<Vec4>,
     #[live(12.0)]
     pub font_size: f64,
-    #[live(0.0)]
-    pub top_drop: f64,
+    // #[live(0.0)]
+    // pub top_drop: f64,
     #[live(0.0)]
     pub height_factor: f64,
     #[live(TextWrap::Word)]
@@ -238,7 +238,7 @@ impl LiveHook for GRadio {
             live! {
                 color: (color),
                 text_style: {
-                    top_drop: (self.top_drop),
+                    // top_drop: (self.top_drop),
                     font_size: (self.font_size),
                     height_factor: (self.height_factor),
                 }

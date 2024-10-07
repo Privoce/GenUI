@@ -34,7 +34,6 @@ live_design! {
     import crate::components::selects::*;
     import crate::components::router_page::*;
     // FontA = { font: { path: dep("crate://self/resources/AlimamaFangYuanTiVF-Thin.ttf") } };
-
     App = {{App}}{
         root: <Root>{
             
@@ -57,17 +56,20 @@ live_design! {
                     height: Fill,
                     width: Fill,
                     flow: Down,
-                    // <GView>{
-                    //     theme: Primary,
-                    //     <GView>{
-                    //         visible: false,
-                    //         height: 60.0,
-                    //         width: 120.0,
-                    //         <GLabel>{
-                    //             text: "asdjskdj"
-                    //         }
-                    //     }
-                    // }
+                    <GView>{
+                        theme: Primary,
+                        animation_open: true,
+                        hover_color: #00FF00,
+                        capture_overload: true,
+                        <GLabel>{
+                            text: "sdsadaskd"
+                        }
+                        <GImage>{
+                            animation_open: true,
+                            src: dep("crate://self/resources/google.png"),
+                        }
+                    }
+                    
                     // <TPage>{}
                     // <GSvg>{
                     //     height: 100.0,

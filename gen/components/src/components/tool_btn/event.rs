@@ -1,4 +1,6 @@
-use makepad_widgets::{DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent};
+use makepad_widgets::{
+    ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent,
+};
 
 use super::types::GToolButtonType;
 
@@ -11,7 +13,7 @@ pub enum GToolButtonEvent {
 }
 
 #[derive(Clone, Debug)]
-pub struct GToolButtonClickParam{
+pub struct GToolButtonClickParam {
     pub e: FingerUpEvent,
-    pub mode: GToolButtonType
+    pub mode: GToolButtonType,
 }
