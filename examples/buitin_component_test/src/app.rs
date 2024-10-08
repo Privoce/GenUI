@@ -25,7 +25,29 @@ live_design! {
                     height: Fill,
                     width: Fill,
                     flow: Down,
-                    <>
+                    <GVLayout>{
+                        width: 300.0,
+                        <GMenuItem>{
+                            icon_slot: {
+                                src: dep("crate://self/resources/setting.svg"),
+                            }
+                            text_slot: {
+                                text: "Settings",
+                            }
+                        }
+                        <GMenuItem>{
+                        
+                        }
+                        <GMenuItem>{
+                            selected: true,
+                            icon_slot: {
+                                src: dep("crate://self/resources/upload.svg"),
+                            }
+                            text_slot: {
+                                text: "Upload",
+                            }
+                        }
+                    }
                 }
             }
         }

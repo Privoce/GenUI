@@ -2,7 +2,7 @@ use makepad_widgets::*;
 
 use super::IconType;
 
-#[derive(Live, LiveHook, Clone, Debug)]
+#[derive(Live, LiveHook, Clone, Debug, Copy)]
 #[live_ignore]
 #[repr(u32)]
 pub enum Arrow {

@@ -29,6 +29,7 @@ pub mod toggle;
 pub mod tool_btn;
 pub mod window;
 pub mod router;
+pub mod menu;
 
 live_design! {
     // imports -----------------------------------------------------
@@ -76,6 +77,7 @@ live_design! {
     import crate::components::tabbar::item::GTabbarItemBase;
     import crate::components::router::GRouterBase;
     import crate::components::router::page::GPageBase;
+    import crate::components::menu::menu_item::GMenuItemBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -1114,6 +1116,30 @@ live_design! {
             border_radius: 0.0,
             background_visible: false,
             flow: Down,
+        }
+    }
+    GMenuItem = <GMenuItemBase>{
+        height: 36.0,
+        width: Fill,
+        padding: 8.0,
+        spacing: 12.0,
+        align: {
+            x: 0.0,
+            y: 0.5
+        },
+        icon_slot: <GSvg>{
+            theme: Dark,
+            color: (COLOR_WHITE),
+            src: dep("crate://self/resources/icons/home.svg"),
+            height: 16.0,
+            width: 16.0,
+        }
+        text_slot: <GLabel>{
+            text: "Home",
+            font_size: 10.0,
+        }
+        right_slot: <GHLayout>{
+            visible: false
         }
     }
 }
