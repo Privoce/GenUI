@@ -23,7 +23,7 @@ pub struct GColor {
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
-    #[live]
+    #[live(true)]
     pub visible: bool,
     #[find]
     #[redraw]
@@ -46,7 +46,6 @@ impl Widget for GColor {
         }
 
         let _ = self.draw_color.begin(cx, walk, self.layout);
-
         if self.header.is_visible() {
             let header_walk = self.header.walk(cx);
             let _ = self.header.draw_walk(cx, scope, header_walk);
@@ -73,6 +72,7 @@ impl LiveHook for GColor {
         }
         self.render(cx);
         if self.header.is_visible() {
+            self.header.theme = self.theme;
             self.header
                 .glabel(id!(theme_name))
                 .set_text_and_redraw(cx, &self.theme.to_string());
@@ -82,22 +82,34 @@ impl LiveHook for GColor {
         }
 
         if self.colors.is_visible() {
+            
+            self.colors.children.clear();
             for (index, color) in self.theme.to_vec().into_iter().enumerate() {
                 self.colors
                     .children
                     .push((LiveId(index as u64), WidgetRef::new_from_ptr(cx, self.item)));
                 self.colors.children.last_mut().map(|(_, view)| {
                     view.as_gview().borrow_mut().map(|mut view| {
+                        view.theme = self.theme;
                         view.background_color.replace(color);
+                        view.render(cx);
                     });
                 });
             }
         }
-        self.redraw(cx);
     }
 }
 
 impl GColor {
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.draw_color.redraw(cx);
+        if self.header.is_visible() {
+            self.header.redraw(cx);
+        }
+        if self.colors.is_visible() {
+            self.colors.redraw(cx);
+        }
+    }
     pub fn render(&mut self, cx: &mut Cx) {
         // ----------------- background color -------------------------------------------
         let bg_color = self.theme.get(500);

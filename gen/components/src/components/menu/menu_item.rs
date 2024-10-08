@@ -228,7 +228,7 @@ impl GMenuItem {
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        let pressed_color = self.pressed_color.get(self.theme, 300);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         // ------------------ is background_visible --------------------------------------------

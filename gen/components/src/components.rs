@@ -248,7 +248,31 @@ live_design! {
         spacing: 0,
         margin: 0,
     }
-    GColor = <GColorBase>{}
+    GColor = <GColorBase>{
+        height: Fit,
+        width: 440.0,
+        flow: Down,
+        item: <GView>{
+            height: 40.0,
+            width: 40.0,
+            border_radius: 0.0,
+        },
+        header: <GVLayout>{
+            height: 72.0,
+            spacing: 8.0,
+            theme_name = <GLabel>{
+                font_size: 12.0,
+            }
+            theme_main = <GLabel>{
+                font_size: 10.0,
+            }
+            padding: 16.0,
+        }
+        colors: <GHLayout>{
+            height: 40.0,
+            border_radius: 0.0,
+        }
+    }
     // ## GScrollBar
     // A scroll bar component use ScrollBarBase, it is a single scroll bar
     GScrollBar = <ScrollBarBase> {
@@ -1166,7 +1190,12 @@ live_design! {
     }
     GSubMenu = <GSubMenuBase>{
         title: <GView>{
-            padding: 4.0,
+            padding: {
+                left: 8.0,
+                right: 8.0,
+                top: 4.0,
+                bottom: 4.0
+            },
             height: 32.0,
             width: Fill,
             align: {
@@ -1189,7 +1218,7 @@ live_design! {
         flow: Down,
         border_radius: 0.0,
         header: <GVLayout>{
-            visible: false
+            visible: false,
         }
         body: <GVLayout>{
             height: Fill,

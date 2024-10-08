@@ -1,11 +1,7 @@
 use gen_components::{
     components::{
-        menu::{
-            menu_item::{GMenuItem, GMenuItemWidgetExt},
-            sub_menu::GSubMenuWidgetExt,
-            GMenuWidgetExt,
-        },
-        router::{GRouterRef, GRouterWidgetExt},
+        menu::{sub_menu::GSubMenuWidgetExt, GMenuWidgetExt},
+        router::GRouterWidgetExt,
         view::GView,
     },
     shader::manual::RouterIndicatorMode,
@@ -40,6 +36,7 @@ live_design! {
                     x: 0.0,
                     y: 0.5
                 },
+                padding: {left: 4.0},
                 <GLabel>{
                     font_size: 12.0,
                     text: "GenUI Components",
@@ -51,7 +48,7 @@ live_design! {
                     title: {
                         <GLabel>{
                             font_size: 11.0,
-                            text: "Overall 组件总览",
+                            text: "Overall",
                         }
                     }
                     items: {
@@ -60,7 +57,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Overall 组件总览",
+                                text: "Overall",
                             }
                         }
                         tab_color = <GMenuItem>{
@@ -68,7 +65,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Color 颜色",
+                                text: "Color",
                             }
                         }
                     }
@@ -78,7 +75,7 @@ live_design! {
                     title: {
                         <GLabel>{
                             font_size: 11.0,
-                            text: "Basic 基础组件",
+                            text: "Basic",
                         }
                     }
                     items: {
@@ -87,7 +84,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Label 文本",
+                                text: "Label",
                             }
                         }
                         <GMenuItem>{
@@ -95,7 +92,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "View 视图",
+                                text: "View",
                             }
                         }
                         <GMenuItem>{
@@ -103,7 +100,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Button 按钮",
+                                text: "Button",
                             }
                         }
                         <GMenuItem>{
@@ -111,7 +108,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Svg 图标",
+                                text: "Svg",
                             }
                         }
                         <GMenuItem>{
@@ -119,7 +116,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Image 图片",
+                                text: "Image",
                             }
                         }
                         <GMenuItem>{
@@ -127,7 +124,7 @@ live_design! {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Icon Lib 图标库",
+                                text: "Icon Lib",
                             }
                         }
                     }
@@ -135,18 +132,72 @@ live_design! {
 
             }
         }
-        app_router = <GRouter>{
-            bar_pages = {
-                flow: Down,
-                overall_page = <GBarPage>{
-                    <OverallPage>{}
+        <GVLayout>{
+            app_router = <GRouter>{
+                bar_pages = {
+                    flow: Down,
+                    overall_page = <GBarPage>{
+                        <OverallPage>{}
+                    }
+                    color_page = <GBarPage>{
+                        <ColorPage>{}
+                    }
                 }
-                color_page = <GBarPage>{
-                    <ColorPage>{}
+            }
+            <GView>{
+                width: Fill,
+                height: 100.0,
+                spacing: 12.0,
+                padding: 16.0,
+                border_radius: 0.0,
+                <GVLayout>{
+                    spacing: 4.0,
+                    <GLabel>{
+                        text: "Links"
+                    }
+                    <GLink>{
+                        text: "GenUI Github",
+                        href: "https://github.com/Privoce/GenUI"
+                    }
+                    <GLink>{
+                        text: "Makepad Github",
+                        href: "https://github.com/makepad/makepad"
+                    }
+                    <GLink>{
+                        text: "Update Log"
+                    }
                 }
-
+                <GVLayout>{
+                    spacing: 4.0,
+                    <GLabel>{
+                        text: "Community"
+                    }
+                    <GLink>{
+                        text: "GenUI Discord",
+                        href: "https://discord.gg/jVEJDhE75Y"
+                    }
+                    <GLink>{
+                        text: "Makepad Discord",
+                        href: "https://discord.gg/adqBRq7Ece"
+                    }
+                }
+                <GVLayout>{
+                    spacing: 4.0,
+                    <GLabel>{
+                        text: "Videos"
+                    }
+                    <GLink>{
+                        text: "GenUI",
+                        href: "https://www.bilibili.com/video/BV1PYsbe3EbW/?spm_id_from=333.337.search-card.all.click"
+                    }
+                    <GLink>{
+                        text: "Makepad",
+                        href: "https://www.youtube.com/watch?v=rC4FCS-oMpg"
+                    }
+                }
             }
         }
+
     }
 }
 
@@ -179,7 +230,7 @@ impl Widget for AppMainPage {
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(overall_page))
+                        .active(id!(color_page))
                         .build(cx);
                 });
             })
@@ -195,8 +246,6 @@ impl Widget for AppMainPage {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        
-
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let router = self.grouter(id!(app_router));
         self.gmenu(id!(menu)).borrow().map(|menu| {
@@ -210,8 +259,11 @@ impl Widget for AppMainPage {
                 // });
                 if let Some(e) = sub.changed(&actions) {
                     router.borrow_mut().map(|mut router| {
-                        dbg!(e.selected_id);
-                        // router.nav_to(cx, &[e.selected_id]);
+                        let s = router.bar_pages.get(e.selected).map(|path| path.last());
+
+                        s.map(|path| {
+                            router.nav_to(cx, &[path]);
+                        });
                     });
                 }
             });
