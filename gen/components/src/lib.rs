@@ -7,6 +7,7 @@ pub mod utils;
 
 pub fn live_design(cx: &mut Cx) {
     // components ---------------------------------------------
+    crate::components::colors::register(cx);
     crate::components::label::register(cx);
     crate::components::link::register(cx);
     crate::components::view::register(cx);
@@ -35,6 +36,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::tabbar::register(cx);
     crate::components::router::register(cx);
     crate::components::menu::register(cx);
+
 
     crate::components::tab::header::live_design(cx);
     crate::components::tab::button::live_design(cx);

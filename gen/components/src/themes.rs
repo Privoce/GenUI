@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use makepad_widgets::*;
 
 use crate::color_v_trait;
@@ -11,6 +13,47 @@ pub enum Themes {
     Error,
     Warning,
     Success,
+    Info,
+}
+
+impl Themes{
+    pub fn get(&self, v: u32) -> Vec4 {
+        match self {
+            Themes::Dark => ThemeDark::v(v),
+            Themes::Primary => ThemePrimary::v(v),
+            Themes::Error => ThemeError::v(v),
+            Themes::Warning => ThemeWarning::v(v),
+            Themes::Success => ThemeSuccess::v(v),
+            Themes::Info => ThemeInfo::v(v),
+        }
+    }
+    pub fn hex(&self, v: u32) -> &'static str {
+        match self {
+            Themes::Dark => ThemeDark::hex(v),
+            Themes::Primary => ThemePrimary::hex(v),
+            Themes::Error => ThemeError::hex(v),
+            Themes::Warning => ThemeWarning::hex(v),
+            Themes::Success => ThemeSuccess::hex(v),
+            Themes::Info => ThemeInfo::hex(v),
+        }
+    }
+    pub fn to_vec(&self) -> Vec<Vec4>{
+        let levels = vec![25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+        levels.iter().map(|v| self.get(*v)).collect()
+    }
+}
+
+impl Display for Themes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Themes::Dark => write!(f, "Dark"),
+            Themes::Primary => write!(f, "Primary"),
+            Themes::Error => write!(f, "Error"),
+            Themes::Warning => write!(f, "Warning"),
+            Themes::Success => write!(f, "Success"),
+            Themes::Info => write!(f, "Info"),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -20,25 +63,27 @@ pub enum ThemeColor {
     Error(ThemeError),
     Warning(ThemeWarning),
     Success(ThemeSuccess),
+    Info(ThemeInfo),
 }
 
 pub trait ThemeColorValue: Default {
     fn v(target: u32) -> Vec4;
     fn get(&self) -> Vec4;
+    fn hex(target: u32) -> &'static str;
 }
 
 // -------- color-dark -----------------------------------------
-// COLOR_DARK_25 = #FCFCFD;
-// COLOR_DARK_50 = #F9FAFB;
-// COLOR_DARK_100 = #F2F4F7;
-// COLOR_DARK_200 = #EAECF0;
-// COLOR_DARK_300 = #D0D5DD;
-// COLOR_DARK_400 = #95A2D3;
-// COLOR_DARK_500 = #667085;
-// COLOR_DARK_600 = #475467;
-// COLOR_DARK_700 = #344054;
-// COLOR_DARK_800 = #1D2939;
-// COLOR_DARK_900 = #101828;
+// COLOR_DARK_25 = #6e7176;
+// COLOR_DARK_50 = #5b5f64;
+// COLOR_DARK_100 = #42464d;
+// COLOR_DARK_200 = #3b4047;
+// COLOR_DARK_300 = #2f333b;
+// COLOR_DARK_400 = #282d35;
+// COLOR_DARK_500 = #22272F;
+// COLOR_DARK_600 = #1f242b;
+// COLOR_DARK_700 = #1d2127;
+// COLOR_DARK_800 = #1a1e24;
+// COLOR_DARK_900 = #0f1115;
 #[derive(Debug, Clone)]
 pub struct ThemeDark(Vec4);
 
@@ -49,19 +94,19 @@ impl Default for ThemeDark {
 }
 
 impl ThemeDark {
-    pub const _25: &'static str = "#FCFCFD";
-    pub const _50: &'static str = "#F9FAFB";
-    pub const _100: &'static str = "#F2F4F7";
-    pub const _200: &'static str = "#EAECF0";
-    pub const _300: &'static str = "#D0D5DD";
-    pub const _400: &'static str = "#95A2D3";
-    pub const _500: &'static str = "#667085";
-    pub const _600: &'static str = "#475467";
-    pub const _700: &'static str = "#344054";
-    pub const _800: &'static str = "#1D2939";
-    pub const _900: &'static str = "#101828";
+    pub const _25: &'static str = "#6e7176";
+    pub const _50: &'static str = "#5b5f64";
+    pub const _100: &'static str = "#42464d";
+    pub const _200: &'static str = "#3b4047";
+    pub const _300: &'static str = "#2f333b";
+    pub const _400: &'static str = "#282d35";
+    pub const _500: &'static str = "#22272F";
+    pub const _600: &'static str = "#1f242b";
+    pub const _700: &'static str = "#1d2127";
+    pub const _800: &'static str = "#1a1e24";
+    pub const _900: &'static str = "#0f1115";
 }
-color_v_trait!(ThemeDark);
+
 // -------- color-primary --------------------------------------
 // COLOR_PRIMARY_25 = #F5FEFF;
 // COLOR_PRIMARY_50 = #ECFDFF;
@@ -202,10 +247,48 @@ impl ThemeSuccess {
     pub const _800: &'static str = "#05603A";
     pub const _900: &'static str = "#054F31";
 }
+
+// COLOR_INFO_25 = #FCFCFD;
+// COLOR_INFO_50 = #F9FAFB;
+// COLOR_INFO_100 = #F2F4F7;
+// COLOR_INFO_200 = #EAECF0;
+// COLOR_INFO_300 = #D0D5DD;
+// COLOR_INFO_400 = #95A2D3;
+// COLOR_INFO_500 = #667085;
+// COLOR_INFO_600 = #475467;
+// COLOR_INFO_700 = #344054;
+// COLOR_INFO_800 = #1D2939;
+// COLOR_INFO_900 = #101828;
+#[derive(Debug, Clone)]
+pub struct ThemeInfo(Vec4);
+
+impl Default for ThemeInfo {
+    fn default() -> Self {
+        Self(hex_to_vec4(Self::_500))
+    }
+}
+
+impl ThemeInfo {
+    pub const _25: &'static str = "#FCFCFD";
+    pub const _50: &'static str = "#F9FAFB";
+    pub const _100: &'static str = "#F2F4F7";
+    pub const _200: &'static str = "#EAECF0";
+    pub const _300: &'static str = "#D0D5DD";
+    pub const _400: &'static str = "#95A2D3";
+    pub const _500: &'static str = "#667085";
+    pub const _600: &'static str = "#475467";
+    pub const _700: &'static str = "#344054";
+    pub const _800: &'static str = "#1D2939";
+    pub const _900: &'static str = "#101828";
+}
+
+
 color_v_trait!(ThemePrimary);
 color_v_trait!(ThemeError);
 color_v_trait!(ThemeSuccess);
 color_v_trait!(ThemeWarning);
+color_v_trait!(ThemeInfo);
+color_v_trait!(ThemeDark);
 
 pub fn hex_to_vec4(hex: &str) -> Vec4 {
     // 去掉开头的 '#' 符号
@@ -246,6 +329,7 @@ pub fn get_color(theme: Themes, color: Option<&Vec4>, v: u32) -> Vec4 {
             Themes::Error => ThemeError::v(v),
             Themes::Warning => ThemeWarning::v(v),
             Themes::Success => ThemeSuccess::v(v),
+            Themes::Info => ThemeInfo::v(v),
         }
     };
 }

@@ -4,6 +4,7 @@ live_design! {
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
+    import crate::views::main_page::*;
     App = {{App}}{
         root: <Root>{
             main_window = <GWindow>{
@@ -21,34 +22,7 @@ live_design! {
                 width: Fill,
                 height: Fill,
                 window: {inner_size: vec2(880, 800)},
-                body = <ScrollYView>{
-                    height: Fill,
-                    width: Fill,
-                    flow: Down,
-                    <GVLayout>{
-                        width: 300.0,
-                        <GMenuItem>{
-                            icon_slot: {
-                                src: dep("crate://self/resources/setting.svg"),
-                            }
-                            text_slot: {
-                                text: "Settings",
-                            }
-                        }
-                        <GMenuItem>{
-                        
-                        }
-                        <GMenuItem>{
-                            selected: true,
-                            icon_slot: {
-                                src: dep("crate://self/resources/upload.svg"),
-                            }
-                            text_slot: {
-                                text: "Upload",
-                            }
-                        }
-                    }
-                }
+                body = <AppMainPage>{}
             }
         }
     }
@@ -64,7 +38,8 @@ impl LiveRegister for App {
     fn live_register(cx: &mut Cx) {
         crate::makepad_widgets::live_design(cx);
         crate::gen_components::live_design(cx);
-       
+        crate::views::main_page::live_design(cx);
+        crate::views::overall::register(cx);
     }
 }
 

@@ -2,7 +2,6 @@ use makepad_widgets::*;
 
 pub mod breadcrumb;
 pub mod button;
-pub mod view;
 pub mod checkbox;
 pub mod collapse;
 pub mod divider;
@@ -14,10 +13,12 @@ pub mod input;
 pub mod label;
 pub mod link;
 pub mod loading;
+pub mod menu;
 pub mod notification;
 pub mod popup;
 pub mod progress;
 pub mod radio;
+pub mod router;
 pub mod select;
 pub mod shader;
 pub mod svg;
@@ -27,14 +28,15 @@ pub mod table;
 pub mod tag;
 pub mod toggle;
 pub mod tool_btn;
+pub mod view;
 pub mod window;
-pub mod router;
-pub mod menu;
+pub mod colors;
 
 live_design! {
     // imports -----------------------------------------------------
     import crate::components::label::GLabelBase;
     import crate::components::button::GButtonBase;
+    import crate::components::colors::GColorBase;
     import crate::components::view::GViewBase;
     import crate::components::link::GLinkBase;
     import crate::components::icon::GIconBase;
@@ -78,6 +80,8 @@ live_design! {
     import crate::components::router::GRouterBase;
     import crate::components::router::page::GPageBase;
     import crate::components::menu::menu_item::GMenuItemBase;
+    import crate::components::menu::sub_menu::GSubMenuBase;
+    import crate::components::menu::GMenuBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -91,18 +95,30 @@ live_design! {
     DARK_OPACITY_25 = #66666640;
     DARK_OPACITY_50 = #66666680;
     DARK_OPACITY_75 = #666666BF;
+    // -------- color-info -----------------------------------------
+    COLOR_INFO_25 = #FCFCFD;
+    COLOR_INFO_50 = #F9FAFB;
+    COLOR_INFO_100 = #F2F4F7;
+    COLOR_INFO_200 = #EAECF0;
+    COLOR_INFO_300 = #D0D5DD;
+    COLOR_INFO_400 = #95A2D3;
+    COLOR_INFO_500 = #667085;
+    COLOR_INFO_600 = #475467;
+    COLOR_INFO_700 = #344054;
+    COLOR_INFO_800 = #1D2939;
+    COLOR_INFO_900 = #101828;
     // -------- color-dark -----------------------------------------
-    COLOR_DARK_25 = #FCFCFD;
-    COLOR_DARK_50 = #F9FAFB;
-    COLOR_DARK_100 = #F2F4F7;
-    COLOR_DARK_200 = #EAECF0;
-    COLOR_DARK_300 = #D0D5DD;
-    COLOR_DARK_400 = #95A2D3;
-    COLOR_DARK_500 = #667085;
-    COLOR_DARK_600 = #475467;
-    COLOR_DARK_700 = #344054;
-    COLOR_DARK_800 = #1D2939;
-    COLOR_DARK_900 = #101828;
+    COLOR_DARK_25 = #6e7176;
+    COLOR_DARK_50 = #5b5f64;
+    COLOR_DARK_100 = #42464d;
+    COLOR_DARK_200 = #3b4047;
+    COLOR_DARK_300 = #2f333b;
+    COLOR_DARK_400 = #282d35;
+    COLOR_DARK_500 = #22272F;
+    COLOR_DARK_600 = #1f242b;
+    COLOR_DARK_700 = #1d2127;
+    COLOR_DARK_800 = #1a1e24;
+    COLOR_DARK_900 = #0f1115;
     // -------- color-primary --------------------------------------
     COLOR_PRIMARY_25 = #F5FEFF;
     COLOR_PRIMARY_50 = #ECFDFF;
@@ -232,6 +248,7 @@ live_design! {
         spacing: 0,
         margin: 0,
     }
+    GColor = <GColorBase>{}
     // ## GScrollBar
     // A scroll bar component use ScrollBarBase, it is a single scroll bar
     GScrollBar = <ScrollBarBase> {
@@ -611,7 +628,7 @@ live_design! {
                 sdf.rect(self.pos.x, self.pos.y, self.rect_size.x, self.rect_size.y);
                 let color = self.get_color();
                 sdf.fill(vec4(color.r, color.g, color.b, self.opacity));
-                
+
                 return sdf.result;
             }
         }
@@ -874,7 +891,7 @@ live_design! {
         window_bar = <GHLayout>{
             height: 32.0,
             width: Fill,
-            background_color:#1F1E25,
+            background_color: #1F1E25,
             background_visible: true,
             align: {
                 x: 0.0, y: 0.5
@@ -959,7 +976,7 @@ live_design! {
     //         height: Fill,
     //         width: Fit,
     //         center_slot = <GLabel>{
-    //             color: (COLOR_DARK_900),
+    //             color: (COLOR_INFO_900),
     //             font_size: (FONT_SIZE),
     //             text: "Select Item"
     //         }
@@ -969,7 +986,7 @@ live_design! {
     //         height: Fill,
     //         width: Fit,
     //         right_slot = <GLabel>{
-    //             color: (COLOR_DARK_900),
+    //             color: (COLOR_INFO_900),
     //             font_size: (FONT_SIZE_SMALL)
     //             text: "sub info"
     //         }
@@ -1028,7 +1045,7 @@ live_design! {
             right: 8.0
         },
         border_radius: 0.0,
-        
+
     }
     GBarPage = <GView>{
         visible:false,
@@ -1121,7 +1138,12 @@ live_design! {
     GMenuItem = <GMenuItemBase>{
         height: 36.0,
         width: Fill,
-        padding: 8.0,
+        padding: {
+            left: 12.0,
+            right: 12.0,
+            top: 4.0,
+            bottom: 4.0
+        },
         spacing: 12.0,
         align: {
             x: 0.0,
@@ -1138,7 +1160,42 @@ live_design! {
             text: "Home",
             font_size: 10.0,
         }
-        right_slot: <GHLayout>{
+        right: <GHLayout>{
+            visible: false
+        }
+    }
+    GSubMenu = <GSubMenuBase>{
+        title: <GView>{
+            padding: 4.0,
+            height: 32.0,
+            width: Fill,
+            align: {
+                x: 0.0,
+                y: 0.5
+            },
+        },
+        items: <GVLayout>{
+            height: Fill,
+            width: Fill,
+            align: {
+                x: 0.0,
+                y: 0.0
+            },
+        }
+    }
+    GMenu = <GMenuBase>{
+        height: Fill,
+        width: 240.0,
+        flow: Down,
+        border_radius: 0.0,
+        header: <GVLayout>{
+            visible: false
+        }
+        body: <GVLayout>{
+            height: Fill,
+            width: Fill,
+        }
+        footer: <GVLayout>{
             visible: false
         }
     }

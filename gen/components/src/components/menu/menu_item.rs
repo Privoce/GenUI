@@ -2,6 +2,7 @@ use makepad_widgets::*;
 
 use crate::{
     components::{label::GLabel, svg::GSvg, view::GView},
+    event_option,
     shader::draw_view::DrawGView,
     themes::Themes,
     utils::{set_cursor, BoolToF32, ThemeColor},
@@ -67,7 +68,7 @@ pub struct GMenuItem {
     pub background_visible: bool,
     #[live]
     pub shadow_color: Option<Vec4>,
-    #[live(4.8)]
+    #[live(0.0)]
     pub spread_radius: f32,
     #[live(4.8)]
     pub blur_radius: f32,
@@ -91,7 +92,7 @@ pub struct GMenuItem {
     #[find]
     #[live]
     #[redraw]
-    pub right_slot: GView,
+    pub right: GView,
     #[layout]
     pub layout: Layout,
     #[walk]
@@ -117,9 +118,9 @@ impl Widget for GMenuItem {
             let text_walk = self.text_slot.walk(cx);
             let _ = self.text_slot.draw_walk(cx, scope, text_walk);
         }
-        if self.right_slot.is_visible() {
-            let right_walk = self.right_slot.walk(cx);
-            let _ = self.right_slot.draw_walk(cx, scope, right_walk);
+        if self.right.is_visible() {
+            let right_walk = self.right.walk(cx);
+            let _ = self.right.draw_walk(cx, scope, right_walk);
         }
 
         self.draw_menu_item.end(cx);
@@ -193,7 +194,20 @@ impl GMenuItem {
         area, draw_menu_item,
         area_icon, icon_slot,
         area_text, text_slot,
-        area_right, right_slot
+        area_right, right
+    }
+    event_option! {
+        clicked: GMenuItemEvent::Clicked => GMenuItemClickedParam,
+        hovered: GMenuItemEvent::Hovered => GMenuItemHoveredParam
+    }
+    pub fn toggle(&mut self, cx: &mut Cx, selected: bool) {
+        self.selected = selected;
+        self.draw_menu_item.pressed = self.selected.to_f32();
+        if self.selected {
+            self.animator_play(cx, id!(hover.pressed));
+        } else {
+            self.animator_play(cx, id!(hover.off));
+        }
     }
     pub fn redraw(&mut self, cx: &mut Cx) {
         self.draw_menu_item.redraw(cx);
@@ -203,8 +217,8 @@ impl GMenuItem {
         if self.text_slot.is_visible() {
             self.text_slot.redraw(cx);
         }
-        if self.right_slot.is_visible() {
-            self.right_slot.redraw(cx);
+        if self.right.is_visible() {
+            self.right.redraw(cx);
         }
     }
     pub fn render(&mut self, cx: &mut Cx) {
