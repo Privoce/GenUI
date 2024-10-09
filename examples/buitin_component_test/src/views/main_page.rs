@@ -70,6 +70,33 @@ live_design! {
                         }
                     }
                 }
+                sub2 = <GSubMenu>{
+                    id: 0,
+                    title: {
+                        <GLabel>{
+                            font_size: 11.0,
+                            text: "Overall",
+                        }
+                    }
+                    items: {
+                        tab_overall = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Overall",
+                            }
+                        }
+                        tab_color = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Color",
+                            }
+                        }
+                    }
+                }
                 <GSubMenu>{
                     id: 1,
                     title: {

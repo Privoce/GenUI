@@ -93,3 +93,110 @@ impl RouterIndicatorMode {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub enum MenuItemMode {
+    /// sub menu which has a title and items, items can be sub menu or menu item
+    SubMenu(Vec<MenuItemMode>),
+    /// menu item as a leaf node, `bool` is selected or not
+    MenuItem(bool),
+}
+
+impl MenuItemMode {
+    pub fn is_menu_item(&self) -> bool {
+        matches!(self, MenuItemMode::MenuItem(_))
+    }
+    pub fn is_sub_menu(&self) -> bool {
+        matches!(self, MenuItemMode::SubMenu(_))
+    }
+
+    /// get the selected index of the menu item
+    /// try to find the item which is selected in the menu item
+    pub fn selected(items: &Vec<MenuItemMode>) -> Option<Vec<usize>> {
+        fn handle_nested(items: &Vec<MenuItemMode>, levels: &mut Vec<usize>) -> bool {
+            let mut flag = false;
+            for (index, item) in items.iter().enumerate() {
+                match item {
+                    MenuItemMode::SubMenu(subs) => {
+                        if handle_nested(subs, levels) {
+                            levels.splice(0..0, vec![index]);
+                            flag = true;
+                            break;
+                        }
+                    }
+                    MenuItemMode::MenuItem(selected) => {
+                        if *selected {
+                            levels.push(index);
+                            return true;
+                        }
+                    }
+                }
+            }
+            flag
+        }
+        if items.is_empty() {
+            return None;
+        }
+
+        let mut levels = vec![];
+        if handle_nested(items, &mut levels) {
+            Some(levels)
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(test)]
+mod test_mode {
+    #[test]
+    fn menu_item() {
+        let menu_items = vec![super::MenuItemMode::SubMenu(vec![
+            super::MenuItemMode::MenuItem(false),
+            super::MenuItemMode::MenuItem(false),
+            super::MenuItemMode::SubMenu(vec![
+                super::MenuItemMode::MenuItem(false),
+                super::MenuItemMode::MenuItem(true),
+                super::MenuItemMode::MenuItem(false),
+            ]),
+        ])];
+
+        dbg!(super::MenuItemMode::selected(&menu_items));
+    }
+    #[test]
+    fn menu_item2() {
+        let menu_items = vec![
+            super::MenuItemMode::SubMenu(vec![
+                super::MenuItemMode::MenuItem(false),
+                super::MenuItemMode::MenuItem(false),
+                super::MenuItemMode::SubMenu(vec![
+                    super::MenuItemMode::MenuItem(false),
+                    super::MenuItemMode::MenuItem(false),
+                    super::MenuItemMode::MenuItem(false),
+                ]),
+            ]),
+            super::MenuItemMode::SubMenu(vec![
+                super::MenuItemMode::MenuItem(true),
+                super::MenuItemMode::MenuItem(false),
+            ]),
+            super::MenuItemMode::MenuItem(false),
+        ];
+
+        dbg!(super::MenuItemMode::selected(&menu_items));
+    }
+    #[test]
+    fn menu_item3() {
+        let menu_items = vec![
+            super::MenuItemMode::MenuItem(false),
+            super::MenuItemMode::SubMenu(vec![
+                super::MenuItemMode::MenuItem(false),
+                super::MenuItemMode::MenuItem(false),
+                super::MenuItemMode::MenuItem(false),
+            ]),
+            super::MenuItemMode::MenuItem(false),
+            super::MenuItemMode::MenuItem(true),
+        ];
+
+        dbg!(super::MenuItemMode::selected(&menu_items));
+    }
+}
