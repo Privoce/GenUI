@@ -109,7 +109,7 @@ impl Widget for GMenu {
         if self.body.is_visible() {
             let actions = cx.capture_actions(|cx| self.body.handle_event(cx, event, scope));
             let mut fresh = None;
-            for (index, ((_, child), item_mode)) in self
+            for (index, ((id, child), item_mode)) in self
                 .body
                 .children
                 .iter()
@@ -120,7 +120,7 @@ impl Widget for GMenu {
                     MenuItemMode::SubMenu(_) => {
                         child.as_gsub_menu().borrow().map(|sub_menu| {
                             if let Some(e) = sub_menu.changed(&actions) {
-                                fresh.replace(e.e);
+                                fresh.replace((e.selected_id, e.e));
                                 let mut selected = vec![index];
                                 selected.extend(e.selected.unwrap());
                                 self.selected.replace(selected);
@@ -134,7 +134,7 @@ impl Widget for GMenu {
                                     // means need to change self.selected
                                     self.selected.replace(vec![index]);
                                     // do fresh selected
-                                    fresh.replace(e.e);
+                                    fresh.replace((id.clone(), e.e));
                                 }
                             }
                         });
@@ -144,7 +144,7 @@ impl Widget for GMenu {
                     break;
                 }
             }
-            if let Some(e) = fresh {
+            if let Some((id, e)) = fresh {
                 self.fresh_selected(cx);
 
                 cx.widget_action(
@@ -152,6 +152,7 @@ impl Widget for GMenu {
                     &scope.path,
                     GMenuEvent::Changed(GMenuChangedParam {
                         selected: self.selected.clone(),
+                        selected_id: id,
                         e,
                     }),
                 );

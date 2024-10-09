@@ -1,4 +1,4 @@
-use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent};
+use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent, LiveId};
 
 #[derive(Debug, Clone, DefaultNone)]
 pub enum GMenuItemEvent {
@@ -31,6 +31,7 @@ pub enum GSubMenuEvent {
 pub struct GSubMenuChangedParam {
     /// The index of the selected item.
     pub selected: Option<Vec<usize>>,
+    pub selected_id: LiveId,
     pub e: FingerUpEvent,
 }
 
@@ -44,5 +45,6 @@ pub enum GMenuEvent {
 pub struct GMenuChangedParam {
     /// The index of the selected item.
     pub selected: Option<Vec<usize>>,
+    pub selected_id: LiveId,
     pub e: FingerUpEvent,
 }

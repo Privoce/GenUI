@@ -108,7 +108,7 @@ impl Widget for GSubMenu {
             let actions = cx.capture_actions(|cx| self.items.handle_event(cx, event, scope));
 
             let mut fresh = None;
-            for (index, ((_, child), item_mode)) in self
+            for (index, ((id, child), item_mode)) in self
                 .items
                 .children
                 .iter()
@@ -128,14 +128,14 @@ impl Widget for GSubMenu {
                                     // means need to change self.selected
                                     self.selected.replace(vec![index]);
                                     // do fresh selected
-                                    fresh.replace(e.e);
+                                    fresh.replace((id.clone(), e.e));
                                 }
                             }
                         });
                     }
                 }
             }
-            if let Some(e) = fresh {
+            if let Some((id, e)) = fresh {
                 self.fresh_selected(cx);
 
                 cx.widget_action(
@@ -143,6 +143,7 @@ impl Widget for GSubMenu {
                     &scope.path,
                     GSubMenuEvent::Changed(GSubMenuChangedParam {
                         selected: self.selected.clone(),
+                        selected_id: id,
                         e,
                     }),
                 );
@@ -164,28 +165,28 @@ impl LiveHook for GSubMenu {
 }
 
 impl GSubMenu {
-    pub fn clear_selected(&mut self, cx: &mut Cx){
+    pub fn clear_selected(&mut self, cx: &mut Cx) {
         self.selected = None;
         for (_index, ((_, child), item_mode)) in self
-        .items
-        .children
-        .iter()
-        .zip(self.item_modes.iter())
-        .enumerate()
-    {
-        match item_mode {
-            MenuItemMode::SubMenu(_) => {
-                child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
-                    sub_menu.clear_selected(cx);
-                });
-            }
-            MenuItemMode::MenuItem(_) => {
-                child.as_gmenu_item().borrow_mut().map(|mut item| {
-                    item.clear_selected(cx);
-                });
+            .items
+            .children
+            .iter()
+            .zip(self.item_modes.iter())
+            .enumerate()
+        {
+            match item_mode {
+                MenuItemMode::SubMenu(_) => {
+                    child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
+                        sub_menu.clear_selected(cx);
+                    });
+                }
+                MenuItemMode::MenuItem(_) => {
+                    child.as_gmenu_item().borrow_mut().map(|mut item| {
+                        item.clear_selected(cx);
+                    });
+                }
             }
         }
-    }
     }
     pub fn fresh_selected(&mut self, cx: &mut Cx) {
         // let all children unselected
