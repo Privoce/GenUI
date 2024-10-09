@@ -144,18 +144,19 @@ impl MenuItemMode {
 
         let len = levels.len();
         for (index, level) in levels.iter().enumerate() {
-            let (_, item) = items.get_mut(*level).unwrap();
-            if index == len - 1 {
-                f(item);
-            } else {
-                item.as_gsub_menu().borrow_mut().map(|mut sub| {
-                    MenuItemMode::find_node(
-                        &mut sub.items.children,
-                        &levels[index + 1..].to_vec(),
-                        f,
-                    );
-                });
-            }
+            items.get_mut(*level).map(|(_, item)| {
+                if index == len - 1 {
+                    f(item);
+                } else {
+                    item.as_gsub_menu().borrow_mut().map(|mut sub| {
+                        MenuItemMode::find_node(
+                            &mut sub.items.children,
+                            &levels[index + 1..].to_vec(),
+                            f,
+                        );
+                    });
+                }
+            });
         }
     }
     /// get the selected index of the menu item
