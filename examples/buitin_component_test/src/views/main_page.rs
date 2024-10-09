@@ -44,34 +44,32 @@ live_design! {
             }
             body: {
                 sub1 = <GSubMenu>{
-                    id: 0,
                     title: {
                         <GLabel>{
                             font_size: 11.0,
-                            text: "Overall",
+                            text: "Guide",
                         }
                     }
                     items: {
-                        tab_overall = <GMenuItem>{
+                        tab_install = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Overall",
+                                text: "Install",
                             }
                         }
-                        tab_color = <GMenuItem>{
+                        tab_qs = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Color",
+                                text: "QuickStart",
                             }
                         }
                     }
                 }
                 sub2 = <GSubMenu>{
-                    id: 0,
                     title: {
                         <GLabel>{
                             font_size: 11.0,
@@ -88,6 +86,7 @@ live_design! {
                             }
                         }
                         tab_color = <GMenuItem>{
+                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -97,8 +96,7 @@ live_design! {
                         }
                     }
                 }
-                <GSubMenu>{
-                    id: 1,
+                sub3 = <GSubMenu>{
                     title: {
                         <GLabel>{
                             font_size: 11.0,
@@ -276,24 +274,29 @@ impl Widget for AppMainPage {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let router = self.grouter(id!(app_router));
         self.gmenu(id!(menu)).borrow().map(|menu| {
-            menu.body.gsub_menu(id!(sub1)).borrow().map(|sub| {
-                // sub.items.gmenu_item(id!(tab_overall)).borrow().map(|item| {
+            if let Some(e) = menu.changed(&actions) {
+                dbg!(e.selected);
+            }
+            // menu.body.gsub_menu(id!(sub2)).borrow_mut().map(|mut sub| {
+            //     // sub.items.gmenu_item(id!(tab_overall)).borrow().map(|item| {
 
-                //     let _ = nav_to(item, cx, &actions, &router, id!(overall_page));
-                // });
-                // sub.items.gmenu_item(id!(tab_color)).borrow().map(|item| {
-                //     let _ = nav_to(item, cx, &actions, &router, id!(color_page));
-                // });
-                if let Some(e) = sub.changed(&actions) {
-                    router.borrow_mut().map(|mut router| {
-                        let s = router.bar_pages.get(e.selected).map(|path| path.last());
+            //     //     let _ = nav_to(item, cx, &actions, &router, id!(overall_page));
+            //     // });
+            //     // sub.items.gmenu_item(id!(tab_color)).borrow().map(|item| {
+            //     //     let _ = nav_to(item, cx, &actions, &router, id!(color_page));
+            //     // });
+            //     if let Some(e) = sub.changed(&actions) {
+            //         dbg!(e.selected);
+            //         // sub.redraw(cx);
+            //         // router.borrow_mut().map(|mut router| {
+            //         //     let s = router.bar_pages.get(e.selected).map(|path| path.last());
 
-                        s.map(|path| {
-                            router.nav_to(cx, &[path]);
-                        });
-                    });
-                }
-            });
+            //         //     s.map(|path| {
+            //         //         router.nav_to(cx, &[path]);
+            //         //     });
+            //         // });
+            //     }
+            // });
         });
 
         router.borrow_mut().map(|mut route| {

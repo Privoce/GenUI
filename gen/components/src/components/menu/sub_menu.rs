@@ -1,8 +1,11 @@
 use makepad_widgets::*;
 
 use crate::{
-    components::view::GView, event_option, ref_event_option, set_event,
-    shader::draw_view::DrawGView, themes::Themes, widget_area,
+    components::view::GView,
+    event_option, ref_event_option, set_event,
+    shader::{draw_view::DrawGView, manual::MenuItemMode},
+    themes::Themes,
+    widget_area,
 };
 
 use super::{
@@ -65,11 +68,10 @@ pub struct GSubMenu {
     #[live]
     #[redraw]
     pub items: GView,
-    #[live(-1)]
-    pub selected: i32,
-    /// id of sub menu, it alaways be unique and used as `usize`
-    #[live]
-    pub id: i32,
+    #[rust]
+    pub item_modes: Vec<MenuItemMode>,
+    #[rust]
+    pub selected: Option<Vec<usize>>,
     #[layout]
     pub layout: Layout,
     #[walk]
@@ -105,34 +107,43 @@ impl Widget for GSubMenu {
         if self.items.is_visible() {
             let actions = cx.capture_actions(|cx| self.items.handle_event(cx, event, scope));
 
-            let mut selected = None;
-            let mut e = None;
-            // try only do less to control event loop
-            for (index, (_, child)) in self.items.children.iter().enumerate() {
-                let _ = child.as_gmenu_item().borrow().map(|item| {
-                    if let Some(param) = item.clicked(&actions) {
-                        if param.selected {
-                            if (index as i32).ne(&self.selected) {
-                                selected.replace(index);
-                            }
-                            e.replace(param.e);
-                        }
+            let mut fresh = None;
+            for (index, ((_, child), item_mode)) in self
+                .items
+                .children
+                .iter()
+                .zip(self.item_modes.iter())
+                .enumerate()
+            {
+                match item_mode {
+                    MenuItemMode::SubMenu(_) => {
+                        child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
+                            sub_menu.handle_event(cx, event, scope);
+                        });
                     }
-                });
-                // if flag is true break to stop
-                if selected.is_some() {
-                    break;
+                    MenuItemMode::MenuItem(_) => {
+                        child.as_gmenu_item().borrow().map(|item| {
+                            if let Some(e) = item.clicked(&actions) {
+                                if e.selected {
+                                    // means need to change self.selected
+                                    self.selected.replace(vec![index]);
+                                    // do fresh selected
+                                    fresh.replace(e.e);
+                                }
+                            }
+                        });
+                    }
                 }
             }
-            if let Some(selected) = selected {
-                self.set_selected(cx, selected);
+            if let Some(e) = fresh {
+                self.fresh_selected(cx);
+
                 cx.widget_action(
                     self.widget_uid(),
                     &scope.path,
                     GSubMenuEvent::Changed(GSubMenuChangedParam {
-                        selected,
-                        e: e.unwrap(),
-                        sub_menu_id: self.id(),
+                        selected: self.selected.clone(),
+                        e,
                     }),
                 );
             }
@@ -147,69 +158,70 @@ impl LiveHook for GSubMenu {
         }
         if self.items.is_visible() {
             self.items.after_apply(cx, apply, index, nodes);
-            if self.selected < 0 {
-                let _ = self.find_selected();
-            } else {
-                self.set_selected(cx, self.selected as usize);
-            }
+            let _ = self.find_selected();
         }
     }
 }
 
 impl GSubMenu {
-    pub fn id(&self) -> usize {
-        self.id as usize
-    }
-    pub fn set_selected(&mut self, cx: &mut Cx, selected: usize) -> () {
-        self.selected = selected as i32;
-
-        // loop all GMenuItem child and let selected == false except self.selected is true
-        self.items
-            .children
-            .iter_mut()
-            .enumerate()
-            .for_each(|(index, (_id, child))| {
-                if let Some(mut child) = child.as_gmenu_item().borrow_mut() {
-                    child.toggle(cx, index == selected);
-                } else {
-                    panic!("GSubMenu only allows GMenuItem as child!");
-                }
-            });
-    }
-    fn find_selected(&mut self) -> () {
-        let mut flag = true;
-        let mut selected = 0;
-        let _ = self
+    pub fn fresh_selected(&mut self, cx: &mut Cx) {
+        // let all children unselected
+        for (_index, ((_, child), item_mode)) in self
             .items
             .children
             .iter()
-            .map(|(_id, child)| {
-                if let Some(child) = child.as_gmenu_item().borrow() {
-                    child.selected
-                } else {
-                    panic!("GSubMenu only allows GMenuItem as child!");
-                }
-            })
+            .zip(self.item_modes.iter())
             .enumerate()
-            .for_each(|(index, is_selected)| {
-                if is_selected && flag {
-                    selected = index;
-                    flag = false;
-                } else if is_selected && !flag {
-                    panic!(
-                        "In GSubMenu only allows one item be selected! The Second is: {}",
-                        index
-                    );
+        {
+            match item_mode {
+                MenuItemMode::SubMenu(_) => {
+                    child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
+                        sub_menu.fresh_selected(cx);
+                    });
                 }
-            });
-
-        if !flag {
-            self.selected = selected as i32;
+                MenuItemMode::MenuItem(_) => {
+                    child.as_gmenu_item().borrow_mut().map(|mut item| {
+                        item.selected = false;
+                        // do render instead of redraw
+                        item.render(cx);
+                    });
+                }
+            }
         }
-        // else{
-        //     // here means no item is selected
-        //     self.set_selected(cx, 0);
-        // }
+        // then if selected is not None, set the selected item
+        if let Some(selected) = self.selected.as_ref() {
+            MenuItemMode::find_node(&mut self.items.children, selected, &mut |item| {
+                item.as_gmenu_item().borrow_mut().map(|mut item| {
+                    item.selected = true;
+                });
+            });
+        }
+    }
+    /// try to find the selected item in the menu item
+    fn find_selected(&mut self) -> () {
+        for (_id, child) in self.items.children.iter() {
+            if let Some(child) = child.as_gmenu_item().borrow() {
+                self.item_modes.push(MenuItemMode::MenuItem(child.selected));
+            } else if let Some(child) = child.as_gsub_menu().borrow() {
+                self.item_modes
+                    .push(MenuItemMode::SubMenu(child.item_modes.clone()));
+            } else {
+                panic!("GSubMenu only allows GMenuItem or GSubMenu as child!");
+            }
+        }
+        self.selected = MenuItemMode::selected(&self.item_modes);
+    }
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        if !self.is_visible() {
+            return;
+        }
+        self.draw_sub_menu.redraw(cx);
+        if self.title.is_visible() {
+            self.title.redraw(cx);
+        }
+        if self.items.is_visible() {
+            self.items.redraw(cx);
+        }
     }
     widget_area! {
         area, draw_sub_menu

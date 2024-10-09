@@ -1,5 +1,7 @@
 use makepad_widgets::*;
 
+use crate::components::menu::sub_menu::GSubMenuWidgetRefExt;
+
 /// The `PopupMode` enum represents the different modes for a popup
 #[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
 #[live_ignore]
@@ -109,7 +111,53 @@ impl MenuItemMode {
     pub fn is_sub_menu(&self) -> bool {
         matches!(self, MenuItemMode::SubMenu(_))
     }
+    /// ## find node mode by levels
+    /// `[1, 2]`: 0 => x |1 =>SubMenu(0 =>x, 1=> x, 2=> MenuItem) ..., means index 1 is sub menu, sub menu's index 2 is menu item
+    pub fn find(items: &Vec<MenuItemMode>, levels: &Vec<usize>) -> Option<MenuItemMode> {
+        if levels.is_empty() || items.is_empty() {
+            return None;
+        }
 
+        let len = levels.len();
+        // do zip to find the node
+        for (index, level) in levels.iter().enumerate() {
+            let item = items.get(*level)?;
+            if index == len - 1 {
+                return Some(item.clone());
+            } else {
+                // continue do find
+                if let MenuItemMode::SubMenu(subs) = item {
+                    return MenuItemMode::find(subs, &levels[index + 1..].to_vec());
+                }
+            }
+        }
+
+        None
+    }
+    pub fn find_node<F>(items: &mut Vec<(LiveId, WidgetRef)>, levels: &Vec<usize>, f: &mut F)
+    where
+        F: FnMut(&mut WidgetRef) -> (),
+    {
+        if levels.is_empty() || items.is_empty() {
+            return;
+        }
+
+        let len = levels.len();
+        for (index, level) in levels.iter().enumerate() {
+            let (_, item) = items.get_mut(*level).unwrap();
+            if index == len - 1 {
+                f(item);
+            } else {
+                item.as_gsub_menu().borrow_mut().map(|mut sub| {
+                    MenuItemMode::find_node(
+                        &mut sub.items.children,
+                        &levels[index + 1..].to_vec(),
+                        f,
+                    );
+                });
+            }
+        }
+    }
     /// get the selected index of the menu item
     /// try to find the item which is selected in the menu item
     pub fn selected(items: &Vec<MenuItemMode>) -> Option<Vec<usize>> {
@@ -149,6 +197,20 @@ impl MenuItemMode {
 
 #[cfg(test)]
 mod test_mode {
+    #[test]
+    fn menu_find() {
+        let menu_items = vec![super::MenuItemMode::SubMenu(vec![
+            super::MenuItemMode::MenuItem(false),
+            super::MenuItemMode::MenuItem(false),
+            super::MenuItemMode::SubMenu(vec![
+                super::MenuItemMode::MenuItem(false),
+                super::MenuItemMode::MenuItem(true),
+                super::MenuItemMode::MenuItem(false),
+            ]),
+        ])];
+
+        dbg!(super::MenuItemMode::find(&menu_items, &vec![0, 2, 1]));
+    }
     #[test]
     fn menu_item() {
         let menu_items = vec![super::MenuItemMode::SubMenu(vec![

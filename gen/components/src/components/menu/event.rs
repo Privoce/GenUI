@@ -29,8 +29,20 @@ pub enum GSubMenuEvent {
 
 #[derive(Debug, Clone)]
 pub struct GSubMenuChangedParam {
-    pub sub_menu_id: usize,
     /// The index of the selected item.
-    pub selected: usize,
+    pub selected: Option<Vec<usize>>,
+    pub e: FingerUpEvent,
+}
+
+// --------------------------------------------------------------------------------
+#[derive(Debug, Clone, DefaultNone)]
+pub enum GMenuEvent {
+    Changed(GMenuChangedParam),
+    None,
+}
+#[derive(Debug, Clone)]
+pub struct GMenuChangedParam {
+    /// The index of the selected item.
+    pub selected: Option<Vec<usize>>,
     pub e: FingerUpEvent,
 }

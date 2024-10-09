@@ -3,13 +3,18 @@ pub mod menu_item;
 mod register;
 pub mod sub_menu;
 
-use crate::{
-    shader::draw_view::DrawGView, themes::Themes, utils::{BoolToF32, ThemeColor}
-};
-use makepad_widgets::*;
-pub use register::register;
-
 use super::view::GView;
+use crate::{
+    event_option,
+    shader::{draw_view::DrawGView, manual::MenuItemMode},
+    themes::Themes,
+    utils::{BoolToF32, ThemeColor},
+};
+use event::{GMenuChangedParam, GMenuEvent, GSubMenuEvent};
+use makepad_widgets::*;
+use menu_item::GMenuItemWidgetRefExt;
+pub use register::register;
+use sub_menu::GSubMenuWidgetRefExt;
 
 live_design! {
     GMenuBase = {{GMenu}}{
@@ -50,8 +55,6 @@ pub struct GMenu {
     #[redraw]
     #[live]
     pub draw_menu: DrawGView,
-    #[live(-1)]
-    pub selected: i32,
     #[find]
     #[live]
     #[redraw]
@@ -68,6 +71,10 @@ pub struct GMenu {
     pub layout: Layout,
     #[walk]
     pub walk: Walk,
+    #[rust]
+    pub selected: Option<Vec<usize>>,
+    #[rust]
+    pub item_modes: Vec<MenuItemMode>,
 }
 
 impl Widget for GMenu {
@@ -100,7 +107,61 @@ impl Widget for GMenu {
             self.header.handle_event(cx, event, scope);
         }
         if self.body.is_visible() {
-            self.body.handle_event(cx, event, scope);
+            let actions = cx.capture_actions(|cx| self.body.handle_event(cx, event, scope));
+            // for action in &actions {
+            //     if let Some(action) = action.as_widget_action() {
+            //         if let GSubMenuEvent::Changed(e) = action.cast() {
+            //             // dbg!(e.selected);
+            //             dbg!(&self.selected);
+
+            //         }
+            //     }
+            // }
+            let mut fresh = None;
+            for (index, ((_, child), item_mode)) in self
+                .body
+                .children
+                .iter()
+                .zip(self.item_modes.iter())
+                .enumerate()
+            {
+                match item_mode {
+                    MenuItemMode::SubMenu(_) => {
+                        child.as_gsub_menu().borrow().map(|sub_menu| {
+                            if let Some(e) = sub_menu.changed(&actions) {
+                                fresh.replace(e.e);
+                            }
+                        });
+                    }
+                    MenuItemMode::MenuItem(_) => {
+                        child.as_gmenu_item().borrow().map(|item| {
+                            if let Some(e) = item.clicked(&actions) {
+                                if e.selected {
+                                    // means need to change self.selected
+                                    self.selected.replace(vec![index]);
+                                    // do fresh selected
+                                    fresh.replace(e.e);
+                                }
+                            }
+                        });
+                    }
+                }
+                if fresh.is_some() {
+                    break;
+                }
+            }
+            if let Some(e) = fresh {
+                self.fresh_selected(cx);
+
+                cx.widget_action(
+                    self.widget_uid(),
+                    &scope.path,
+                    GMenuEvent::Changed(GMenuChangedParam {
+                        selected: self.selected.clone(),
+                        e,
+                    }),
+                );
+            }
         }
         if self.footer.is_visible() {
             self.footer.handle_event(cx, event, scope);
@@ -112,9 +173,19 @@ impl Widget for GMenu {
 }
 
 impl LiveHook for GMenu {
-    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         if !self.is_visible() {
             return;
+        }
+        if self.header.is_visible() {
+            self.header.after_apply(cx, apply, index, nodes);
+        }
+        if self.body.is_visible() {
+            self.body.after_apply(cx, apply, index, nodes);
+            let _ = self.find_selected();
+        }
+        if self.footer.is_visible() {
+            self.footer.after_apply(cx, apply, index, nodes);
         }
         self.render(cx);
         self.redraw(cx);
@@ -122,7 +193,61 @@ impl LiveHook for GMenu {
 }
 
 impl GMenu {
+    event_option! {
+        changed: GMenuEvent::Changed => GMenuChangedParam
+    }
+    pub fn fresh_selected(&mut self, cx: &mut Cx) {
+        // let all children unselected
+        for (_index, ((_, child), item_mode)) in self
+            .body
+            .children
+            .iter()
+            .zip(self.item_modes.iter())
+            .enumerate()
+        {
+            match item_mode {
+                MenuItemMode::SubMenu(_) => {
+                    child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
+                        sub_menu.fresh_selected(cx);
+                    });
+                }
+                MenuItemMode::MenuItem(_) => {
+                    child.as_gmenu_item().borrow_mut().map(|mut item| {
+                        item.selected = false;
+                        // do render instead of redraw
+                        item.render(cx);
+                    });
+                }
+            }
+        }
+        // then if selected is not None, set the selected item
+        if let Some(selected) = self.selected.as_ref() {
+            MenuItemMode::find_node(&mut self.body.children, selected, &mut |item| {
+                item.as_gmenu_item().borrow_mut().map(|mut item| {
+                    item.selected = true;
+                });
+            });
+        }
+    }
+    pub fn find_selected(&mut self) {
+        for (_, child) in self.body.children.iter() {
+            if let Some(child) = child.as_gmenu_item().borrow() {
+                self.item_modes.push(MenuItemMode::MenuItem(child.selected));
+            } else if let Some(child) = child.as_gsub_menu().borrow() {
+                self.item_modes
+                    .push(MenuItemMode::SubMenu(child.item_modes.clone()));
+            } else {
+                panic!("GMenu only allows GMenuItem or GSubMenu as child!");
+            }
+        }
+        self.selected = MenuItemMode::selected(&self.item_modes);
+    }
+
     pub fn redraw(&mut self, cx: &mut Cx) {
+        if !self.is_visible() {
+            return;
+        }
+
         self.draw_menu.redraw(cx);
         if self.header.is_visible() {
             self.header.redraw(cx);
