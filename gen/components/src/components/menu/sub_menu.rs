@@ -164,6 +164,29 @@ impl LiveHook for GSubMenu {
 }
 
 impl GSubMenu {
+    pub fn clear_selected(&mut self, cx: &mut Cx){
+        self.selected = None;
+        for (_index, ((_, child), item_mode)) in self
+        .items
+        .children
+        .iter()
+        .zip(self.item_modes.iter())
+        .enumerate()
+    {
+        match item_mode {
+            MenuItemMode::SubMenu(_) => {
+                child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
+                    sub_menu.clear_selected(cx);
+                });
+            }
+            MenuItemMode::MenuItem(_) => {
+                child.as_gmenu_item().borrow_mut().map(|mut item| {
+                    item.clear_selected(cx);
+                });
+            }
+        }
+    }
+    }
     pub fn fresh_selected(&mut self, cx: &mut Cx) {
         // let all children unselected
         for (_index, ((_, child), item_mode)) in self
@@ -182,7 +205,6 @@ impl GSubMenu {
                 MenuItemMode::MenuItem(_) => {
                     child.as_gmenu_item().borrow_mut().map(|mut item| {
                         item.selected = false;
-                        // do render instead of redraw
                         item.render(cx);
                     });
                 }
@@ -193,6 +215,7 @@ impl GSubMenu {
             MenuItemMode::find_node(&mut self.items.children, selected, &mut |item| {
                 item.as_gmenu_item().borrow_mut().map(|mut item| {
                     item.selected = true;
+                    item.render(cx);
                 });
             });
         }

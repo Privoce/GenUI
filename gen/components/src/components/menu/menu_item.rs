@@ -123,6 +123,7 @@ impl Widget for GMenuItem {
             let _ = self.right.draw_walk(cx, scope, right_walk);
         }
 
+        // dbg!(&self.selected);
         self.draw_menu_item.end(cx);
         DrawStep::done()
     }
@@ -221,6 +222,23 @@ impl GMenuItem {
             self.right.redraw(cx);
         }
     }
+    pub fn clear_selected(&mut self, cx: &mut Cx) {
+        self.selected = false;
+        self.render(cx);
+        // self.draw_menu_item.pressed = self.selected.to_f32();
+        // self.animator_play(cx, id!(hover.off));
+        // self.redraw(cx);
+    }
+    // pub fn set_selected(&mut self, cx: &mut Cx, selected: bool){
+    //     self.selected = selected;
+    //     self.draw_menu_item.pressed = self.selected.to_f32();
+    //     // if self.selected {
+    //     //     self.animator_play(cx, id!(hover.pressed));
+    //     // } else {
+    //     //     self.animator_play(cx, id!(hover.off));
+    //     // }
+    //     self.render(cx);
+    // }
     pub fn render(&mut self, cx: &mut Cx) {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);

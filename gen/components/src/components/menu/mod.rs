@@ -10,7 +10,7 @@ use crate::{
     themes::Themes,
     utils::{BoolToF32, ThemeColor},
 };
-use event::{GMenuChangedParam, GMenuEvent, GSubMenuEvent};
+use event::{GMenuChangedParam, GMenuEvent};
 use makepad_widgets::*;
 use menu_item::GMenuItemWidgetRefExt;
 pub use register::register;
@@ -108,15 +108,6 @@ impl Widget for GMenu {
         }
         if self.body.is_visible() {
             let actions = cx.capture_actions(|cx| self.body.handle_event(cx, event, scope));
-            // for action in &actions {
-            //     if let Some(action) = action.as_widget_action() {
-            //         if let GSubMenuEvent::Changed(e) = action.cast() {
-            //             // dbg!(e.selected);
-            //             dbg!(&self.selected);
-
-            //         }
-            //     }
-            // }
             let mut fresh = None;
             for (index, ((_, child), item_mode)) in self
                 .body
@@ -130,6 +121,9 @@ impl Widget for GMenu {
                         child.as_gsub_menu().borrow().map(|sub_menu| {
                             if let Some(e) = sub_menu.changed(&actions) {
                                 fresh.replace(e.e);
+                                let mut selected = vec![index];
+                                selected.extend(e.selected.unwrap());
+                                self.selected.replace(selected);
                             }
                         });
                     }
@@ -208,14 +202,12 @@ impl GMenu {
             match item_mode {
                 MenuItemMode::SubMenu(_) => {
                     child.as_gsub_menu().borrow_mut().map(|mut sub_menu| {
-                        sub_menu.fresh_selected(cx);
+                        sub_menu.clear_selected(cx);
                     });
                 }
                 MenuItemMode::MenuItem(_) => {
                     child.as_gmenu_item().borrow_mut().map(|mut item| {
-                        item.selected = false;
-                        // do render instead of redraw
-                        item.render(cx);
+                        item.clear_selected(cx);
                     });
                 }
             }
@@ -225,6 +217,7 @@ impl GMenu {
             MenuItemMode::find_node(&mut self.body.children, selected, &mut |item| {
                 item.as_gmenu_item().borrow_mut().map(|mut item| {
                     item.selected = true;
+                    item.render(cx);
                 });
             });
         }

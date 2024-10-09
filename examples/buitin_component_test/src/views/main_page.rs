@@ -43,6 +43,7 @@ live_design! {
                 }
             }
             body: {
+                
                 sub1 = <GSubMenu>{
                     title: {
                         <GLabel>{
@@ -96,64 +97,64 @@ live_design! {
                         }
                     }
                 }
-                sub3 = <GSubMenu>{
-                    title: {
-                        <GLabel>{
-                            font_size: 11.0,
-                            text: "Basic",
-                        }
-                    }
-                    items: {
-                        <GMenuItem>{
-                            icon_slot: {
-                                visible: false,
-                            }
-                            text_slot: {
-                                text: "Label",
-                            }
-                        }
-                        <GMenuItem>{
-                            icon_slot: {
-                                visible: false,
-                            }
-                            text_slot: {
-                                text: "View",
-                            }
-                        }
-                        <GMenuItem>{
-                            icon_slot: {
-                                visible: false,
-                            }
-                            text_slot: {
-                                text: "Button",
-                            }
-                        }
-                        <GMenuItem>{
-                            icon_slot: {
-                                visible: false,
-                            }
-                            text_slot: {
-                                text: "Svg",
-                            }
-                        }
-                        <GMenuItem>{
-                            icon_slot: {
-                                visible: false,
-                            }
-                            text_slot: {
-                                text: "Image",
-                            }
-                        }
-                        <GMenuItem>{
-                            icon_slot: {
-                                visible: false,
-                            }
-                            text_slot: {
-                                text: "Icon Lib",
-                            }
-                        }
-                    }
-                }
+                // sub3 = <GSubMenu>{
+                //     title: {
+                //         <GLabel>{
+                //             font_size: 11.0,
+                //             text: "Basic",
+                //         }
+                //     }
+                //     items: {
+                //         <GMenuItem>{
+                //             icon_slot: {
+                //                 visible: false,
+                //             }
+                //             text_slot: {
+                //                 text: "Label",
+                //             }
+                //         }
+                //         <GMenuItem>{
+                //             icon_slot: {
+                //                 visible: false,
+                //             }
+                //             text_slot: {
+                //                 text: "View",
+                //             }
+                //         }
+                //         <GMenuItem>{
+                //             icon_slot: {
+                //                 visible: false,
+                //             }
+                //             text_slot: {
+                //                 text: "Button",
+                //             }
+                //         }
+                //         <GMenuItem>{
+                //             icon_slot: {
+                //                 visible: false,
+                //             }
+                //             text_slot: {
+                //                 text: "Svg",
+                //             }
+                //         }
+                //         <GMenuItem>{
+                //             icon_slot: {
+                //                 visible: false,
+                //             }
+                //             text_slot: {
+                //                 text: "Image",
+                //             }
+                //         }
+                //         <GMenuItem>{
+                //             icon_slot: {
+                //                 visible: false,
+                //             }
+                //             text_slot: {
+                //                 text: "Icon Lib",
+                //             }
+                //         }
+                //     }
+                // }
 
             }
         }
