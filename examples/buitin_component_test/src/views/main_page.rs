@@ -1,9 +1,5 @@
 use gen_components::{
-    components::{
-        menu::{sub_menu::GSubMenuWidgetExt, GMenuWidgetExt},
-        router::GRouterWidgetExt,
-        view::GView,
-    },
+    components::{menu::GMenuWidgetExt, router::GRouterWidgetExt, view::GView},
     shader::manual::RouterIndicatorMode,
     utils::{
         lifetime::{Executor, Lifetime},
@@ -43,7 +39,7 @@ live_design! {
                 }
             }
             body: {
-                
+
                 sub1 = <GSubMenu>{
                     title: {
                         <GLabel>{
@@ -273,11 +269,14 @@ impl Widget for AppMainPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let router = self.grouter(id!(app_router));
-        self.gmenu(id!(menu)).borrow().map(|menu| {
-            if let Some(e) = menu.changed(&actions) {
-                dbg!(e.selected);
+
+        if let Some(e) = self.gmenu(id!(menu)).changed(&actions) {
+            if e.selected_id == id!(tab_overall)[0] {
+                router.nav_to(cx, id!(overall_page));
+            } else if e.selected_id == id!(tab_color)[0] {
+                router.nav_to(cx, id!(color_page));
             }
-        });
+        }
 
         router.borrow_mut().map(|mut route| {
             route.handle_nav_events(cx, &actions);

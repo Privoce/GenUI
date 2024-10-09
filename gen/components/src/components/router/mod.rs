@@ -424,3 +424,11 @@ impl GRouter {
         }
     }
 }
+
+impl GRouterRef {
+    pub fn nav_to(&self, cx: &mut Cx, path: &[LiveId]) {
+        self.borrow_mut().map(|mut router| {
+            router.nav_to(cx, path);
+        });
+    }
+}

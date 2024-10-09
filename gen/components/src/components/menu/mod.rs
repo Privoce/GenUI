@@ -5,10 +5,7 @@ pub mod sub_menu;
 
 use super::view::GView;
 use crate::{
-    event_option,
-    shader::{draw_view::DrawGView, manual::MenuItemMode},
-    themes::Themes,
-    utils::{BoolToF32, ThemeColor},
+    event_option, ref_event_option, set_event, shader::{draw_view::DrawGView, manual::MenuItemMode}, themes::Themes, utils::{BoolToF32, ThemeColor}
 };
 use event::{GMenuChangedParam, GMenuEvent};
 use makepad_widgets::*;
@@ -281,5 +278,18 @@ impl GMenu {
                 blur_radius: (self.blur_radius),
             },
         );
+    }
+}
+
+
+impl GMenuRef {
+    ref_event_option! {
+        changed => GMenuChangedParam
+    }
+}
+
+impl GMenuSet {
+    set_event! {
+        changed => GMenuChangedParam
     }
 }
