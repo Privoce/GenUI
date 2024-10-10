@@ -8,9 +8,14 @@
 
 Animation: in an.rs
 Event: in event.rs
-Static: in static.rs
-Virtual: in Virtual.rs
+Usage: in usage.rs
+Virtual: in virt.rs
 
+- [x] Start
+- [ ] Install
+  - [ ] crates.io
+  - [x] github/local
+- [ ] QuickStart
 - [x] Color
   - [x] Dark
   - [x] Primary
@@ -22,82 +27,82 @@ Virtual: in Virtual.rs
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] Label
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] Button
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] Divider
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event
-  - [ ] Static
+  - [ ] Usage
   - [ ] Virtual
 
 

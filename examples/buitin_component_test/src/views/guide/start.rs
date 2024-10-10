@@ -22,7 +22,7 @@ live_design! {
             height: Fit,
             align: {x: 0.5},
             <GLabel>{
-                font_size: 14.0,
+                font_size: 18.0,
                 font_family: (BOLD_FONT),
                 text: "GenUI Builtin Components (v0.1.0)",
             }

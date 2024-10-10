@@ -18,6 +18,7 @@ live_design! {
     import crate::views::guide::install::*;
     import crate::views::guide::quickstart::*;
     import crate::views::guide::start::*;
+    import crate::views::basic::label::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -55,7 +56,6 @@ live_design! {
                     }
                     items: {
                         tab_get_start = <GMenuItem>{
-                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -123,7 +123,8 @@ live_design! {
                         }
                     }
                     items: {
-                        <GMenuItem>{
+                        tab_label = <GMenuItem>{
+                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -131,7 +132,7 @@ live_design! {
                                 text: "Label",
                             }
                         }
-                        <GMenuItem>{
+                        tab_view = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
@@ -139,7 +140,7 @@ live_design! {
                                 text: "View",
                             }
                         }
-                        <GMenuItem>{
+                        tab_button = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
@@ -197,6 +198,10 @@ live_design! {
                     color_page = <GBarPage>{
                         <ColorPage>{}
                     }
+                    label_page = <GBarPage>{
+                        <LabelPage>{}
+                    }
+
                 }
             }
             <GView>{
@@ -281,11 +286,19 @@ impl Widget for AppMainPage {
                 router.borrow_mut().map(|mut router| {
                     let _ = router
                         .init(
-                            ids!(start_page, overall_page, color_page, font_page, install_page, qs_page),
+                            ids!(
+                                start_page,
+                                overall_page,
+                                color_page,
+                                font_page,
+                                install_page,
+                                qs_page,
+                                label_page
+                            ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(install_page))
+                        .active(id!(label_page))
                         .build(cx);
                 });
             })
@@ -317,6 +330,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(qs_page));
             } else if e.selected_id == id!(tab_get_start)[0] {
                 router.nav_to(cx, id!(start_page));
+            } else if e.selected_id == id!(tab_label)[0] {
+                router.nav_to(cx, id!(label_page));
             }
         }
 

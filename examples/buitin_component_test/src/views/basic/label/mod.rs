@@ -1,3 +1,12 @@
+use makepad_widgets::Cx;
+
+pub mod usage;
+
+pub fn register(cx: &mut Cx){
+    self::live_design(cx);
+    self::usage::live_design(cx);
+}
+
 use gen_components::components::view::GView;
 use makepad_widgets::*;
 
@@ -5,8 +14,9 @@ live_design! {
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
-
-    QSPage = {{QSPage}}{
+    import crate::views::basic::label::usage::*;
+    BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
+    LabelPage = {{LabelPage}}{
         height: Fill,
         width: Fill,
         flow: Down,
@@ -17,25 +27,32 @@ live_design! {
         scroll_bars: <GScrollBars>{},
         clip_x: true,
         clip_y: true,
-        <GLabel>{
-            text: "QuickStart(Comming Soon)",
+        <GHLayout>{
+            height: Fit,
+            align: {x: 0.5},
+            <GLabel>{
+                font_size: 14.0,
+                font_family: (BOLD_FONT),
+                text: "Label",
+            }
         }
+        <LabelUsagePage>{}
     }
 }
 
 #[derive(Live, Widget)]
-pub struct QSPage {
+pub struct LabelPage {
     #[deref]
     pub deref_widget: GView,
 }
 
-impl LiveHook for QSPage {
+impl LiveHook for LabelPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for QSPage {
+impl Widget for LabelPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let _ = self.deref_widget.draw_walk(cx, scope, walk);
 

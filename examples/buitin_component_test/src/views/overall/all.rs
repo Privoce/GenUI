@@ -1,10 +1,35 @@
-use gen_components::{components::view::GView, utils::lifetime::Lifetime};
+use gen_components::components::view::GView;
 use makepad_widgets::*;
 
 live_design! {
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
+    BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
+    CPreview = <GView>{
+        height: 120.0,
+        width: Fill,
+        border_radius: 4.0,
+        theme: Dark,
+        flow: Down,
+        header = <GView>{
+            height: Fit,
+            width: Fill,
+            padding: 8.0,
+            background_color: #1D1E1F,
+            title = <GLabel>{
+                font_family: (BOLD_FONT),
+            }
+        }
+        body = <GView>{
+            height: Fill,
+            width: Fill,
+            align: {
+                x: 0.5,
+                y: 0.5,
+            }
+        }
+    }
 
     OverallPage = {{OverallPage}}{
         height: Fill,
@@ -12,8 +37,237 @@ live_design! {
         flow: Down,
         background_visible: false,
         border_radius: 0.0,
+        spacing: 12.0,
+        padding: 12.0,
+        scroll_bars: <GScrollBars>{},
+        clip_x: true,
+        clip_y: true,
         <GLabel>{
+            font_size: 14.0,
+            font_family: (BOLD_FONT),
             text: "Overall Page(组件总览)",
+        }
+        <GVLayout>{
+            height: Fit,
+            spacing: 8.0,
+            <GLabel>{
+                font_size: 12.0,
+                font_family: (BOLD_FONT),
+                text: "Basic Components(基础组件)",
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Label"}}
+                    body = {
+                        spacing: 8.0,
+                        <GLabel>{
+                            font_size: 12.0,
+                            text: "Text"
+                        }
+                        <GLabel>{
+                            font_size: 10.0,
+                            text: "Text"
+                        }
+                        <GLabel>{
+                            font_size: 8.0,
+                            text: "Text"
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "View|HLayout|VLayout"}}
+                    body = {
+                        padding: 16.0,
+                        <GView>{
+                            height: Fill,
+                            width: Fill,
+                            theme: Primary
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Button"}}
+                    body = {
+                        spacing: 8.0,
+                        <GButton>{}
+                        <GButton>{theme: Success}
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Svg"}}
+                    body = {
+                        <GSvg>{
+                            theme: Dark,
+                            height: 32.0,
+                            width: 32.0,
+                            src: dep("crate://self/resources/upload.svg"),
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Image"}}
+                    body = {
+                        padding: 16.0,
+                        <GImage>{
+                            height: 36.0,
+                            width: 42.0,
+                            src: dep("crate://self/resources/rust.png"),
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Icon(Icon Lib)"}}
+                    body = {
+                        <GIcon>{
+                            theme: Dark,
+                            height: 36.0,
+                            width: 36.0,
+                            icon_type: Setting3,
+                            stroke_width: 1.4
+                        }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Divider"}}
+                    body = {
+                        flow: Down,
+                        spacing: 16.0,
+                        padding: 8.0,
+                        <GDivider>{
+                            height: 6.0,
+                            stroke_width: 1.2,
+                            theme: Primary,
+                        }
+                        <GDivider>{
+                            height: 6.0,
+                            stroke_width: 1.2,
+                            theme: Error,
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Link"}}
+                    body = {
+                        padding: 16.0,
+                        <GLink>{
+                           text: "GenUI Builtin Components",
+                           href: "https://github.com/Privoce/GenUI/tree/components/gen/components"
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Color"}}
+                    body = {
+                        <GColor>{
+                            width: Fill,
+                            item: {
+                                width: 24.0,
+                            }
+                            header: {
+                                visible: false,
+                            }
+                            theme: Dark,
+                        }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "ScrollBars"}}
+                    body = {
+                        padding: 8.0,
+                        <GHLayout>{
+                            scroll_bars: <GScrollBars>{},
+                            spacing:16.0,
+                            <GView>{
+                                theme: Info
+                            }
+                            <GView>{
+                                width: 60.0,
+                                height: 60.0,
+                                theme: Success,
+                            }
+                            <GView>{
+                                width: 300.0,
+                                theme: Error
+                            }
+                        }
+                    }
+                }
+                
+            }
+            <GLabel>{
+                font_size: 12.0,
+                font_family: (BOLD_FONT),
+                text: "Form Components(表单组件)",
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Radio"}}
+                    body = {
+                        spacing: 16.0,
+                        <GRadio>{value: true}
+                        <GRadio>{
+                            value: true,
+                            radio_type: Tick,
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "CheckBox"}}
+                    body = {
+                        spacing: 16.0,
+                        <GCheckBox>{value: true}
+                        <GCheckBox>{check_type: Tick, value: true}
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Toggle"}}
+                    body = {
+                        spacing: 16.0,
+                        <GToggle>{
+                            value: true
+                        }
+                        <GToggle>{
+                            toggle_type: Rect,
+                        }
+                    }
+                }
+            }
+            <GLabel>{
+                font_size: 12.0,
+                font_family: (BOLD_FONT),
+                text: "Data Components(数据组件)",
+            }
+            <GLabel>{
+                font_size: 12.0,
+                font_family: (BOLD_FONT),
+                text: "Nav Components(导航组件)",
+            }
+            <GLabel>{
+                font_size: 12.0,
+                font_family: (BOLD_FONT),
+                text: "Feedback Components(反馈组件)",
+            }
+            <GLabel>{
+                font_size: 12.0,
+                font_family: (BOLD_FONT),
+                text: "Virtual Components(虚拟组件)",
+            }
         }
     }
 }
@@ -22,8 +276,6 @@ live_design! {
 pub struct OverallPage {
     #[deref]
     pub deref_widget: GView,
-    #[rust]
-    lifetime: Lifetime,
 }
 
 impl LiveHook for OverallPage {
@@ -35,12 +287,10 @@ impl LiveHook for OverallPage {
 impl Widget for OverallPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let _ = self.deref_widget.draw_walk(cx, scope, walk);
-        
+
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-
-        
+        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
     }
 }

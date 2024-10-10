@@ -258,7 +258,7 @@ impl LiveHook for GIcon {
             return;
         }
 
-        let color = self.stroke_color.get(self.theme, 200);
+        let color = self.stroke_color.get(self.theme, 25);
         let stroke_hover_color = self.stroke_hover_color.get(self.theme, 100);
 
         self.draw_type.replace(self.icon_type.to_draw_type());

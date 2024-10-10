@@ -31,7 +31,7 @@ use crate::{
     set_text_and_visible_fn,
     shader::draw_text::DrawGText,
     themes::Themes,
-    utils::{get_font_family, ThemeColor},
+    utils::{get_font_family, set_cursor, ThemeColor},
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -119,9 +119,9 @@ pub struct GLabel {
     #[live(false)]
     pub animation_key: bool,
     #[animator]
-    animator: Animator,
+    pub animator: Animator,
     #[rust]
-    area: Area,
+    pub area: Area,
 }
 
 impl Widget for GLabel {
@@ -140,12 +140,17 @@ impl Widget for GLabel {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        if !self.visible {
+            return;
+        }
+
         if self.animation_key {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_text.redraw(cx);
             }
-            match event.hits_with_capture_overload(cx, self.area, true) {
+            match event.hits(cx, self.area) {
                 Hit::FingerHoverIn(_) => {
+                    let _ = set_cursor(cx, self.cursor.as_ref());
                     self.animator_play(cx, id!(hover.on));
                 }
                 Hit::FingerHoverOut(_) => {
@@ -178,6 +183,18 @@ impl LiveHook for GLabel {
             return;
         }
 
+        self.render(cx);
+    }
+}
+
+impl GLabel {
+    pub fn area(&self) -> Area {
+        self.area
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.draw_text.redraw(cx);
+    }
+    pub fn render(&mut self, cx: &mut Cx) -> () {
         let color = self.color.get(self.theme, 800);
         let stroke_hover_color = self.stroke_hover_color.get(self.theme, 800);
         let stroke_pressed_color = self.stroke_pressed_color.get(self.theme, 800);
@@ -198,16 +215,6 @@ impl LiveHook for GLabel {
             },
         );
         self.draw_text.wrap = self.wrap.clone();
-        self.draw_text.redraw(cx);
-    }
-}
-
-impl GLabel {
-    pub fn area(&self) -> Area {
-        self.area
-    }
-    pub fn redraw(&self, cx: &mut Cx) -> () {
-        self.draw_text.redraw(cx);
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.draw_text.apply_over(

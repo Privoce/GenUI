@@ -127,9 +127,9 @@ impl LiveHook for GSvg {
             return;
         }
         // ------------------ hover color -----------------------------------------------
-        let hover_color = self.stroke_hover_color.get(self.theme, 400);
+        let hover_color = self.stroke_hover_color.get(self.theme, 25);
         // ------------------ color -----------------------------------------------
-        let color = self.color.get(self.theme, 500);
+        let color = self.color.get(self.theme, 25);
 
         self.draw_svg.apply_over(
             cx,
