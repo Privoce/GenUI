@@ -220,6 +220,8 @@ live_design! {
     GView = <GViewBase>{
         width: 300.0,
         height: 200.0,
+        clip_x: true,
+        clip_y: true,
     }
     // ## GHLayout
     // A horizontal layout component use ViewBase

@@ -40,6 +40,7 @@ impl LiveRegister for App {
         crate::gen_components::live_design(cx);
         crate::views::main_page::live_design(cx);
         crate::views::overall::register(cx);
+        crate::views::guide::register(cx);
     }
 }
 

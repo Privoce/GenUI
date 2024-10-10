@@ -11,6 +11,14 @@ Event: in event.rs
 Static: in static.rs
 Virtual: in Virtual.rs
 
+- [x] Color
+  - [x] Dark
+  - [x] Primary
+  - [x] Error
+  - [x] Success
+  - [x] Warning
+  - [x] Info
+- [x] Font
 - [ ] View
   - [ ] Animation
   - [ ] Event

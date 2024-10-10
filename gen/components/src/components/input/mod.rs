@@ -15,6 +15,8 @@ live_design! {
     import makepad_draw::shader::std::*;
     GInputBase = {{GInput}}{
         background_color: vec4(1.0, 1.0, 1.0, 1.0),
+        hover_color: vec4(0.9, 0.9, 0.9, 1.0),
+        pressed_color: vec4(0.9, 0.9, 0.9, 1.0),
         font_hover_color: vec4(0.2, 0.2, 0.2, 1.0),
         font_pressed_color: vec4(0.2, 0.2, 0.2, 1.0),
         shadow_offset: vec2(0.0, 0.0),
@@ -713,10 +715,10 @@ impl LiveHook for GInput {
                 border_radius: 0.0
             },
         );
-        self.draw_text.redraw(cx);
-        self.draw_input.redraw(cx);
-        self.draw_cursor.redraw(cx);
-        self.draw_selection.redraw(cx);
+        // self.draw_text.redraw(cx);
+        // self.draw_input.redraw(cx);
+        // self.draw_cursor.redraw(cx);
+        // self.draw_selection.redraw(cx);
     }
 }
 

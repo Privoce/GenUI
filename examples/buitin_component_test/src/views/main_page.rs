@@ -15,6 +15,9 @@ live_design! {
     import crate::views::overall::all::*;
     import crate::views::overall::color::*;
     import crate::views::overall::font::*;
+    import crate::views::guide::install::*;
+    import crate::views::guide::quickstart::*;
+    import crate::views::guide::start::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -51,6 +54,15 @@ live_design! {
                         }
                     }
                     items: {
+                        tab_get_start = <GMenuItem>{
+                            selected: true,
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Getting Started",
+                            }
+                        }
                         tab_install = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
@@ -94,7 +106,6 @@ live_design! {
                             }
                         }
                         tab_color = <GMenuItem>{
-                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -168,6 +179,15 @@ live_design! {
             app_router = <GRouter>{
                 bar_pages = {
                     flow: Down,
+                    start_page = <GBarPage>{
+                        <StartPage>{}
+                    }
+                    install_page = <GBarPage>{
+                        <InstallPage>{}
+                    }
+                    qs_page = <GBarPage>{
+                        <QSPage>{}
+                    }
                     overall_page = <GBarPage>{
                         <OverallPage>{}
                     }
@@ -261,11 +281,11 @@ impl Widget for AppMainPage {
                 router.borrow_mut().map(|mut router| {
                     let _ = router
                         .init(
-                            ids!(overall_page, color_page, font_page),
+                            ids!(start_page, overall_page, color_page, font_page, install_page, qs_page),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(color_page))
+                        .active(id!(install_page))
                         .build(cx);
                 });
             })
@@ -289,8 +309,14 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(overall_page));
             } else if e.selected_id == id!(tab_color)[0] {
                 router.nav_to(cx, id!(color_page));
-            }else if e.selected_id == id!(tab_font)[0] {
+            } else if e.selected_id == id!(tab_font)[0] {
                 router.nav_to(cx, id!(font_page));
+            } else if e.selected_id == id!(tab_install)[0] {
+                router.nav_to(cx, id!(install_page));
+            } else if e.selected_id == id!(tab_qs)[0] {
+                router.nav_to(cx, id!(qs_page));
+            } else if e.selected_id == id!(tab_get_start)[0] {
+                router.nav_to(cx, id!(start_page));
             }
         }
 
