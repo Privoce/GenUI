@@ -16,7 +16,7 @@ use super::view::GView;
 
 live_design! {
     GPopupContainerBase = {{GPopupContainer}} {
-        animation_open: false,
+        animation_key: false,
         background_visible: false,
     }
     GPopupBase = {{GPopup}} {}

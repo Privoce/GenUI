@@ -117,7 +117,7 @@ pub struct GLabel {
     pub text: ArcStringMut,
     // animator -----------------
     #[live(false)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     animator: Animator,
     #[rust]
@@ -140,7 +140,7 @@ impl Widget for GLabel {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
-        if self.animation_open {
+        if self.animation_key {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_text.redraw(cx);
             }

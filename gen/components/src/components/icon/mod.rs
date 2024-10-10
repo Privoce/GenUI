@@ -99,7 +99,7 @@ pub struct GIcon {
     #[live(true)]
     pub grab_key_focus: bool,
     #[live(false)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     pub animator: Animator,
     // redraw -------------------------------------
@@ -258,8 +258,8 @@ impl LiveHook for GIcon {
             return;
         }
 
-        let color = self.stroke_color.get(self.theme, 300);
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 200);
+        let color = self.stroke_color.get(self.theme, 200);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 100);
 
         self.draw_type.replace(self.icon_type.to_draw_type());
         match self.draw_type.as_ref().unwrap() {
@@ -457,7 +457,7 @@ impl GIcon {
     ) {
         let uid = self.widget_uid();
 
-        if self.animation_open {
+        if self.animation_key {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_icon.redraw(cx);
             }

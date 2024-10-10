@@ -34,7 +34,6 @@ live_design! {
         <GLabel>{
             width: Fill,
             text: "Each color type has 11 color levels: [25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900]",
-
         }
         <GVLayout>{
             height: Fit,

@@ -21,7 +21,7 @@ live_design! {
         background_visible: false,
         height: Fit,
         width: Fill,
-        // animation_open: true,
+        // animation_key: true,
         flow: Down,
         spacing: 0.0,
     }

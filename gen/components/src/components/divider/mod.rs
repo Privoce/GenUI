@@ -79,7 +79,7 @@ pub struct GDivider {
     #[rust]
     pub defer_walks: Vec<(LiveId, DeferWalk)>,
     #[live(true)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     pub animator: Animator,
 }
@@ -165,7 +165,7 @@ impl Widget for GDivider {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();
-        if self.animation_open {
+        if self.animation_key {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.redraw(cx);
             }
@@ -384,7 +384,7 @@ impl GDivider {
         focus_area: Area,
     ) {
         let uid = self.widget_uid();
-        if self.animation_open {
+        if self.animation_key {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.redraw(cx);
             }

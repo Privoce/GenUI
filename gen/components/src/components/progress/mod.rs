@@ -73,7 +73,7 @@ pub struct GProgress {
     pub visible: bool,
     // animator -----------------
     #[live(false)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     pub animator: Animator,
     #[live(0.0)]
@@ -244,7 +244,7 @@ impl GProgress {
         focus_area: Area,
     ) {
         let uid = self.widget_uid();
-        if self.animation_open{
+        if self.animation_key{
             self.animator_handle_event(cx, event);
         }
 

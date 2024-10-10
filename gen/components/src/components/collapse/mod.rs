@@ -79,7 +79,7 @@ pub struct GCollapse {
     pub visible: bool,
     // animator -----------------
     #[live(false)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     animator: Animator,
     // use animation counter to prevent multiple animations
@@ -182,7 +182,7 @@ impl Widget for GCollapse {
         sweep_area: Area,
     ) {
         let uid = self.widget_uid();
-        if !self.animation_open && self.animation_counter {
+        if !self.animation_key && self.animation_counter {
             if self.animator_handle_event(cx, event).must_redraw() {
                 if self.animator.is_track_animating(cx, id!(open)) {
                     self.area.redraw(cx);
@@ -226,7 +226,7 @@ impl Widget for GCollapse {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();
-        if !self.animation_open && self.animation_counter {
+        if !self.animation_key && self.animation_counter {
             if self.animator_handle_event(cx, event).must_redraw() {
                 if self.animator.is_track_animating(cx, id!(open)) {
                     self.area.redraw(cx);

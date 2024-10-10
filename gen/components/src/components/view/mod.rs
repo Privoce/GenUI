@@ -86,7 +86,7 @@ pub struct GView {
     #[live]
     pub cursor: Option<MouseCursor>,
     #[live(false)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     // scroll ---------------------
     #[live]
     pub scroll_bars: Option<LivePtr>,
@@ -137,6 +137,8 @@ pub struct GView {
     pub scope_path: HeapLiveIdPath,
     #[live(false)]
     pub capture_overload: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 pub struct ViewTextureCache {
@@ -260,6 +262,10 @@ impl Widget for GView {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.visible || !self.event_key{
+            return;
+        }
+
         let uid = self.widget_uid();
         if self.animator_handle_event(cx, event).must_redraw() {
             self.redraw(cx);
@@ -368,7 +374,7 @@ impl Widget for GView {
                         path: scope.path.clone(),
                     }),
                 );
-                if self.animator.live_ptr.is_some() && self.animation_open {
+                if self.animator.live_ptr.is_some() && self.animation_key {
                     self.animator_play(cx, id!(hover.on))
                 }
             }
@@ -391,7 +397,7 @@ impl Widget for GView {
                         path: scope.path.clone(),
                     }),
                 );
-                if self.animator.live_ptr.is_some() && self.animation_open {
+                if self.animator.live_ptr.is_some() && self.animation_key {
                     self.animator_play(cx, id!(hover.off));
                 }
             }
@@ -604,6 +610,10 @@ impl Widget for GView {
     }
 
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if !self.visible || !self.event_key{
+            return;
+        }
+
         let uid = self.widget_uid();
         if self.animator_handle_event(cx, event).must_redraw() {
             self.redraw(cx);
@@ -709,7 +719,7 @@ impl Widget for GView {
                             path: scope.path.clone(),
                         }),
                     );
-                    if self.animator.live_ptr.is_some() && self.animation_open {
+                    if self.animator.live_ptr.is_some() && self.animation_key {
                         self.animator_play(cx, id!(hover.on));
                     }
                 }
@@ -732,7 +742,7 @@ impl Widget for GView {
                             path: scope.path.clone(),
                         }),
                     );
-                    if self.animator.live_ptr.is_some() && self.animation_open {
+                    if self.animator.live_ptr.is_some() && self.animation_key {
                         self.animator_play(cx, id!(hover.off));
                     }
                 }

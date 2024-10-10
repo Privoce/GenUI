@@ -127,29 +127,33 @@ impl GRouter {
             .borrow()
             .map(|active_router| match self.page_type {
                 PageType::Bar => {
-                    let bar_pages = active_router.children.iter().zip(self.bar_pages.iter());
-                    for ((_id, child), path) in bar_pages {
-                        child.as_gview().borrow_mut().map(|mut child| {
-                            if path.eq(target) {
-                                child.visible = true;
-                            } else {
-                                child.visible = false;
-                            }
-                            child.render(cx);
-                        });
+                    for (id, child) in active_router.children.iter() {
+                        // find path in bar_pages and get path
+                        if let Some(path) = self.bar_pages.iter().find(|p| p.contains_id(id)) {
+                            child.as_gview().borrow_mut().map(|mut child| {
+                                if path.eq(target) {
+                                    child.visible = true;
+                                } else {
+                                    child.visible = false;
+                                }
+                                child.render(cx);
+                            });
+                        }
                     }
                 }
                 PageType::Nav => {
-                    let nav_pages = active_router.children.iter().zip(self.nav_pages.iter());
-                    for ((_id, child), path) in nav_pages {
-                        child.as_gpage().borrow_mut().map(|mut child| {
-                            if path.eq(target) {
-                                child.visible = true;
-                            } else {
-                                child.visible = false;
-                            }
-                            child.render(cx);
-                        });
+                    for (id, child) in active_router.children.iter() {
+                        // find path in bar_pages and get path
+                        if let Some(path) = self.nav_pages.iter().find(|p| p.contains_id(id)) {
+                            child.as_gpage().borrow_mut().map(|mut child| {
+                                if path.eq(target) {
+                                    child.visible = true;
+                                } else {
+                                    child.visible = false;
+                                }
+                                child.render(cx);
+                            });
+                        }
                     }
                 }
                 PageType::None => {}

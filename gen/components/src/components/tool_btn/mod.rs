@@ -99,7 +99,7 @@ pub struct GToolButton {
     #[animator]
     pub animator: Animator,
     #[live(true)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[live(true)]
     pub visible: bool,
     #[live(true)]
@@ -240,7 +240,7 @@ impl GToolButton {
         hit: Hit,
         focus_area: Area,
     ) {
-        if self.animation_open {
+        if self.animation_key {
             self.animator_handle_event(cx, event);
         }
         let uid = self.widget_uid();

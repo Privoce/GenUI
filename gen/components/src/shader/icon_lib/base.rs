@@ -64,7 +64,7 @@ live_design!{
                 Base::More => {
                     // draw a `⋯` icon as a button
                     sdf.circle(start_pos.x , center_y, stroke_width * 1.5);
-                    sdf.circle(center_x, center_y, stroke_width * 1.5);
+                    sdf.circle(center_x - stroke_width * 0.75, center_y, stroke_width * 1.5);
                     sdf.circle(end_pos.x - stroke_width, center_y, stroke_width * 1.5);
                     sdf.fill(self.stroke_color());
                 }

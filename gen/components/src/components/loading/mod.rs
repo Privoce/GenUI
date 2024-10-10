@@ -33,12 +33,12 @@ pub struct GLoading {
     #[live(true)]
     pub visible: bool,
     #[live(true)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[live]
     pub time: f32,
     #[rust]
     next_frame: NextFrame,
-    // store previous state(animation_open)
+    // store previous state(animation_key)
     #[rust]
     pub pre_state: bool,
 }
@@ -54,7 +54,7 @@ impl Widget for GLoading {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
-        if !self.animation_open || !self.visible {
+        if !self.animation_key || !self.visible {
             return;
         }
         if let Some(ne) = self.next_frame.is_event(event) {
@@ -72,7 +72,7 @@ impl Widget for GLoading {
 
 impl LiveHook for GLoading {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        self.pre_state = self.animation_open;
+        self.pre_state = self.animation_key;
         if !self.visible {
             return;
         }
@@ -90,13 +90,13 @@ impl LiveHook for GLoading {
     }
     fn after_new_from_doc(&mut self, cx: &mut Cx) {
         // starts the animation cycle on startup
-        if self.animation_open {
+        if self.animation_key {
             self.next_frame = cx.new_next_frame();
         }
     }
 
     fn after_update_from_doc(&mut self, cx: &mut Cx) {
-        if self.pre_state != self.animation_open {
+        if self.pre_state != self.animation_key {
             let uid = self.widget_uid();
             if self.pre_state {
                 cx.widget_action(uid, &Scope::empty().path, GLoadingEvent::Close);

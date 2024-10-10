@@ -77,7 +77,7 @@ pub struct GTabbarItem {
     pub visible: bool,
     // animator -----------------
     #[live(true)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     animator: Animator,
     #[live]
@@ -99,7 +99,7 @@ impl Widget for GTabbarItem {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();
 
-        if self.animation_open {
+        if self.animation_key {
             self.animator_handle_event(cx, event);
         }
         match event.hits(cx, self.area()) {

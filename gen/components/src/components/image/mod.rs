@@ -142,7 +142,7 @@ pub struct GImage {
     #[rust(Texture::new(cx))]
     pub texture: Option<Texture>,
     #[live(false)]
-    pub animation_open: bool,
+    pub animation_key: bool,
 }
 
 impl ImageCacheImpl for GImage {
@@ -242,7 +242,7 @@ impl Widget for GImage {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
-        if !self.visible || !self.animation_open{
+        if !self.visible || !self.animation_key {
             return;
         }
         let hit = event.hits_with_options(
@@ -254,11 +254,11 @@ impl Widget for GImage {
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        if !self.visible || !self.animation_open{
+        if !self.visible || !self.animation_key {
             return;
         }
         let focus_area = self.area();
-        let hit = event.hits_with_capture_overload(cx, self.area(), true);
+        let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
     fn is_visible(&self) -> bool {

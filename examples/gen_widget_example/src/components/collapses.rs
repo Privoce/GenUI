@@ -25,8 +25,20 @@ live_design! {
                     height: 100.0,
                     width: 300.0,
                     header: {
+                        height: Fit,
                         <GLabel>{
                             text: "Open Collapse !!!",
+                        }
+                    },
+                    body: {
+                        height: Fit,
+                        // width: 240.0,
+                        theme: Dark,
+                        <GButton>{
+                            theme: Error,
+                            slot:{
+                                text: "Close!"
+                            }
                         }
                     }
                 }

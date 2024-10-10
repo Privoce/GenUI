@@ -132,7 +132,7 @@ pub struct GRadio {
     pub visible: bool,
     // animator -----------------
     #[live(true)]
-    pub animation_open: bool,
+    pub animation_key: bool,
     #[animator]
     pub animator: Animator,
     #[live(true)]
@@ -313,7 +313,7 @@ impl GRadio {
         focus_area: Area,
     ) {
         let uid = self.widget_uid();
-        if self.animation_open{
+        if self.animation_key{
             self.animator_handle_event(cx, event);
         }
 

@@ -1045,12 +1045,12 @@ live_design! {
             color: #161616,
             src: dep("crate://self/resources/icons/home.svg"),
             stroke_hover_color: #FF7043,
-            animation_open: true,
+            animation_key: true,
         }
         text_slot: <GLabel>{
             font_size: 8.0,
             color: #161616,
-            animation_open: true,
+            animation_key: true,
             text: "Home",
             stroke_hover_color: #FF7043,
             stroke_pressed_color: #FF7043,

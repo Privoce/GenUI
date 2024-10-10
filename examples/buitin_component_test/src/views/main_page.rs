@@ -14,7 +14,8 @@ live_design! {
     import gen_components::components::*;
     import crate::views::overall::all::*;
     import crate::views::overall::color::*;
-
+    import crate::views::overall::font::*;
+    BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
         width: Fill,
@@ -23,6 +24,7 @@ live_design! {
         background_color: #2C313A,
         border_radius: 0.0,
         menu = <GMenu>{
+            padding: 8.0,
             width: 180.0,
             header: {
                 height: 32.0,
@@ -34,6 +36,7 @@ live_design! {
                 },
                 padding: {left: 4.0},
                 <GLabel>{
+                    font_family: (BOLD_FONT),
                     font_size: 12.0,
                     text: "GenUI Components",
                 }
@@ -82,13 +85,21 @@ live_design! {
                                 text: "Overall",
                             }
                         }
+                        tab_font = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "System Font",
+                            }
+                        }
                         tab_color = <GMenuItem>{
                             selected: true,
                             icon_slot: {
                                 visible: false,
                             }
                             text_slot: {
-                                text: "Color",
+                                text: "Theme Color",
                             }
                         }
                     }
@@ -159,6 +170,9 @@ live_design! {
                     flow: Down,
                     overall_page = <GBarPage>{
                         <OverallPage>{}
+                    }
+                    font_page = <GBarPage>{
+                        <FontPage>{}
                     }
                     color_page = <GBarPage>{
                         <ColorPage>{}
@@ -247,7 +261,7 @@ impl Widget for AppMainPage {
                 router.borrow_mut().map(|mut router| {
                     let _ = router
                         .init(
-                            ids!(overall_page, color_page),
+                            ids!(overall_page, color_page, font_page),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
@@ -275,6 +289,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(overall_page));
             } else if e.selected_id == id!(tab_color)[0] {
                 router.nav_to(cx, id!(color_page));
+            }else if e.selected_id == id!(tab_font)[0] {
+                router.nav_to(cx, id!(font_page));
             }
         }
 

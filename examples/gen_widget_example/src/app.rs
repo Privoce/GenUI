@@ -56,18 +56,22 @@ live_design! {
                     height: Fill,
                     width: Fill,
                     flow: Down,
-                    <GView>{
-                        theme: Primary,
-                        animation_open: true,
-                        hover_color: #00FF00,
-                        capture_overload: true,
-                        <GLabel>{
-                            text: "sdsadaskd"
-                        }
-                        <GImage>{
-                            animation_open: true,
-                            src: dep("crate://self/resources/google.png"),
-                        }
+                    <GButton>{theme:Dark}
+                    <GIcon>{
+                        height: 32.0,
+                        width: 32.0,
+                        icon_type: More
+                    }
+
+                    <TextInput>{
+                        text: "
+                            <pre>
+                                fn handle(){
+                                    log!(\"Hello, World!\");
+                                }
+                            </pre>
+                        ",
+                        
                     }
                     
                     // <TPage>{}
@@ -192,7 +196,7 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    <GPopupExample>{}
+                    // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}
