@@ -148,6 +148,8 @@ pub struct GBreadCrumb {
     pub visible: bool,
     #[live(Some(MouseCursor::Hand))]
     pub cursor: Option<MouseCursor>,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GBreadCrumb {

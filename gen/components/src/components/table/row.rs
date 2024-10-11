@@ -28,6 +28,8 @@ pub struct GTableRow {
     pub visible: bool,
     #[rust]
     pub defer_walks: Vec<(LiveId, DeferWalk)>,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GTableRow {

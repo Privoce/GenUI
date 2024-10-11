@@ -72,6 +72,8 @@ pub struct GMenu {
     pub selected: Option<Vec<usize>>,
     #[rust]
     pub item_modes: Vec<MenuItemMode>,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GMenu {

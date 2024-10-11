@@ -139,6 +139,8 @@ pub struct GIcon {
     // icon type -----------------------------------
     #[live]
     pub icon_type: IconType,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 

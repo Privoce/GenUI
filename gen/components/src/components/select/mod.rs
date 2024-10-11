@@ -142,6 +142,8 @@ pub struct GSelect {
     pub selected: usize,
     #[animator]
     animator: Animator,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 #[derive(Default, Clone)]

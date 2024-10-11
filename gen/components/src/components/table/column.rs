@@ -27,6 +27,8 @@ pub struct GTableColumn {
     pub layout: Layout,
     #[rust]
     pub children: ComponentMap<LiveId, GTableCell>,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GTableColumn {

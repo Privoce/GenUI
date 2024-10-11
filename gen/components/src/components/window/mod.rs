@@ -100,6 +100,8 @@ pub struct GWindow {
     pub redraw_flag: bool,
     #[rust(OsType::Windows)]
     pub current_os: OsType,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GWindow {

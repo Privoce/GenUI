@@ -137,6 +137,8 @@ pub struct GRadio {
     pub animator: Animator,
     #[live(true)]
     pub grab_key_focus: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GRadio {

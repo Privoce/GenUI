@@ -101,6 +101,8 @@ pub struct GMenuItem {
     pub selected: bool,
     #[animator]
     pub animator: Animator,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GMenuItem {

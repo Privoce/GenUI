@@ -43,6 +43,8 @@ pub struct GDropDown {
     /// if proportion > 1.0, we think that is height/width (dep on position)
     #[live(0.4)]
     pub proportion: f32,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 #[derive(Default, Clone)]

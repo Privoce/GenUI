@@ -88,6 +88,8 @@ pub struct GProgress {
     pub dragging: Option<f64>,
     #[live(true)]
     pub read_only: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GProgress {

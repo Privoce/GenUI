@@ -82,6 +82,8 @@ pub struct GTabbarItem {
     animator: Animator,
     #[live]
     pub selected: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GTabbarItem {

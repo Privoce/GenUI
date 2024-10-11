@@ -180,6 +180,10 @@ macro_rules! event_option {
     ($($event_fn: ident : $event: path => $return: ty),*) => {
         $(
             pub fn $event_fn(&self, actions: &Actions) -> Option<$return> {
+                if !self.event_key{
+                    return None;
+                }
+
                 if let $event(e) =
                     actions.find_widget_action(self.widget_uid()).cast()
                 {

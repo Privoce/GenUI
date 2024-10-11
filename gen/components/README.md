@@ -74,6 +74,9 @@
 - [ ] Video
 - [ ] Virtual Select(提供抽象与扩展能力，自定义模型)
 - [ ] Animation Optimize
+- [ ] Table ReBuild
+- [ ] Code
+- [ ] State Card for Doc(Note, Important, Info)
 
 ## Experimental function (v0.1.0 ~ v0.5.0)
 

@@ -29,11 +29,11 @@ Virtual: in virt.rs
   - [ ] Event
   - [ ] Usage
   - [ ] Virtual
-- [ ] Label
-  - [ ] Animation
-  - [ ] Event
+- [x] Label
+  - [x] Animation
+  - [x] Event
   - [x] Usage
-  - [ ] Virtual
+  - [ ] Virtual (no)
 - [ ] Button
   - [ ] Animation
   - [ ] Event

@@ -19,4 +19,5 @@ pub fn register(cx: &mut Cx){
     // self::divider::live_design(cx);
     // self::link::live_design(cx);
     self::label::register(cx);
+    self::button::register(cx);
 }

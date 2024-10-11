@@ -34,7 +34,7 @@ live_design! {
                         pressed: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_button: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_button: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}]}
                     }
                 }
 
@@ -100,6 +100,8 @@ pub struct GButton {
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GButton {

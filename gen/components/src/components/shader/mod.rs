@@ -31,6 +31,8 @@ pub struct GShader {
     pub visible: bool,
     #[live(true)]
     pub animation_key: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl LiveHook for GShader {

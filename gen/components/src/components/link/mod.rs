@@ -35,7 +35,7 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_link: {pressed: 0.0, hover: 0.0}
-                        draw_text: {pressed: 0.0, hover: 0.0}
+                        draw_text: {focus: 0.0, hover: 0.0}
                     }
                 }
 
@@ -46,7 +46,7 @@ live_design! {
                     }
                     apply: {
                         draw_link: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
-                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {focus: 0.0, hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
 
@@ -54,7 +54,7 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_link: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
-                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {focus: [{time: 0.0, value: 1.0}], hover: 1.0,}
                     }
                 }
             }
@@ -133,6 +133,8 @@ pub struct GLink {
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 
@@ -236,8 +238,8 @@ impl LiveHook for GLink {
             cx,
             live! {
                 color: (font_color),
-                hover_color: (text_hover_color),
-                pressed_color: (text_pressed_color),
+                stroke_hover_color: (text_hover_color),
+                stroke_focus_color: (text_pressed_color),
                 text_style: {
                     font_size: (self.font_size),
                 },

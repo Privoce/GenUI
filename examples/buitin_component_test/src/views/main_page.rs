@@ -19,6 +19,7 @@ live_design! {
     import crate::views::guide::quickstart::*;
     import crate::views::guide::start::*;
     import crate::views::basic::label::*;
+    import crate::views::basic::button::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -124,7 +125,6 @@ live_design! {
                     }
                     items: {
                         tab_label = <GMenuItem>{
-                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -141,6 +141,7 @@ live_design! {
                             }
                         }
                         tab_button = <GMenuItem>{
+                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -201,7 +202,9 @@ live_design! {
                     label_page = <GBarPage>{
                         <LabelPage>{}
                     }
-
+                    button_page = <GBarPage>{
+                        <ButtonPage>{}
+                    }
                 }
             }
             <GView>{
@@ -293,12 +296,13 @@ impl Widget for AppMainPage {
                                 font_page,
                                 install_page,
                                 qs_page,
-                                label_page
+                                label_page,
+                                button_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(label_page))
+                        .active(id!(button_page))
                         .build(cx);
                 });
             })
@@ -332,6 +336,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(start_page));
             } else if e.selected_id == id!(tab_label)[0] {
                 router.nav_to(cx, id!(label_page));
+            }else if e.selected_id == id!(tab_button)[0] {
+                router.nav_to(cx, id!(button_page));
             }
         }
 

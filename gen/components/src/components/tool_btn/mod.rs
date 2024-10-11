@@ -110,6 +110,8 @@ pub struct GToolButton {
     pub os_type: Option<GOsType>,
     #[live]
     pub cursor: Option<MouseCursor>,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GToolButton {

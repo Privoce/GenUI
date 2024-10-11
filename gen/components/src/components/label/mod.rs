@@ -5,11 +5,7 @@ pub use event::*;
 pub use register::register;
 
 use crate::{
-    event::FocusType,
-    play_animation, set_scope_path, set_text_and_visible_fn,
-    shader::draw_text::DrawGText,
-    themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor, ToBool},
+    event::FocusType, event_option, play_animation, ref_event_option, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -124,7 +120,7 @@ pub struct GLabel {
 }
 
 impl Widget for GLabel {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
@@ -136,6 +132,7 @@ impl Widget for GLabel {
         self.draw_text
             .draw_walk(cx, walk, self.align, self.text.as_ref());
         cx.end_turtle_with_area(&mut self.area);
+        self.set_scope_path(&scope.path);
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
@@ -237,9 +234,9 @@ impl GLabel {
         self.draw_text.redraw(cx);
     }
     pub fn render(&mut self, cx: &mut Cx) -> () {
-        let color = self.color.get(self.theme, 800);
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 800);
-        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 800);
+        let color = self.color.get(self.theme, 100);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
+        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 200);
         self.draw_text.apply_over(
             cx,
             live! {
@@ -285,6 +282,11 @@ impl GLabel {
             return GLabelState::None;
         }
     }
+    event_option! {
+        hover_in: GLabelEvent::HoverIn => GLabelHoverParam,
+        hover_out: GLabelEvent::HoverOut => GLabelHoverParam,
+        focus: GLabelEvent::Focus => GLabelFocusParam
+    }
 }
 
 impl GLabelRef {
@@ -329,5 +331,10 @@ impl GLabelRef {
             return c_ref.animate_state();
         }
         GLabelState::None
+    }
+    ref_event_option! {
+        hover_in  => GLabelHoverParam,
+        hover_out => GLabelHoverParam,
+        focus => GLabelFocusParam
     }
 }

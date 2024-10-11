@@ -41,6 +41,8 @@ pub struct GLoading {
     // store previous state(animation_key)
     #[rust]
     pub pre_state: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GLoading {

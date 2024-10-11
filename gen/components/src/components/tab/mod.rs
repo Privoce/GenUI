@@ -34,6 +34,8 @@ pub struct GTab {
     pub walk: Walk,
     #[layout]
     pub layout: Layout,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GTab {

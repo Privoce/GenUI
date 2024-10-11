@@ -143,6 +143,8 @@ pub struct GImage {
     pub texture: Option<Texture>,
     #[live(false)]
     pub animation_key: bool,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl ImageCacheImpl for GImage {

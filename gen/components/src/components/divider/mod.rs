@@ -82,6 +82,8 @@ pub struct GDivider {
     pub animation_key: bool,
     #[animator]
     pub animator: Animator,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 #[derive(Clone)]

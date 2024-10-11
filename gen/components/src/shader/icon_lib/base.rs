@@ -117,10 +117,10 @@ live_design!{
                 }
                 Base::Add => {
                     let quarter_size = size * 0.15;
-                    sdf.move_to(center_x, start_pos.y + quarter_size.y);
-                    sdf.line_to(center_x, end_pos.y - quarter_size.y);
-                    sdf.move_to(start_pos.x + quarter_size.x, center_y);
-                    sdf.line_to(end_pos.x - quarter_size.x, center_y);
+                    sdf.move_to(center_x, start_pos.y);
+                    sdf.line_to(center_x, end_pos.y);
+                    sdf.move_to(start_pos.x, center_y);
+                    sdf.line_to(end_pos.x, center_y);
 
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }

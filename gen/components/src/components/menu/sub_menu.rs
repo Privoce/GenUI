@@ -76,6 +76,8 @@ pub struct GSubMenu {
     pub layout: Layout,
     #[walk]
     pub walk: Walk,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GSubMenu {

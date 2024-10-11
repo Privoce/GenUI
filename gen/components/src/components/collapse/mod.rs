@@ -87,6 +87,8 @@ pub struct GCollapse {
     animation_counter: bool,
     #[live]
     pub position: Position4,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GCollapse {

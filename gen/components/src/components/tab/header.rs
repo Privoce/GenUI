@@ -68,6 +68,8 @@ pub struct GTabHeader {
     pub walk: Walk,
     #[rust]
     pub view_area: Area,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 #[derive(Clone, Debug, DefaultNone)]

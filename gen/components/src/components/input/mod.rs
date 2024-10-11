@@ -75,13 +75,13 @@ live_design! {
         },
 
         draw_text: {
-            instance focus: 0.0;
+            // instance focus: 0.0;
             instance placeholder_color: vec4;
             fn get_color(self) -> vec4 {
                 return mix(
                     mix(
                         self.color,
-                        mix(self.hover_color, self.pressed_color, self.pressed),
+                        mix(self.stroke_hover_color, self.stroke_pressed_color, self.pressed),
                         self.hover
                     ),
                     self.placeholder_color,
@@ -230,6 +230,8 @@ pub struct GInput {
     history: History,
     #[live]
     scroll_bars: ScrollBars,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GInput {

@@ -57,6 +57,8 @@ pub struct GUpload {
     real_path: PathBuf,
     #[live]
     pub mode: UploadMode,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GUpload {

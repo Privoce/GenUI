@@ -157,6 +157,8 @@ pub struct GSelectItem {
     pub value: String,
     #[live]
     pub font_family: LiveDependency,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl LiveHook for GSelectItem {

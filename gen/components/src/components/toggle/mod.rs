@@ -97,6 +97,8 @@ pub struct GToggle {
     pub animation_key: bool,
     #[animator]
     animator: Animator,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GToggle {

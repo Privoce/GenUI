@@ -56,6 +56,8 @@ pub struct GTableHeader {
     pub defer_walks: Vec<(LiveId, DeferWalk)>,
     #[rust]
     pub draw_state: DrawStateWrap<DrawState>,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GTableHeader {
