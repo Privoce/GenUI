@@ -1,37 +1,15 @@
-//! # Label component
-//! A component that displays text.
-//! ## Props
-//! |decorate|name|type|description|
-//! |--|--|--|--|
-//! |live|color|`Vec4`|The color of the label.|
-//! |live|font_size|`f64`|The size of the font used in the label.|
-//! |live|brightness(unused)|`f32`|The brightness level of the text.|
-//! |live|curve(unused)|`f32`|The curve factor of the text.|
-//! |live|line_spacing|`f64`|The line spacing of the text.|
-//! |live|top_drop|`f64`|The top drop of the text.|
-//! |live|height_factor|`f64`|The height factor of the text.|
-//! |live|wrap|`TextWrap`|The text wrapping mode.|
-//! |live|font_family|`LiveDependency`|The font family of the text.|
-//! |live|visible|`bool`|Whether the label is visible.|
-//! |deref|draw_text|`DrawText`|The `DrawText` component used for drawing the text.|
-//! |walk|height|`Size`|The height of the label|
-//! |walk|width|`Size`|The width of the label|
-//! |live|align|`Align`|The alignment of the text.|
-//! |live|padding|`Padding`|The padding around the text. default `0.0`|
-//! |live|text|`ArcStringMut`|The content of the label.|
-//! ## Events
-//! None
-//! ## Example
-//! See [label example](https://privoce.github.io/GenUI.github.io/gen/makepad/components/label.html)
+mod event;
 mod register;
 
+pub use event::*;
 pub use register::register;
 
 use crate::{
-    set_text_and_visible_fn,
+    event::FocusType,
+    play_animation, set_scope_path, set_text_and_visible_fn,
     shader::draw_text::DrawGText,
     themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor},
+    utils::{get_font_family, set_cursor, ThemeColor, ToBool},
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -45,24 +23,32 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {pressed: 0.0, hover: 0.0}
+                        draw_text: {hover: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {hover: 1.0}
+                    }
+                }
+            }
+            focus = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_text: {focus: 0.0}
                     }
                 }
 
-                pressed = {
+                on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {focus: 1.0}
                     }
                 }
             }
@@ -70,9 +56,18 @@ live_design! {
     }
 }
 
-/// ## GLabel component
+/// # GLabel component
 /// A component that displays text.
-/// This component has no events. If you need add event on this component, you should wrap a view outside
+/// ## Aniamtion
+/// When you need to enable the default animation, you need to set animation_key to true
+///
+/// The default animation color is related to the passed theme
+///
+/// Label animations are divided into two types: Hover and Focus (Press)
+/// - Hover: stroke_hover_color
+/// - Press: stroke_focus_color
+/// ## Event
+/// When an event needs to be started, event_key needs to be set to true. See [`GLabelEvent`]
 #[derive(Live, Widget)]
 pub struct GLabel {
     #[live]
@@ -80,7 +75,7 @@ pub struct GLabel {
     #[live]
     pub stroke_hover_color: Option<Vec4>,
     #[live]
-    pub stroke_pressed_color: Option<Vec4>,
+    pub stroke_focus_color: Option<Vec4>,
     #[live]
     pub color: Option<Vec4>,
     #[live(9.0)]
@@ -122,6 +117,10 @@ pub struct GLabel {
     pub animator: Animator,
     #[rust]
     pub area: Area,
+    #[live(false)]
+    pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GLabel {
@@ -148,30 +147,35 @@ impl Widget for GLabel {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_text.redraw(cx);
             }
-            match event.hits(cx, self.area) {
-                Hit::FingerHoverIn(_) => {
-                    let _ = set_cursor(cx, self.cursor.as_ref());
-                    self.animator_play(cx, id!(hover.on));
-                }
-                Hit::FingerHoverOut(_) => {
-                    self.animator_play(cx, id!(hover.off));
-                }
-                Hit::FingerDown(_) => {
-                    self.animator_play(cx, id!(hover.pressed));
-                }
-                Hit::FingerUp(f_up) => {
-                    if f_up.is_over {
-                        if f_up.device.has_hovers() {
-                            self.animator_play(cx, id!(hover.on));
-                        } else {
-                            self.animator_play(cx, id!(hover.off));
-                        }
-                    } else {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                }
-                _ => (),
+        }
+        match event.hits(cx, self.area()) {
+            Hit::FingerHoverIn(e) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.play_animation(cx, id!(hover.on));
+                self.active_hover_in(cx, e);
             }
+            Hit::FingerHoverOut(e) => {
+                self.play_animation(cx, id!(hover.off));
+                self.play_animation(cx, id!(focus.off));
+                self.active_hover_out(cx, e);
+            }
+            Hit::FingerDown(e) => {
+                self.play_animation(cx, id!(focus.on));
+                self.active_focus(cx, e);
+            }
+            Hit::FingerUp(f_up) => {
+                self.play_animation(cx, id!(focus.off));
+                if f_up.is_over {
+                    if f_up.device.has_hovers() {
+                        self.play_animation(cx, id!(hover.on));
+                    } else {
+                        self.play_animation(cx, id!(hover.off));
+                    }
+                } else {
+                    self.play_animation(cx, id!(hover.off));
+                }
+            }
+            _ => (),
         }
     }
     set_text_and_visible_fn!();
@@ -188,6 +192,44 @@ impl LiveHook for GLabel {
 }
 
 impl GLabel {
+    set_scope_path!();
+    play_animation!();
+    fn active_hover_in(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GLabelEvent::HoverIn(GLabelHoverParam { e }),
+                );
+            });
+        }
+    }
+    fn active_hover_out(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GLabelEvent::HoverOut(GLabelHoverParam { e }),
+                );
+            });
+        }
+    }
+    fn active_focus(&mut self, cx: &mut Cx, e: FingerDownEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GLabelEvent::Focus(GLabelFocusParam {
+                        e,
+                        ty: FocusType::Press,
+                    }),
+                );
+            });
+        }
+    }
     pub fn area(&self) -> Area {
         self.area
     }
@@ -197,13 +239,13 @@ impl GLabel {
     pub fn render(&mut self, cx: &mut Cx) -> () {
         let color = self.color.get(self.theme, 800);
         let stroke_hover_color = self.stroke_hover_color.get(self.theme, 800);
-        let stroke_pressed_color = self.stroke_pressed_color.get(self.theme, 800);
+        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 800);
         self.draw_text.apply_over(
             cx,
             live! {
                 color: (color),
-                hover_color: (stroke_hover_color),
-                pressed_color: (stroke_pressed_color),
+                stroke_hover_color: (stroke_hover_color),
+                stroke_focus_color: (stroke_focus_color),
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
@@ -216,31 +258,76 @@ impl GLabel {
         );
         self.draw_text.wrap = self.wrap.clone();
     }
+    pub fn clear_animation(&mut self) -> () {
+        self.draw_text.hover = 0.0;
+        self.draw_text.focus = 0.0;
+    }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
-        self.draw_text.apply_over(
-            cx,
-            live! {
-                hover: 1.0,
-                pressed: 0.0
-            },
-        );
+        self.clear_animation();
+        self.play_animation(cx, id!(hover.on));
     }
     pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
-        self.draw_text.apply_over(
-            cx,
-            live! {
-                hover: 0.0,
-                pressed: 0.0
-            },
-        );
+        self.play_animation(cx, id!(hover.off));
     }
-    pub fn animate_hover_pressed(&mut self, cx: &mut Cx) -> () {
-        self.draw_text.apply_over(
-            cx,
-            live! {
-                hover: 0.0,
-                pressed: 1.0
-            },
-        );
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation();
+        self.play_animation(cx, id!(focus.on));
+    }
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.play_animation(cx, id!(focus.off));
+    }
+    pub fn animate_state(&self) -> GLabelState {
+        if self.draw_text.focus.to_bool() {
+            return GLabelState::Focus;
+        } else if self.draw_text.hover.to_bool() {
+            return GLabelState::Hover;
+        } else {
+            return GLabelState::None;
+        }
+    }
+}
+
+impl GLabelRef {
+    pub fn clear_animation(&mut self) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.clear_animation();
+        }
+    }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.animate_hover_on(cx);
+        }
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.animate_hover_off(cx);
+        }
+    }
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.animate_focus_on(cx);
+        }
+    }
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.animate_focus_off(cx);
+        }
+    }
+    pub fn area(&self) -> Area {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.area();
+        }
+        Area::Empty
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        if let Some(c_ref) = self.borrow() {
+            c_ref.redraw(cx);
+        }
+    }
+    pub fn animate_state(&self) -> GLabelState {
+        if let Some(c_ref) = self.borrow() {
+            return c_ref.animate_state();
+        }
+        GLabelState::None
     }
 }

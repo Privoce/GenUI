@@ -6,7 +6,7 @@
 
 ## Test Pass
 
-Animation: in an.rs
+Animation: in animate.rs
 Event: in event.rs
 Usage: in usage.rs
 Virtual: in virt.rs
@@ -32,7 +32,7 @@ Virtual: in virt.rs
 - [ ] Label
   - [ ] Animation
   - [ ] Event
-  - [ ] Usage
+  - [x] Usage
   - [ ] Virtual
 - [ ] Button
   - [ ] Animation

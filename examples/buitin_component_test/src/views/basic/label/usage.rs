@@ -30,7 +30,7 @@ live_design! {
                 }
             },
             body: {
-                height: 240.0,
+                height: Fit,
                 width: Fill,
                 scroll_bars: <GScrollBars>{},
 
@@ -54,7 +54,7 @@ live_design! {
         }
         <GLabel>{
             width: Fill,
-            text: "A component that displays text. This component has no events. If you need add event on this component, you should wrap a view outside. But Label still has animation!",
+            text: "Label is a basic component for displaying text, and usually does not enable animations or events.",
         }
         <CBox>{
             box_wrap = {
@@ -66,21 +66,11 @@ live_design! {
                     color: #F67D37,
                     text: "font color is #F67D37",
                 }
-                <GLabel>{
-                    cursor: Hand,
-                    animation_key: true,
-                    text: "Label with animation (cursor Hand)"
-                }
-                <GLabel>{
-                    animation_key: true,
-                    stroke_hover_color: #FF0000,
-                    stroke_pressed_color: #00FF00,
-                    text: "with hover and pressed color"
-                }
             }
             code = {
                 body: {
                     <GLabel>{
+                        height: 180.0,
                         theme: Dark,
                         width: Fill,
                         text: r#"
@@ -91,22 +81,12 @@ live_design! {
                     color: #F67D37,
                     text: "font color is #F67D37",
                 }
-                <GLabel>{
-                    cursor: Hand,
-                    animation_key: true,
-                    text: "Label with animation (cursor Hand)"
-                }
-                <GLabel>{
-                    animation_key: true,
-                    stroke_hover_color: #FF0000,
-                    stroke_pressed_color: #00FF00,
-                    text: "with hover and pressed color"
-                }
                         "#;
                     }
                 }
             }
         }
+        
         
     }
 }

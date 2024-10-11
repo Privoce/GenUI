@@ -6,19 +6,14 @@ live_design! {
     DrawGText = {{DrawGText}} {
         
         fn get_color(self) -> vec4 {
-            // return mix(
-            //     self.color,
-            //     mix(self.hover_color, self.pressed_color, self.pressed),
-            //     self.hover
-            // )
             return mix(
                 mix(
                     self.color,
-                    self.hover_color,
+                    self.stroke_hover_color,
                     self.hover
                 ),
-                self.pressed_color,
-                self.pressed
+                self.stroke_focus_color,
+                self.focus
             )
         }
     }
@@ -30,16 +25,17 @@ pub struct DrawGText {
     #[deref]
     pub draw_super: DrawText,
     #[live]
-    pub hover_color: Vec4,
+    pub stroke_hover_color: Vec4,
     #[live]
-    pub pressed_color: Vec4,
+    pub stroke_focus_color: Vec4,
     // text is empty or not
     #[live]
     pub empty: f32,
     #[live]
     pub hover: f32,
+    // focus => pressed
     #[live]
-    pub pressed: f32
+    pub focus: f32
 }
 
 impl DrawGText {

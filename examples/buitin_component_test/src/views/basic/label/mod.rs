@@ -1,10 +1,14 @@
 use makepad_widgets::Cx;
 
 pub mod usage;
+pub mod animate;
+pub mod event;
+pub mod virt;
 
 pub fn register(cx: &mut Cx){
     self::live_design(cx);
     self::usage::live_design(cx);
+    self::animate::live_design(cx);
 }
 
 use gen_components::components::view::GView;
@@ -15,6 +19,7 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
     import crate::views::basic::label::usage::*;
+    import crate::views::basic::label::animate::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     LabelPage = {{LabelPage}}{
         height: Fill,
@@ -37,6 +42,7 @@ live_design! {
             }
         }
         <LabelUsagePage>{}
+        <LabelAnPage>{}
     }
 }
 

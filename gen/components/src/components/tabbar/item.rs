@@ -191,7 +191,7 @@ impl GTabbarItem {
             },
         );
 
-        self.text_slot.draw_text.pressed = selected;
+        self.text_slot.draw_text.focus = selected;
         self.icon_slot.draw_svg.hover = selected;
     }
     pub fn animation_hover_on(&mut self, cx: &mut Cx) -> () {
@@ -204,7 +204,7 @@ impl GTabbarItem {
     }
     pub fn animation_pressed(&mut self, cx: &mut Cx) -> () {
         self.icon_slot.animate_hover_on(cx);
-        self.text_slot.animate_hover_pressed(cx);
+        self.text_slot.animate_focus_on(cx);
     }
     pub fn animation_selected(&mut self, cx: &mut Cx) -> () {
         self.selected = true;

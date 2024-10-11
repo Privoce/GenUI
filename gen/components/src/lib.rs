@@ -4,6 +4,7 @@ pub mod components;
 pub mod shader;
 pub mod themes;
 pub mod utils;
+pub mod event;
 
 pub fn live_design(cx: &mut Cx) {
     // components ---------------------------------------------
