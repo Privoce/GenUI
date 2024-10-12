@@ -28,32 +28,24 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_button: {hover: 0.0}
+                        draw_button: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
+                        all: Forward {duration: (GLOBAL_DURATION)},
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_button: {hover: 1.0}
-                    }
-                }
-            }
-            focus = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        draw_button: {focus: 0.0}
+                        draw_button: {hover: 1.0, focus: 0.0}
                     }
                 }
 
-                on = {
+                focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_button: {focus: 1.0}
+                        draw_button: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -181,7 +173,8 @@ impl GButton {
     set_scope_path!();
     play_animation!();
     widget_area! {
-        area, draw_button
+        area, draw_button,
+        area_slot, slot
     }
     event_option! {
         hover_in: GButtonEvent::HoverIn => GButtonHoverParam,
@@ -239,7 +232,7 @@ impl GButton {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
-                self.play_animation(cx, id!(focus.on));
+                self.play_animation(cx, id!(hover.focus));
                 self.active_focus(cx, e);
             }
             Hit::FingerHoverIn(e) => {
@@ -260,7 +253,7 @@ impl GButton {
                     }
                     self.active_clicked(cx, e);
                 } else {
-                    self.play_animation(cx, id!(focus.off));
+                    self.play_animation(cx, id!(hover.off));
                     self.active_focus_lost(cx, e);
                 }
             }
@@ -370,13 +363,6 @@ impl GButtonRef {
         clicked => GButtonClickedParam
     }
     ref_area!();
-    // pub fn area(&self) -> Area {
-    //     if let Some(btn_ref) = self.borrow() {
-    //         return btn_ref.area();
-    //     }
-    //     Area::Empty
-    // }
-
     animatie_fn! {
         animate_hover_on,
         animate_hover_off,

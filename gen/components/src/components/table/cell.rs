@@ -9,7 +9,7 @@ live_design! {
         border_width: 0.0,
         background_color: #F9FAFB,
         hover_color: #F9FAFB,
-        pressed_color: #F9FAFB,
+        focus_color: #F9FAFB,
         border_color: #EAECF0,
         shadow_color: #FFFFFF00
     }

@@ -157,7 +157,6 @@ impl Widget for GLabel {
                 if e.is_over {
                     if e.device.has_hovers() {
                         self.play_animation(cx, id!(hover.on));
-                        self.animate_hover_on(cx);
                     } else {
                         self.play_animation(cx, id!(hover.off));
                     }

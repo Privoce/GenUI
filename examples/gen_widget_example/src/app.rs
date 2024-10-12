@@ -63,7 +63,7 @@ live_design! {
                                 text: "Hello World!",
                             }
                     <GButton>{
-
+                        spread_radius: 0.0,
                     }
                     // <GTabbarItem>{}
                     // <TPage>{}
