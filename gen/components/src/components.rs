@@ -1055,7 +1055,7 @@ live_design! {
             animation_key: true,
             text: "Home",
             stroke_hover_color: #FF7043,
-            stroke_pressed_color: #FF7043,
+            stroke_focus_color: #FF7043,
         }
     }
     GTabbar = <GTabbarBase>{

@@ -1,11 +1,15 @@
-pub mod event;
+mod event;
 mod register;
 
-use event::GButtonEvent;
+pub use event::*;
 pub use register::register;
 
+use crate::event::FocusType;
 use crate::utils::{set_cursor, BoolToF32, ThemeColor};
-use crate::{animatie_fn, event_option, ref_event_option, set_event, widget_area};
+use crate::{
+    animatie_fn, event_option, play_animation, ref_area, ref_event_option, set_event,
+    set_scope_path, widget_area,
+};
 use crate::{shader::draw_view::DrawGView, themes::Themes};
 use makepad_widgets::*;
 
@@ -24,24 +28,32 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_button: {pressed: 0.0, hover: 0.0}
+                        draw_button: {hover: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_button: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}]}
+                        draw_button: {hover: 1.0}
+                    }
+                }
+            }
+            focus = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_button: {focus: 0.0}
                     }
                 }
 
-                pressed = {
+                on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_button: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_button: {focus: 1.0}
                     }
                 }
             }
@@ -60,7 +72,7 @@ pub struct GButton {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub shadow_color: Option<Vec4>,
     #[live(4.8)]
@@ -102,6 +114,8 @@ pub struct GButton {
     pub layout: Layout,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GButton {
@@ -109,21 +123,27 @@ impl Widget for GButton {
         &mut self,
         cx: &mut Cx,
         event: &Event,
-        scope: &mut Scope,
+        _scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.visible {
+            return;
+        }
         let hit = event.hits_with_options(
             cx,
             self.area(),
             HitOptions::new().with_sweep_area(sweep_area),
         );
 
-        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+        self.handle_widget_event(cx, event, hit, sweep_area)
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        if !self.visible {
+            return;
+        }
         let focus_area = self.area();
         let hit = event.hits(cx, self.area());
-        self.handle_widget_event(cx, event, scope, hit, focus_area)
+        self.handle_widget_event(cx, event, hit, focus_area)
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
@@ -132,10 +152,15 @@ impl Widget for GButton {
 
         let _ = self.draw_button.begin(cx, walk, self.layout);
 
-        let slot_walk = self.slot.walk(cx);
-        let _ = self.slot.draw_walk(cx, scope, slot_walk);
+        if self.slot.is_visible() {
+            let slot_walk = self.slot.walk(cx);
+            let _ = self.slot.draw_walk(cx, scope, slot_walk);
+        }
 
         self.draw_button.end(cx);
+
+        self.set_scope_path(&scope.path);
+
         DrawStep::done()
     }
     fn is_visible(&self) -> bool {
@@ -148,12 +173,30 @@ impl LiveHook for GButton {
         if !self.visible {
             return;
         }
+        self.render(cx);
+    }
+}
+
+impl GButton {
+    set_scope_path!();
+    play_animation!();
+    widget_area! {
+        area, draw_button
+    }
+    event_option! {
+        hover_in: GButtonEvent::HoverIn => GButtonHoverParam,
+        hover_out: GButtonEvent::HoverOut => GButtonHoverParam,
+        focus: GButtonEvent::Focus => GButtonFocusParam,
+        focus_lost: GButtonEvent::FocusLost => GButtonFocusLostParam,
+        clicked: GButtonEvent::Clicked => GButtonClickedParam
+    }
+    pub fn render(&mut self, cx: &mut Cx) {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         let shadow_color = self.shadow_color.get(self.theme, 700);
@@ -167,7 +210,7 @@ impl LiveHook for GButton {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
@@ -175,74 +218,61 @@ impl LiveHook for GButton {
                 blur_radius: (self.blur_radius)
             },
         );
-        self.draw_button.redraw(cx);
     }
-}
-
-impl GButton {
-    widget_area! {
-        area, draw_button
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_button.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
     }
-    event_option! {
-        clicked: GButtonEvent::Clicked => FingerUpEvent,
-        pressed: GButtonEvent::Pressed => FingerDownEvent,
-        released: GButtonEvent::Released => FingerUpEvent,
-        hover: GButtonEvent::Hover => FingerHoverEvent
-    }
-    pub fn handle_widget_event(
-        &mut self,
-        cx: &mut Cx,
-        event: &Event,
-        scope: &mut Scope,
-        hit: Hit,
-        focus_area: Area,
-    ) {
-        let uid = self.widget_uid();
-
+    pub fn handle_widget_event(&mut self, cx: &mut Cx, event: &Event, hit: Hit, focus_area: Area) {
         if self.animation_key {
             if self.animator_handle_event(cx, event).must_redraw() {
                 self.draw_button.redraw(cx);
             }
         }
         match hit {
-            Hit::FingerDown(f_down) => {
+            Hit::FingerDown(e) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
-                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.clone()));
-                self.animator_play(cx, id!(hover.pressed));
+                self.play_animation(cx, id!(focus.on));
+                self.active_focus(cx, e);
             }
-            Hit::FingerHoverIn(h) => {
+            Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GButtonEvent::Hover(h.clone()));
+                self.play_animation(cx, id!(hover.on));
+                self.active_hover_in(cx, e);
             }
-            Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
+            Hit::FingerHoverOut(e) => {
+                self.play_animation(cx, id!(hover.off));
+                self.active_hover_out(cx, e);
             }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Clicked(f_up.clone()));
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.clone()));
-                    if f_up.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    if e.device.has_hovers() {
+                        self.play_animation(cx, id!(hover.on));
                     } else {
-                        self.animator_play(cx, id!(hover.off));
+                        self.play_animation(cx, id!(hover.off));
                     }
+                    self.active_clicked(cx, e);
                 } else {
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.clone()));
-                    self.animator_play(cx, id!(hover.off));
+                    self.play_animation(cx, id!(focus.off));
+                    self.active_focus_lost(cx, e);
                 }
             }
             _ => (),
         }
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_button.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
             },
         );
     }
@@ -251,48 +281,116 @@ impl GButton {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
             },
         );
     }
-    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_button.apply_over(
             cx,
             live! {
-                hover: 1.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
+    }
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_button.apply_over(
+            cx,
+            live! {
+                focus: 0.0
+            },
+        );
+    }
+    fn active_hover_in(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GButtonEvent::HoverIn(GButtonHoverParam { e }),
+                );
+            });
+        }
+    }
+    fn active_hover_out(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GButtonEvent::HoverOut(GButtonHoverParam { e }),
+                );
+            });
+        }
+    }
+    fn active_focus(&mut self, cx: &mut Cx, e: FingerDownEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GButtonEvent::Focus(GButtonFocusParam {
+                        ty: FocusType::Press,
+                        e,
+                    }),
+                );
+            });
+        }
+    }
+    fn active_focus_lost(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GButtonEvent::FocusLost(GButtonFocusLostParam { e }),
+                );
+            });
+        }
+    }
+    fn active_clicked(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GButtonEvent::Clicked(GButtonClickedParam { e }),
+                );
+            });
+        }
     }
 }
 
 impl GButtonRef {
     ref_event_option! {
-        clicked => FingerUpEvent,
-        released => FingerUpEvent,
-        pressed => FingerDownEvent,
-        hover => FingerHoverEvent
+        hover_in => GButtonHoverParam,
+        hover_out => GButtonHoverParam,
+        focus => GButtonFocusParam,
+        focus_lost => GButtonFocusLostParam,
+        clicked => GButtonClickedParam
     }
-
-    pub fn area(&self) -> Area {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.area();
-        }
-        Area::Empty
-    }
+    ref_area!();
+    // pub fn area(&self) -> Area {
+    //     if let Some(btn_ref) = self.borrow() {
+    //         return btn_ref.area();
+    //     }
+    //     Area::Empty
+    // }
 
     animatie_fn! {
         animate_hover_on,
         animate_hover_off,
-        animate_pressed
+        animate_focus_on,
+        animate_focus_off
     }
 }
 
 impl GButtonSet {
     set_event! {
-        clicked => FingerUpEvent,
-        released => FingerUpEvent,
-        pressed => FingerDownEvent,
-        hover => FingerHoverEvent
+        hover_in => GButtonHoverParam,
+        hover_out => GButtonHoverParam,
+        focus => GButtonFocusParam,
+        focus_lost => GButtonFocusLostParam,
+        clicked => GButtonClickedParam
     }
 }

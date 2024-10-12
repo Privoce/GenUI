@@ -46,7 +46,7 @@ live_design! {
                     from: {all: Forward {duration: 0.1}}
                     apply: {
                         draw_select: {pressed: 0.0, hover: 0.0}
-                        draw_text: {pressed: 0.0, hover: 0.0}
+                        draw_text: {focus: 0.0, hover: 0.0}
                     }
                 }
 
@@ -56,7 +56,7 @@ live_design! {
                     }
                     apply: {
                         draw_select: {pressed: 0.0, hover: 1.0}
-                        draw_text: {pressed: 0.0, hover: 1.0}
+                        draw_text: {focus: 0.0, hover: 1.0}
                     }
                 }
             }

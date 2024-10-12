@@ -52,6 +52,7 @@
 - [x] Router
   - [x] Page
 - [x] Tabbar
+- [x] Menu
 
 
 ## GEN Components (Super, v0.2.0 ~ v0.5.0)
@@ -77,6 +78,8 @@
 - [ ] Table ReBuild
 - [ ] Code
 - [ ] State Card for Doc(Note, Important, Info)
+- [ ] Button ReBuild (icon + text + slot)
+- [ ] Component disable (组件禁用状态)
 
 ## Experimental function (v0.1.0 ~ v0.5.0)
 
@@ -115,8 +118,7 @@
 
 ## Plan
 
-- 09-24 finish v0.1.0
 - 09-28 AWS Personal Cloud Drive GUI
-- 10-18 GenUI Framework 集成
-- 10-31 finish v0.2.0
-- 11-30 finish v0.3.0
+- 10-24 finish v0.1.0
+- 11-18 GenUI Framework 集成v0.1.0
+- 11-31 finish v0.2.0

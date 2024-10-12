@@ -56,24 +56,16 @@ live_design! {
                     height: Fill,
                     width: Fill,
                     flow: Down,
-                    <GButton>{theme:Dark}
-                    <GIcon>{
-                        height: 32.0,
-                        width: 32.0,
-                        icon_type: More
-                    }
-
-                    <TextInput>{
-                        text: "
-                            <pre>
-                                fn handle(){
-                                    log!(\"Hello, World!\");
-                                }
-                            </pre>
-                        ",
-                        
-                    }
                     
+                    <GLabel>{
+                        stroke_hover_color: #FF7043,
+                                animation_key: true,
+                                text: "Hello World!",
+                            }
+                    <GButton>{
+
+                    }
+                    // <GTabbarItem>{}
                     // <TPage>{}
                     // <GSvg>{
                     //     height: 100.0,

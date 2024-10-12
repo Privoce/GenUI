@@ -17,8 +17,8 @@ live_design!{
                     self.hover_color,
                     self.hover
                 ),
-                self.pressed_color,
-                self.pressed
+                self.focus_color,
+                self.focus
             )
         }
                             
@@ -86,7 +86,7 @@ pub struct DrawGView{
     #[live(0.0)] pub border_width: f32,
     #[live(0.0)] pub border_radius: f32,
     #[live] pub hover_color: Vec4,
-    #[live] pub pressed_color: Vec4,
+    #[live] pub focus_color: Vec4,
     #[live] pub shadow_color: Vec4,
     #[live(0.0)] pub spread_radius: f32,
     #[live(4.8)] pub blur_radius: f32,
@@ -96,5 +96,5 @@ pub struct DrawGView{
     #[live(1.0)] pub opacity: f32,
     #[live(0.0)] pub rotation: f32,
     #[live] pub hover: f32,
-    #[live] pub pressed: f32,
+    #[live] pub focus: f32,
 }

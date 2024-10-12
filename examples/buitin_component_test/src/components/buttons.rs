@@ -81,7 +81,7 @@ live_design! {
                     theme: Dark,
                     border_width: 1.5,
                     hover_color: #FF0000,
-                    pressed_color: #00FF00,
+                    focus_color: #00FF00,
                 }
             }
         }

@@ -5,7 +5,7 @@ pub use event::*;
 pub use register::register;
 
 use crate::{
-    event::FocusType, event_option, play_animation, ref_event_option, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
+    animatie_fn, event::{FocusType, UnifiedEvent}, event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_redraw, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -19,32 +19,24 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {hover: 0.0}
+                        draw_text: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_text: {hover: 1.0}
-                    }
-                }
-            }
-            focus = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        draw_text: {focus: 0.0}
+                        draw_text: {hover: 1.0, focus: 0.0}
                     }
                 }
 
-                on = {
+                focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {focus: 1.0}
+                        draw_text: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -135,7 +127,7 @@ impl Widget for GLabel {
         self.set_scope_path(&scope.path);
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         if !self.visible {
             return;
         }
@@ -149,26 +141,29 @@ impl Widget for GLabel {
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
                 self.play_animation(cx, id!(hover.on));
-                self.active_hover_in(cx, e);
+                self.active_hover_in(cx, e.clone());
+                UnifiedEvent::hover_in(cx, self.widget_uid(), &scope.path, e);
             }
             Hit::FingerHoverOut(e) => {
                 self.play_animation(cx, id!(hover.off));
-                self.play_animation(cx, id!(focus.off));
-                self.active_hover_out(cx, e);
+                self.active_hover_out(cx, e.clone());
+                UnifiedEvent::hover_out(cx, self.widget_uid(), &scope.path, e);
             }
             Hit::FingerDown(e) => {
-                self.play_animation(cx, id!(focus.on));
+                self.play_animation(cx, id!(hover.focus));
                 self.active_focus(cx, e);
             }
-            Hit::FingerUp(f_up) => {
-                self.play_animation(cx, id!(focus.off));
-                if f_up.is_over {
-                    if f_up.device.has_hovers() {
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    if e.device.has_hovers() {
                         self.play_animation(cx, id!(hover.on));
+                        self.animate_hover_on(cx);
                     } else {
                         self.play_animation(cx, id!(hover.off));
                     }
                 } else {
+                    // focus lost
+                    self.active_focus_lost(cx, e);
                     self.play_animation(cx, id!(hover.off));
                 }
             }
@@ -227,6 +222,17 @@ impl GLabel {
             });
         }
     }
+    fn active_focus_lost(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GLabelEvent::FocusLost(GLabelFocusLostParam { e }),
+                );
+            });
+        }
+    }
     pub fn area(&self) -> Area {
         self.area
     }
@@ -255,23 +261,48 @@ impl GLabel {
         );
         self.draw_text.wrap = self.wrap.clone();
     }
-    pub fn clear_animation(&mut self) -> () {
-        self.draw_text.hover = 0.0;
-        self.draw_text.focus = 0.0;
+    pub fn clear_animation(&mut self, cx: &mut Cx) -> () {
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
-        self.clear_animation();
-        self.play_animation(cx, id!(hover.on));
+        self.clear_animation(cx);
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
     }
     pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
-        self.play_animation(cx, id!(hover.off));
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
     }
     pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
-        self.clear_animation();
-        self.play_animation(cx, id!(focus.on));
+        self.clear_animation(cx);
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                focus: 1.0
+            },
+        );
     }
     pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
-        self.play_animation(cx, id!(focus.off));
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                focus: 0.0
+            },
+        );
     }
     pub fn animate_state(&self) -> GLabelState {
         if self.draw_text.focus.to_bool() {
@@ -285,56 +316,26 @@ impl GLabel {
     event_option! {
         hover_in: GLabelEvent::HoverIn => GLabelHoverParam,
         hover_out: GLabelEvent::HoverOut => GLabelHoverParam,
-        focus: GLabelEvent::Focus => GLabelFocusParam
+        focus: GLabelEvent::Focus => GLabelFocusParam,
+        focus_lost: GLabelEvent::FocusLost => GLabelFocusLostParam
     }
 }
 
 impl GLabelRef {
-    pub fn clear_animation(&mut self) -> () {
-        if let Some(mut c_ref) = self.borrow_mut() {
-            c_ref.clear_animation();
-        }
+    animatie_fn! {
+        clear_animation,
+        animate_hover_on,
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
     }
-    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
-        if let Some(mut c_ref) = self.borrow_mut() {
-            c_ref.animate_hover_on(cx);
-        }
-    }
-    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
-        if let Some(mut c_ref) = self.borrow_mut() {
-            c_ref.animate_hover_off(cx);
-        }
-    }
-    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
-        if let Some(mut c_ref) = self.borrow_mut() {
-            c_ref.animate_focus_on(cx);
-        }
-    }
-    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
-        if let Some(mut c_ref) = self.borrow_mut() {
-            c_ref.animate_focus_off(cx);
-        }
-    }
-    pub fn area(&self) -> Area {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.area();
-        }
-        Area::Empty
-    }
-    pub fn redraw(&self, cx: &mut Cx) -> () {
-        if let Some(c_ref) = self.borrow() {
-            c_ref.redraw(cx);
-        }
-    }
-    pub fn animate_state(&self) -> GLabelState {
-        if let Some(c_ref) = self.borrow() {
-            return c_ref.animate_state();
-        }
-        GLabelState::None
-    }
+    ref_area!();
+    ref_animate_state!();
+    ref_redraw!();
     ref_event_option! {
         hover_in  => GLabelHoverParam,
         hover_out => GLabelHoverParam,
-        focus => GLabelFocusParam
+        focus => GLabelFocusParam,
+        focus_lost => GLabelFocusLostParam
     }
 }

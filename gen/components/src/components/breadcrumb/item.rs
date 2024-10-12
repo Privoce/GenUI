@@ -205,8 +205,8 @@ impl LiveHook for GBreadCrumbItem {
             cx,
             live! {
                 color: (font_color),
-                hover_color: (text_hover_color),
-                pressed_color: (text_pressed_color),
+                stroke_hover_color: (text_hover_color),
+                stroke_focus_color: (text_pressed_color),
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),

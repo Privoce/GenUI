@@ -205,7 +205,7 @@ impl GMenuItem {
     }
     pub fn toggle(&mut self, cx: &mut Cx, selected: bool) {
         self.selected = selected;
-        self.draw_menu_item.pressed = self.selected.to_f32();
+        self.draw_menu_item.focus = self.selected.to_f32();
         if self.selected {
             self.animator_play(cx, id!(hover.pressed));
         } else {

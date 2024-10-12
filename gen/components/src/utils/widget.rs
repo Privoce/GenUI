@@ -273,7 +273,9 @@ macro_rules! animatie_fn{
     ($($an_fn: ident),*) => {
         $(
             pub fn $an_fn(&self, cx: &mut Cx) -> () {
-                self.borrow_mut().unwrap().$an_fn(cx);
+                if let Some(mut c_ref) = self.borrow_mut() {
+                    c_ref.$an_fn(cx);
+                }
             }
         )*
     };
@@ -298,5 +300,41 @@ macro_rules! widget_area {
                 self.$prop.area()
             }
         )*
+    };
+}
+
+/// # Generate Area Function
+#[macro_export]
+macro_rules! ref_area {
+    () => {
+        pub fn area(&self) -> Area {
+            if let Some(c_ref) = self.borrow() {
+                return c_ref.area();
+            }
+            Area::Empty
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! ref_redraw {
+    () => {
+        pub fn redraw(&self, cx: &mut Cx) -> () {
+            if let Some(c_ref) = self.borrow() {
+                c_ref.redraw(cx);
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! ref_animate_state {
+    () => {
+        pub fn animate_state(&self) -> GLabelState {
+            if let Some(c_ref) = self.borrow() {
+                return c_ref.animate_state();
+            }
+            GLabelState::None
+        }
     };
 }

@@ -81,7 +81,7 @@ live_design! {
                 return mix(
                     mix(
                         self.color,
-                        mix(self.stroke_hover_color, self.stroke_pressed_color, self.pressed),
+                        mix(self.stroke_hover_color, self.stroke_focus_color, self.focus),
                         self.hover
                     ),
                     self.placeholder_color,

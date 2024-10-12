@@ -9,11 +9,7 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event,
-    shader::draw_view::DrawGView,
-    themes::Themes,
-    utils::{set_cursor, BoolToF32, ThemeColor},
-    widget_origin_fn,
+    animatie_fn, event::UnifiedEvent, event_option, ref_event_option, set_event, shader::draw_view::DrawGView, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_origin_fn
 };
 
 live_design! {
@@ -30,24 +26,24 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_view: {pressed: 0.0, hover: 0.0}
+                        draw_view: {focus: 0.0, hover: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_view: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_view: {focus: 0.0, hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
 
-                pressed = {
+                focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_view: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_view: {focus: [{time: 0.0, value: 1.0}], hover: 1.0,}
                     }
                 }
             }
@@ -64,7 +60,7 @@ pub struct GView {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
@@ -660,6 +656,17 @@ impl Widget for GView {
         }
         
         if self.visible {
+
+            // 构建统一事件: Hover的冒泡处理, 需要判断传过来的param中的鼠标位置是否在当前的区域内
+            // if let Event::Actions(actions) = event{
+            //     for action in actions {
+            //         if let Some(actions) = action.as_widget_action(){
+            //             if let UnifiedEvent::HoverIn(_) = actions.cast(){
+            //                 self.animator_play(cx, id!(hover.on));
+            //             }
+            //         }
+            //     }
+            // }
             
             // handle event and set cursor to control
             match event.hits_with_capture_overload(cx, self.area(), self.capture_overload) {
@@ -884,7 +891,7 @@ impl GView {
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
     }
@@ -893,16 +900,16 @@ impl GView {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
     }
-    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+    pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
         self.draw_view.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
     }
@@ -912,8 +919,8 @@ impl GView {
         let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         // ------------------ is background_visible --------------------------------------------
@@ -934,7 +941,7 @@ impl GView {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
@@ -960,7 +967,7 @@ impl GViewRef {
     animatie_fn! {
         animate_hover_on,
         animate_hover_off,
-        animate_pressed
+        animate_focus
     }
     widget_origin_fn!(GView);
     pub fn set_abs_pos(&self, _cx: &mut Cx, abs_pos: DVec2) {

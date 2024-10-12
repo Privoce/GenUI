@@ -140,6 +140,7 @@ live_design! {
                     align: {x: 0.5},
                     lb_hover = <GLabel>{
                         cursor: Hand,
+                        stroke_hover_color: #DAAA38,
                         animation_key: true,
                         text: "Label: Hover"
                     }

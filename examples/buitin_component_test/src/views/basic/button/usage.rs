@@ -1,4 +1,4 @@
-use gen_components::components::view::GView;
+use gen_components::components::{button::GButtonWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -81,7 +81,7 @@ live_design! {
                         }
                     }
                     <GButton>{
-                        padding: 12.0, 
+                        padding: 12.0,
                         theme: Error,
                         border_radius: 9.0,
                         slot: <GIcon>{
@@ -92,7 +92,7 @@ live_design! {
                         }
                     }
                     <GButton>{
-                        padding: 12.0, 
+                        padding: 12.0,
                         theme: Warning,
                         slot: <GIcon>{
                             height: 12.0,
@@ -185,8 +185,30 @@ live_design! {
                 }
             }
         }
-        
-        
+
+        <CBox>{
+            box_wrap = {
+                spacing: 8.0,
+                hover_shadow = <GButton>{
+                    spread_radius: 0.0,
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 300.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -209,6 +231,25 @@ impl Widget for ButtonUsagePage {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+
+        let hover_shadow = self.gbutton(id!(hover_shadow));
+        if hover_shadow.hover_in(&actions).is_some() {
+            hover_shadow.apply_over(
+                cx,
+                live! {
+                    spread_radius: 5.2,
+                },
+            );
+            // hover_shadow.redraw(cx);
+        }
+        if hover_shadow.hover_out(&actions).is_some(){
+            hover_shadow.apply_over(
+                cx,
+                live! {
+                    spread_radius: 0.0,
+                },
+            );
+        }
     }
 }
