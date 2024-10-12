@@ -67,7 +67,7 @@ pub struct GButton {
     pub focus_color: Option<Vec4>,
     #[live]
     pub shadow_color: Option<Vec4>,
-    #[live(4.8)]
+    #[live(0.0)]
     pub spread_radius: f32,
     #[live(4.8)]
     pub blur_radius: f32,

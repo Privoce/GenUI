@@ -1,4 +1,4 @@
-use gen_components::components::{button::GButtonWidgetExt, view::GView};
+use gen_components::components::view::GView;
 use makepad_widgets::*;
 
 live_design! {

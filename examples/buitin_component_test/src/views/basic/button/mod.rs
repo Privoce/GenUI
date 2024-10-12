@@ -8,8 +8,8 @@ pub mod event;
 pub fn register(cx: &mut Cx){
     self::live_design(cx);
     self::usage::live_design(cx);
-    // self::animate::live_design(cx);
-    // self::event::live_design(cx);
+    self::animate::live_design(cx);
+    self::event::live_design(cx);
 }
 
 live_design! {
@@ -17,8 +17,8 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
     import crate::views::basic::button::usage::*;
-    // import crate::views::basic::label::animate::*;
-    // import crate::views::basic::label::event::*;
+    import crate::views::basic::button::animate::*;
+    import crate::views::basic::button::event::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     ButtonPage = {{ButtonPage}}{
         height: Fill,
@@ -41,8 +41,8 @@ live_design! {
             }
         }
         <ButtonUsagePage>{}
-        // <LabelAnPage>{}
-        // <LabelEnPage>{}
+        <ButtonAnPage>{}
+        <ButtonEnPage>{}
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),

@@ -69,7 +69,7 @@ live_design! {
             }
             <GLabel>{
                 width: Fill,
-                text: "Hover: stroke_hover_color\nPress: stroke_focus_color",
+                text: "Hover: stroke_hover_color\nFocus(Press): stroke_focus_color",
             }
         }
         <CBox>{
@@ -285,8 +285,8 @@ impl Widget for LabelAnPage {
         let focus_btn = self.gbutton(id!(do_focus));
         let clear_hover = self.gbutton(id!(clear_hover));
         let clear_focus = self.gbutton(id!(clear_focus));
-        let mut hover_lb = self.glabel(id!(lb_hover));
-        let mut focus_lb = self.glabel(id!(lb_focus));
+        let hover_lb = self.glabel(id!(lb_hover));
+        let focus_lb = self.glabel(id!(lb_focus));
         if hover_btn.clicked(&actions).is_some() {
             hover_lb.animate_hover_on(cx);
         }

@@ -52,13 +52,35 @@ live_design! {
             font_family: (BOLD_FONT),
             text: "Animation Usage",
         }
-        <GLabel>{
-            width: Fill,
-            text: "Button has two animation effects: Hover and Focus(Press).",
+        <GVLayout>{
+            height: Fit,
+            spacing: 8.0,
+            <GLabel>{
+                width: Fill,
+                text: "Button has two animation effects: Hover and Focus(Press).",
+            }
+            <GLabel>{
+                width: Fill,
+                text: "Hover: hover_color\nFocus(Press): focus_color",
+            }
         }
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
+                flow: Right,
+                <GButton>{
+                    animation_key: false,
+                    slot: {
+                        text: "No Animation"
+                    }
+                }
+                <GButton>{
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    slot: {
+                        text: "Animation Color"
+                    }
+                }
                 hover_shadow = <GButton>{
                     spread_radius: 0.0,
                     slot: {
@@ -75,7 +97,46 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
+                <GButton>{
+                    animation_key: false,
+                    slot: {
+                        text: "No Animation"
+                    }
+                }
+                <GButton>{
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    slot: {
+                        text: "Animation Color"
+                    }
+                }
+                hover_shadow = <GButton>{
+                    spread_radius: 0.0,
+                    slot: {
+                        text: "Hover with shadow"
+                    }
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
+                    let hover_shadow = self.gbutton(id!(hover_shadow));
+                    if hover_shadow.hover_in(&actions).is_some() {
+                        hover_shadow.apply_over(
+                            cx,
+                            live! {
+                                spread_radius: 5.2,
+                            },
+                        );
+                    }
+                    if hover_shadow.hover_out(&actions).is_some(){
+                        hover_shadow.apply_over(
+                            cx,
+                            live! {
+                                spread_radius: 0.0,
+                            },
+                        );
+                    }
+                }
                             "#;
                         }
                     }
@@ -114,7 +175,6 @@ impl Widget for ButtonAnPage {
                     spread_radius: 5.2,
                 },
             );
-            // hover_shadow.redraw(cx);
         }
         if hover_shadow.hover_out(&actions).is_some(){
             hover_shadow.apply_over(
