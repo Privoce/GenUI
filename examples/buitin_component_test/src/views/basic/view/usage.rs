@@ -49,8 +49,10 @@ live_design! {
                     width: 120.0,
                     background_color: #DC9CAC,
                     spread_radius: 5.2,
-                    clip_x: true,
-                    clip_y: true,
+                    blur_radius: 5.2,
+                    shadow_color: #FF0000,
+                    clip_x: false,
+                    clip_y: false,
                 }
             }
             code = {
@@ -83,6 +85,8 @@ live_design! {
                         width: 120.0,
                         background_color: #DC9CAC,
                         spread_radius: 5.2,
+                        blur_radius: 5.2,
+                        shadow_color: #FF0000,
                         clip_x: true,
                         clip_y: true,
                     }

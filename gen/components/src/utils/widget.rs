@@ -328,6 +328,17 @@ macro_rules! ref_redraw {
 }
 
 #[macro_export]
+macro_rules! ref_redraw_mut {
+    () => {
+        pub fn redraw(&mut self, cx: &mut Cx) -> () {
+            if let Some(mut c_ref) = self.borrow_mut() {
+                c_ref.redraw(cx);
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! ref_animate_state {
     () => {
         pub fn animate_state(&self) -> GLabelState {
@@ -335,6 +346,92 @@ macro_rules! ref_animate_state {
                 return c_ref.animate_state();
             }
             GLabelState::None
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! ref_render {
+    () => {
+        pub fn render(&self, cx: &mut Cx) -> () {
+            if let Some(mut c_ref) = self.borrow_mut() {
+                c_ref.render(cx);
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! active_event{
+    ($($event_fn: ident : $event: path |$param: ident : $param_ty: ty| => $return_ty: expr),*) => {
+        $(
+            pub fn $event_fn (&mut self, cx: &mut Cx, $param: $param_ty){
+                if self.event_key {
+                    self.scope_path.as_ref().map(|path| {
+                        cx.widget_action(
+                            self.widget_uid(),
+                            path,
+                            $event($return_ty),
+                        );
+                    });
+                }
+            }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! default_hit_finger_down {
+    ($self:ident, $cx:ident, $focus_area:expr, $e:expr) => {
+        if $self.grab_key_focus {
+            $cx.set_key_focus($focus_area);
+        }
+        $self.play_animation($cx, id!(hover.focus));
+        $self.active_focus($cx, $e);
+    };
+}
+
+#[macro_export]
+macro_rules! default_hit_hover_in {
+    ($self:ident, $cx:ident, $e:expr) => {
+        let _ = set_cursor($cx, $self.cursor.as_ref());
+        $self.play_animation($cx, id!(hover.on));
+        $self.active_hover_in($cx, $e);
+    };
+}
+
+#[macro_export]
+macro_rules! default_hit_hover_out {
+    ($self:ident, $cx:ident, $e:expr) => {
+        $self.play_animation($cx, id!(hover.off));
+        $self.active_hover_out($cx, $e);
+    };
+}
+
+#[macro_export]
+macro_rules! default_hit_finger_up {
+    ($self:ident, $cx:ident, $e:expr) => {
+        if $e.is_over {
+            if $e.device.has_hovers() {
+                $self.play_animation($cx, id!(hover.on));
+            } else {
+                $self.play_animation($cx, id!(hover.off));
+            }
+            $self.active_clicked($cx, $e);
+        } else {
+            $self.play_animation($cx, id!(hover.off));
+            $self.active_focus_lost($cx, $e);
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! default_handle_animation {
+    ($self:ident, $cx:ident, $event: ident) => {
+        if $self.animation_key {
+            if $self.animator_handle_event($cx, $event).must_redraw() {
+                $self.redraw($cx);
+            }
         }
     };
 }

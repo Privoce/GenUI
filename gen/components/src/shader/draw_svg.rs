@@ -3,9 +3,13 @@ live_design! {
     DrawGSvg = {{DrawGSvg}}{
         fn get_color(self) -> vec4 {
             return mix(
-                self.color,
-                self.stroke_hover_color,
-                self.hover
+                mix(
+                    self.color,
+                    self.stroke_hover_color,
+                    self.hover
+                ),
+                self.stroke_focus_color,
+                self.focus
             );
         }
         
@@ -19,8 +23,12 @@ pub struct DrawGSvg {
     pub draw_super: DrawIcon,
     #[live]
     pub stroke_hover_color: Vec4,
+    #[live]
+    pub stroke_focus_color: Vec4,
     #[live(0.0)]
     pub hover: f32,
+    #[live(0.0)]
+    pub focus: f32,
 }
 
 impl DrawGSvg {

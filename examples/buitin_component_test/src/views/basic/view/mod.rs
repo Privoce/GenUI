@@ -9,7 +9,7 @@ pub fn register(cx: &mut Cx){
     self::live_design(cx);
     self::usage::live_design(cx);
     self::animate::live_design(cx);
-    // self::event::live_design(cx);
+    self::event::live_design(cx);
 }
 
 live_design! {
@@ -19,7 +19,7 @@ live_design! {
     import crate::styles::*;
     import crate::views::basic::view::usage::*;
     import crate::views::basic::view::animate::*;
-    // import crate::views::basic::view::event::*;
+    import crate::views::basic::view::event::*;
     
     ViewPage = {{ViewPage}}{
         height: Fill,
@@ -43,7 +43,7 @@ live_design! {
         }
         <ViewUsagePage>{}
         <ViewAnPage>{}
-        // <ViewEnPage>{}
+        <ViewEnPage>{}
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),

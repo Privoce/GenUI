@@ -10,7 +10,7 @@ pub mod divider;
 pub mod link;
 
 pub fn register(cx: &mut Cx){
-    
+    self::svg::register(cx);
     self::label::register(cx);
     self::button::register(cx);
     self::view::register(cx);

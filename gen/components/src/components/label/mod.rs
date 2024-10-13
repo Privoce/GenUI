@@ -5,13 +5,7 @@ pub use event::*;
 pub use register::register;
 
 use crate::{
-    animatie_fn,
-    event::UnifiedEvent,
-    event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_redraw,
-    set_scope_path, set_text_and_visible_fn,
-    shader::draw_text::DrawGText,
-    themes::Themes,
-    utils::{get_font_family, set_cursor, ThemeColor, ToBool},
+    active_event, animatie_fn, default_handle_animation, default_hit_finger_down, default_hit_hover_in, default_hit_hover_out, event::UnifiedEvent, event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_redraw, ref_render, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -113,6 +107,8 @@ pub struct GLabel {
     pub area: Area,
     #[live(false)]
     pub event_key: bool,
+    #[live(true)]
+    pub grab_key_focus: bool,
     #[rust]
     pub scope_path: Option<HeapLiveIdPath>,
 }
@@ -137,27 +133,18 @@ impl Widget for GLabel {
         if !self.visible {
             return;
         }
-
-        if self.animation_key {
-            if self.animator_handle_event(cx, event).must_redraw() {
-                self.draw_text.redraw(cx);
-            }
-        }
+        default_handle_animation!(self, cx, event);
         match event.hits(cx, self.area()) {
             Hit::FingerHoverIn(e) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                self.play_animation(cx, id!(hover.on));
-                self.active_hover_in(cx, e.clone());
+                default_hit_hover_in!(self, cx, e.clone());
                 UnifiedEvent::hover_in(cx, self.widget_uid(), &scope.path, e);
             }
             Hit::FingerHoverOut(e) => {
-                self.play_animation(cx, id!(hover.off));
-                self.active_hover_out(cx, e.clone());
+                default_hit_hover_out!(self, cx, e.clone());
                 UnifiedEvent::hover_out(cx, self.widget_uid(), &scope.path, e);
             }
             Hit::FingerDown(e) => {
-                self.play_animation(cx, id!(hover.focus));
-                self.active_focus(cx, e);
+                default_hit_finger_down!(self, cx, self.area(), e);
             }
             Hit::FingerUp(e) => {
                 if e.is_over {
@@ -183,7 +170,6 @@ impl LiveHook for GLabel {
         if !self.visible {
             return;
         }
-
         self.render(cx);
     }
 }
@@ -191,49 +177,11 @@ impl LiveHook for GLabel {
 impl GLabel {
     set_scope_path!();
     play_animation!();
-    fn active_hover_in(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GLabelEvent::HoverIn(GLabelHoverParam { e }),
-                );
-            });
-        }
-    }
-    fn active_hover_out(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GLabelEvent::HoverOut(GLabelHoverParam { e }),
-                );
-            });
-        }
-    }
-    fn active_focus(&mut self, cx: &mut Cx, e: FingerDownEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GLabelEvent::Focus(GLabelFocusParam { e }),
-                );
-            });
-        }
-    }
-    fn active_focus_lost(&mut self, cx: &mut Cx, e: FingerUpEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GLabelEvent::FocusLost(GLabelFocusLostParam { e }),
-                );
-            });
-        }
+    active_event!{
+        active_hover_in: GLabelEvent::HoverIn |e: FingerHoverEvent| => GLabelHoverParam{ e },
+        active_hover_out: GLabelEvent::HoverOut |e: FingerHoverEvent| => GLabelHoverParam{ e },
+        active_focus: GLabelEvent::Focus |e: FingerDownEvent| => GLabelFocusParam{ e },
+        active_focus_lost: GLabelEvent::FocusLost |e: FingerUpEvent| => GLabelFocusLostParam{ e }
     }
     pub fn area(&self) -> Area {
         self.area
@@ -334,6 +282,7 @@ impl GLabelRef {
     ref_area!();
     ref_animate_state!();
     ref_redraw!();
+    ref_render!();
     ref_event_option! {
         hover_in  => GLabelHoverParam,
         hover_out => GLabelHoverParam,

@@ -21,6 +21,7 @@ live_design! {
     import crate::views::basic::label::*;
     import crate::views::basic::button::*;
     import crate::views::basic::view::*;
+    import crate::views::basic::svg::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -151,7 +152,7 @@ live_design! {
                                 text: "Button",
                             }
                         }
-                        <GMenuItem>{
+                        tab_svg = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
@@ -159,7 +160,7 @@ live_design! {
                                 text: "Svg",
                             }
                         }
-                        <GMenuItem>{
+                        tab_image = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
@@ -167,7 +168,7 @@ live_design! {
                                 text: "Image",
                             }
                         }
-                        <GMenuItem>{
+                        tab_icon_lib = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
@@ -209,6 +210,9 @@ live_design! {
                     }
                     view_page = <GBarPage>{
                         <ViewPage>{}
+                    }
+                    svg_page = <GBarPage>{
+                        <SvgPage>{}
                     }
                 }
             }
@@ -303,12 +307,13 @@ impl Widget for AppMainPage {
                                 qs_page,
                                 label_page,
                                 button_page,
-                                view_page
+                                view_page,
+                                svg_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(view_page))
+                        .active(id!(svg_page))
                         .build(cx);
                 });
             })
@@ -346,6 +351,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(button_page));
             } else if e.selected_id == id!(tab_view)[0] {
                 router.nav_to(cx, id!(view_page));
+            }else if e.selected_id == id!(tab_svg)[0] {
+                router.nav_to(cx, id!(svg_page));
             }
         }
 

@@ -9,13 +9,7 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    animatie_fn,
-    event::UnifiedEvent,
-    event_option, play_animation, ref_event_option, set_event, set_scope_path,
-    shader::draw_view::DrawGView,
-    themes::Themes,
-    utils::{set_cursor, BoolToF32, ThemeColor},
-    widget_origin_fn,
+    active_event, animatie_fn, event_option, play_animation, ref_area, ref_event_option, ref_redraw_mut, ref_render, set_event, set_scope_path, shader::draw_view::DrawGView, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_origin_fn
 };
 
 live_design! {
@@ -208,7 +202,6 @@ impl LiveHook for GView {
         //     }
         // }
         self.render(cx);
-        self.redraw(cx);
     }
     fn apply_value_instance(
         &mut self,
@@ -264,13 +257,14 @@ impl Widget for GView {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
-        if !self.visible || !self.event_key {
+        if !self.visible {
             return;
         }
 
-        let uid = self.widget_uid();
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.redraw(cx);
+        if self.animation_key {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.redraw(cx);
+            }
         }
 
         if self.block_signal_event {
@@ -765,6 +759,16 @@ impl GView {
         key_down: GViewEvent::KeyDown => GViewKeyEventParam,
         key_up: GViewEvent::KeyUp => GViewKeyEventParam
     }
+    active_event!{
+        active_hover_in: GViewEvent::HoverIn |e: FingerHoverEvent| => GViewHoverParam{e},
+        active_hover_out: GViewEvent::HoverOut |e: FingerHoverEvent| => GViewHoverParam{e},
+        active_focus: GViewEvent::Focus |e: FingerDownEvent| => GViewFocusParam{e},
+        active_focus_lost: GViewEvent::FocusLost |e: FingerUpEvent| => GViewFocusLostParam{e},
+        active_clicked: GViewEvent::Clicked |e: FingerUpEvent| => GViewClickedParam{e},
+        active_drag: GViewEvent::Drag |e: FingerMoveEvent| => GViewDragParam{e},
+        active_key_down: GViewEvent::KeyDown |e: KeyEvent| => GViewKeyEventParam{e},
+        active_key_up: GViewEvent::KeyUp |e: KeyEvent| => GViewKeyEventParam{e}
+    }
     pub fn walk_from_previous_size(&self, walk: Walk) -> Walk {
         let view_size = self.view_size.unwrap_or(DVec2::default());
         Walk {
@@ -801,100 +805,12 @@ impl GView {
             },
         );
     }
-    pub fn active_hover_in(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::HoverIn(GViewHoverParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_hover_out(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::HoverOut(GViewHoverParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_focus(&mut self, cx: &mut Cx, e: FingerDownEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::Focus(GViewFocusParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_key_down(&mut self, cx: &mut Cx, e: KeyEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::KeyDown(GViewKeyEventParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_key_up(&mut self, cx: &mut Cx, e: KeyEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::KeyUp(GViewKeyEventParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_focus_lost(&mut self, cx: &mut Cx, e: FingerUpEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::FocusLost(GViewFocusLostParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_drag(&mut self, cx: &mut Cx, e: FingerMoveEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::Drag(GViewDragParam { e }),
-                );
-            });
-        }
-    }
-    pub fn active_clicked(&mut self, cx: &mut Cx, e: FingerUpEvent) {
-        if self.event_key {
-            self.scope_path.as_ref().map(|path| {
-                cx.widget_action(
-                    self.widget_uid(),
-                    path,
-                    GViewEvent::Clicked(GViewClickedParam { e }),
-                );
-            });
-        }
-    }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_view.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                focus: 0.0
             },
         );
     }
@@ -903,15 +819,14 @@ impl GView {
             cx,
             live! {
                 hover: 0.0,
-                focus: 0.0
             },
         );
     }
     pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_view.apply_over(
             cx,
             live! {
-                hover: 1.0,
                 focus: 1.0
             },
         );
@@ -968,11 +883,15 @@ impl GViewRef {
         key_up => GViewKeyEventParam
     }
     animatie_fn! {
+        clear_animation,
         animate_hover_on,
         animate_hover_off,
         animate_focus
     }
     widget_origin_fn!(GView);
+    ref_area!();
+    ref_redraw_mut!();
+    ref_render!();
     pub fn set_abs_pos(&self, _cx: &mut Cx, abs_pos: DVec2) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.walk.abs_pos.replace(abs_pos);
@@ -1039,13 +958,6 @@ impl GViewRef {
             inner.set_scroll_pos(cx, v)
         }
     }
-    pub fn area(&self) -> Area {
-        if let Some(inner) = self.borrow_mut() {
-            inner.area()
-        } else {
-            Area::Empty
-        }
-    }
 
     pub fn child_count(&self) -> usize {
         if let Some(inner) = self.borrow_mut() {
@@ -1099,11 +1011,6 @@ impl GViewSet {
         }
     }
 
-    pub fn redraw(&self, cx: &mut Cx) {
-        for item in self.iter() {
-            item.redraw(cx);
-        }
-    }
     set_event! {
         hover_in => GViewHoverParam,
         hover_out => GViewHoverParam,

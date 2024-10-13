@@ -188,7 +188,7 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    // <GPopupExample>{}
+                    <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}

@@ -1,17 +1,13 @@
-pub mod event;
+mod event;
 mod register;
 
-use event::{GSvgEvent, GSvgEventParam};
+pub use event::*;
 pub use register::register;
 
 use makepad_widgets::*;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event,
-    shader::draw_svg::DrawGSvg,
-    themes::Themes,
-    utils::{set_cursor, ThemeColor, ToPath},
-    widget_area,
+    active_event, animatie_fn, default_handle_animation, default_hit_finger_down, default_hit_finger_up, default_hit_hover_in, default_hit_hover_out, event_option, play_animation, ref_area, ref_event_option, ref_redraw, ref_render, set_event, set_scope_path, shader::draw_svg::DrawGSvg, themes::Themes, utils::{set_cursor, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -25,16 +21,24 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_svg: {hover: 0.0}
+                        draw_text: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_svg: { hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {hover: 1.0, focus: 0.0}
+                    }
+                }
+
+                focus = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_text: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -66,6 +70,8 @@ pub struct GSvg {
     #[live]
     pub stroke_hover_color: Option<Vec4>,
     #[live]
+    pub stroke_focus_color: Option<Vec4>,
+    #[live]
     pub cursor: Option<MouseCursor>,
     #[live(true)]
     pub grab_key_focus: bool,
@@ -87,15 +93,17 @@ pub struct GSvg {
     pub layout: Layout,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GSvg {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
         self.draw_svg.draw_walk(cx, walk);
-
+        self.set_scope_path(&scope.path);
         DrawStep::done()
     }
     fn handle_event_with(
@@ -105,6 +113,9 @@ impl Widget for GSvg {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.visible {
+            return;
+        }
         let hit = event.hits_with_options(
             cx,
             self.area(),
@@ -114,6 +125,9 @@ impl Widget for GSvg {
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if !self.visible {
+            return;
+        }
         let focus_area = self.area();
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
@@ -128,15 +142,42 @@ impl LiveHook for GSvg {
         if !self.visible {
             return;
         }
+        self.render(cx);
+    }
+}
+
+impl GSvg {
+    set_scope_path!();
+    play_animation!();
+    widget_area! {
+        area, draw_svg
+    }
+    event_option! {
+        clicked: GSvgEvent::Clicked => GSvgClickedParam,
+        hover_in: GSvgEvent::HoverIn => GSvgHoverParam,
+        hover_out: GSvgEvent::HoverOut => GSvgHoverParam,
+        focus: GSvgEvent::Focus => GSvgFocusParam,
+        focus_lost: GSvgEvent::FocusLost => GSvgFocusLostParam
+    }
+    active_event! {
+        active_hover_in: GSvgEvent::HoverIn |e: FingerHoverEvent| => GSvgHoverParam{ e },
+        active_hover_out: GSvgEvent::HoverOut |e: FingerHoverEvent| => GSvgHoverParam{ e },
+        active_focus: GSvgEvent::Focus |e: FingerDownEvent| => GSvgFocusParam{ e },
+        active_focus_lost: GSvgEvent::FocusLost |e: FingerUpEvent| => GSvgFocusLostParam{ e },
+        active_clicked: GSvgEvent::Clicked |e: FingerUpEvent| => GSvgClickedParam{ e }
+    }
+    pub fn render(&mut self, cx: &mut Cx) {
         // ------------------ hover color -----------------------------------------------
-        let hover_color = self.stroke_hover_color.get(self.theme, 25);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 25);
+        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 50);
         // ------------------ color -----------------------------------------------
         let color = self.color.get(self.theme, 25);
 
         self.draw_svg.apply_over(
             cx,
             live! {
-                stroke_hover_color: (hover_color),
+                stroke_hover_color: (stroke_hover_color),
+                stroke_focus_color: (stroke_focus_color),
                 color: (color),
                 brightness: (self.brightness),
                 curve: (self.curve),
@@ -147,23 +188,21 @@ impl LiveHook for GSvg {
         );
 
         self.draw_svg.set_src(self.src.clone());
-
-        // self.draw_svg.redraw(cx);
     }
-}
-
-impl GSvg {
-    widget_area! {
-        area, draw_svg
-    }
-    event_option! {
-        clicked: GSvgEvent::Clicked => GSvgEventParam,
-        hover: GSvgEvent::Hover => GSvgEventParam
-    }
-    pub fn redraw(&self, cx: &mut Cx) ->(){
+    pub fn redraw(&self, cx: &mut Cx) -> () {
         self.draw_svg.redraw(cx);
     }
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_svg.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_svg.apply_over(
             cx,
             live! {
@@ -179,61 +218,37 @@ impl GSvg {
             },
         );
     }
+    pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
+        self.draw_svg.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+    }
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
         event: &Event,
-        scope: &mut Scope,
+        _scope: &mut Scope,
         hit: Hit,
         focus_area: Area,
     ) {
-        let uid = self.widget_uid();
-
-        if self.animation_key {
-            if self.animator_handle_event(cx, event).must_redraw() {
-                self.draw_svg.redraw(cx);
-            }
-        }
+        default_handle_animation!(self, cx, event);
 
         match hit {
-            Hit::FingerDown(_) => {
-                if self.grab_key_focus {
-                    cx.set_key_focus(focus_area);
-                }
+            Hit::FingerDown(e) => {
+                default_hit_finger_down!(self, cx, focus_area, e);
             }
-            Hit::FingerHoverIn(f_in) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GSvgEvent::Hover(GSvgEventParam {
-                        src: self.src.to_pathbuf(),
-                        key_modifiers: f_in.modifiers,
-                    }),
-                );
+            Hit::FingerHoverIn(e) => {
+                default_hit_hover_in!(self, cx, e);
             }
-            Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
+            Hit::FingerHoverOut(e) => {
+                default_hit_hover_out!(self, cx, e);
             }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GSvgEvent::Clicked(GSvgEventParam {
-                            src: self.src.to_pathbuf(),
-                            key_modifiers: f_up.modifiers,
-                        }),
-                    );
-                    if f_up.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
-                    } else {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                } else {
-                    self.animator_play(cx, id!(hover.off));
-                }
+            Hit::FingerUp(e) => {
+                default_hit_finger_up!(self, cx, e);
             }
             _ => (),
         }
@@ -241,19 +256,30 @@ impl GSvg {
 }
 
 impl GSvgRef {
+    ref_redraw!();
+    ref_render!();
+    ref_area!();
     ref_event_option! {
-        clicked => GSvgEventParam,
-        hover => GSvgEventParam
+        hover_in => GSvgHoverParam,
+        hover_out => GSvgHoverParam,
+        focus => GSvgFocusParam,
+        focus_lost => GSvgFocusLostParam,
+        clicked => GSvgClickedParam
     }
     animatie_fn! {
+        clear_animation,
         animate_hover_on,
-        animate_hover_off
+        animate_hover_off,
+        animate_focus
     }
 }
 
 impl GSvgSet {
     set_event! {
-        clicked => GSvgEventParam,
-        hover => GSvgEventParam
+        hover_in => GSvgHoverParam,
+        hover_out => GSvgHoverParam,
+        focus => GSvgFocusParam,
+        focus_lost => GSvgFocusLostParam,
+        clicked => GSvgClickedParam
     }
 }

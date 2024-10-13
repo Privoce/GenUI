@@ -14,7 +14,7 @@ live_design! {
                 ),
                 self.stroke_focus_color,
                 self.focus
-            )
+            );
         }
     }
 }

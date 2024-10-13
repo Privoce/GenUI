@@ -10,7 +10,7 @@ live_design! {
     import gen_components::components::*;
     import crate::styles::*;
 
-    ViewAnPage = {{ViewAnPage}}{
+    SvgAnPage = {{SvgAnPage}}{
         height: Fit,
         width: Fill,
         flow: Down,
@@ -143,18 +143,18 @@ live_design! {
 }
 
 #[derive(Live, Widget)]
-pub struct ViewAnPage {
+pub struct SvgAnPage {
     #[deref]
     pub deref_widget: GView,
 }
 
-impl LiveHook for ViewAnPage {
+impl LiveHook for SvgAnPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for ViewAnPage {
+impl Widget for SvgAnPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let _ = self.deref_widget.draw_walk(cx, scope, walk);
 

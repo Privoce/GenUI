@@ -202,8 +202,9 @@ impl Widget for GDropDown {
 
                     shift.x += self.offset_x as f64;
                     shift.y += self.offset_y as f64;
-                    popup_menu.redraw(cx);
+                    
                     popup_menu.end(cx, scope, self.area(), shift);
+                    
                 }
 
                 PopupMode::Dialog => {
@@ -216,6 +217,7 @@ impl Widget for GDropDown {
                     popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
             }
+            popup_menu.redraw(cx);
         }
 
         DrawStep::done()

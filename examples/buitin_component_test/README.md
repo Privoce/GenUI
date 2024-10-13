@@ -24,11 +24,11 @@ Virtual: in virt.rs
   - [x] Warning
   - [x] Info
 - [x] Font
-- [ ] View
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
+- [x] View
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual (no)
 - [x] Label
   - [x] Animation
   - [x] Event
@@ -44,17 +44,17 @@ Virtual: in virt.rs
   - [ ] Event
   - [ ] Usage
   - [ ] Virtual
-- [ ] View
+- [ ] Svg
   - [ ] Animation
   - [ ] Event
   - [ ] Usage
   - [ ] Virtual
-- [ ] View
+- [ ] Image
   - [ ] Animation
   - [ ] Event
   - [ ] Usage
   - [ ] Virtual
-- [ ] View
+- [ ] Icon(Icon Lib)
   - [ ] Animation
   - [ ] Event
   - [ ] Usage
