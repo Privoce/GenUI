@@ -5,7 +5,13 @@ pub use event::*;
 pub use register::register;
 
 use crate::{
-    animatie_fn, event::{FocusType, UnifiedEvent}, event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_redraw, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
+    animatie_fn,
+    event::UnifiedEvent,
+    event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_redraw,
+    set_scope_path, set_text_and_visible_fn,
+    shader::draw_text::DrawGText,
+    themes::Themes,
+    utils::{get_font_family, set_cursor, ThemeColor, ToBool},
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -213,10 +219,7 @@ impl GLabel {
                 cx.widget_action(
                     self.widget_uid(),
                     path,
-                    GLabelEvent::Focus(GLabelFocusParam {
-                        e,
-                        ty: FocusType::Press,
-                    }),
+                    GLabelEvent::Focus(GLabelFocusParam { e }),
                 );
             });
         }

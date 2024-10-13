@@ -43,14 +43,3 @@ pub struct HoverParam {
     pub e: FingerHoverEvent,
     pub path: HeapLiveIdPath,
 }
-
-/// # FocusEvent Type
-/// The type of focus event
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub enum FocusType {
-    #[default]
-    Press,
-    // Selecting,
-    // Expanding,
-    Dragging,
-}

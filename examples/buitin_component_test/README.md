@@ -33,12 +33,12 @@ Virtual: in virt.rs
   - [x] Animation
   - [x] Event
   - [x] Usage
-  - [ ] Virtual (no)
+  - [x] Virtual (no)
 - [x] Button
-  - [ ] Animation
-  - [ ] Event
+  - [x] Animation
+  - [x] Event
   - [x] Usage
-  - [ ] Virtual
+  - [x] Virtual (no)
 - [ ] Divider
   - [ ] Animation
   - [ ] Event

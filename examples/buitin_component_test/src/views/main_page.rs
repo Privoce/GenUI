@@ -20,6 +20,7 @@ live_design! {
     import crate::views::guide::start::*;
     import crate::views::basic::label::*;
     import crate::views::basic::button::*;
+    import crate::views::basic::view::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -133,6 +134,7 @@ live_design! {
                             }
                         }
                         tab_view = <GMenuItem>{
+                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -141,7 +143,7 @@ live_design! {
                             }
                         }
                         tab_button = <GMenuItem>{
-                            selected: true,
+
                             icon_slot: {
                                 visible: false,
                             }
@@ -204,6 +206,9 @@ live_design! {
                     }
                     button_page = <GBarPage>{
                         <ButtonPage>{}
+                    }
+                    view_page = <GBarPage>{
+                        <ViewPage>{}
                     }
                 }
             }
@@ -297,19 +302,20 @@ impl Widget for AppMainPage {
                                 install_page,
                                 qs_page,
                                 label_page,
-                                button_page
+                                button_page,
+                                view_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(button_page))
+                        .active(id!(view_page))
                         .build(cx);
                 });
             })
             .map(|_| {
                 let router = self.grouter(id!(app_router));
                 router.borrow().map(|router| {
-                    if !router.scope_path.is_empty() {
+                    if router.scope_path.is_some() {
                         // if is empty do not do next
                         self.lifetime.next();
                     }
@@ -336,8 +342,10 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(start_page));
             } else if e.selected_id == id!(tab_label)[0] {
                 router.nav_to(cx, id!(label_page));
-            }else if e.selected_id == id!(tab_button)[0] {
+            } else if e.selected_id == id!(tab_button)[0] {
                 router.nav_to(cx, id!(button_page));
+            } else if e.selected_id == id!(tab_view)[0] {
+                router.nav_to(cx, id!(view_page));
             }
         }
 

@@ -2,8 +2,6 @@ use makepad_widgets::{
     ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent,
 };
 
-use crate::event::FocusType;
-
 #[derive(DefaultNone, Debug, Clone)]
 pub enum GLabelEvent {
     HoverIn(GLabelHoverParam),
@@ -20,7 +18,6 @@ pub struct GLabelHoverParam {
 
 #[derive(Debug, Clone)]
 pub struct GLabelFocusParam {
-    pub ty: FocusType,
     pub e: FingerDownEvent,
 }
 

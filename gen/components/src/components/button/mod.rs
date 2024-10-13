@@ -4,7 +4,6 @@ mod register;
 pub use event::*;
 pub use register::register;
 
-use crate::event::FocusType;
 use crate::utils::{set_cursor, BoolToF32, ThemeColor};
 use crate::{
     animatie_fn, event_option, play_animation, ref_area, ref_event_option, set_event,
@@ -322,10 +321,7 @@ impl GButton {
                 cx.widget_action(
                     self.widget_uid(),
                     path,
-                    GButtonEvent::Focus(GButtonFocusParam {
-                        ty: FocusType::Press,
-                        e,
-                    }),
+                    GButtonEvent::Focus(GButtonFocusParam { e }),
                 );
             });
         }

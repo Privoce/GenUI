@@ -9,7 +9,13 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    animatie_fn, event::UnifiedEvent, event_option, ref_event_option, set_event, shader::draw_view::DrawGView, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_origin_fn
+    animatie_fn,
+    event::UnifiedEvent,
+    event_option, play_animation, ref_event_option, set_event, set_scope_path,
+    shader::draw_view::DrawGView,
+    themes::Themes,
+    utils::{set_cursor, BoolToF32, ThemeColor},
+    widget_origin_fn,
 };
 
 live_design! {
@@ -26,24 +32,24 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_view: {focus: 0.0, hover: 0.0}
+                        draw_view: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
+                        all: Forward {duration: (GLOBAL_DURATION)},
                         focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_view: {focus: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_view: {hover: 1.0, focus: 0.0}
                     }
                 }
 
                 focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_view: {focus: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_view: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -130,7 +136,7 @@ pub struct GView {
     #[rust]
     pub area: Area,
     #[rust]
-    pub scope_path: HeapLiveIdPath,
+    pub scope_path: Option<HeapLiveIdPath>,
     #[live(false)]
     pub capture_overload: bool,
     #[live(true)]
@@ -258,7 +264,7 @@ impl Widget for GView {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
-        if !self.visible || !self.event_key{
+        if !self.visible || !self.event_key {
             return;
         }
 
@@ -316,96 +322,46 @@ impl Widget for GView {
         ) {
             Hit::KeyDown(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::KeyDown(GViewKeyEventParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
+                    self.active_key_down(cx, e);
                 }
             }
             Hit::KeyUp(e) => {
                 if self.grab_key_focus {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::KeyUp(GViewKeyEventParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
+                    self.active_key_up(cx, e);
                 }
             }
-            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GViewEvent::FingerScroll(e)),
             Hit::FingerDown(e) => {
                 if self.grab_key_focus {
-                    cx.set_key_focus(sweep_area);
+                    cx.set_key_focus(self.area());
                 }
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GViewEvent::FingerDown(GViewFingerDownParam {
-                        e,
-                        path: scope.path.clone(),
-                    }),
-                );
+                self.play_animation(cx, id!(hover.focus));
+                self.active_focus(cx, e);
             }
-            Hit::FingerMove(e) => cx.widget_action(
-                uid,
-                &scope.path,
-                GViewEvent::FingerMove(GViewFingerMoveParam {
-                    e,
-                    path: scope.path.clone(),
-                }),
-            ),
+            Hit::FingerMove(e) => {
+                self.active_drag(cx, e);
+            }
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GViewEvent::FingerHoverIn(GViewFingerHoverParam {
-                        e,
-                        path: scope.path.clone(),
-                    }),
-                );
-                if self.animator.live_ptr.is_some() && self.animation_key {
-                    self.animator_play(cx, id!(hover.on))
-                }
+                self.play_animation(cx, id!(hover.on));
+                self.active_hover_in(cx, e);
             }
-            Hit::FingerHoverOver(e) => {
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GViewEvent::FingerHoverOver(GViewFingerHoverParam {
-                        e,
-                        path: scope.path.clone(),
-                    }),
-                );
-            }
+
             Hit::FingerHoverOut(e) => {
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GViewEvent::FingerHoverOut(GViewFingerHoverParam {
-                        e,
-                        path: scope.path.clone(),
-                    }),
-                );
-                if self.animator.live_ptr.is_some() && self.animation_key {
-                    self.animator_play(cx, id!(hover.off));
-                }
+                self.play_animation(cx, id!(hover.off));
+                self.active_hover_out(cx, e);
             }
             Hit::FingerUp(e) => {
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GViewEvent::FingerUp(GViewFingerUpParam {
-                        e,
-                        path: scope.path.clone(),
-                    }),
-                );
+                if e.is_over {
+                    if e.device.has_hovers() {
+                        self.play_animation(cx, id!(hover.on));
+                    } else {
+                        self.play_animation(cx, id!(hover.off));
+                    }
+                    self.active_clicked(cx, e);
+                } else {
+                    self.play_animation(cx, id!(hover.off));
+                    self.active_focus_lost(cx, e);
+                }
             }
             _ => (),
         }
@@ -420,7 +376,7 @@ impl Widget for GView {
 
         // begin the draw state
         if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
-            self.scope_path = scope.path.clone();
+            self.set_scope_path(&scope.path);
             if !self.visible {
                 // visible is false, so we are done
                 self.draw_state.end();
@@ -606,13 +562,14 @@ impl Widget for GView {
     }
 
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        if !self.visible || !self.event_key{
+        if !self.visible {
             return;
         }
 
-        let uid = self.widget_uid();
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.redraw(cx);
+        if self.animation_key {
+            if self.animator_handle_event(cx, event).must_redraw() {
+                self.redraw(cx);
+            }
         }
 
         if self.block_signal_event {
@@ -654,117 +611,64 @@ impl Widget for GView {
                 }
             }
         }
-        
-        if self.visible {
 
-            // 构建统一事件: Hover的冒泡处理, 需要判断传过来的param中的鼠标位置是否在当前的区域内
-            // if let Event::Actions(actions) = event{
-            //     for action in actions {
-            //         if let Some(actions) = action.as_widget_action(){
-            //             if let UnifiedEvent::HoverIn(_) = actions.cast(){
-            //                 self.animator_play(cx, id!(hover.on));
-            //             }
-            //         }
-            //     }
-            // }
-            
-            // handle event and set cursor to control
-            match event.hits_with_capture_overload(cx, self.area(), self.capture_overload) {
-                Hit::KeyDown(e) => {
-                    if self.grab_key_focus {
-                        cx.widget_action(
-                            uid,
-                            &scope.path,
-                            GViewEvent::KeyDown(GViewKeyEventParam {
-                                e,
-                                path: scope.path.clone(),
-                            }),
-                        );
-                    }
+        // 构建统一事件: Hover的冒泡处理, 需要判断传过来的param中的鼠标位置是否在当前的区域内
+        // if let Event::Actions(actions) = event{
+        //     for action in actions {
+        //         if let Some(actions) = action.as_widget_action(){
+        //             if let UnifiedEvent::HoverIn(_) = actions.cast(){
+        //                 self.animator_play(cx, id!(hover.on));
+        //             }
+        //         }
+        //     }
+        // }
+
+        // handle event and set cursor to control
+        match event.hits_with_capture_overload(cx, self.area(), self.capture_overload) {
+            Hit::KeyDown(e) => {
+                if self.grab_key_focus {
+                    self.active_key_down(cx, e);
                 }
-                Hit::KeyUp(e) => {
-                    if self.grab_key_focus {
-                        cx.widget_action(
-                            uid,
-                            &scope.path,
-                            GViewEvent::KeyUp(GViewKeyEventParam {
-                                e,
-                                path: scope.path.clone(),
-                            }),
-                        );
-                    }
-                }
-                // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, GViewEvent::FingerScroll(e)),
-                Hit::FingerDown(e) => {
-                    if self.grab_key_focus {
-                        cx.set_key_focus(self.area());
-                    }
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::FingerDown(GViewFingerDownParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
-                }
-                Hit::FingerMove(e) => cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GViewEvent::FingerMove(GViewFingerMoveParam {
-                        e,
-                        path: scope.path.clone(),
-                    }),
-                ),
-                Hit::FingerHoverIn(e) => {
-                    let _ = set_cursor(cx, self.cursor.as_ref());
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::FingerHoverIn(GViewFingerHoverParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
-                    if self.animator.live_ptr.is_some() && self.animation_key {
-                        self.animator_play(cx, id!(hover.on));
-                    }
-                }
-                Hit::FingerHoverOver(e) => {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::FingerHoverOver(GViewFingerHoverParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
-                }
-                Hit::FingerHoverOut(e) => {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::FingerHoverOut(GViewFingerHoverParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
-                    if self.animator.live_ptr.is_some() && self.animation_key {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                }
-                Hit::FingerUp(e) => {
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GViewEvent::FingerUp(GViewFingerUpParam {
-                            e,
-                            path: scope.path.clone(),
-                        }),
-                    );
-                }
-                _ => (),
             }
+            Hit::KeyUp(e) => {
+                if self.grab_key_focus {
+                    self.active_key_up(cx, e);
+                }
+            }
+            Hit::FingerDown(e) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(self.area());
+                }
+                self.play_animation(cx, id!(hover.focus));
+                self.active_focus(cx, e);
+            }
+            Hit::FingerMove(e) => {
+                self.active_drag(cx, e);
+            }
+            Hit::FingerHoverIn(e) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.play_animation(cx, id!(hover.on));
+                self.active_hover_in(cx, e);
+            }
+
+            Hit::FingerHoverOut(e) => {
+                self.play_animation(cx, id!(hover.off));
+                self.active_hover_out(cx, e);
+            }
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    if e.device.has_hovers() {
+                        self.play_animation(cx, id!(hover.on));
+                    } else {
+                        self.play_animation(cx, id!(hover.off));
+                    }
+                    self.active_clicked(cx, e);
+                } else {
+                    self.play_animation(cx, id!(hover.off));
+                    self.active_focus_lost(cx, e);
+                }
+            }
+            _ => (),
         }
 
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
@@ -849,13 +753,15 @@ impl WidgetNode for GView {
 }
 
 impl GView {
+    set_scope_path!();
+    play_animation!();
     event_option! {
-        finger_down: GViewEvent::FingerDown => GViewFingerDownParam,
-        finger_up: GViewEvent::FingerUp => GViewFingerUpParam,
-        finger_move : GViewEvent::FingerMove => GViewFingerMoveParam,
-        finger_hover_in: GViewEvent::FingerHoverIn => GViewFingerHoverParam,
-        finger_hover_out: GViewEvent::FingerHoverOut => GViewFingerHoverParam,
-        finger_hover_over: GViewEvent::FingerHoverOver => GViewFingerHoverParam,
+        hover_in: GViewEvent::HoverIn => GViewHoverParam,
+        hover_out: GViewEvent::HoverOut => GViewHoverParam,
+        focus: GViewEvent::Focus => GViewFocusParam,
+        focus_lost: GViewEvent::FocusLost => GViewFocusLostParam,
+        clicked: GViewEvent::Clicked => GViewClickedParam,
+        drag: GViewEvent::Drag => GViewDragParam,
         key_down: GViewEvent::KeyDown => GViewKeyEventParam,
         key_up: GViewEvent::KeyUp => GViewKeyEventParam
     }
@@ -885,6 +791,103 @@ impl GView {
     }
     pub fn child_count(&self) -> usize {
         self.children.len()
+    }
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_view.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
+    pub fn active_hover_in(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::HoverIn(GViewHoverParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_hover_out(&mut self, cx: &mut Cx, e: FingerHoverEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::HoverOut(GViewHoverParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_focus(&mut self, cx: &mut Cx, e: FingerDownEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::Focus(GViewFocusParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_key_down(&mut self, cx: &mut Cx, e: KeyEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::KeyDown(GViewKeyEventParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_key_up(&mut self, cx: &mut Cx, e: KeyEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::KeyUp(GViewKeyEventParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_focus_lost(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::FocusLost(GViewFocusLostParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_drag(&mut self, cx: &mut Cx, e: FingerMoveEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::Drag(GViewDragParam { e }),
+                );
+            });
+        }
+    }
+    pub fn active_clicked(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+        if self.event_key {
+            self.scope_path.as_ref().map(|path| {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GViewEvent::Clicked(GViewClickedParam { e }),
+                );
+            });
+        }
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.draw_view.apply_over(
@@ -955,12 +958,12 @@ impl GView {
 
 impl GViewRef {
     ref_event_option! {
-        finger_down => GViewFingerDownParam,
-        finger_up => GViewFingerUpParam,
-        finger_move => GViewFingerMoveParam,
-        finger_hover_in => GViewFingerHoverParam,
-        finger_hover_out => GViewFingerHoverParam,
-        finger_hover_over => GViewFingerHoverParam,
+        hover_in => GViewHoverParam,
+        hover_out => GViewHoverParam,
+        focus => GViewFocusParam,
+        focus_lost => GViewFocusLostParam,
+        clicked => GViewClickedParam,
+        drag => GViewDragParam,
         key_down => GViewKeyEventParam,
         key_up => GViewKeyEventParam
     }
@@ -1102,12 +1105,12 @@ impl GViewSet {
         }
     }
     set_event! {
-        finger_down => GViewFingerDownParam,
-        finger_up => GViewFingerUpParam,
-        finger_move => GViewFingerMoveParam,
-        finger_hover_in => GViewFingerHoverParam,
-        finger_hover_out => GViewFingerHoverParam,
-        finger_hover_over => GViewFingerHoverParam,
+        hover_in => GViewHoverParam,
+        hover_out => GViewHoverParam,
+        focus => GViewFocusParam,
+        focus_lost => GViewFocusLostParam,
+        clicked => GViewClickedParam,
+        drag => GViewDragParam,
         key_down => GViewKeyEventParam,
         key_up => GViewKeyEventParam
     }

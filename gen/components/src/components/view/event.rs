@@ -1,44 +1,44 @@
 use makepad_widgets::{
     ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerMoveEvent,
-    FingerUpEvent, HeapLiveIdPath, KeyEvent,
+    FingerUpEvent, KeyEvent,
 };
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GViewEvent {
     KeyDown(GViewKeyEventParam),
     KeyUp(GViewKeyEventParam),
-    FingerDown(GViewFingerDownParam),
-    FingerMove(GViewFingerMoveParam),
-    FingerHoverIn(GViewFingerHoverParam),
-    FingerHoverOver(GViewFingerHoverParam),
-    FingerHoverOut(GViewFingerHoverParam),
-    FingerUp(GViewFingerUpParam),
+    Focus(GViewFocusParam),
+    Drag(GViewDragParam),
+    HoverIn(GViewHoverParam),
+    HoverOut(GViewHoverParam),
+    Clicked(GViewClickedParam),
+    FocusLost(GViewFocusLostParam),
     None,
 }
 
 #[derive(Debug, Clone)]
 pub struct GViewKeyEventParam {
     pub e: KeyEvent,
-    pub path: HeapLiveIdPath,
 }
 
 #[derive(Debug, Clone)]
-pub struct GViewFingerDownParam {
+pub struct GViewFocusParam {
     pub e: FingerDownEvent,
-    pub path: HeapLiveIdPath,
 }
 #[derive(Debug, Clone)]
-pub struct GViewFingerMoveParam {
-    pub e: FingerMoveEvent,
-    pub path: HeapLiveIdPath,
-}
-#[derive(Debug, Clone)]
-pub struct GViewFingerHoverParam {
+pub struct GViewHoverParam {
     pub e: FingerHoverEvent,
-    pub path: HeapLiveIdPath,
 }
 #[derive(Debug, Clone)]
-pub struct GViewFingerUpParam {
+pub struct GViewClickedParam {
     pub e: FingerUpEvent,
-    pub path: HeapLiveIdPath,
+}
+#[derive(Debug, Clone)]
+pub struct GViewFocusLostParam {
+    pub e: FingerUpEvent,
+}
+
+#[derive(Debug, Clone)]
+pub struct GViewDragParam {
+    pub e: FingerMoveEvent,
 }

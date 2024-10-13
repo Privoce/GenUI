@@ -49,7 +49,8 @@ impl LiveHook for GRouter {}
 
 impl Widget for GRouter {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.scope_path = scope.path.clone();
+        // self.scope_path = scope.path.clone();
+        self.set_scope_path(&scope.path);
         match self.page_type {
             PageType::Bar | PageType::Nav => self
                 .widget(&[self.active_router])
@@ -170,7 +171,7 @@ impl GRouter {
 
             for (id, child) in active_router.children.iter() {
                 if child.is_visible() && !self.mode.eq_bind(id) {
-                    let mut p = self.scope_path.clone();
+                    let mut p = self.scope_path.as_ref().unwrap().clone();
                     p.push(*id);
                     res.replace(p);
                     break;
@@ -245,14 +246,14 @@ impl GRouter {
         )
     }
     pub fn bar_scope_path(&self, child: &[LiveId]) -> HeapLiveIdPath {
-        let mut path = self.scope_path.clone();
+        let mut path = self.scope_path.as_ref().unwrap().clone();
         child.into_iter().for_each(|x| {
             path.push(*x);
         });
         path
     }
     pub fn nav_scope_path(&self, child: &[LiveId]) -> HeapLiveIdPath {
-        let mut path = self.scope_path.clone();
+        let mut path = self.scope_path.as_ref().unwrap().clone();
         child.into_iter().for_each(|x| {
             // path.push(id!(nav_pages)[0]);
             path.push(*x);
@@ -288,7 +289,7 @@ impl GRouter {
         nav_pages: Option<&[&[LiveId]]>,
         mode: Option<RouterIndicatorMode>,
     ) -> &mut Self {
-        if !self.scope_path.is_empty() {
+        if self.scope_path.is_some() {
             self.nav_pages.clear();
             self.bar_pages.clear();
             bar_pages.iter().for_each(|x| {
@@ -310,7 +311,7 @@ impl GRouter {
     /// this fn consider bar_id is tabbar(it will never change)
     pub fn init_auto(&mut self) -> &mut Self {
         // do loop to get need children
-        if !self.scope_path.is_empty() {
+        if self.scope_path.is_some() {
             self.nav_pages.clear();
             self.bar_pages.clear();
             let mut flag = true; // let it do only once
@@ -377,8 +378,8 @@ impl GRouter {
     /// set page as active page, you can use this if you need to control
     pub fn active(&mut self, id: &[LiveId]) -> &mut Self {
         // if scope is empty, do nothing
-        if !self.scope_path.is_empty() {
-            let mut path = self.scope_path.clone();
+        if self.scope_path.is_some() {
+            let mut path = self.scope_path.as_ref().unwrap().clone();
             path.push(id[0].clone());
             self.active_page.replace(path);
         }

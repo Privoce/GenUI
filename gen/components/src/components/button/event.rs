@@ -2,8 +2,6 @@ use makepad_widgets::{
     ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent,
 };
 
-use crate::event::FocusType;
-
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GButtonEvent {
     HoverIn(GButtonHoverParam),
@@ -21,7 +19,6 @@ pub struct GButtonHoverParam {
 
 #[derive(Debug, Clone)]
 pub struct GButtonFocusParam {
-    pub ty: FocusType,
     pub e: FingerDownEvent,
 }
 

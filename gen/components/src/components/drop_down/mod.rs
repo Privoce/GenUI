@@ -102,7 +102,7 @@ impl GDropDown {
     fn action_toggle(&mut self, cx: &mut Cx, e_kind: GDropDownToggleKind, opened: bool) {
         cx.widget_action(
             self.widget_uid(),
-            &self.scope_path,
+            self.scope_path.as_ref().unwrap(),
             GDropDownEvent::Toggle(GDropDownEventParam { e: e_kind, opened }),
         );
     }
