@@ -21,7 +21,7 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {hover: 0.0, focus: 0.0}
+                        draw_svg: {hover: 0.0, focus: 0.0}
                     }
                 }
 
@@ -31,14 +31,14 @@ live_design! {
                         focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_text: {hover: 1.0, focus: 0.0}
+                        draw_svg: {hover: 1.0, focus: 0.0}
                     }
                 }
 
                 focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {hover: 0.0, focus: 1.0}
+                        draw_svg: {hover: 0.0, focus: 1.0}
                     }
                 }
             }

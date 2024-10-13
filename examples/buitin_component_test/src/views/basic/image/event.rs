@@ -7,7 +7,7 @@ live_design! {
     import gen_components::components::*;
     import crate::styles::*;
 
-    SvgEnPage = {{SvgEnPage}}{
+    ImageEnPage = {{ImageEnPage}}{
         height: Fit,
         width: Fill,
         flow: Down,
@@ -100,18 +100,18 @@ live_design! {
 }
 
 #[derive(Live, Widget)]
-pub struct SvgEnPage {
+pub struct ImageEnPage {
     #[deref]
     pub deref_widget: GView,
 }
 
-impl LiveHook for SvgEnPage {
+impl LiveHook for ImageEnPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for SvgEnPage {
+impl Widget for ImageEnPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let _ = self.deref_widget.draw_walk(cx, scope, walk);
 

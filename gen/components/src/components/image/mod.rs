@@ -1,15 +1,14 @@
-pub mod event;
+mod event;
 mod register;
 
-use event::GImageEvent;
+pub use event::*;
 pub use register::register;
 
 use image_cache::{ImageCacheImpl, ImageFit};
 use makepad_widgets::*;
 
 use crate::{
-    event_option, ref_event_option, set_event, shader::draw_view::DrawGView, utils::set_cursor,
-    widget_area,
+    active_event, event_option, ref_area, ref_event_option, ref_redraw, ref_render, set_event, set_scope_path, shader::draw_view::DrawGView, utils::set_cursor, widget_area
 };
 
 live_design! {
@@ -141,10 +140,10 @@ pub struct GImage {
     pub src: LiveDependency,
     #[rust(Texture::new(cx))]
     pub texture: Option<Texture>,
-    #[live(false)]
-    pub animation_key: bool,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl ImageCacheImpl for GImage {
@@ -161,7 +160,7 @@ impl LiveHook for GImage {
     fn after_apply(
         &mut self,
         cx: &mut Cx,
-        _applyl: &mut Apply,
+        _apply: &mut Apply,
         _index: usize,
         _nodes: &[LiveNode],
     ) {
@@ -169,26 +168,12 @@ impl LiveHook for GImage {
             return;
         }
 
-        self.draw_image.apply_over(
-            cx,
-            live! {
-                rotation: (self.rotation),
-                scale: (self.scale),
-                opacity: (self.opacity),
-            },
-        );
-
-        // self.draw_image.redraw(cx);
-        self.lazy_create_image_cache(cx);
-        let source = self.src.clone();
-        if source.as_str().len() > 0 {
-            let _ = self.load_image_dep_by_path(cx, source.as_str(), 0);
-        }
+        self.render(cx);
     }
 }
 
 impl Widget for GImage {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, mut walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, mut walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
@@ -235,16 +220,18 @@ impl Widget for GImage {
                 }
             }
         }
-        self.draw_walk_rotated_image(cx, walk)
+        self.draw_walk_rotated_image(cx, walk);
+        self.set_scope_path(&scope.path);
+        DrawStep::done()
     }
     fn handle_event_with(
         &mut self,
         cx: &mut Cx,
         event: &Event,
-        scope: &mut Scope,
+        _scope: &mut Scope,
         sweep_area: Area,
     ) {
-        if !self.visible || !self.animation_key {
+        if !self.visible {
             return;
         }
         let hit = event.hits_with_options(
@@ -253,15 +240,15 @@ impl Widget for GImage {
             HitOptions::new().with_sweep_area(sweep_area),
         );
 
-        self.handle_widget_event(cx, event, scope, hit, sweep_area)
+        self.handle_widget_event(cx, hit, sweep_area)
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        if !self.visible || !self.animation_key {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        if !self.visible {
             return;
         }
         let focus_area = self.area();
         let hit = event.hits(cx, self.area());
-        self.handle_widget_event(cx, event, scope, hit, focus_area)
+        self.handle_widget_event(cx, hit, focus_area)
     }
     fn is_visible(&self) -> bool {
         self.visible
@@ -269,45 +256,63 @@ impl Widget for GImage {
 }
 
 impl GImage {
+    set_scope_path!();
     widget_area! {
         area, draw_image
     }
-    event_option! {
-        clicked : GImageEvent::Clicked => FingerUpEvent,
-        hover : GImageEvent::Hover => FingerHoverEvent
+    active_event! {
+        active_hover_in: GImageEvent::HoverIn |e: FingerHoverEvent| => GImageHoverParam{ e },
+        active_hover_out: GImageEvent::HoverOut |e: FingerHoverEvent| => GImageHoverParam{ e },
+        active_clicked: GImageEvent::Clicked |e: FingerUpEvent| => GImageClickedParam{ e }
     }
-    pub fn draw_walk_rotated_image(&mut self, cx: &mut Cx2d, walk: Walk) -> DrawStep {
+    event_option! {
+        hover_in: GImageEvent::HoverIn => GImageHoverParam,
+        hover_out: GImageEvent::HoverOut => GImageHoverParam,
+        clicked: GImageEvent::Clicked => GImageClickedParam
+    }
+    pub fn redraw(&self, cx: &mut Cx){
+        self.draw_image.redraw(cx);
+    }
+    pub fn render(&mut self, cx: &mut Cx) {
+        self.draw_image.apply_over(
+            cx,
+            live! {
+                rotation: (self.rotation),
+                scale: (self.scale),
+                opacity: (self.opacity),
+            },
+        );
+
+        // self.draw_image.redraw(cx);
+        self.lazy_create_image_cache(cx);
+        let source = self.src.clone();
+        if source.as_str().len() > 0 {
+            let _ = self.load_image_dep_by_path(cx, source.as_str(), 0);
+        }
+    }
+    pub fn draw_walk_rotated_image(&mut self, cx: &mut Cx2d, walk: Walk) -> () {
         if let Some(image_texture) = &self.texture {
             self.draw_image.draw_vars.set_texture(0, image_texture);
         }
         self.draw_image.draw_walk(cx, walk);
-
-        DrawStep::done()
     }
-    pub fn handle_widget_event(
-        &mut self,
-        cx: &mut Cx,
-        _event: &Event,
-        scope: &mut Scope,
-        hit: Hit,
-        focus_area: Area,
-    ) {
-        let uid = self.widget_uid();
-
+    pub fn handle_widget_event(&mut self, cx: &mut Cx, hit: Hit, focus_area: Area) {
         match hit {
             Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
             }
-            Hit::FingerHoverIn(h) => {
+            Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-
-                cx.widget_action(uid, &scope.path, GImageEvent::Hover(h.clone()));
+                self.active_hover_in(cx, e);
             }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GImageEvent::Clicked(f_up.clone()));
+            Hit::FingerHoverOut(e) => {
+                self.active_hover_out(cx, e);
+            }
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    self.active_clicked(cx, e);
                 }
             }
             _ => (),
@@ -316,15 +321,20 @@ impl GImage {
 }
 
 impl GImageRef {
+    ref_redraw!();
+    ref_area!();
+    ref_render!();
     ref_event_option! {
-        clicked => FingerUpEvent,
-        hover => FingerHoverEvent
+        hover_in => GImageHoverParam,
+        hover_out => GImageHoverParam,
+        clicked => GImageClickedParam
     }
 }
 
 impl GImageSet {
     set_event! {
-        clicked => FingerUpEvent,
-        hover => FingerHoverEvent
+        hover_in => GImageHoverParam,
+        hover_out => GImageHoverParam,
+        clicked => GImageClickedParam
     }
 }

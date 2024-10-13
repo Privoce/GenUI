@@ -14,4 +14,5 @@ pub fn register(cx: &mut Cx){
     self::label::register(cx);
     self::button::register(cx);
     self::view::register(cx);
+    self::image::register(cx);
 }

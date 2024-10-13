@@ -57,14 +57,7 @@ live_design! {
                     width: Fill,
                     flow: Down,
                     
-                    <GLabel>{
-                        stroke_hover_color: #FF7043,
-                                animation_key: true,
-                                text: "Hello World!",
-                            }
-                    <GButton>{
-                        spread_radius: 0.0,
-                    }
+                    
                     // <GTabbarItem>{}
                     // <TPage>{}
                     // <GSvg>{
@@ -125,14 +118,14 @@ live_design! {
                     //     width: 16.0,
                     //     src: dep("crate://self/resources/all.svg")
                     // }
-                    // <GSvg>{
-                    //     height: 36.0,
-                    //     width: 36.0,
-                    //     color: #FFFFFF,
-                    //     src: dep("crate://self/resources/all.svg"),
-                    //     stroke_hover_color: #FF7043,
-                    //     animation_open: true,
-                    // }
+                    <GSvg>{
+                        height: 36.0,
+                        width: 36.0,
+                        color: #FFFFFF,
+                        src: dep("crate://self/resources/all.svg"),
+                        stroke_hover_color: #FF7043,
+                        animation_key: true,
+                    }
                    
                     // <GHLayout>{
                     //     height: 46.0,
@@ -188,7 +181,7 @@ live_design! {
                     // <Note>{}
                     // <GTabsExample>{}
                     // <GTableExample>{}
-                    <GPopupExample>{}
+                    // <GPopupExample>{}
                     // <GInputExample>{}
                     // <GShaderExample>{}
                     // <GCollapseExample>{}

@@ -2,7 +2,18 @@ use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpE
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GImageEvent {
-    Hover(FingerHoverEvent),
-    Clicked(FingerUpEvent),
+    HoverIn(GImageHoverParam),
+    HoverOut(GImageHoverParam),
+    Clicked(GImageClickedParam),
     None,
+}
+
+#[derive(Clone, Debug)]
+pub struct GImageHoverParam {
+    pub e: FingerHoverEvent,
+}
+
+#[derive(Clone, Debug)]
+pub struct GImageClickedParam {
+    pub e: FingerUpEvent,
 }

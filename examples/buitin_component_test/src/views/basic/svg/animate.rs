@@ -1,7 +1,4 @@
-use gen_components::components::{
-    button::GButtonWidgetExt,
-    view::{GView, GViewWidgetExt},
-};
+use gen_components::components::{button::GButtonWidgetExt, svg::GSvgWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -29,30 +26,24 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "View has two animation effects: Hover and Focus(Press).",
+                text: "View has two animation effects: Hover and Focus(Press).But you need to set animation_key to true.",
             }
             <GLabel>{
                 width: Fill,
-                text: "Hover: hover_color\nFocus(Press): focus_color",
+                text: "Hover: stroke_hover_color\nFocus(Press): stroke_focus_color",
             }
         }
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
                 flow: Right,
-                <GView>{
-                    height: 60.0,
-                    width: 60.0,
-                    theme: Info,
-                    hover_color: #FF0000,
-                    focus_color: #00FF00,
+                <GSvg>{
+                    height: 32.0,
+                    width: 32.0,
                     animation_key: true,
-                }
-                <GView>{
-                    height: 60.0,
-                    width: 60.0,
-                    theme: Error,
-                    animation_key: true,
+                    stroke_hover_color: #FF0000,
+                    stroke_focus_color: #00FF00,
+                    src: dep("crate://self/resources/all.svg"),
                 }
             }
             code = {
@@ -64,19 +55,12 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                <GView>{
-                    height: 60.0,
-                    width: 60.0,
-                    theme: Info,
-                    hover_color: #FF0000,
-                    focus_color: #00FF00,
-                    animation_key: true,
-                }
-                <GView>{
-                    height: 60.0,
-                    width: 60.0,
-                    theme: Error,
-                    animation_key: true,
+                <GSvg>{
+                    height: 32.0,
+                    width: 32.0,
+                    stroke_hover_color: #FF0000,
+                    stroke_focus_color: #00FF00,
+                    src: dep("crate://self/resources/all.svg"),
                 }
                             "#;
                         }
@@ -91,13 +75,13 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 12.0,
-                    an_view1 = <GView>{
-                        height: 60.0,
-                        width: 60.0,
-                        theme: Info,
-                        hover_color: #FF0000,
-                        focus_color: #00FF00,
+                    an_svg1 = <GSvg>{
+                        height: 32.0,
+                        width: 32.0,
                         animation_key: true,
+                        stroke_hover_color: #FF0000,
+                        stroke_focus_color: #00FF00,
+                        src: dep("crate://self/resources/all.svg"),
                     }
                     hover_btn = <GButton>{
                         slot: {
@@ -108,13 +92,13 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 12.0,
-                    an_view2 = <GView>{
-                        height: 60.0,
-                        width: 60.0,
-                        theme: Error,
-                        hover_color: #FF0000,
-                        focus_color: #00FF00,
+                    an_svg2 = <GSvg>{
+                        height: 32.0,
+                        width: 32.0,
                         animation_key: true,
+                        stroke_hover_color: #FF0000,
+                        stroke_focus_color: #00FF00,
+                        src: dep("crate://self/resources/all.svg"),
                     }
                     focus_btn = <GButton>{
                         slot: {
@@ -163,15 +147,15 @@ impl Widget for SvgAnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let an_view1 = self.gview(id!(an_view1));
-        let an_view2 = self.gview(id!(an_view2));
+        let an_svg1 = self.gsvg(id!(an_svg1));
+        let an_svg2 = self.gsvg(id!(an_svg2));
         let hover_btn = self.gbutton(id!(hover_btn));
         let focus_btn = self.gbutton(id!(focus_btn));
         if hover_btn.clicked(&actions).is_some() {
-            an_view1.animate_hover_on(cx);
+            an_svg1.animate_hover_on(cx);
         }
         if focus_btn.clicked(&actions).is_some() {
-            an_view2.animate_focus(cx);
+            an_svg2.animate_focus(cx);
         }
     }
 }
