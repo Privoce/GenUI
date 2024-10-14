@@ -28,13 +28,13 @@ live_design! {
                 theme: Error,
                 text: "Define hover color and pressed color",
                 hover_color: #FF00FF,
-                pressed_color: #00FF00,
+                focus_color: #00FF00,
             }
             <GLink>{
                 width: 200.0,
                 theme: Success,
                 text: "No underline",
-                underline: false,
+                underline_visible: false,
                 align: {x: 0.4, y: 0.5},
             }
             <GLink>{
@@ -43,6 +43,7 @@ live_design! {
                 font_size: 12.0,
                 hover_color: #FF00FF,
                 background_color: #00FF00,
+                background_visible: true,
                 margin: 10.0,
                 padding: 10.0,
                 color: #FF0000,

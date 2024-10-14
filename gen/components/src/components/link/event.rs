@@ -6,11 +6,11 @@ use super::types::LinkType;
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GLinkEvent {
-    Hover(FingerHoverEvent),
-    /// clicked(key_modifiers, href, link_type)
+    HoverIn(GLinkHoverParam),
+    HoverOut(GLinkHoverParam),
     Clicked(GLinkClickedParam),
-    Released(FingerUpEvent),
-    Pressed(FingerDownEvent),
+    Focus(GLinkFocusParam),
+    FocusLost(GLinkFocusLostParam),
     None,
 }
 
@@ -18,5 +18,20 @@ pub enum GLinkEvent {
 pub struct GLinkClickedParam {
     pub href: Option<String>,
     pub ty: LinkType,
+    pub e: FingerUpEvent,
+}
+
+#[derive(Debug, Clone)]
+pub struct GLinkHoverParam {
+    pub e: FingerHoverEvent,
+}
+
+#[derive(Debug, Clone)]
+pub struct GLinkFocusParam {
+    pub e: FingerDownEvent,
+}
+
+#[derive(Debug, Clone)]
+pub struct GLinkFocusLostParam {
     pub e: FingerUpEvent,
 }

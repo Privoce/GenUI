@@ -10,7 +10,7 @@ live_design!{
         varying sdf_rect_pos: vec2,
         varying sdf_rect_size: vec2,
                               
-        fn get_color(self) -> vec4 {
+        fn get_background_color(self) -> vec4 {
             return mix(
                 mix(
                     self.background_color,
@@ -52,7 +52,7 @@ live_design!{
             );
             
             if self.background_visible != 0.0 {
-                sdf.fill_keep(self.get_color());
+                sdf.fill_keep(self.get_background_color());
             }
             if self.spread_radius != 0.0 {
                 if sdf.shape > -1.0{

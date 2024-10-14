@@ -222,10 +222,10 @@ live_design! {
                     // }
                     // <GBreadCrumbExample>{}
                     <GLinkExample>{}
-                    <GSvgExample>{}
-                    <GIconLibExample>{}
-                    <GButtonExample>{}
-                    <GLabelExample>{}
+                    // <GSvgExample>{}
+                    // <GIconLibExample>{}
+                    // <GButtonExample>{}
+                    // <GLabelExample>{}
                     //
                     // --------------------------------
                     // pop = <GPopup>{

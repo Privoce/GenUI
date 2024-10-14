@@ -190,9 +190,9 @@ impl GLabel {
         self.draw_text.redraw(cx);
     }
     pub fn render(&mut self, cx: &mut Cx) -> () {
-        let color = self.color.get(self.theme, 100);
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
-        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 200);
+        let color = self.color.get(self.theme, 50);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 25);
+        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 100);
         self.draw_text.apply_over(
             cx,
             live! {
