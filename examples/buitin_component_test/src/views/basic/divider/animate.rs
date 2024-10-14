@@ -1,4 +1,6 @@
-use gen_components::components::{button::GButtonWidgetExt, view::GView};
+use gen_components::components::{
+    button::GButtonWidgetExt, divider::GDividerWidgetExt, view::GView,
+};
 use makepad_widgets::*;
 
 live_design! {
@@ -26,34 +28,27 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "Button has two animation effects: Hover and Focus(Press).",
-            }
-            <GLabel>{
-                width: Fill,
-                text: "Hover: hover_color\nFocus(Press): focus_color",
+                text: "Divider inherits View, so it has Hover and Focus too. But you still need to set animation_key to true.",
             }
         }
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
                 flow: Right,
-                <GButton>{
-                    animation_key: false,
-                    slot: {
-                        text: "No Animation"
-                    }
-                }
-                <GButton>{
+                <GDivider>{
+                    theme: Success,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    animation_key: true,
                     hover_color: #F67D37,
                     focus_color: #FFD54F,
-                    slot: {
-                        text: "Animation Color"
-                    }
-                }
-                hover_shadow = <GButton>{
-                    spread_radius: 0.0,
-                    slot: {
-                        text: "Hover with shadow"
+                    <GView>{
+                        height: 20.0,
+                        width: Fit,
+                        padding: {left: 8.0, right: 8.0},
+                        <GLabel>{
+                            text: "Hello!"
+                        }
                     }
                 }
             }
@@ -66,46 +61,73 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                <GButton>{
-                    animation_key: false,
-                    slot: {
-                        text: "No Animation"
-                    }
-                }
-                <GButton>{
+                <GDivider>{
+                    theme: Success,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    animation_key: true,
                     hover_color: #F67D37,
                     focus_color: #FFD54F,
-                    slot: {
-                        text: "Animation Color"
+                    <GView>{
+                        height: 20.0,
+                        width: Fit,
+                        padding: {left: 8.0, right: 8.0},
+                        <GLabel>{
+                            text: "Hello!"
+                        }
                     }
                 }
-                hover_shadow = <GButton>{
-                    spread_radius: 0.0,
-                    slot: {
-                        text: "Hover with shadow"
+                            "#;
+                        }
                     }
                 }
-                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+            }
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 8.0,
+                flow: Down,
+                an_divider = <GDivider>{
+                    theme: Success,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    animation_key: true,
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    <GView>{
+                        height: 20.0,
+                        width: Fit,
+                        padding: {left: 8.0, right: 8.0},
+                        <GLabel>{
+                            text: "Call Animation"
+                        }
+                    }
+                }
+                <GHLayout>{
+                    height: Fit,
+                    spacing: 16.0,
+                    an_btn1 = <GButton>{
+                        slot: {
+                            text: "Call Hover Animation"
+                        }
+                    }
+                    an_btn2 = <GButton>{
+                        slot: {
+                            text: "Call Focus Animation"
+                        }
+                    }
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 200.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
 
-                    let hover_shadow = self.gbutton(id!(hover_shadow));
-                    if hover_shadow.hover_in(&actions).is_some() {
-                        hover_shadow.apply_over(
-                            cx,
-                            live! {
-                                spread_radius: 5.2,
-                            },
-                        );
-                    }
-                    if hover_shadow.hover_out(&actions).is_some(){
-                        hover_shadow.apply_over(
-                            cx,
-                            live! {
-                                spread_radius: 0.0,
-                            },
-                        );
-                    }
-                }
                             "#;
                         }
                     }
@@ -136,22 +158,14 @@ impl Widget for DividerAnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let hover_shadow = self.gbutton(id!(hover_shadow));
-        if hover_shadow.hover_in(&actions).is_some() {
-            hover_shadow.apply_over(
-                cx,
-                live! {
-                    spread_radius: 5.2,
-                },
-            );
+        let an_divider = self.gdivider(id!(an_divider));
+        let an_btn1 = self.gbutton(id!(an_btn1));
+        let an_btn2 = self.gbutton(id!(an_btn2));
+        if an_btn1.clicked(&actions).is_some() {
+            an_divider.animate_hover_on(cx);
         }
-        if hover_shadow.hover_out(&actions).is_some(){
-            hover_shadow.apply_over(
-                cx,
-                live! {
-                    spread_radius: 0.0,
-                },
-            );
+        if an_btn2.clicked(&actions).is_some() {
+            an_divider.animate_focus_on(cx);
         }
     }
 }

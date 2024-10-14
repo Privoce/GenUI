@@ -1,4 +1,6 @@
-use gen_components::components::{button::GButtonWidgetExt, label::GLabelWidgetExt, view::GView};
+use gen_components::components::{
+    button::GButtonWidgetExt, divider::GDividerWidgetExt, label::GLabelWidgetExt, view::GView,
+};
 use makepad_widgets::*;
 
 live_design! {
@@ -26,24 +28,34 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "Button has a series of events:",
-            }
-            <GLabel>{
-                width: Fill,
-                text: "1. HoverIn\n2. HoverOut\n3. Focus\n4. FocusLost\n5. Clicked",
+                text: "Although Divider has events, call these events are useless. What you need to do is handle child components.",
             }
         }
         <CBox>{
             box_wrap = {
                 spacing: 48.0,
                 flow: Right,
-                e_btn = <GButton>{
-                    slot: {
-                        text: "Event Button!"
+                e_divider = <GDivider>{
+                    theme: Error,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    animation_key: true,
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    <GView>{
+                        height: Fit,
+                        width: Fit,
+                        padding: 6.0,
+                        spacing: 8.0,
+                        e_res = <GLabel>{
+                            text: "Click the divider!"
+                        }
+                        e_btn = <GButton>{
+                            slot: {
+                                text: "Click Me!",
+                            }
+                        }
                     }
-                }
-                e_res = <GLabel>{
-                    text: "Event Result"
                 }
             }
             code = {
@@ -55,33 +67,39 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                e_btn = <GButton>{
-                    slot: {
-                        text: "Event Button!"
+                e_divider = <GDivider>{
+                    theme: Error,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    animation_key: true,
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    <GView>{
+                        height: Fit,
+                        width: Fit,
+                        padding: 6.0,
+                        spacing: 8.0,
+                        e_res = <GLabel>{
+                            text: "Click the divider!"
+                        }
+                        e_btn = <GButton>{
+                            slot: {
+                                text: "Click Me!",
+                            }
+                        }
                     }
-                }
-                e_res = <GLabel>{
-                    text: "Event Result"
                 }
                 fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
                     let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-                    let e_btn = self.gbutton(id!(e_btn));
+                    let e_divider = self.gdivider(id!(e_divider));
                     let e_res = self.glabel(id!(e_res));
+                    let e_btn = self.gbutton(id!(e_btn));
                     if e_btn.clicked(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Clicked!");
+                        e_res.set_text_and_redraw(cx, "You clicked the button!");
                     }
-                    if e_btn.hover_in(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Hover In!");
-                    }
-                    if e_btn.hover_out(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Hover Out!");
-                    }
-                    if e_btn.focus(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Focus!");
-                    }
-                    if e_btn.focus_lost(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Focus Lost!");
+                    if e_divider.clicked(&actions).is_some() {
+                        e_res.set_text_and_redraw(cx, "Divider has been Clicked!");
                     }
                 }
                             "#;
@@ -114,22 +132,14 @@ impl Widget for DividerEnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let e_btn = self.gbutton(id!(e_btn));
+        let e_divider = self.gdivider(id!(e_divider));
         let e_res = self.glabel(id!(e_res));
+        let e_btn = self.gbutton(id!(e_btn));
         if e_btn.clicked(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Clicked!");
+            e_res.set_text_and_redraw(cx, "You clicked the button!");
         }
-        if e_btn.hover_in(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Hover In!");
-        }
-        if e_btn.hover_out(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Hover Out!");
-        }
-        if e_btn.focus(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Focus!");
-        }
-        if e_btn.focus_lost(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Focus Lost!");
+        if e_divider.clicked(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Divider has been Clicked!");
         }
     }
 }

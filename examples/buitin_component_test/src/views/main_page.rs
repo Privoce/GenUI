@@ -1,10 +1,7 @@
 use gen_components::{
     components::{menu::GMenuWidgetExt, router::GRouterWidgetExt, view::GView},
     shader::manual::RouterIndicatorMode,
-    utils::{
-        lifetime::{Executor, Lifetime},
-        HeapLiveIdPathExp,
-    },
+    utils::lifetime::{Executor, Lifetime},
 };
 use makepad_widgets::*;
 
@@ -24,6 +21,8 @@ live_design! {
     import crate::views::basic::svg::*;
     import crate::views::basic::image::*;
     import crate::views::basic::icon::*;
+    import crate::views::basic::divider::*;
+    import crate::views::basic::link::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -178,6 +177,22 @@ live_design! {
                                 text: "Icon Lib",
                             }
                         }
+                        tab_divider = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Divider",
+                            }
+                        }
+                        tab_link = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Link",
+                            }
+                        }
                     }
                 }
             }
@@ -221,6 +236,12 @@ live_design! {
                     }
                     icon_page = <GBarPage>{
                         <IconPage>{}
+                    }
+                    divider_page = <GBarPage>{
+                        <DividerPage>{}
+                    }
+                    link_page = <GBarPage>{
+                        <LinkPage>{}
                     }
                 }
             }
@@ -318,12 +339,14 @@ impl Widget for AppMainPage {
                                 view_page,
                                 svg_page,
                                 image_page,
-                                icon_page
+                                icon_page,
+                                divider_page,
+                                link_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(icon_page))
+                        .active(id!(divider_page))
                         .build(cx);
                 });
             })
@@ -367,6 +390,10 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(image_page));
             } else if e.selected_id == id!(tab_icon_lib)[0] {
                 router.nav_to(cx, id!(icon_page));
+            } else if e.selected_id == id!(tab_divider)[0] {
+                router.nav_to(cx, id!(divider_page));
+            } else if e.selected_id == id!(tab_link)[0] {
+                router.nav_to(cx, id!(link_page));
             }
         }
 

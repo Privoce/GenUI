@@ -171,7 +171,7 @@ impl Widget for ViewAnPage {
             an_view1.animate_hover_on(cx);
         }
         if focus_btn.clicked(&actions).is_some() {
-            an_view2.animate_focus(cx);
+            an_view2.animate_focus_on(cx);
         }
     }
 }

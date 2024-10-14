@@ -19,72 +19,60 @@ live_design! {
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),
-            text: "Basic Button Usage",
+            text: "Basic Divider Usage",
         }
         <GLabel>{
             width: Fill,
-            text: "Button is a basic component for user interaction",
+            text: "Divider is a component that can be used to separate content. It is a simple and effective way to divide content.",
         }
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
-                <GHLayout>{
-                    height: Fit,
-                    spacing: 8.0,
-                    <GButton>{ }
-                    <GButton>{theme: Dark}
-                    <GButton>{theme: Info}
-                    <GButton>{theme: Success}
-                    <GButton>{theme: Warning}
-                    <GButton>{theme: Error}
+                flow: Down,
+                <GDivider>{margin: { top: 8.0, bottom: 8.0 }, background_color: #FFF}
+                <GDivider>{theme: Error, margin: { top: 8.0, bottom: 8.0 }}
+                <GDivider>{theme: Info, margin: { top: 8.0, bottom: 8.0 }}
+                <GDivider>{theme: Success, margin: { top: 8.0, bottom: 8.0 }}
+                <GDivider>{theme: Warning, margin: { top: 8.0, bottom: 8.0 }}
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: Fit,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+                <GDivider>{margin: { top: 8.0, bottom: 8.0 }, background_color: #FFF}
+                <GDivider>{theme: Error, margin: { top: 8.0, bottom: 8.0 }}
+                <GDivider>{theme: Info, margin: { top: 8.0, bottom: 8.0 }}
+                <GDivider>{theme: Success, margin: { top: 8.0, bottom: 8.0 }}
+                <GDivider>{theme: Warning, margin: { top: 8.0, bottom: 8.0 }}
+                            "#;
+                        }
+                    }
                 }
-                <GHLayout>{
+            }
+        }
+        <GLabel>{
+            width: Fill,
+            text: "You can also add some other components to the Divider, such as Label.",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 8.0,
+                flow: Down,
+                <GDivider>{
+                    theme: Success,
                     height: Fit,
-                    spacing: 8.0,
-                    <GButton>{
-                        border_radius: 8.0,
-                        slot: {
-                            stroke_hover_color: #FF0000,
-                            animation_key: true,
-                            text: "Round Button",
-                        }
-                    }
-                    <GButton>{
-                        padding: 12.0,
-                        theme: Error,
-                        border_radius: 9.0,
-                        slot: <GIcon>{
-                            height: 12.0,
-                            width: 12.0,
-                            icon_type: Add,
-                            stroke_width: 1.2,
-                        }
-                    }
-                    <GButton>{
-                        padding: 12.0,
-                        theme: Warning,
-                        slot: <GIcon>{
-                            height: 12.0,
-                            width: 12.0,
-                            icon_type: Left,
-                            stroke_width: 1.2,
-                        }
-                    }
-                    <GButton>{
-                        theme: Success,
-                        border_radius: 8.0,
-                        slot: <GHLayout>{
-                            height: Fit,
-                            spacing: 8.0,
-                            <GIcon>{
-                                height: 12.0,
-                                width: 12.0,
-                                icon_type: Add,
-                                stroke_width: 1.2,
-                            }
-                            <GLabel>{
-                                text: "Icon Button",
-                            }
+                    stroke_width: 2.0,
+                    <GView>{
+                        height: 20.0,
+                        width: Fit,
+                        padding: {left: 8.0, right: 8.0},
+                        <GLabel>{
+                            text: "Hello!"
                         }
                     }
                 }
@@ -92,62 +80,25 @@ live_design! {
             code = {
                 body: {
                     <GVLayout>{
-                        height: 300.0,
+                        height: Fit,
                         scroll_bars: <GScrollBars>{},
                         <GLabel>{
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                    <GButton>{ }
-                    <GButton>{theme: Dark}
-                    <GButton>{theme: Info}
-                    <GButton>{theme: Success}
-                    <GButton>{theme: Warning}
-                    <GButton>{theme: Error}
-                    <GButton>{
-                            border_radius: 8.0,
-                            slot: {
-                                text: "Round Button",
-                            }
+                <GDivider>{
+                    theme: Success,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    <GView>{
+                        height: 20.0,
+                        width: Fit,
+                        padding: {left: 8.0, right: 8.0},
+                        <GLabel>{
+                            text: "Hello!"
                         }
-                        <GButton>{
-                            padding: 12.0, 
-                            theme: Error,
-                            border_radius: 9.0,
-                            slot: <GIcon>{
-                                height: 12.0,
-                                width: 12.0,
-                                icon_type: Add,
-                                stroke_width: 1.2,
-                            }
-                        }
-                        <GButton>{
-                            padding: 12.0, 
-                            theme: Warning,
-                            slot: <GIcon>{
-                                height: 12.0,
-                                width: 12.0,
-                                icon_type: Left,
-                                stroke_width: 1.2,
-                            }
-                        }
-                        <GButton>{
-                            theme: Success,
-                            border_radius: 8.0,
-                            slot: <GHLayout>{
-                                height: Fit,
-                                spacing: 8.0,
-                                <GIcon>{
-                                    height: 12.0,
-                                    width: 12.0,
-                                    icon_type: Add,
-                                    stroke_width: 1.2,
-                                }
-                                <GLabel>{
-                                    text: "Icon Button",
-                                }
-                            }
-                        }
+                    }
+                }
                             "#;
                         }
                     }

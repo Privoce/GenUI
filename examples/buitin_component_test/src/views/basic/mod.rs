@@ -16,4 +16,6 @@ pub fn register(cx: &mut Cx){
     self::view::register(cx);
     self::image::register(cx);
     self::icon::register(cx);
+    self::divider::register(cx);
+    self::link::register(cx);
 }

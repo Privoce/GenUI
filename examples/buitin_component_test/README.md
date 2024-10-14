@@ -54,16 +54,16 @@ Virtual: in virt.rs
   - [x] Event
   - [x] Usage
   - [x] Virtual (no)
-- [ ] Icon(Icon Lib)
+- [x] Icon(Icon Lib)
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual (no)
+- [ ] Link
   - [ ] Animation
   - [ ] Event
   - [ ] Usage
-  - [ ] Virtual
-- [ ] View
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
+  - [ ] Virtual (no)
 - [ ] View
   - [ ] Animation
   - [ ] Event
