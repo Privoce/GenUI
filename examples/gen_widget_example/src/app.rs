@@ -223,9 +223,31 @@ live_design! {
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}
-                    <GIcon>{
-                        icon_type: Max
+                    // <GView>{
+                    //     theme: Error,
+                    //     height: 100.0,
+                    //     width: 200.0,
+                    //     max_height: 180.0,
+                    // }
+                    <GView>{
+                        theme: Error,
+                        height: Fill,
+                        width: 200.0,
+                        min_height: 100.0,
+                        <GView>{
+                            theme: Success,
+                            height: Fill,
+                            width: 300.0,
+                            max_height: 180.0,
+                        }
                     }
+                    // <GView>{
+                    //     theme: Error,
+                    //     height: 100.0,
+                    //     width: Fill,
+                    //     max_width: 300.0
+                    // }
+
                     // <GButtonExample>{}
                     // <GLabelExample>{}
                     //

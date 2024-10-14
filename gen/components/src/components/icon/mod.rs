@@ -322,7 +322,7 @@ impl GIcon {
                 },
             );
 
-            target.as_mut().unwrap().apply_type(icon_type);
+            let _ = target.as_mut().unwrap().apply_type(icon_type);
         }
 
         // let color = self.color.get(self.theme, 25);
