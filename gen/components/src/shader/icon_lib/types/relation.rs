@@ -1,5 +1,7 @@
 use makepad_widgets::*;
 
+use crate::error::GError;
+
 use super::IconType;
 
 #[derive(Live, LiveHook, Clone, Debug)]
@@ -12,13 +14,13 @@ pub enum Relation {
 }
 
 impl TryFrom<&IconType> for Relation {
-    type Error = ();
+    type Error = GError;
 
     fn try_from(value: &IconType) -> Result<Self, Self::Error> {
         match value {
             IconType::Connect => Ok(Self::Connect),
             IconType::Disconnect => Ok(Self::Disconnect),
-            _ => Err(()),
+            _ => Err(GError::IconTypeTransfom),
         }
     }
 }

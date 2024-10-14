@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::arrow::Arrow, DrawGIcon};
+use super::{types::arrow::Arrow, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -69,8 +69,16 @@ pub struct DrawGIconArrow {
     pub icon_type: Arrow,
 }
 
-impl DrawGIconArrow {
-    pub fn apply_type(&mut self, ty: Arrow) {
-        self.icon_type = ty;
+// impl DrawGIconArrow {
+//     pub fn apply_type(&mut self, ty: Arrow) {
+//         self.icon_type = ty;
+//     }
+// }
+
+
+impl ApplyIconType for DrawGIconArrow {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

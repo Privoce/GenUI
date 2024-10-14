@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::time::Time, DrawGIcon};
+use super::{types::time::Time, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -46,5 +46,12 @@ pub struct DrawGIconTime {
 impl DrawGIconTime {
     pub fn apply_type(&mut self, ty: Time) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconTime {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

@@ -44,16 +44,16 @@ Virtual: in virt.rs
   - [ ] Event
   - [ ] Usage
   - [ ] Virtual
-- [ ] Svg
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
-- [ ] Image
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
+- [x] Svg
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual (no)
+- [x] Image
+  - [x] Animation (no)
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual (no)
 - [ ] Icon(Icon Lib)
   - [ ] Animation
   - [ ] Event

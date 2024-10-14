@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::state::State, DrawGIcon};
+use super::{types::state::State, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -178,5 +178,12 @@ pub struct DrawGIconState {
 impl DrawGIconState {
     pub fn apply_type(&mut self, ty: State) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconState {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

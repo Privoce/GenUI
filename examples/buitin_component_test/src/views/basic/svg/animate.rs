@@ -155,7 +155,7 @@ impl Widget for SvgAnPage {
             an_svg1.animate_hover_on(cx);
         }
         if focus_btn.clicked(&actions).is_some() {
-            an_svg2.animate_focus(cx);
+            an_svg2.animate_focus_on(cx);
         }
     }
 }

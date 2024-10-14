@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::emoji::Emoji, DrawGIcon};
+use super::{types::emoji::Emoji, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -240,5 +240,12 @@ pub struct DrawGIconEmoji {
 impl DrawGIconEmoji {
     pub fn apply_type(&mut self, ty: Emoji) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconEmoji {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

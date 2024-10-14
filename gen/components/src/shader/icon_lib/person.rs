@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::person::Person, DrawGIcon};
+use super::{types::person::Person, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -57,5 +57,12 @@ pub struct DrawGIconPerson {
 impl DrawGIconPerson {
     pub fn apply_type(&mut self, ty: Person) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconPerson {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

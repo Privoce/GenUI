@@ -24,6 +24,8 @@ use time::Time;
 use tool::Tool;
 use ui::UI;
 
+use crate::error::GError;
+
 #[derive(Live, LiveHook, Clone, Debug)]
 #[live_ignore]
 #[repr(u32)]
@@ -171,7 +173,7 @@ pub enum IconType {
 }
 
 impl IconType {
-    pub fn to_draw_type(&self) -> DrawGIconType {
+    pub fn to_draw_type(&self) -> Result<DrawGIconType, GError> {
         Base::try_from(self)
             .is_ok()
             .then(|| DrawGIconType::Base)
@@ -193,7 +195,7 @@ impl IconType {
             .or_else(|| State::try_from(self).is_ok().then(|| DrawGIconType::State))
             .or_else(|| Time::try_from(self).is_ok().then(|| DrawGIconType::Time))
             .or_else(|| Tool::try_from(self).is_ok().then(|| DrawGIconType::Tool))
-            .unwrap()
+            .ok_or(GError::IconTypeTransfom)
     }
 }
 

@@ -19,30 +19,70 @@ live_design! {
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),
-            text: "Basic Svg Usage",
+            text: "Basic Icon(Icon Lib) Usage",
         }
-        <GLabel>{
-            width: Fill,
-            text: "Image is a component that displays an image, now supports .jpg and .png.",
+        <GVLayout>{
+            height: Fit,
+            spacing: 8.0,
+            <GLabel>{
+                width: Fill,
+                text: "The current icon library is only an experimental function. It provided a set of commonly used icon collections",
+            }
+            <GLabel>{
+                font_size: 10.0,
+                font_family: (BOLD_FONT),
+                text: "Advantages: ",
+            }
+            <GVLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <GLabel>{
+                    text: "1. No copyright, completely free for commercial use",
+                }
+                <GLabel>{
+                    text: "2. Small size",
+                }
+                <GLabel>{
+                    text: "3. No need to download from the internet for introduction",
+                }
+                <GLabel>{
+                    text: "4. Directly use Shader for drawing",
+                }
+            }
+            <GLabel>{
+                font_size: 10.0,
+                font_family: (BOLD_FONT),
+                text: "Subsequent update plan: ",
+            }
+            <GVLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <GLabel>{
+                    text: "1. Add icons to approximately 150 commonly used icons",
+                }
+                <GLabel>{
+                    text: "2. Optimize icon experience",
+                }
+            }
         }
         <CBox>{
             box_wrap = {
                 spacing: 24.0,
                 flow: Right,
-                <GImage>{
+                <GIcon>{
                     height: 32.0,
                     width: 32.0,
-                    src: dep("crate://self/resources/google.png"),
+                    icon_type: Max,
                 }
-                <GImage>{
-                    height: 56.0,
-                    width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
+                <GIcon>{
+                    height: 32.0,
+                    width: 32.0,
+                    icon_type: FullScreenExpand,
                 }
-                <GImage>{
-                    height: 56.0,
-                    width: 96.0,
-                    src: dep("crate://self/resources/rust2.jpg"),
+                <GIcon>{
+                    height: 32.0,
+                    width: 32.0,
+                    icon_type: Picture,
                 }
             }
             code = {

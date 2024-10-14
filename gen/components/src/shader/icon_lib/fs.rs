@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::fs::Fs, DrawGIcon};
+use super::{types::fs::Fs, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -53,5 +53,12 @@ pub struct DrawGIconFs {
 impl DrawGIconFs {
     pub fn apply_type(&mut self, ty: Fs) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconFs {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

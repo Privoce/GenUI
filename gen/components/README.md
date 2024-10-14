@@ -1,7 +1,7 @@
 # GEN Components (v0.1.0)
 
 - version: `v0.1.0`
-- update date: 2024-10-04
+- update date: 2024-10-14
 - author: [Will-YiFei Sheng](syf20020816@outlook.com)
 - makepad_widget version: `v0.6.0`
 - makepad branch: `rik`
@@ -100,6 +100,8 @@
 
 ## Macro
 
+带来统一的构建组件的体验，更少的重复代码
+
 - [x] widget_area!
 - [x] set_text_and_visible_fn!
 - [x] widget_origin_fn!
@@ -110,6 +112,16 @@
 - [x] event_option!
 - [x] event_bool!
 - [x] animatie_fn!
+- [x] active_event!
+- [x] ref_area!
+- [x] ref_redraw!
+- [x] ref_render!
+- [x] ref_redraw_mut!
+- [x] default_hit_finger_down!
+- [x] default_hit_finger_up!
+- [x] default_hit_hover_in!
+- [x] default_hit_hover_out!
+- [x] default_handle_animation!
 
 ## Example Project
 - [x] AWS Personal Cloud Drive GUI (亚马逊个人云盘GUI界面, 仅实现上传，查看，验证功能)
@@ -118,7 +130,7 @@
 
 ## Plan
 
-- 09-28 AWS Personal Cloud Drive GUI
-- 10-24 finish v0.1.0
-- 11-18 GenUI Framework 集成v0.1.0
-- 11-31 finish v0.2.0
+- [x] 09-28 AWS Personal Cloud Drive GUI
+- [ ] 10-24 finish v0.1.0
+- [ ] 11-18 GenUI Framework 集成v0.1.0
+- [ ] 11-31 finish v0.2.0

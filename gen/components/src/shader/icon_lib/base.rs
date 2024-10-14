@@ -1,8 +1,11 @@
 use makepad_widgets::*;
 
-use super::{types::base::Base, DrawGIcon};
+use super::{
+    types::{base::Base, IconType},
+    ApplyIconType, DrawGIcon,
+};
 
-live_design!{
+live_design! {
     import makepad_draw::shader::std::*;
     DrawGIconBase = {{DrawGIconBase}}{
         fn pixel(self) -> vec4{
@@ -339,7 +342,7 @@ live_design!{
                     sdf.circle(center_x, center_y, quarter_size.x * 0.6);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
-                
+
                 Base::Phone => {
                     let quarter_size = size * 0.25;
                     let w = size.x - quarter_size.x;
@@ -376,7 +379,6 @@ live_design!{
     }
 }
 
-
 #[derive(Live, LiveRegister, LiveHook)]
 #[repr(C)]
 pub struct DrawGIconBase {
@@ -389,5 +391,12 @@ pub struct DrawGIconBase {
 impl DrawGIconBase {
     pub fn apply_type(&mut self, ty: Base) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconBase {
+    fn apply_type(&mut self, ty: &IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

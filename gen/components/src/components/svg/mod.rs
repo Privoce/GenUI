@@ -218,12 +218,20 @@ impl GSvg {
             },
         );
     }
-    pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
         self.clear_animation(cx);
         self.draw_svg.apply_over(
             cx,
             live! {
                 focus: 1.0,
+            },
+        );
+    }
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_svg.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
             },
         );
     }
@@ -270,7 +278,8 @@ impl GSvgRef {
         clear_animation,
         animate_hover_on,
         animate_hover_off,
-        animate_focus
+        animate_focus_on,
+        animate_focus_off
     }
 }
 

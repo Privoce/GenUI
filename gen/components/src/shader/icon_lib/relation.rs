@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 
-use super::{types::relation::Relation, DrawGIcon};
+use super::{types::relation::Relation, ApplyIconType, DrawGIcon};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -66,5 +66,12 @@ pub struct DrawGIconRelation {
 impl DrawGIconRelation {
     pub fn apply_type(&mut self, ty: Relation) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconRelation {
+    fn apply_type(&mut self, ty: &super::types::IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }
