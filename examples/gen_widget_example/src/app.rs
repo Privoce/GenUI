@@ -230,24 +230,9 @@ live_design! {
                     //     width: 200.0,
                     //     max_height: 180.0,
                     // }
-                    <GView>{
-                        theme: Error,
-                        height: Fill,
-                        width: 200.0,
-                        
-                        flow: Down,
-                        <GView>{
-                            theme: Success,
-                            height: Fill,
-                            width: 300.0,
-                            max_height: 180.0,
-                        }
-                        <GView>{
-                            theme: Dark,
-                            height: 100.0,
-                            width: Fill,
-                            max_width: 300.0
-                        }
+                    <GDivider>{
+                        stroke_width: 2.0,
+                        <GButton>{}
                     }
                     
                     // <GButtonExample>{}

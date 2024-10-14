@@ -404,15 +404,8 @@ live_design! {
         width: Fill,
         height: Fill,
     }
-    GDivider = <GDividerBase>{
-        height: Fill,
-        width: Fill,
-        flow: Right,
-        padding: 0,
-        spacing: 0,
-        margin: 0,
-        align: <ALIGN_CENTER_WALK>{},
-    }
+    GDivider = <GDividerBase>{}
+    
     GPopupContainer = <GPopupContainerBase>{
         height: Fill,
         width: Fill,
