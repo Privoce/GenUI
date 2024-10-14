@@ -31,8 +31,8 @@ live_design! {
                 width: Fill,
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Exit,
@@ -43,8 +43,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Expand,
@@ -55,8 +55,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: ExpandTop,
@@ -67,8 +67,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: ExpandBottom,
@@ -79,8 +79,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: ExpandLeft,
@@ -91,8 +91,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: ExpandRight,
@@ -103,8 +103,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Open,
@@ -115,8 +115,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: OpenLeft,
@@ -131,8 +131,8 @@ live_design! {
                 width: Fill,
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: OpenRight,
@@ -143,8 +143,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: OpenTop,
@@ -155,8 +155,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: OpenBottom,
@@ -167,8 +167,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Split,
@@ -179,8 +179,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Split2,
@@ -191,8 +191,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Poweroff,

@@ -9,10 +9,8 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    active_event, animatie_fn,
-    error::GError,
-    event_option, play_animation, ref_area, ref_event_option, ref_redraw_mut, ref_render,
-    set_event, set_scope_path,
+    active_event, animatie_fn, event_option, play_animation, ref_area, ref_event_option,
+    ref_redraw_mut, ref_render, set_event, set_scope_path,
     shader::draw_view::DrawGView,
     themes::Themes,
     utils::{set_cursor, BoolToF32, ThemeColor},
@@ -152,7 +150,7 @@ pub struct GView {
     pub event_key: bool,
     /// box walk is used to store the walk of the view, it helps to fix_walk fn
     #[rust]
-    pub box_walk: Option<Walk>,
+    pub restore_walk: Option<Walk>,
     /// do fix then redraw at the first time
     #[rust(true)]
     pub fix_flag: bool,
@@ -389,9 +387,12 @@ impl Widget for GView {
             return DrawStep::done();
         }
 
-        if self.box_walk.is_none() {
-            self.box_walk.replace(self.walk.clone());
-        }
+        // if self.restore_walk.is_none() {
+        //     self.restore_walk.replace(self.walk.clone());
+        // }
+
+        // do fix walk
+        // let walk = self.fix_walk(cx, walk);
 
         // begin the draw state
         if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
@@ -576,9 +577,6 @@ impl Widget for GView {
                 self.draw_state.end();
             }
         }
-
-        // do fix walk
-        self.fix_walk(cx);
 
         DrawStep::done()
     }
@@ -798,75 +796,36 @@ impl GView {
         active_key_up: GViewEvent::KeyUp |e: KeyEvent| => GViewKeyEventParam{e}
     }
     /// fix walk by min_width, min_height, max_width, max_height
-    pub fn fix_walk(&mut self, cx: &mut Cx) -> () {
-        dbg!("fixed");
-        let index = 0;
-        let nodes = &[];
-        let size = self.area().rect(cx).size;
-        self.walk = self.box_walk.unwrap().clone();
-        // here we should make sure walk.height and width is not fixed
-        if !self.walk.width.is_fixed() {
-            if let Some(max_width) = self.max_width {
-                if size.x > max_width as f64 {
-                    self.walk.width = Size::Fixed(max_width as f64);
-                }
-            }
-            if let Some(min_width) = self.min_width {
-                if size.x < min_width as f64 {
-                    self.walk.width = Size::Fixed(min_width as f64);
-                }
-            }
-        } else {
-            let mut flag = false;
-            if let Some(max_width) = self.max_width {
-                flag = size.x > max_width as f64;
-            }
-            if let Some(min_width) = self.min_width {
-                flag = size.x < min_width as f64;
-            }
-            if flag {
-                cx.apply_error(
-                    live_error_origin!(),
-                    index,
-                    nodes,
-                    GError::ConflictWidth.to_string(),
-                );
+    pub fn fix_walk(&mut self, cx: &mut Cx2d, mut walk: Walk) -> Walk {
+        // drawable_size is the biggest draw size of the view
+        let drawable_size = cx.turtle().size();
+
+        if let Some(max_width) = self.max_width {
+            if drawable_size.x > max_width as f64 {
+                walk.width = Size::Fixed(max_width as f64);
             }
         }
 
-        if !self.walk.height.is_fixed() {
-            if let Some(max_height) = self.max_height {
-                if size.y > max_height as f64 {
-                    self.walk.height = Size::Fixed(max_height as f64);
-                }
-            }
-            if let Some(min_height) = self.min_height {
-                if size.y < min_height as f64 {
-                    self.walk.height = Size::Fixed(min_height as f64);
-                }
-            }
-        } else {
-            let mut flag = false;
-            if let Some(max_height) = self.max_height {
-                flag = size.y > max_height as f64;
-            }
-            if let Some(min_height) = self.min_height {
-                flag = size.y < min_height as f64;
-            }
-            if flag {
-                cx.apply_error(
-                    live_error_origin!(),
-                    index,
-                    nodes,
-                    GError::ConflictHeight.to_string(),
-                );
+        if let Some(min_width) = self.min_width {
+            if drawable_size.x < min_width as f64 {
+                walk.width = Size::Fixed(min_width as f64);
             }
         }
-        // after all do redraw
-        if self.fix_flag {
-            self.redraw(cx);
-            self.fix_flag = false;
+
+        if let Some(max_height) = self.max_height {
+            if drawable_size.y > max_height as f64 {
+                walk.height = Size::Fixed(max_height as f64);
+            }
         }
+
+        if let Some(min_height) = self.min_height {
+            if drawable_size.y < min_height as f64 {
+                walk.height = Size::Fixed(min_height as f64);
+            }
+        }
+        // cx.turtle_mut().update_height_max(27.0, drawable_size.y - self.max_height.unwrap_or(0.0) as f64);
+
+        walk
     }
     pub fn walk_from_previous_size(&self, walk: Walk) -> Walk {
         let view_size = self.view_size.unwrap_or(DVec2::default());

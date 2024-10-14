@@ -8,7 +8,7 @@ pub use register::register;
 use crate::{
     active_event, animatie_fn, default_handle_animation, default_hit_finger_down,
     default_hit_finger_up, default_hit_hover_in, default_hit_hover_out, event_option,
-    play_animation, ref_event_option, set_event, set_scope_path,
+    play_animation, ref_area, ref_event_option, ref_redraw, ref_render, set_event, set_scope_path,
     shader::icon_lib::{
         arrow::DrawGIconArrow,
         base::DrawGIconBase,
@@ -20,11 +20,7 @@ use crate::{
         state::DrawGIconState,
         time::DrawGIconTime,
         tool::DrawGIconTool,
-        types::{
-            arrow::Arrow, base::Base, code::Code, emoji::Emoji, fs::Fs, person::Person,
-            relation::Relation, state::State, time::Time, tool::Tool, ui::UI, DrawGIconType,
-            IconType,
-        },
+        types::{DrawGIconType, IconType},
         ui::DrawGIconUI,
         ApplyIconType,
     },
@@ -39,6 +35,7 @@ live_design! {
     GIconBase = {{GIcon}}{
         draw_icon: {
             instance hover: 0.0,
+            instance focus: 0.0,
             fn pixel(self) -> vec4{
                 return vec4(0.0);
             }
@@ -49,39 +46,59 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_icon: {hover: 0.0},
-                        icon_base: {hover: 0.0},
-                        icon_arrow: {hover: 0.0},
-                        icon_code: {hover: 0.0},
-                        icon_emoji: {hover: 0.0},
-                        icon_fs: {hover: 0.0},
-                        icon_ui: {hover: 0.0},
-                        icon_person: {hover: 0.0},
-                        icon_relation: {hover: 0.0},
-                        icon_state: {hover: 0.0},
-                        icon_time: {hover: 0.0},
-                        icon_tool: {hover: 0.0},
+                        draw_icon: {hover: 0.0, focus: 0.0},
+                        icon_base: {hover: 0.0, focus: 0.0},
+                        icon_arrow: {hover: 0.0, focus: 0.0},
+                        icon_code: {hover: 0.0, focus: 0.0},
+                        icon_emoji: {hover: 0.0, focus: 0.0},
+                        icon_fs: {hover: 0.0, focus: 0.0},
+                        icon_ui: {hover: 0.0, focus: 0.0},
+                        icon_person: {hover: 0.0, focus: 0.0},
+                        icon_relation: {hover: 0.0, focus: 0.0},
+                        icon_state: {hover: 0.0, focus: 0.0},
+                        icon_time: {hover: 0.0, focus: 0.0},
+                        icon_tool: {hover: 0.0, focus: 0.0},
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_icon: {hover: [{time: 0.0, value: 1.0}],}
-                        icon_base: {hover: 1.0},
-                        icon_arrow: {hover: 1.0},
-                        icon_code: {hover: 1.0},
-                        icon_emoji: {hover: 1.0},
-                        icon_fs: {hover: 1.0},
-                        icon_ui: {hover: 1.0},
-                        icon_person: {hover: 1.0},
-                        icon_relation: {hover: 1.0},
-                        icon_state: {hover: 1.0},
-                        icon_time: {hover: 1.0},
-                        icon_tool: {hover: 1.0},
+                        draw_icon: {hover: 1.0, focus: 0.0}
+                        icon_base: {hover: 1.0, focus: 0.0},
+                        icon_arrow: {hover: 1.0, focus: 0.0},
+                        icon_code: {hover: 1.0, focus: 0.0},
+                        icon_emoji: {hover: 1.0, focus: 0.0},
+                        icon_fs: {hover: 1.0, focus: 0.0},
+                        icon_ui: {hover: 1.0, focus: 0.0},
+                        icon_person: {hover: 1.0, focus: 0.0},
+                        icon_relation: {hover: 1.0, focus: 0.0},
+                        icon_state: {hover: 1.0, focus: 0.0},
+                        icon_time: {hover: 1.0, focus: 0.0},
+                        icon_tool: {hover: 1.0, focus: 0.0},
+                    }
+                }
+
+                focus = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_icon: {hover: 0.0, focus: 1.0}
+                        icon_base: {hover: 0.0, focus: 1.0},
+                        icon_arrow: {hover: 0.0, focus: 1.0},
+                        icon_code: {hover: 0.0, focus: 1.0},
+                        icon_emoji: {hover: 0.0, focus: 1.0},
+                        icon_fs: {hover: 0.0, focus: 1.0},
+                        icon_ui: {hover: 0.0, focus: 1.0},
+                        icon_person: {hover: 0.0, focus: 1.0},
+                        icon_relation: {hover: 0.0, focus: 1.0},
+                        icon_state: {hover: 0.0, focus: 1.0},
+                        icon_time: {hover: 0.0, focus: 1.0},
+                        icon_tool: {hover: 0.0, focus: 1.0},
                     }
                 }
             }
@@ -155,11 +172,11 @@ pub struct GIcon {
 }
 
 impl Widget for GIcon {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
-
+        self.set_scope_path(&scope.path);
         self.draw_icon.begin(cx, walk, self.layout);
         match self.draw_type.as_ref().unwrap() {
             crate::shader::icon_lib::types::DrawGIconType::Base => {
@@ -325,10 +342,6 @@ impl GIcon {
             let _ = target.as_mut().unwrap().apply_type(icon_type);
         }
 
-        // let color = self.color.get(self.theme, 25);
-        // let stroke_hover_color = self.stroke_hover_color.get(self.theme, 100);
-        // let stroke_focus_color = self.stroke_focus_color.get(self.theme, 100);
-
         let colors = [
             self.color.get(self.theme, 25),
             self.stroke_hover_color.get(self.theme, 100),
@@ -344,33 +357,8 @@ impl GIcon {
                     self.stroke_width,
                     &self.icon_type,
                 );
-                // self.icon_base.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_base
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Base::try_from(&self.icon_type).unwrap());
-                // self.icon_base.as_mut().unwrap().apply_type(&self.icon_type);
             }
             crate::shader::icon_lib::types::DrawGIconType::Code => {
-                // self.icon_code.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_code
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Code::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_code,
                     cx,
@@ -380,18 +368,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Arrow => {
-                // self.icon_arrow.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_arrow
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Arrow::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_arrow,
                     cx,
@@ -401,18 +377,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Emoji => {
-                // self.icon_emoji.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_emoji
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Emoji::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_emoji,
                     cx,
@@ -422,18 +386,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Fs => {
-                // self.icon_fs.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_fs
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Fs::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_fs,
                     cx,
@@ -443,18 +395,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::UI => {
-                // self.icon_ui.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_ui
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(UI::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_ui,
                     cx,
@@ -464,18 +404,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Person => {
-                // self.icon_person.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_person
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Person::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_person,
                     cx,
@@ -485,18 +413,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Relation => {
-                // self.icon_relation.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_relation
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Relation::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_relation,
                     cx,
@@ -506,18 +422,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::State => {
-                // self.icon_state.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_state
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(State::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_state,
                     cx,
@@ -527,18 +431,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Time => {
-                // self.icon_time.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_time
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Time::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_time,
                     cx,
@@ -548,18 +440,6 @@ impl GIcon {
                 );
             }
             crate::shader::icon_lib::types::DrawGIconType::Tool => {
-                // self.icon_tool.as_mut().unwrap().apply_over(
-                //     cx,
-                //     live! {
-                //         stroke_color: (color),
-                //         stroke_width: (self.stroke_width),
-                //         stroke_hover_color: (stroke_hover_color),
-                //     },
-                // );
-                // self.icon_tool
-                //     .as_mut()
-                //     .unwrap()
-                //     .apply_type(Tool::try_from(&self.icon_type).unwrap());
                 handle(
                     &mut self.icon_tool,
                     cx,
@@ -617,37 +497,168 @@ impl GIcon {
             },
         );
     }
+
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
-        self.draw_icon.apply_over(
-            cx,
-            live! {
-                hover: 1.0,
-            },
-        );
+        self.clear_animation(cx);
+        let hover = live! {
+            hover: 1.0,
+        };
+        match self.draw_type.as_ref().unwrap() {
+            DrawGIconType::Base => {
+                handle_animate(&mut self.icon_base, cx, hover);
+            }
+            DrawGIconType::Code => {
+                handle_animate(&mut self.icon_code, cx, hover);
+            }
+            DrawGIconType::Arrow => {
+                handle_animate(&mut self.icon_arrow, cx, hover);
+            }
+            DrawGIconType::Emoji => {
+                handle_animate(&mut self.icon_emoji, cx, hover);
+            }
+            DrawGIconType::Fs => {
+                handle_animate(&mut self.icon_fs, cx, hover);
+            }
+            DrawGIconType::UI => {
+                handle_animate(&mut self.icon_ui, cx, hover);
+            }
+            DrawGIconType::Person => {
+                handle_animate(&mut self.icon_person, cx, hover);
+            }
+            DrawGIconType::Relation => {
+                handle_animate(&mut self.icon_relation, cx, hover);
+            }
+            DrawGIconType::State => {
+                handle_animate(&mut self.icon_state, cx, hover);
+            }
+            DrawGIconType::Time => {
+                handle_animate(&mut self.icon_time, cx, hover);
+            }
+            DrawGIconType::Tool => {
+                handle_animate(&mut self.icon_tool, cx, hover);
+            }
+        }
     }
     pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
-        self.draw_icon.apply_over(
-            cx,
-            live! {
-                hover: 0.0,
-            },
-        );
+        let hover = live! {
+            hover: 0.0,
+        };
+        match self.draw_type.as_ref().unwrap() {
+            DrawGIconType::Base => {
+                handle_animate(&mut self.icon_base, cx, hover);
+            }
+            DrawGIconType::Code => {
+                handle_animate(&mut self.icon_code, cx, hover);
+            }
+            DrawGIconType::Arrow => {
+                handle_animate(&mut self.icon_arrow, cx, hover);
+            }
+            DrawGIconType::Emoji => {
+                handle_animate(&mut self.icon_emoji, cx, hover);
+            }
+            DrawGIconType::Fs => {
+                handle_animate(&mut self.icon_fs, cx, hover);
+            }
+            DrawGIconType::UI => {
+                handle_animate(&mut self.icon_ui, cx, hover);
+            }
+            DrawGIconType::Person => {
+                handle_animate(&mut self.icon_person, cx, hover);
+            }
+            DrawGIconType::Relation => {
+                handle_animate(&mut self.icon_relation, cx, hover);
+            }
+            DrawGIconType::State => {
+                handle_animate(&mut self.icon_state, cx, hover);
+            }
+            DrawGIconType::Time => {
+                handle_animate(&mut self.icon_time, cx, hover);
+            }
+            DrawGIconType::Tool => {
+                handle_animate(&mut self.icon_tool, cx, hover);
+            }
+        }
     }
     pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
-        self.draw_icon.apply_over(
-            cx,
-            live! {
-                focus: 1.0,
-            },
-        );
+        self.clear_animation(cx);
+        let focus = live! {
+            focus: 1.0,
+        };
+        match self.draw_type.as_ref().unwrap() {
+            DrawGIconType::Base => {
+                handle_animate(&mut self.icon_base, cx, focus);
+            }
+            DrawGIconType::Code => {
+                handle_animate(&mut self.icon_code, cx, focus);
+            }
+            DrawGIconType::Arrow => {
+                handle_animate(&mut self.icon_arrow, cx, focus);
+            }
+            DrawGIconType::Emoji => {
+                handle_animate(&mut self.icon_emoji, cx, focus);
+            }
+            DrawGIconType::Fs => {
+                handle_animate(&mut self.icon_fs, cx, focus);
+            }
+            DrawGIconType::UI => {
+                handle_animate(&mut self.icon_ui, cx, focus);
+            }
+            DrawGIconType::Person => {
+                handle_animate(&mut self.icon_person, cx, focus);
+            }
+            DrawGIconType::Relation => {
+                handle_animate(&mut self.icon_relation, cx, focus);
+            }
+            DrawGIconType::State => {
+                handle_animate(&mut self.icon_state, cx, focus);
+            }
+            DrawGIconType::Time => {
+                handle_animate(&mut self.icon_time, cx, focus);
+            }
+            DrawGIconType::Tool => {
+                handle_animate(&mut self.icon_tool, cx, focus);
+            }
+        }
     }
     pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
-        self.draw_icon.apply_over(
-            cx,
-            live! {
-                focus: 0.0,
-            },
-        );
+        let focus = live! {
+            focus: 0.0,
+        };
+        match self.draw_type.as_ref().unwrap() {
+            DrawGIconType::Base => {
+                handle_animate(&mut self.icon_base, cx, focus);
+            }
+            DrawGIconType::Code => {
+                handle_animate(&mut self.icon_code, cx, focus);
+            }
+            DrawGIconType::Arrow => {
+                handle_animate(&mut self.icon_arrow, cx, focus);
+            }
+            DrawGIconType::Emoji => {
+                handle_animate(&mut self.icon_emoji, cx, focus);
+            }
+            DrawGIconType::Fs => {
+                handle_animate(&mut self.icon_fs, cx, focus);
+            }
+            DrawGIconType::UI => {
+                handle_animate(&mut self.icon_ui, cx, focus);
+            }
+            DrawGIconType::Person => {
+                handle_animate(&mut self.icon_person, cx, focus);
+            }
+            DrawGIconType::Relation => {
+                handle_animate(&mut self.icon_relation, cx, focus);
+            }
+            DrawGIconType::State => {
+                handle_animate(&mut self.icon_state, cx, focus);
+            }
+            DrawGIconType::Time => {
+                handle_animate(&mut self.icon_time, cx, focus);
+            }
+            DrawGIconType::Tool => {
+                handle_animate(&mut self.icon_tool, cx, focus);
+            }
+        }
     }
     pub fn handle_widget_event(
         &mut self,
@@ -678,6 +689,9 @@ impl GIcon {
 }
 
 impl GIconRef {
+    ref_area!();
+    ref_redraw!();
+    ref_render!();
     ref_event_option! {
         hover_in => GIconHoverParam,
         hover_out => GIconHoverParam,
@@ -702,4 +716,11 @@ impl GIconSet {
         focus_lost => GIconFocusLostParam,
         clicked => GIconClickedParam
     }
+}
+
+fn handle_animate<T>(target: &mut Option<T>, cx: &mut Cx, nodes: &[LiveNode]) -> ()
+where
+    T: LiveApply,
+{
+    target.as_mut().unwrap().apply_over(cx, nodes);
 }

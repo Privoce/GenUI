@@ -26,7 +26,7 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "View has two animation effects: Hover and Focus(Press).But you need to set animation_key to true.",
+                text: "Svg has two animation effects: Hover and Focus(Press).But you need to set animation_key to true.",
             }
             <GLabel>{
                 width: Fill,

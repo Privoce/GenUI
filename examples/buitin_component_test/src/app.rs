@@ -21,7 +21,7 @@ live_design! {
                 }
                 width: Fill,
                 height: Fill,
-                window: {inner_size: vec2(880, 800)},
+                window: {inner_size: vec2(920, 800)},
                 body = <AppMainPage>{}
             }
         }

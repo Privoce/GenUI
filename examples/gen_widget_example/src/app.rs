@@ -3,6 +3,7 @@ use makepad_widgets::*;
 live_design! {
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
+    import makepad_draw::shader::std::*;
     import gen_components::components::*;
     import crate::components::cards::*;
     import crate::components::label::*;
@@ -233,21 +234,22 @@ live_design! {
                         theme: Error,
                         height: Fill,
                         width: 200.0,
-                        min_height: 100.0,
+                        
+                        flow: Down,
                         <GView>{
                             theme: Success,
                             height: Fill,
                             width: 300.0,
                             max_height: 180.0,
                         }
+                        <GView>{
+                            theme: Dark,
+                            height: 100.0,
+                            width: Fill,
+                            max_width: 300.0
+                        }
                     }
-                    // <GView>{
-                    //     theme: Error,
-                    //     height: 100.0,
-                    //     width: Fill,
-                    //     max_width: 300.0
-                    // }
-
+                    
                     // <GButtonExample>{}
                     // <GLabelExample>{}
                     //

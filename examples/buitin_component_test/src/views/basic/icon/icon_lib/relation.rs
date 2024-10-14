@@ -31,8 +31,8 @@ live_design! {
                 width: Fill,
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Connect,
@@ -43,8 +43,8 @@ live_design! {
                 }
                 <GVLayout>{
                     height: Fit,
-                    spacing: 4.0,
-                    width: Fill,
+                    spacing: 0.0,
+                    width: 90.0,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Disconnect,

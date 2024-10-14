@@ -10,8 +10,8 @@ pub fn register(cx: &mut Cx){
     self::live_design(cx);
     self::icon_lib::register(cx);
     self::usage::live_design(cx);
-    // self::animate::live_design(cx);
-    // self::event::live_design(cx);
+    self::animate::live_design(cx);
+    self::event::live_design(cx);
 }
 
 live_design! {
@@ -20,8 +20,8 @@ live_design! {
     import gen_components::components::*;
     import crate::styles::*;
     import crate::views::basic::icon::usage::*;
-    // import crate::views::basic::icon::animate::*;
-    // import crate::views::basic::icon::event::*;
+    import crate::views::basic::icon::animate::*;
+    import crate::views::basic::icon::event::*;
     
     IconPage = {{IconPage}}{
         height: Fill,
@@ -40,12 +40,12 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Icon",
+                text: "Icon (Icon Lib)",
             }
         }
         <IconUsagePage>{}
-        // <IconAnPage>{}
-        // <IconEnPage>{}
+        <IconAnPage>{}
+        <IconEnPage>{}
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),

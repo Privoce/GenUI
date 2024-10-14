@@ -1,4 +1,4 @@
-use gen_components::components::{image::GImageWidgetExt, label::GLabelWidgetExt, view::GView};
+use gen_components::components::{icon::GIconWidgetExt, label::GLabelWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -7,7 +7,7 @@ live_design! {
     import gen_components::components::*;
     import crate::styles::*;
 
-    ImageEnPage = {{ImageEnPage}}{
+    IconEnPage = {{IconEnPage}}{
         height: Fit,
         width: Fill,
         flow: Down,
@@ -21,18 +21,16 @@ live_design! {
             font_family: (BOLD_FONT),
             text: "Event Usage",
         }
-        <GLabel>{
-            width: Fill,
-            text: "Image has 3 events: HoverIn, HoverOut, Clicked.",
-        }
         <CBox>{
             box_wrap = {
                 spacing: 48.0,
                 flow: Right,
-                e_image = <GImage>{
-                    height: 56.0,
-                    width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
+                e_icon = <GIcon>{
+                    icon_type: Max,
+                    cursor: Hand,
+                    stroke_hover_color: #F00,
+                    stroke_focus_color: #0F0,
+                    animation_key: true,
                 }
                 e_res = <GLabel>{
                     text: "Event Result"
@@ -47,29 +45,37 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                e_image = <GImage>{
-                    height: 56.0,
-                    width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
-                }
-                e_res = <GLabel>{
-                    text: "Event Result"
-                }
-                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+            e_icon = <GIcon>{
+                icon_type: Max,
+                cursor: Hand,
+                stroke_hover_color: #F00,
+                stroke_focus_color: #0F0,
+                animation_key: true,
+            }
+            e_res = <GLabel>{
+                text: "Event Result"
+            }
+            fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-                    let e_image = self.gimage(id!(e_image));
-                    let e_res = self.glabel(id!(e_res));
-                    if e_image.hover_in(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "HoverIn");
-                    }
-                    if e_image.hover_out(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "HoverOut");
-                    }
-                    if e_image.clicked(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Clicked");
-                    }
+                let e_icon = self.gicon(id!(e_icon));
+                let e_res = self.glabel(id!(e_res));
+                if e_icon.hover_in(&actions).is_some() {
+                    e_res.set_text_and_redraw(cx, "HoverIn");
                 }
+                if e_icon.hover_out(&actions).is_some() {
+                    e_res.set_text_and_redraw(cx, "HoverOut");
+                }
+                if e_icon.clicked(&actions).is_some() {
+                    e_res.set_text_and_redraw(cx, "Clicked");
+                }
+                if e_icon.focus(&actions).is_some() {
+                    e_res.set_text_and_redraw(cx, "Focus");
+                }
+                if e_icon.focus_lost(&actions).is_some() {
+                    e_res.set_text_and_redraw(cx, "FocusLost");
+                }
+            }
                             "#;
                         }
                     }
@@ -80,18 +86,18 @@ live_design! {
 }
 
 #[derive(Live, Widget)]
-pub struct ImageEnPage {
+pub struct IconEnPage {
     #[deref]
     pub deref_widget: GView,
 }
 
-impl LiveHook for ImageEnPage {
+impl LiveHook for IconEnPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for ImageEnPage {
+impl Widget for IconEnPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let _ = self.deref_widget.draw_walk(cx, scope, walk);
 
@@ -100,16 +106,23 @@ impl Widget for ImageEnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let e_image = self.gimage(id!(e_image));
+        let e_icon = self.gicon(id!(e_icon));
         let e_res = self.glabel(id!(e_res));
-        if e_image.hover_in(&actions).is_some() {
+        if e_icon.hover_in(&actions).is_some() {
             e_res.set_text_and_redraw(cx, "HoverIn");
         }
-        if e_image.hover_out(&actions).is_some() {
+        if e_icon.hover_out(&actions).is_some() {
             e_res.set_text_and_redraw(cx, "HoverOut");
         }
-        if e_image.clicked(&actions).is_some() {
+        if e_icon.clicked(&actions).is_some() {
             e_res.set_text_and_redraw(cx, "Clicked");
+        }
+        if e_icon.focus(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Focus");
+        }
+        if e_icon.focus_lost(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "FocusLost");
         }
     }
 }
+
