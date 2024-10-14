@@ -32,7 +32,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Search,
@@ -44,7 +44,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: ZoomIn,
@@ -56,7 +56,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: ZoomOut,
@@ -68,7 +68,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Share,
@@ -80,7 +80,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Rss,
@@ -92,7 +92,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: AI,
@@ -104,7 +104,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: VR,
@@ -116,7 +116,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Notice,
@@ -138,7 +138,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: NoticeNone,
@@ -150,7 +150,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Bind,

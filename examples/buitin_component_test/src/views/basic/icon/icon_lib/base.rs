@@ -32,13 +32,13 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Min,
                         cursor: Hand,
                         stroke_hover_color: #F00,
-                        animation_open: true,
+                        animation_key: true,
                     }
                     <GLabel>{
                         text: "Min",
@@ -48,7 +48,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Max,
@@ -60,7 +60,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: FullScreen,
@@ -72,7 +72,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: FullScreenExpand,
@@ -84,7 +84,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: More,
@@ -96,7 +96,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Close,
@@ -108,7 +108,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Upload,
@@ -120,7 +120,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Download,
@@ -136,7 +136,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Add,
@@ -148,7 +148,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Delete,
@@ -160,7 +160,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: DeleteKey,
@@ -172,7 +172,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Correct,
@@ -184,7 +184,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Fresh,
@@ -196,7 +196,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Play,
@@ -208,7 +208,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Stop,
@@ -220,7 +220,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: GoOn,
@@ -236,7 +236,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Setting,
@@ -248,7 +248,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Setting2,
@@ -260,7 +260,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Setting3,
@@ -272,7 +272,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Home,
@@ -284,7 +284,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: System,
@@ -296,7 +296,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Picture,
@@ -308,7 +308,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Eye,
@@ -320,7 +320,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: EyeClose,
@@ -336,7 +336,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Phone,
@@ -348,7 +348,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Light,
@@ -360,7 +360,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Menu,

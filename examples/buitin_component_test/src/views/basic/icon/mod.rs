@@ -4,12 +4,14 @@ use makepad_widgets::*;
 pub mod usage;
 pub mod animate;
 pub mod event;
+pub mod icon_lib;
 
 pub fn register(cx: &mut Cx){
     self::live_design(cx);
+    self::icon_lib::register(cx);
     self::usage::live_design(cx);
-    self::animate::live_design(cx);
-    self::event::live_design(cx);
+    // self::animate::live_design(cx);
+    // self::event::live_design(cx);
 }
 
 live_design! {
@@ -17,11 +19,11 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
     import crate::styles::*;
-    import crate::views::basic::image::usage::*;
-    import crate::views::basic::image::animate::*;
-    import crate::views::basic::image::event::*;
+    import crate::views::basic::icon::usage::*;
+    // import crate::views::basic::icon::animate::*;
+    // import crate::views::basic::icon::event::*;
     
-    ImagePage = {{ImagePage}}{
+    IconPage = {{IconPage}}{
         height: Fill,
         width: Fill,
         flow: Down,
@@ -38,39 +40,39 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Image",
+                text: "Icon",
             }
         }
-        <ImageUsagePage>{}
-        <ImageAnPage>{}
-        <ImageEnPage>{}
+        <IconUsagePage>{}
+        // <IconAnPage>{}
+        // <IconEnPage>{}
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),
-            text: "Image API",
+            text: "Icon API",
         }
         <GLabel>{
             font_size: 10.0,
             font_family: (BOLD_FONT),
-            text: "Image Props",
+            text: "Icon Props",
         }
         
     }
 }
 
 #[derive(Live, Widget)]
-pub struct ImagePage {
+pub struct IconPage {
     #[deref]
     pub deref_widget: GView,
 }
 
-impl LiveHook for ImagePage {
+impl LiveHook for IconPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for ImagePage {
+impl Widget for IconPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let _ = self.deref_widget.draw_walk(cx, scope, walk);
         

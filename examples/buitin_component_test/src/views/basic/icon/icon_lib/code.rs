@@ -5,7 +5,7 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
 
-    IconLibEmoji = <ScrollYView>{
+    IconLibCode = <ScrollYView>{
         height: Fit,
         width: Fill,
         spacing: 10.0,
@@ -18,7 +18,7 @@ live_design! {
                 padding: {left: 16.0, right: 16.0,}
                 align: {x: 0.5}
                 <GLabel>{
-                    text: "Emoji",
+                    text: "Code",
                 }
             }
         }
@@ -32,64 +32,41 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
-                        icon_type: Emoji,
+                        icon_type: Code,
                     }
                     <GLabel>{
-                        text: "Emoji",
+                        text: "Code",
                     }
                 }
             
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
-                        icon_type: Hot,
+                        icon_type: Test,
                     }
                     <GLabel>{
-                        text: "Hot",
+                        text: "Test",
                     }
                 }
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
-                        icon_type: Heart,
+                        icon_type: Debug,
                     }
                     <GLabel>{
-                        text: "Heart",
+                        text: "Debug",
                     }
                 }
-                <GVLayout>{
-                    height: Fit,
-                    spacing: 4.0,
-                    width: 110.0,
-                    align: {x: 0.5},
-                    <GIcon>{
-                        icon_type: HeartBroken,
-                    }
-                    <GLabel>{
-                        text: "HeartBroken",
-                    }
-                }
-                <GVLayout>{
-                    height: Fit,
-                    spacing: 4.0,
-                    width: 110.0,
-                    align: {x: 0.5},
-                    <GIcon>{
-                        icon_type: Dislike,
-                    }
-                    <GLabel>{
-                        text: "Dislike",
-                    }
-                }
+                
             }
         }
     }

@@ -5,7 +5,7 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
 
-    IconLibFs = <ScrollYView>{
+    IconLibRelation = <ScrollYView>{
         height: Fit,
         width: Fill,
         spacing: 10.0,
@@ -18,7 +18,7 @@ live_design! {
                 padding: {left: 16.0, right: 16.0,}
                 align: {x: 0.5}
                 <GLabel>{
-                    text: "Fs",
+                    text: "Relation",
                 }
             }
         }
@@ -32,13 +32,25 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
-                        icon_type: Note,
+                        icon_type: Connect,
                     }
                     <GLabel>{
-                        text: "Note",
+                        text: "Connect",
+                    }
+                }
+                <GVLayout>{
+                    height: Fit,
+                    spacing: 4.0,
+                    width: Fill,
+                    align: {x: 0.5},
+                    <GIcon>{
+                        icon_type: Disconnect,
+                    }
+                    <GLabel>{
+                        text: "Disconnect",
                     }
                 }
             }

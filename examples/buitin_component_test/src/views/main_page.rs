@@ -23,6 +23,7 @@ live_design! {
     import crate::views::basic::view::*;
     import crate::views::basic::svg::*;
     import crate::views::basic::image::*;
+    import crate::views::basic::icon::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -218,6 +219,9 @@ live_design! {
                     image_page = <GBarPage>{
                         <ImagePage>{}
                     }
+                    icon_page = <GBarPage>{
+                        <IconPage>{}
+                    }
                 }
             }
             <GView>{
@@ -313,12 +317,13 @@ impl Widget for AppMainPage {
                                 button_page,
                                 view_page,
                                 svg_page,
-                                image_page
+                                image_page,
+                                icon_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(image_page))
+                        .active(id!(icon_page))
                         .build(cx);
                 });
             })
@@ -360,6 +365,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(svg_page));
             } else if e.selected_id == id!(tab_image)[0] {
                 router.nav_to(cx, id!(image_page));
+            } else if e.selected_id == id!(tab_icon_lib)[0] {
+                router.nav_to(cx, id!(icon_page));
             }
         }
 

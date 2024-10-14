@@ -15,4 +15,5 @@ pub fn register(cx: &mut Cx){
     self::button::register(cx);
     self::view::register(cx);
     self::image::register(cx);
+    self::icon::register(cx);
 }

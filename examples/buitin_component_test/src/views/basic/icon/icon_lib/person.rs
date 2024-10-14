@@ -32,7 +32,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Male,
@@ -44,7 +44,7 @@ live_design! {
                 <GVLayout>{
                     height: Fit,
                     spacing: 4.0,
-                    width: 110.0,
+                    width: Fill,
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Female,
