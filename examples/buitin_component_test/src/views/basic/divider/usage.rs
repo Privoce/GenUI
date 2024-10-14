@@ -76,6 +76,20 @@ live_design! {
                         }
                     }
                 }
+                <GDivider>{
+                    theme: Error,
+                    height: Fit,
+                    stroke_width: 2.0,
+                    align: {x: 0.8},
+                    <GView>{
+                        height: 20.0,
+                        width: Fit,
+                        padding: {left: 8.0, right: 8.0},
+                        <GLabel>{
+                            text: "Different Position!"
+                        }
+                    }
+                }
             }
             code = {
                 body: {

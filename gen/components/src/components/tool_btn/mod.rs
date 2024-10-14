@@ -24,32 +24,32 @@ live_design! {
     GToolButtonBase = {{GToolButton}} {
         height: 32.0,
         width: 46.0,
-        stroke_color: #768390,
+        color: #768390,
         stroke_hover_color: #768390,
-        stroke_pressed_color: #768390,
-        draw_icon: {
-            instance pressed: 0.0,
-            instance stroke_pressed_color: vec4,
-            fn stroke_color(self) -> vec4 {
-                return mix(
-                    mix(
-                        self.stroke_color,
-                        self.stroke_pressed_color,
-                        self.pressed
-                    ),
-                    self.stroke_hover_color,
-                    self.hover
-                );
-            }
-        }
+        stroke_focus_color: #768390,
+        // draw_icon: {
+        //     instance focus: 0.0,
+        //     instance stroke_focus_color: vec4,
+        //     fn stroke_color(self) -> vec4 {
+        //         return mix(
+        //             mix(
+        //                 self.stroke_color,
+        //                 self.stroke_focus_color,
+        //                 self.focus
+        //             ),
+        //             self.stroke_hover_color,
+        //             self.hover
+        //         );
+        //     }
+        // }
         animator: {
             hover = {
                 default: off,
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_icon: {hover: 0.0, pressed: 0.0},
-                        draw_tool_btn: {hover: 0.0, pressed: 0.0}
+                        draw_icon: {hover: 0.0, focus: 0.0},
+                        draw_tool_btn: {hover: 0.0, focus: 0.0}
                     }
                 }
 
@@ -58,16 +58,16 @@ live_design! {
                         all: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_icon: {hover: 1.0, pressed: 0.0},
-                        draw_tool_btn: {hover: 1.0, pressed: 0.0}
+                        draw_icon: {hover: 1.0, focus: 0.0},
+                        draw_tool_btn: {hover: 1.0, focus: 0.0}
                     }
                 }
 
-                pressed = {
+                focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_icon: {hover: 0.0, pressed: 1.0},
-                        draw_tool_btn: {hover: 0.0, pressed: 1.0}
+                        draw_icon: {hover: 0.0, focus: 1.0},
+                        draw_tool_btn: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -78,13 +78,13 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct GToolButton {
     #[live]
-    pub stroke_color: Option<Vec4>,
+    pub color: Option<Vec4>,
     #[live]
     pub stroke_hover_color: Option<Vec4>,
     #[live(1.0)]
     pub stroke_width: f32,
     #[live]
-    pub stroke_pressed_color: Option<Vec4>,
+    pub stroke_focus_color: Option<Vec4>,
     #[redraw]
     #[live]
     pub draw_tool_btn: DrawGView,
@@ -175,8 +175,8 @@ impl LiveHook for GToolButton {
         let bg_color = self.os_type.as_ref().unwrap().bg_color(self.icon_type);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.os_type.as_ref().unwrap().hover_color(self.icon_type);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.os_type.as_ref().unwrap().pressed_color(self.icon_type);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.os_type.as_ref().unwrap().focus_color(self.icon_type);
         // ------------------ border color ----------------------------------------------
         let (border_color, border_width) = self
             .os_type
@@ -189,11 +189,11 @@ impl LiveHook for GToolButton {
             GOsType::Mac | GOsType::Linux => 3.6,
         };
         let stroke_color = match self.os_type.as_ref().unwrap() {
-            GOsType::Windows | GOsType::Other => self.stroke_hover_color.use_or("#768390"),
+            GOsType::Windows | GOsType::Other => self.color.use_or("#768390"),
             GOsType::Mac | GOsType::Linux => vec4(0.0, 0.0, 0.0, 0.0),
         };
         let stroke_hover_color = self.stroke_hover_color.use_or("#768390");
-        let stroke_pressed_color = self.stroke_pressed_color.use_or("#768390");
+        let stroke_focus_color = self.stroke_focus_color.use_or("#768390");
         // apply over props to draw_button ----------------------------------------------
         self.draw_tool_btn.apply_over(
             cx,
@@ -203,7 +203,7 @@ impl LiveHook for GToolButton {
                 border_color: (border_color),
                 border_width: (border_width),
                 border_radius: (border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 spread_radius: 0.0,
@@ -213,10 +213,10 @@ impl LiveHook for GToolButton {
         self.draw_icon.apply_over(
             cx,
             live! {
-                stroke_color: (stroke_color),
+                color: (stroke_color),
                 stroke_width: (self.stroke_width),
                 stroke_hover_color: (stroke_hover_color),
-                stroke_pressed_color: (stroke_pressed_color),
+                stroke_focus_color: (stroke_focus_color),
             },
         );
         self.draw_icon.apply_type(Base::from(self.icon_type));
@@ -231,7 +231,7 @@ impl GToolButton {
     }
     event_option! {
         clicked: GToolButtonEvent::Clicked => GToolButtonClickParam,
-        pressed: GToolButtonEvent::Pressed => FingerDownEvent,
+        focus: GToolButtonEvent::Pressed => FingerDownEvent,
         hover: GToolButtonEvent::Hover => FingerHoverEvent
     }
     pub fn handle_widget_event(
@@ -253,7 +253,7 @@ impl GToolButton {
                     cx.set_key_focus(focus_area);
                 }
                 cx.widget_action(uid, &scope.path, GToolButtonEvent::Pressed(fe.clone()));
-                self.animator_play(cx, id!(hover.pressed));
+                self.animator_play(cx, id!(hover.focus));
             }
             Hit::FingerHoverIn(f_in) => {
                 set_cursor(cx, self.cursor.as_ref());
@@ -287,7 +287,7 @@ impl GToolButton {
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
     }
@@ -296,16 +296,16 @@ impl GToolButton {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
     }
-    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+    pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
         self.draw_icon.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
     }
@@ -314,20 +314,20 @@ impl GToolButton {
 impl GToolButtonRef {
     ref_event_option! {
         clicked => GToolButtonClickParam,
-        pressed => FingerDownEvent,
+        focus => FingerDownEvent,
         hover => FingerHoverEvent
     }
     animatie_fn! {
         animate_hover_on,
         animate_hover_off,
-        animate_pressed
+        animate_focus
     }
 }
 
 impl GToolButtonSet {
     set_event! {
         clicked => GToolButtonClickParam,
-        pressed => FingerDownEvent,
+        focus => FingerDownEvent,
         hover => FingerHoverEvent
     }
 }

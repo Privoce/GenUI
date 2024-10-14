@@ -38,7 +38,7 @@ live_design! {
                         icon_type: Min,
                         cursor: Hand,
                         stroke_hover_color: #F00,
-                        animation_open: true,
+                        animation_key: true,
                     }
                     <GLabel>{
                         text: "Min",

@@ -38,20 +38,20 @@ live_design! {
     App = {{App}}{
         root: <Root>{
             
-            main_window = <Window>{
-                // os_type: Windows,
-                // window_bar = {
-                //     window_title = {
-                //         title = {
-                //             text: "GenUI Builtin Components",
-                //         }
-                //         icon = {
-                //             src: dep("crate://self/resources/google.png"),
-                //         }
-                //     }
-                // }
-                // width: Fill,
-                // height: Fill,
+            main_window = <GWindow>{
+                os_type: Windows,
+                window_bar = {
+                    window_title = {
+                        title = {
+                            text: "GenUI Builtin Components",
+                        }
+                        icon = {
+                            src: dep("crate://self/resources/google.png"),
+                        }
+                    }
+                }
+                width: Fill,
+                height: Fill,
                 window: {inner_size: vec2(880, 800)},
                 body = <ScrollYView>{
                     height: Fill,
@@ -221,22 +221,11 @@ live_design! {
                     //     }
                     // }
                     // <GBreadCrumbExample>{}
-                    // <GLinkExample>{}
-                    // <GSvgExample>{}
-                    // <GIconLibExample>{}
-                    // <GView>{
-                    //     theme: Error,
-                    //     height: 100.0,
-                    //     width: 200.0,
-                    //     max_height: 180.0,
-                    // }
-                    <GDivider>{
-                        stroke_width: 2.0,
-                        <GButton>{}
-                    }
-                    
-                    // <GButtonExample>{}
-                    // <GLabelExample>{}
+                    <GLinkExample>{}
+                    <GSvgExample>{}
+                    <GIconLibExample>{}
+                    <GButtonExample>{}
+                    <GLabelExample>{}
                     //
                     // --------------------------------
                     // pop = <GPopup>{

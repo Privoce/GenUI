@@ -21,26 +21,26 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_menu_item: {hover: 0.0, pressed: 0.0}
+                        draw_menu_item: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)},
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_menu_item: {hover: [{time: 0.0, value: 1.0}], pressed: 0.0}
+                        draw_menu_item: {hover: [{time: 0.0, value: 1.0}], focus: 0.0}
                     }
                 }
 
-                pressed = {
+                focus = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_menu_item: {pressed: [{time: 0.0, value: 1.0}], hover: 0.0}
+                        draw_menu_item: {focus: [{time: 0.0, value: 1.0}], hover: 0.0}
                     }
                 }
             }
@@ -57,7 +57,7 @@ pub struct GMenuItem {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
@@ -139,7 +139,7 @@ impl Widget for GMenuItem {
 
         match event.hits(cx, self.area()) {
             Hit::FingerDown(_) => {
-                self.animator_play(cx, id!(hover.pressed));
+                self.animator_play(cx, id!(hover.focus));
             }
             Hit::FingerHoverIn(_) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
@@ -161,7 +161,7 @@ impl Widget for GMenuItem {
             Hit::FingerUp(f_up) => {
                 self.selected = !self.selected;
                 if self.selected {
-                    self.animator_play(cx, id!(hover.pressed));
+                    self.animator_play(cx, id!(hover.focus));
                 } else {
                     self.animator_play(cx, id!(hover.off));
                 }
@@ -207,7 +207,7 @@ impl GMenuItem {
         self.selected = selected;
         self.draw_menu_item.focus = self.selected.to_f32();
         if self.selected {
-            self.animator_play(cx, id!(hover.pressed));
+            self.animator_play(cx, id!(hover.focus));
         } else {
             self.animator_play(cx, id!(hover.off));
         }
@@ -227,15 +227,15 @@ impl GMenuItem {
     pub fn clear_selected(&mut self, cx: &mut Cx) {
         self.selected = false;
         self.render(cx);
-        // self.draw_menu_item.pressed = self.selected.to_f32();
+        // self.draw_menu_item.focus = self.selected.to_f32();
         // self.animator_play(cx, id!(hover.off));
         // self.redraw(cx);
     }
     // pub fn set_selected(&mut self, cx: &mut Cx, selected: bool){
     //     self.selected = selected;
-    //     self.draw_menu_item.pressed = self.selected.to_f32();
+    //     self.draw_menu_item.focus = self.selected.to_f32();
     //     // if self.selected {
-    //     //     self.animator_play(cx, id!(hover.pressed));
+    //     //     self.animator_play(cx, id!(hover.focus));
     //     // } else {
     //     //     self.animator_play(cx, id!(hover.off));
     //     // }
@@ -247,8 +247,8 @@ impl GMenuItem {
         let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 300);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 300);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         // ------------------ is background_visible --------------------------------------------
@@ -261,13 +261,13 @@ impl GMenuItem {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
                 spread_radius: (self.spread_radius),
                 blur_radius: (self.blur_radius),
-                pressed: (self.selected.to_f32())
+                focus: (self.selected.to_f32())
             },
         );
     }

@@ -52,7 +52,7 @@ live_design! {
                             width: 18.0,
                             icon_type: Code,
                             stroke_width: 1.4,
-                            animation_open: true,
+                            animation_key: true,
                         }
                         <GIcon>{
                             theme: Dark,
@@ -60,7 +60,7 @@ live_design! {
                             width: 18.0,
                             icon_type: Add,
                             stroke_width: 1.4,
-                            animation_open: true,
+                            animation_key: true,
                         }
                         <GLabel>{
                             font_size: 12.0,
@@ -81,7 +81,7 @@ live_design! {
                     theme: Dark,
                     border_width: 1.5,
                     hover_color: #FF0000,
-                    pressed_color: #00FF00,
+                    focus_color: #00FF00,
                 }
             }
         }

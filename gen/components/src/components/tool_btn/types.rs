@@ -83,7 +83,7 @@ impl GOsType {
             },
         }
     }
-    pub fn pressed_color(&self, btn_type: GToolButtonType) -> Vec4 {
+    pub fn focus_color(&self, btn_type: GToolButtonType) -> Vec4 {
         match self {
             GOsType::Windows | GOsType::Other => match btn_type {
                 GToolButtonType::Min | GToolButtonType::Max | GToolButtonType::FullScreen => {
@@ -100,7 +100,7 @@ impl GOsType {
         }
     }
     /// get the border color
-    /// in linux and mac, color should be pressed color
+    /// in linux and mac, color should be focus color
     /// in windows, color should be no border and border color is transparent
     pub fn border_color_width(&self, btn_type: GToolButtonType) -> (Vec4, f32) {
         match self {

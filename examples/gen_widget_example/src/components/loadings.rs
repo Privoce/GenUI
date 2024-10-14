@@ -23,7 +23,7 @@ live_design! {
                 height: 64.0,
                 width: 64.0,
                 theme: Error,
-                animation_open: true,
+                animation_key: true,
                 visible: true,
             }
             <GLabel>{

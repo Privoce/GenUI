@@ -57,8 +57,8 @@ live_design! {
                     from: {all: Forward {duration: .25}}
                     apply: {
                         draw_cursor: {focus: 0.0},
-                        draw_input: {pressed: 0.0},
-                        draw_selection: {pressed: 0.0}
+                        draw_input: {focus: 0.0},
+                        draw_selection: {focus: 0.0}
                         draw_text: {focus: 0.0}
                     }
                 }
@@ -66,8 +66,8 @@ live_design! {
                     from: {all: Snap}
                     apply: {
                         draw_cursor: {focus: 1.0},
-                        draw_input: {pressed: 1.0},
-                        draw_selection: {pressed: 1.0}
+                        draw_input: {focus: 1.0},
+                        draw_selection: {focus: 1.0}
                         draw_text: {focus: 1.0}
                     }
                 }
@@ -91,7 +91,7 @@ live_design! {
         }
 
         draw_cursor: {
-            instance focus: 0.0
+            // instance focus: 0.0
 
             fn pixel(self) -> vec4 {
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
@@ -649,7 +649,7 @@ impl LiveHook for GInput {
         let select_hover_color = self.select_hover_color.get(self.theme, 300);
         let select_pressed_color = self.select_pressed_color.get(self.theme, 500);
         let placeholder_color = self.placeholder_color.use_or("#98A2B3");
-        // ------------------ pressed color ---------------------------------------------
+        // ------------------ focus color ---------------------------------------------
         let pressed_color = self.pressed_color.get(self.theme, 25);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 400);
@@ -743,21 +743,21 @@ impl GInput {
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_cursor.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_selection.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_text.apply_over(
@@ -773,21 +773,21 @@ impl GInput {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_cursor.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_selection.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_text.apply_over(
@@ -803,21 +803,21 @@ impl GInput {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
         self.draw_cursor.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
         self.draw_selection.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
         self.draw_text.apply_over(
@@ -834,21 +834,21 @@ impl GInput {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_cursor.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_selection.apply_over(
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
         self.draw_text.apply_over(

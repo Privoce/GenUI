@@ -35,7 +35,7 @@ live_design! {
                 theme: Warning,
                 height: 30.0,
                 width: 30.0,
-                animation_open: true,
+                animation_key: true,
                 blur_radius: 4.0,
                 spread_radius: 5.0,
                 clip_x: false,

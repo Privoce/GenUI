@@ -26,7 +26,7 @@ live_design! {
             <GToggle>{
                 theme: Error,
                 toggle_type: Rect,
-                animation_open: false,
+                animation_key: false,
             }
             <GToggle>{
                 theme: Dark,

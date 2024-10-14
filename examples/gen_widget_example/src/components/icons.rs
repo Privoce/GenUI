@@ -18,7 +18,7 @@ live_design! {
             width: Fill,
             spacing: 10.0,
             <GSvg>{
-                animation_open: true,
+                animation_key: true,
                 cursor: Help,
                 src: dep("crate://self/resources/lightning.svg"),
             }
