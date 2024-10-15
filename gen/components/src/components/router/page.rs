@@ -17,7 +17,11 @@ pub struct GPage {
     pub deref_widget: GView,
 }
 
-impl LiveHook for GPage {}
+impl LiveHook for GPage {
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.deref_widget.after_apply(cx, apply, index, nodes);
+    }
+}
 
 impl Widget for GPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
@@ -50,5 +54,24 @@ impl Widget for GPage {
     }
     fn is_visible(&self) -> bool {
         self.visible
+    }
+}
+
+impl GPage {
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.deref_widget.redraw(cx);
+    }
+    pub fn render(&mut self, cx: &mut Cx) {
+        self.deref_widget.render(cx);
+    }
+}
+
+
+impl GPageRef {
+    pub fn set_visible_and_redraw(&mut self, cx: &mut Cx, visible: bool) {
+        if let Some(mut inner) = self.borrow_mut() {
+            inner.visible = visible;
+            inner.redraw(cx);
+        }
     }
 }

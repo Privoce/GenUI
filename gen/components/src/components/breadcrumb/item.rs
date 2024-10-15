@@ -36,24 +36,24 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {pressed: 0.0, hover: 0.0}
+                        draw_text: {focus: 0.0, hover: 0.0}
                     }
                 }
 
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {focus: 0.0, hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
 
-                pressed = {
+                focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {focus: [{time: 0.0, value: 1.0}], hover: 1.0,}
                     }
                 }
             }
@@ -71,7 +71,7 @@ pub struct GBreadCrumbItem {
     #[live]
     pub text_hover_color: Option<Vec4>,
     #[live]
-    pub text_pressed_color: Option<Vec4>,
+    pub text_focus_color: Option<Vec4>,
     #[live(9.0)]
     pub font_size: f64,
     // #[live(1.0)]
@@ -185,7 +185,7 @@ impl LiveHook for GBreadCrumbItem {
         // ------------------ font ------------------------------------------------------
         let font_color = self.color.get(self.theme, 100);
         let text_hover_color = self.text_hover_color.get(self.theme, 400);
-        let text_pressed_color = self.text_pressed_color.get(self.theme, 200);
+        let text_focus_color = self.text_focus_color.get(self.theme, 200);
         // ------------------icon color -----------------------------------------------
         let icon_color = self.icon_color.get(self.theme, 100);
 
@@ -206,7 +206,7 @@ impl LiveHook for GBreadCrumbItem {
             live! {
                 color: (font_color),
                 stroke_hover_color: (text_hover_color),
-                stroke_focus_color: (text_pressed_color),
+                stroke_focus_color: (text_focus_color),
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
@@ -251,7 +251,7 @@ impl GBreadCrumbItem {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
-                self.animator_play(cx, id!(hover.pressed));
+                self.animator_play(cx, id!(hover.focus));
             }
             Hit::FingerHoverIn(h) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
@@ -296,7 +296,7 @@ impl GBreadCrumbItem {
             cx,
             live! {
                 hover: 1.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
     }
@@ -305,16 +305,16 @@ impl GBreadCrumbItem {
             cx,
             live! {
                 hover: 0.0,
-                pressed: 0.0
+                focus: 0.0
             },
         );
     }
-    pub fn animate_pressed(&mut self, cx: &mut Cx) -> () {
+    pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
         self.draw_text.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                pressed: 1.0
+                focus: 1.0
             },
         );
     }
@@ -329,7 +329,7 @@ impl GBreadCrumbItemRef {
     animatie_fn!{
         animate_hover_on,
         animate_hover_off,
-        animate_pressed
+        animate_focus
     }
 }
 

@@ -32,7 +32,7 @@ pub struct GTabbarItem {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub shadow_color: Option<Vec4>,
     #[live(0.0)]
@@ -110,7 +110,7 @@ impl Widget for GTabbarItem {
                     cx.set_key_focus(self.area());
                 }
                 if !self.selected {
-                    self.animation_pressed(cx);
+                    self.animation_focus(cx);
                     // cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
                 }
             }
@@ -168,8 +168,8 @@ impl GTabbarItem {
         let bg_color = self.background_color.use_or("#FFFFFF");
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.use_or("#FFFFFF");
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.use_or("#FFFFFF");
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.use_or("#FFFFFF");
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.use_or("#FFFFFF");
         let shadow_color = self.shadow_color.use_or("#FFFFFF");
@@ -183,13 +183,13 @@ impl GTabbarItem {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
                 spread_radius: (self.spread_radius),
                 blur_radius: (self.blur_radius),
-                pressed: (selected)
+                focus: (selected)
             },
         );
 
@@ -204,7 +204,7 @@ impl GTabbarItem {
         self.icon_slot.animate_hover_off(cx);
         self.text_slot.animate_hover_off(cx);
     }
-    pub fn animation_pressed(&mut self, cx: &mut Cx) -> () {
+    pub fn animation_focus(&mut self, cx: &mut Cx) -> () {
         self.icon_slot.animate_hover_on(cx);
         self.text_slot.animate_focus_on(cx);
     }

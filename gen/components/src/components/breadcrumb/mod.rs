@@ -42,7 +42,7 @@ live_design! {
                             icon_tool: {hover: 0.0},
                         },
                         crumb_item: {
-                            draw_text: {pressed: [{time: 0.0, value: 0.0}], hover: 0.0,}
+                            draw_text: {focus: [{time: 0.0, value: 0.0}], hover: 0.0,}
                         }
                     }
                 }
@@ -50,7 +50,7 @@ live_design! {
                 on = {
                     from: {
                         all: Forward {duration: (GLOBAL_DURATION)}
-                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
                         icon: {
@@ -68,7 +68,7 @@ live_design! {
                             icon_tool: {hover: 1.0},
                         },
                         crumb_item: {
-                            draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                            draw_text: {focus: [{time: 0.0, value: 1.0}], hover: 1.0,}
                         }
                     }
                 }
@@ -88,7 +88,7 @@ pub struct GBreadCrumb {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
@@ -299,8 +299,8 @@ impl LiveHook for GBreadCrumb {
         let bg_color = self.background_color.get(self.theme, 200);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
         self.draw_bread_crumb.apply_over(
@@ -310,13 +310,13 @@ impl LiveHook for GBreadCrumb {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 background_visible: 0.0
             },
         );
         self.icon.apply_over(cx, live!{
-            stroke_color: (stroke_color),
+            color: (stroke_color),
             stroke_width: (self.stroke_width),
             stroke_hover_color: (stroke_hover_color),
         });

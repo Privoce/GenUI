@@ -60,7 +60,7 @@ live_design! {
                     
                     
                     // <GTabbarItem>{}
-                    // <TPage>{}
+                    <TPage>{}
                     // <GSvg>{
                     //     height: 100.0,
                     //     width: 32.0,
@@ -224,9 +224,6 @@ live_design! {
                     // <GDivider>{
                     //     theme: Error
                     // }
-                    <GInput>{
-                        
-                    }
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}

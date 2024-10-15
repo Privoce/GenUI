@@ -126,43 +126,46 @@ impl GRouter {
         self.active_router = self.page_type.live_id();
         self.gview(&[self.active_router])
             .borrow()
-            .map(|active_router| match self.page_type {
-                PageType::Bar => {
-                    for (id, child) in active_router.children.iter() {
-                        // find path in bar_pages and get path
-                        if let Some(path) = self.bar_pages.iter().find(|p| p.contains_id(id)) {
-                            child.as_gview().borrow_mut().map(|mut child| {
-                                if path.eq(target) {
-                                    child.visible = true;
-                                } else {
-                                    child.visible = false;
-                                }
-                                child.render(cx);
-                            });
+            .map(|active_router| {
+                match self.page_type {
+                    PageType::Bar => {
+                        for (id, child) in active_router.children.iter() {
+                            // find path in bar_pages and get path
+                            if let Some(path) = self.bar_pages.iter().find(|p| p.contains_id(id)) {
+                                child.as_gview().borrow_mut().map(|mut child| {
+                                    if path.eq(target) {
+                                        child.visible = true;
+                                    } else {
+                                        child.visible = false;
+                                    }
+                                    child.render(cx);
+                                });
+                            }
                         }
                     }
-                }
-                PageType::Nav => {
-                    for (id, child) in active_router.children.iter() {
-                        // find path in bar_pages and get path
-                        if let Some(path) = self.nav_pages.iter().find(|p| p.contains_id(id)) {
-                            child.as_gpage().borrow_mut().map(|mut child| {
-                                if path.eq(target) {
-                                    child.visible = true;
-                                } else {
-                                    child.visible = false;
-                                }
-                                child.render(cx);
-                            });
+                    PageType::Nav => {
+                        for (id, child) in active_router.children.iter() {
+                            // find path in bar_pages and get path
+                            if let Some(path) = self.nav_pages.iter().find(|p| p.contains_id(id)) {
+                                child.as_gpage().borrow_mut().map(|mut child| {
+                                    if path.eq(target) {
+                                        child.visible = true;
+                                    } else {
+                                        child.visible = false;
+                                    }
+                                    child.render(cx);
+                                });
+                            }
                         }
                     }
+                    PageType::None => {}
                 }
-                PageType::None => {}
             });
 
         // after all change active_page
         self.active_page.replace(target.clone());
         self.sync_indicator(cx);
+        self.redraw(cx);
     }
     fn get_visible_page(&self) -> Option<HeapLiveIdPath> {
         // find the visible page
