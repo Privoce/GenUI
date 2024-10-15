@@ -154,6 +154,8 @@ pub struct GView {
     /// do fix then redraw at the first time
     #[rust(true)]
     pub fix_flag: bool,
+    #[live(false)]
+    pub block_child_events: bool,
 }
 
 pub struct ViewTextureCache {
@@ -300,28 +302,32 @@ impl Widget for GView {
             }
         }
 
-        match &self.event_order {
-            EventOrder::Down => {
-                for (id, child) in self.children.iter_mut() {
-                    scope.with_id(*id, |scope| {
-                        child.handle_event_with(cx, event, scope, sweep_area);
-                    });
-                }
-            }
-            EventOrder::Up => {
-                // the default event order is Up
-                for (id, child) in self.children.iter_mut().rev() {
-                    scope.with_id(*id, |scope| {
-                        child.handle_event_with(cx, event, scope, sweep_area);
-                    });
-                }
-            }
-            EventOrder::List(list) => {
-                for id in list {
-                    if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
+        if !self.block_child_events {
+            match &self.event_order {
+                EventOrder::Down => {
+                    for (id, child) in self.children.iter_mut() {
                         scope.with_id(*id, |scope| {
                             child.handle_event_with(cx, event, scope, sweep_area);
                         });
+                    }
+                }
+                EventOrder::Up => {
+                    // the default event order is Up
+                    for (id, child) in self.children.iter_mut().rev() {
+                        scope.with_id(*id, |scope| {
+                            child.handle_event_with(cx, event, scope, sweep_area);
+                        });
+                    }
+                }
+                EventOrder::List(list) => {
+                    for id in list {
+                        if let Some((_, child)) =
+                            self.children.iter_mut().find(|(id2, _)| id2 == id)
+                        {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event_with(cx, event, scope, sweep_area);
+                            });
+                        }
                     }
                 }
             }
@@ -358,7 +364,9 @@ impl Widget for GView {
                 self.play_animation(cx, id!(hover.on));
                 self.active_hover_in(cx, e);
             }
-
+            Hit::FingerHoverOver(e) => {
+                self.active_hover_over(cx, e);
+            }
             Hit::FingerHoverOut(e) => {
                 self.play_animation(cx, id!(hover.off));
                 self.active_hover_out(cx, e);
@@ -606,27 +614,31 @@ impl Widget for GView {
             }
         }
 
-        match &self.event_order {
-            EventOrder::Up => {
-                for (id, child) in self.children.iter_mut().rev() {
-                    scope.with_id(*id, |scope| {
-                        child.handle_event(cx, event, scope);
-                    });
-                }
-            }
-            EventOrder::Down => {
-                for (id, child) in self.children.iter_mut() {
-                    scope.with_id(*id, |scope| {
-                        child.handle_event(cx, event, scope);
-                    });
-                }
-            }
-            EventOrder::List(list) => {
-                for id in list {
-                    if let Some((_, child)) = self.children.iter_mut().find(|(id2, _)| id2 == id) {
+        if !self.block_child_events {
+            match &self.event_order {
+                EventOrder::Up => {
+                    for (id, child) in self.children.iter_mut().rev() {
                         scope.with_id(*id, |scope| {
                             child.handle_event(cx, event, scope);
                         });
+                    }
+                }
+                EventOrder::Down => {
+                    for (id, child) in self.children.iter_mut() {
+                        scope.with_id(*id, |scope| {
+                            child.handle_event(cx, event, scope);
+                        });
+                    }
+                }
+                EventOrder::List(list) => {
+                    for id in list {
+                        if let Some((_, child)) =
+                            self.children.iter_mut().find(|(id2, _)| id2 == id)
+                        {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            });
+                        }
                     }
                 }
             }
@@ -670,7 +682,9 @@ impl Widget for GView {
                 self.play_animation(cx, id!(hover.on));
                 self.active_hover_in(cx, e);
             }
-
+            Hit::FingerHoverOver(e) => {
+                self.active_hover_over(cx, e);
+            }
             Hit::FingerHoverOut(e) => {
                 self.play_animation(cx, id!(hover.off));
                 self.active_hover_out(cx, e);
@@ -777,6 +791,7 @@ impl GView {
     play_animation!();
     event_option! {
         hover_in: GViewEvent::HoverIn => GViewHoverParam,
+        hover_over: GViewEvent::HoverOver => GViewHoverParam,
         hover_out: GViewEvent::HoverOut => GViewHoverParam,
         focus: GViewEvent::Focus => GViewFocusParam,
         focus_lost: GViewEvent::FocusLost => GViewFocusLostParam,
@@ -787,6 +802,7 @@ impl GView {
     }
     active_event! {
         active_hover_in: GViewEvent::HoverIn |e: FingerHoverEvent| => GViewHoverParam{e},
+        active_hover_over: GViewEvent::HoverOver |e: FingerHoverEvent| => GViewHoverParam{e},
         active_hover_out: GViewEvent::HoverOut |e: FingerHoverEvent| => GViewHoverParam{e},
         active_focus: GViewEvent::Focus |e: FingerDownEvent| => GViewFocusParam{e},
         active_focus_lost: GViewEvent::FocusLost |e: FingerUpEvent| => GViewFocusLostParam{e},
@@ -940,6 +956,7 @@ impl GView {
 impl GViewRef {
     ref_event_option! {
         hover_in => GViewHoverParam,
+        hover_over => GViewHoverParam,
         hover_out => GViewHoverParam,
         focus => GViewFocusParam,
         focus_lost => GViewFocusLostParam,
@@ -1080,6 +1097,7 @@ impl GViewSet {
 
     set_event! {
         hover_in => GViewHoverParam,
+        hover_over => GViewHoverParam,
         hover_out => GViewHoverParam,
         focus => GViewFocusParam,
         focus_lost => GViewFocusLostParam,

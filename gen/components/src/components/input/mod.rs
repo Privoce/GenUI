@@ -16,9 +16,9 @@ live_design! {
     GInputBase = {{GInput}}{
         background_color: vec4(1.0, 1.0, 1.0, 1.0),
         hover_color: vec4(0.9, 0.9, 0.9, 1.0),
-        pressed_color: vec4(0.9, 0.9, 0.9, 1.0),
+        focus_color: vec4(0.9, 0.9, 0.9, 1.0),
         font_hover_color: vec4(0.2, 0.2, 0.2, 1.0),
-        font_pressed_color: vec4(0.2, 0.2, 0.2, 1.0),
+        font_focus_color: vec4(0.2, 0.2, 0.2, 1.0),
         shadow_offset: vec2(0.0, 0.0),
         color: #667085,
         height: Fill,
@@ -102,7 +102,7 @@ live_design! {
                     self.rect_size.y,
                     self.border_radius
                 )
-                sdf.fill(self.get_color());
+                sdf.fill(self.get_background_color());
                 return sdf.result;
             }
         }
@@ -162,17 +162,17 @@ pub struct GInput {
     #[live]
     pub font_hover_color: Option<Vec4>,
     #[live]
-    pub font_pressed_color: Option<Vec4>,
+    pub font_focus_color: Option<Vec4>,
     #[live]
     pub cursor_hover_color: Option<Vec4>,
     #[live]
-    pub cursor_pressed_color: Option<Vec4>,
+    pub cursor_focus_color: Option<Vec4>,
     #[live]
     pub select_hover_color: Option<Vec4>,
     #[live]
-    pub select_pressed_color: Option<Vec4>,
+    pub select_focus_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(1.0)]
@@ -641,16 +641,16 @@ impl LiveHook for GInput {
         let hover_color = self.hover_color.get(self.theme, 25);
         let shadow_color = self.shadow_color.get(self.theme, 700);
         let font_hover_color = self.font_hover_color.get(self.theme, 600);
-        let font_pressed_color = self.font_pressed_color.get(self.theme, 800);
+        let font_focus_color = self.font_focus_color.get(self.theme, 800);
         let cursor_color = self.cursor_color.get(self.theme, 800);
         let cursor_hover_color = self.cursor_hover_color.get(self.theme, 800);
-        let cursor_pressed_color = self.cursor_pressed_color.get(self.theme, 800);
+        let cursor_focus_color = self.cursor_focus_color.get(self.theme, 800);
         let select_color = self.select_color.get(self.theme, 400);
         let select_hover_color = self.select_hover_color.get(self.theme, 300);
-        let select_pressed_color = self.select_pressed_color.get(self.theme, 500);
+        let select_focus_color = self.select_focus_color.get(self.theme, 500);
         let placeholder_color = self.placeholder_color.use_or("#98A2B3");
         // ------------------ focus color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 25);
+        let focus_color = self.focus_color.get(self.theme, 25);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 400);
         // ------------------ font ------------------------------------------------------
@@ -666,7 +666,7 @@ impl LiveHook for GInput {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
@@ -680,7 +680,7 @@ impl LiveHook for GInput {
             live! {
                 color: (font_color),
                 hover_color: (font_hover_color),
-                pressed_color: (font_pressed_color),
+                focus_color: (font_focus_color),
                 placeholder_color:(placeholder_color),
                 empty: (empty),
                 text_style: {
@@ -702,7 +702,7 @@ impl LiveHook for GInput {
                 // border_color: (border_color),
                 // border_width: (self.border_width),
                 border_radius: (self.cursor_border_radius),
-                pressed_color: (cursor_pressed_color),
+                focus_color: (cursor_focus_color),
                 hover_color: (cursor_hover_color),
             },
         );
@@ -712,7 +712,7 @@ impl LiveHook for GInput {
             live! {
                 background_color: (select_color),
                 background_visible: 1.0,
-                pressed_color: (select_pressed_color),
+                focus_color: (select_focus_color),
                 hover_color: (select_hover_color),
                 border_radius: 0.0
             },

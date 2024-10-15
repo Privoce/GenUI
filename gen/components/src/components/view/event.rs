@@ -10,6 +10,7 @@ pub enum GViewEvent {
     Focus(GViewFocusParam),
     Drag(GViewDragParam),
     HoverIn(GViewHoverParam),
+    HoverOver(GViewHoverParam),
     HoverOut(GViewHoverParam),
     Clicked(GViewClickedParam),
     FocusLost(GViewFocusLostParam),

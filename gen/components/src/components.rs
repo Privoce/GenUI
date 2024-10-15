@@ -602,7 +602,7 @@ live_design! {
                     }
                 }
                 if self.background_visible == 1.0 {
-                    sdf.fill(self.get_color());
+                    sdf.fill(self.get_background_color());
                 }
                 sdf.stroke(self.get_border_color(), self.border_width);
                 return sdf.result;
@@ -623,7 +623,7 @@ live_design! {
             fn pixel(self) -> vec4{
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
                 sdf.rect(self.pos.x, self.pos.y, self.rect_size.x, self.rect_size.y);
-                let color = self.get_color();
+                let color = self.get_background_color();
                 sdf.fill(vec4(color.r, color.g, color.b, self.opacity));
                 return sdf.result;
             }
@@ -645,7 +645,7 @@ live_design! {
             fn pixel(self) -> vec4{
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
                 sdf.rect(self.pos.x, self.pos.y, self.rect_size.x, self.rect_size.y);
-                let color = self.get_color();
+                let color = self.get_background_color();
                 sdf.fill(vec4(color.r, color.g, color.b, self.opacity));
 
                 return sdf.result;

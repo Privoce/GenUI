@@ -45,7 +45,7 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: 0.1}}
                     apply: {
-                        draw_select: {pressed: 0.0, hover: 0.0}
+                        draw_select: {focus: 0.0, hover: 0.0}
                         draw_text: {focus: 0.0, hover: 0.0}
                     }
                 }
@@ -55,7 +55,7 @@ live_design! {
                         all: Forward {duration: 0.1}
                     }
                     apply: {
-                        draw_select: {pressed: 0.0, hover: 1.0}
+                        draw_select: {focus: 0.0, hover: 1.0}
                         draw_text: {focus: 0.0, hover: 1.0}
                     }
                 }
@@ -65,14 +65,14 @@ live_design! {
             //     off = {
             //         from: {all: Forward {duration: 0.2}}
             //         apply: {
-            //             draw_select: {pressed: 0.0},
+            //             draw_select: {focus: 0.0},
             //             // draw_text: {focus: 0.0}
             //         }
             //     }
             //     on = {
             //         from: {all: Snap}
             //         apply: {
-            //             draw_select: {pressed: 1.0},
+            //             draw_select: {focus: 1.0},
             //             // draw_text: {focus: 1.0}
             //         }
             //     }
@@ -94,7 +94,7 @@ pub struct GSelect {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub shadow_color: Option<Vec4>,
     #[live(4.8)]
@@ -258,8 +258,8 @@ impl LiveHook for GSelect {
         let bg_color = self.background_color.use_or("#ffffff");
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.use_or("#ffffff");
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.use_or("#ffffff");
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.use_or("#ffffff");
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         let shadow_color = self.shadow_color.get(self.theme, 700);
@@ -273,7 +273,7 @@ impl LiveHook for GSelect {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
@@ -301,7 +301,7 @@ impl GSelect {
     }
     pub fn open(&mut self, cx: &mut Cx) {
         self.opened = true;
-        self.draw_select.apply_over(cx, live! {pressed: 1.0});
+        self.draw_select.apply_over(cx, live! {focus: 1.0});
         self.draw_select.redraw(cx);
         // let global = cx.global::<PopupMenuGlobal>().clone();
         // let mut map = global.map.borrow_mut();
@@ -313,7 +313,7 @@ impl GSelect {
 
     pub fn close(&mut self, cx: &mut Cx) {
         self.opened = false;
-        self.draw_select.apply_over(cx, live! {pressed: 0.0});
+        self.draw_select.apply_over(cx, live! {focus: 0.0});
         self.draw_select.redraw(cx);
         cx.sweep_unlock(self.draw_select.area());
     }
