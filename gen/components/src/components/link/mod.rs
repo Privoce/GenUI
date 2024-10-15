@@ -171,10 +171,11 @@ impl Widget for GLink {
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
+        let _ = self.set_scope_path(&scope.path);
         let font = get_font_family(&self.font_family, cx);
         self.draw_text.text_style.font = font;
 

@@ -1,4 +1,4 @@
-use gen_components::components::{button::GButtonWidgetExt, view::GView};
+use gen_components::components::{button::GButtonWidgetExt, link::GLinkWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -21,39 +21,121 @@ live_design! {
             font_family: (BOLD_FONT),
             text: "Animation Usage",
         }
-        <GVLayout>{
-            height: Fit,
-            spacing: 8.0,
-            <GLabel>{
-                width: Fill,
-                text: "Button has two animation effects: Hover and Focus(Press).",
+        <GLabel>{
+            width: Fill,
+            text: "When the animation of Link is activated, the text, underline, and background will all have animation effects.",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                flow: Right,
+                <GLink>{
+                    theme: Error,
+                    text: "GenUI Components Lib",
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    underline_hover_color: #0000FF,
+                    underline_focus_color: #FFFF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "Act as Button",
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "More Define Colors",
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
             }
-            <GLabel>{
-                width: Fill,
-                text: "Hover: hover_color\nFocus(Press): focus_color",
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 200.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+                <GLink>{
+                    theme: Error,
+                    text: "GenUI Components Lib",
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    underline_hover_color: #0000FF,
+                    underline_focus_color: #FFFF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "Act as Button",
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "More Define Colors",
+                    hover_color: #F67D37,
+                    focus_color: #FFD54F,
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                            "#;
+                        }
+                    }
+                }
             }
         }
         <CBox>{
             box_wrap = {
-                spacing: 8.0,
+                spacing: 16.0,
                 flow: Right,
-                <GButton>{
-                    animation_key: false,
-                    slot: {
-                        text: "No Animation"
-                    }
-                }
-                <GButton>{
+                an_link = <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "More Define Colors",
                     hover_color: #F67D37,
                     focus_color: #FFD54F,
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                an_btn1 = <GButton>{
                     slot: {
-                        text: "Animation Color"
+                        text: "Hover"
                     }
                 }
-                hover_shadow = <GButton>{
-                    spread_radius: 0.0,
+                an_btn2 = <GButton>{
                     slot: {
-                        text: "Hover with shadow"
+                        text: "Focus"
                     }
                 }
             }
@@ -66,44 +148,40 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                <GButton>{
-                    animation_key: false,
-                    slot: {
-                        text: "No Animation"
-                    }
-                }
-                <GButton>{
+                an_link = <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "More Define Colors",
                     hover_color: #F67D37,
                     focus_color: #FFD54F,
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
+                }
+                an_btn1 = <GButton>{
                     slot: {
-                        text: "Animation Color"
+                        text: "Hover"
                     }
                 }
-                hover_shadow = <GButton>{
-                    spread_radius: 0.0,
+                an_btn2 = <GButton>{
                     slot: {
-                        text: "Hover with shadow"
+                        text: "Focus"
                     }
                 }
                 fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
                     let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-                    let hover_shadow = self.gbutton(id!(hover_shadow));
-                    if hover_shadow.hover_in(&actions).is_some() {
-                        hover_shadow.apply_over(
-                            cx,
-                            live! {
-                                spread_radius: 5.2,
-                            },
-                        );
+                    let an_link = self.glink(id!(an_link));
+                    let an_btn1 = self.gbutton(id!(an_btn1));
+                    let an_btn2 = self.gbutton(id!(an_btn2));
+                    if an_btn1.clicked(&actions).is_some() {
+                        an_link.animate_hover_on(cx);
                     }
-                    if hover_shadow.hover_out(&actions).is_some(){
-                        hover_shadow.apply_over(
-                            cx,
-                            live! {
-                                spread_radius: 0.0,
-                            },
-                        );
+                    if an_btn2.clicked(&actions).is_some() {
+                        an_link.animate_focus_on(cx);
                     }
                 }
                             "#;
@@ -136,22 +214,14 @@ impl Widget for LinkAnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let hover_shadow = self.gbutton(id!(hover_shadow));
-        if hover_shadow.hover_in(&actions).is_some() {
-            hover_shadow.apply_over(
-                cx,
-                live! {
-                    spread_radius: 5.2,
-                },
-            );
+        let an_link = self.glink(id!(an_link));
+        let an_btn1 = self.gbutton(id!(an_btn1));
+        let an_btn2 = self.gbutton(id!(an_btn2));
+        if an_btn1.clicked(&actions).is_some() {
+            an_link.animate_hover_on(cx);
         }
-        if hover_shadow.hover_out(&actions).is_some(){
-            hover_shadow.apply_over(
-                cx,
-                live! {
-                    spread_radius: 0.0,
-                },
-            );
+        if an_btn2.clicked(&actions).is_some() {
+            an_link.animate_focus_on(cx);
         }
     }
 }

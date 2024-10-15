@@ -1,4 +1,4 @@
-use gen_components::components::{button::GButtonWidgetExt, label::GLabelWidgetExt, view::GView};
+use gen_components::components::{label::GLabelWidgetExt, link::GLinkWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -26,21 +26,25 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "Button has a series of events:",
+                text: "Link has a variety of events, but actually you just need to focus on the Clicked.",
             }
             <GLabel>{
                 width: Fill,
-                text: "1. HoverIn\n2. HoverOut\n3. Focus\n4. FocusLost\n5. Clicked",
+                text: "If href exists, the link will be opened in the browser. What's more, you can catch Clicked event to do some other things.",
             }
         }
         <CBox>{
             box_wrap = {
                 spacing: 48.0,
                 flow: Right,
-                e_btn = <GButton>{
-                    slot: {
-                        text: "Event Button!"
-                    }
+                e_link = <GLink>{
+                    theme: Error,
+                    text: "GenUI Components Lib",
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    underline_hover_color: #0000FF,
+                    underline_focus_color: #FFFF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
                 }
                 e_res = <GLabel>{
                     text: "Event Result"
@@ -55,10 +59,14 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                e_btn = <GButton>{
-                    slot: {
-                        text: "Event Button!"
-                    }
+                e_link = <GLink>{
+                    theme: Error,
+                    text: "GenUI Components Lib",
+                    text_hover_color: #FF0000,
+                    text_focus_color: #00FF00,
+                    underline_hover_color: #0000FF,
+                    underline_focus_color: #FFFF00,
+                    href: "https://github.com/Privoce/GenUI/tree/components/gen/components",
                 }
                 e_res = <GLabel>{
                     text: "Event Result"
@@ -66,22 +74,23 @@ live_design! {
                 fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
                     let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-                    let e_btn = self.gbutton(id!(e_btn));
+                    let e_link = self.glink(id!(e_link));
                     let e_res = self.glabel(id!(e_res));
-                    if e_btn.clicked(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Clicked!");
+                    if let Some(e) = e_link.clicked(&actions) {
+                        let res = format!("{}: {}", e.ty, e.href.unwrap_or("empty".to_string()));
+                        e_res.set_text_and_redraw(cx, &res);
                     }
-                    if e_btn.hover_in(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Hover In!");
+                    if e_link.hover_in(&actions).is_some() {
+                        e_res.set_text_and_redraw(cx, "Link Hover In!");
                     }
-                    if e_btn.hover_out(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Hover Out!");
+                    if e_link.hover_out(&actions).is_some() {
+                        e_res.set_text_and_redraw(cx, "Link Hover Out!");
                     }
-                    if e_btn.focus(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Focus!");
+                    if e_link.focus(&actions).is_some() {
+                        e_res.set_text_and_redraw(cx, "Link Focus!");
                     }
-                    if e_btn.focus_lost(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Focus Lost!");
+                    if e_link.focus_lost(&actions).is_some() {
+                        e_res.set_text_and_redraw(cx, "Link Focus Lost!");
                     }
                 }
                             "#;
@@ -114,22 +123,23 @@ impl Widget for LinkEnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let e_btn = self.gbutton(id!(e_btn));
+        let e_link = self.glink(id!(e_link));
         let e_res = self.glabel(id!(e_res));
-        if e_btn.clicked(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Clicked!");
+        if let Some(e) = e_link.clicked(&actions) {
+            let res = format!("{}: {}", e.ty, e.href.unwrap_or("empty".to_string()));
+            e_res.set_text_and_redraw(cx, &res);
         }
-        if e_btn.hover_in(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Hover In!");
+        if e_link.hover_in(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Link Hover In!");
         }
-        if e_btn.hover_out(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Hover Out!");
+        if e_link.hover_out(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Link Hover Out!");
         }
-        if e_btn.focus(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Focus!");
+        if e_link.focus(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Link Focus!");
         }
-        if e_btn.focus_lost(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Focus Lost!");
+        if e_link.focus_lost(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Link Focus Lost!");
         }
     }
 }

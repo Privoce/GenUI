@@ -19,74 +19,33 @@ live_design! {
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),
-            text: "Basic Button Usage",
+            text: "Basic Link Usage",
         }
         <GLabel>{
             width: Fill,
-            text: "Button is a basic component for user interaction",
+            text: "Link is a component that can be used to jump to a specified URL. It is a simple and effective way to navigate.",
         }
         <CBox>{
             box_wrap = {
-                spacing: 8.0,
-                <GHLayout>{
-                    height: Fit,
-                    spacing: 8.0,
-                    <GButton>{ }
-                    <GButton>{theme: Dark}
-                    <GButton>{theme: Info}
-                    <GButton>{theme: Success}
-                    <GButton>{theme: Warning}
-                    <GButton>{theme: Error}
+                spacing: 12.0,
+                flow: Right,
+                <GLink>{
+                    text: "To Github",
+                    href: "http://github.com",
                 }
-                <GHLayout>{
-                    height: Fit,
-                    spacing: 8.0,
-                    <GButton>{
-                        border_radius: 8.0,
-                        slot: {
-                            stroke_hover_color: #FF0000,
-                            animation_key: true,
-                            text: "Round Button",
-                        }
-                    }
-                    <GButton>{
-                        padding: 12.0,
-                        theme: Error,
-                        border_radius: 9.0,
-                        slot: <GIcon>{
-                            height: 12.0,
-                            width: 12.0,
-                            icon_type: Add,
-                            stroke_width: 1.2,
-                        }
-                    }
-                    <GButton>{
-                        padding: 12.0,
-                        theme: Warning,
-                        slot: <GIcon>{
-                            height: 12.0,
-                            width: 12.0,
-                            icon_type: Left,
-                            stroke_width: 1.2,
-                        }
-                    }
-                    <GButton>{
-                        theme: Success,
-                        border_radius: 8.0,
-                        slot: <GHLayout>{
-                            height: Fit,
-                            spacing: 8.0,
-                            <GIcon>{
-                                height: 12.0,
-                                width: 12.0,
-                                icon_type: Add,
-                                stroke_width: 1.2,
-                            }
-                            <GLabel>{
-                                text: "Icon Button",
-                            }
-                        }
-                    }
+                <GLink>{
+                    theme: Error,
+                    text: "GenUI Components Lib",
+                    href: "https://github.com/Privoce/GenUI/gen/components",
+                }
+                <GLink>{
+                    theme: Error,
+                    background_visible: true,
+                    padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                    border_radius: 4.0,
+                    underline_visible: false,
+                    text: "Act as Button",
+                    href: "https://github.com/Privoce/GenUI/gen/components",
                 }
             }
             code = {
@@ -98,56 +57,24 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                    <GButton>{ }
-                    <GButton>{theme: Dark}
-                    <GButton>{theme: Info}
-                    <GButton>{theme: Success}
-                    <GButton>{theme: Warning}
-                    <GButton>{theme: Error}
-                    <GButton>{
-                            border_radius: 8.0,
-                            slot: {
-                                text: "Round Button",
-                            }
-                        }
-                        <GButton>{
-                            padding: 12.0, 
-                            theme: Error,
-                            border_radius: 9.0,
-                            slot: <GIcon>{
-                                height: 12.0,
-                                width: 12.0,
-                                icon_type: Add,
-                                stroke_width: 1.2,
-                            }
-                        }
-                        <GButton>{
-                            padding: 12.0, 
-                            theme: Warning,
-                            slot: <GIcon>{
-                                height: 12.0,
-                                width: 12.0,
-                                icon_type: Left,
-                                stroke_width: 1.2,
-                            }
-                        }
-                        <GButton>{
-                            theme: Success,
-                            border_radius: 8.0,
-                            slot: <GHLayout>{
-                                height: Fit,
-                                spacing: 8.0,
-                                <GIcon>{
-                                    height: 12.0,
-                                    width: 12.0,
-                                    icon_type: Add,
-                                    stroke_width: 1.2,
-                                }
-                                <GLabel>{
-                                    text: "Icon Button",
-                                }
-                            }
-                        }
+                    <GLink>{
+                        text: "To Github",
+                        href: "http://github.com",
+                    }
+                    <GLink>{
+                        theme: Error,
+                        text: "GenUI Components Lib",
+                        href: "https://github.com/Privoce/GenUI/gen/components",
+                    }
+                    <GLink>{
+                        theme: Error,
+                        background_visible: true,
+                        padding: {left: 12.0, right: 12.0, top: 10.0, bottom: 10.0},
+                        border_radius: 4.0,
+                        underline_visible: false,
+                        text: "Act as Button",
+                        href: "https://github.com/Privoce/GenUI/gen/components",
+                    }
                             "#;
                         }
                     }

@@ -30,7 +30,7 @@ live_design! {
                     max(1.0, self.border_radius)
                 );
                 if self.background_visible != 0.0 {
-                    sdf.fill(self.get_color());
+                    sdf.fill(self.get_background_color());
                 }
                 return sdf.result;
             }
