@@ -28,7 +28,7 @@ live_design! {
                 );
 
                 if self.background_visible != 0.0 {
-                    sdf.fill_keep(self.get_color());
+                    sdf.fill_keep(self.get_background_color());
                 }
                 if self.spread_radius != 0.0 {
                     if sdf.shape > -1.0{
@@ -47,7 +47,7 @@ live_design! {
                 }
 
                 sdf.stroke(self.get_border_color(), self.border_width);
-                if self.pressed == 1.0{
+                if self.focus == 1.0{
                     let start_p = vec2(self.sdf_rect_size.x - 26.0, self.sdf_rect_size.y * 0.5 - 7.0);
                     let end_p = vec2(self.sdf_rect_size.x - 12.0, self.sdf_rect_size.y * 0.5 + 7.0);
                     let center_y = self.sdf_rect_size.y * 0.5;
@@ -85,15 +85,15 @@ live_design! {
                 off = {
                     from: {all: Snap}
                     apply: {
-                        draw_item: {pressed: 0.0,}
-                        draw_text: {pressed: 0.0,}
+                        draw_item: {focus: 0.0,}
+                        draw_text: {focus: 0.0,}
                     }
                 }
                 on = {
                     from: {all: Snap}
                     apply: {
-                        draw_item: {pressed: 1.0,}
-                        draw_text: {pressed: 1.0,}
+                        draw_item: {focus: 1.0,}
+                        draw_text: {focus: 1.0,}
                     }
                 }
             }
@@ -120,7 +120,7 @@ pub struct GSelectItem {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub shadow_color: Option<Vec4>,
     #[live(0.0)]
@@ -167,8 +167,8 @@ impl LiveHook for GSelectItem {
         let bg_color = self.background_color.use_or("#FFFFFF00");
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.use_or("#F9FAFB");
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.use_or("#F9FAFB");
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.use_or("#F9FAFB");
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         let shadow_color = self.shadow_color.get(self.theme, 700);
@@ -184,13 +184,13 @@ impl LiveHook for GSelectItem {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
                 spread_radius: (self.spread_radius),
                 blur_radius: (self.blur_radius),
-                pressed: (self.selected.to_f32()),
+                focus: (self.selected.to_f32()),
                 stroke_color: (stroke_color),
                 stroke_width: (self.stroke_width),
             },
@@ -199,8 +199,8 @@ impl LiveHook for GSelectItem {
             cx,
             live! {
                 color: (color),
-                hover_color: (color),
-                pressed_color: (color),
+                stroke_hover_color: (color),
+                stroke_focus_color: (color),
                 text_style: {
                     font_size: (self.font_size),
                 }
