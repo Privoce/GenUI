@@ -221,8 +221,11 @@ live_design! {
                     //     }
                     // }
                     // <GBreadCrumbExample>{}
-                    <GDivider>{
-                        theme: Error
+                    // <GDivider>{
+                    //     theme: Error
+                    // }
+                    <GInput>{
+                        
                     }
                     // <GLinkExample>{}
                     // <GSvgExample>{}

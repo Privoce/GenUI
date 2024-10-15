@@ -17,8 +17,8 @@ live_design! {
         background_color: vec4(1.0, 1.0, 1.0, 1.0),
         hover_color: vec4(0.9, 0.9, 0.9, 1.0),
         focus_color: vec4(0.9, 0.9, 0.9, 1.0),
-        font_hover_color: vec4(0.2, 0.2, 0.2, 1.0),
-        font_focus_color: vec4(0.2, 0.2, 0.2, 1.0),
+        text_hover_color: vec4(0.2, 0.2, 0.2, 1.0),
+        text_focus_color: vec4(0.2, 0.2, 0.2, 1.0),
         shadow_offset: vec2(0.0, 0.0),
         color: #667085,
         height: Fill,
@@ -160,9 +160,9 @@ pub struct GInput {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub font_hover_color: Option<Vec4>,
+    pub text_hover_color: Option<Vec4>,
     #[live]
-    pub font_focus_color: Option<Vec4>,
+    pub text_focus_color: Option<Vec4>,
     #[live]
     pub cursor_hover_color: Option<Vec4>,
     #[live]
@@ -640,8 +640,8 @@ impl LiveHook for GInput {
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 25);
         let shadow_color = self.shadow_color.get(self.theme, 700);
-        let font_hover_color = self.font_hover_color.get(self.theme, 600);
-        let font_focus_color = self.font_focus_color.get(self.theme, 800);
+        let text_hover_color = self.text_hover_color.get(self.theme, 600);
+        let text_focus_color = self.text_focus_color.get(self.theme, 800);
         let cursor_color = self.cursor_color.get(self.theme, 800);
         let cursor_hover_color = self.cursor_hover_color.get(self.theme, 800);
         let cursor_focus_color = self.cursor_focus_color.get(self.theme, 800);
@@ -679,8 +679,8 @@ impl LiveHook for GInput {
             cx,
             live! {
                 color: (font_color),
-                hover_color: (font_hover_color),
-                focus_color: (font_focus_color),
+                stroke_hover_color: (text_hover_color),
+                stroke_focus_color: (text_focus_color),
                 placeholder_color:(placeholder_color),
                 empty: (empty),
                 text_style: {
