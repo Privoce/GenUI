@@ -92,7 +92,7 @@ impl Widget for GTableRow {
     }
     
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        for (index, (id, cell)) in self.children.iter().enumerate() {
+        for (_index, (_id, cell)) in self.children.iter().enumerate() {
             cell.handle_event(cx, event, scope);
         }
     }

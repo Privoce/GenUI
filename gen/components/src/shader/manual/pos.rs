@@ -9,6 +9,15 @@ pub enum Direction {
     Vertical = shader_enum(2),
 }
 
+impl Direction {
+    pub fn to_f32(&self) -> f32 {
+        match self {
+            Direction::Horizontal => 1.0,
+            Direction::Vertical => 0.0,
+        }
+    }
+}
+
 #[derive(Live, LiveHook)]
 #[live_ignore]
 #[repr(u32)]

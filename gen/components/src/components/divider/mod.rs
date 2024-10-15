@@ -3,7 +3,7 @@ pub use register::register;
 
 use makepad_widgets::*;
 
-use crate::{animatie_fn, ref_area, ref_event_option, ref_redraw_mut, ref_render};
+use crate::{animatie_fn, ref_area, ref_event_option, ref_redraw_mut, ref_render, shader::manual::Direction};
 
 use super::view::{
     event::{GViewClickedParam, GViewFocusLostParam, GViewFocusParam, GViewHoverParam},
@@ -19,16 +19,29 @@ live_design! {
         width: Fill,
         align: {x: 0.5, y: 0.5},
         draw_view: {
+            // direction is 1.0 for horizontal and 0.0 for vertical
+            instance direction: 1.0,
             instance stroke_width: 1.4,
             fn pixel(self) -> vec4{
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
-                sdf.box(
-                    self.pos.x,
-                    self.pos.y + self.rect_size.y / 2.0 - self.stroke_width / 2.0,
-                    self.rect_size.x,
-                    self.stroke_width,
-                    max(1.0, self.border_radius)
-                );
+                if self.direction == 1.0 {
+                    sdf.box(
+                        self.pos.x,
+                        self.pos.y + self.rect_size.y / 2.0 - self.stroke_width / 2.0,
+                        self.rect_size.x,
+                        self.stroke_width,
+                        max(1.0, self.border_radius)
+                    );
+                } else {
+                    sdf.box(
+                        self.pos.x + self.rect_size.x / 2.0 - self.stroke_width / 2.0,
+                        self.pos.y,
+                        self.stroke_width,
+                        self.rect_size.y,
+                        max(1.0, self.border_radius)
+                    );
+                }
+
                 if self.background_visible != 0.0 {
                     sdf.fill(self.get_background_color());
                 }
@@ -44,6 +57,8 @@ pub struct GDivider {
     pub deref_widget: GView,
     #[live(1.4)]
     pub stroke_width: f32,
+    #[live(Direction::Horizontal)]
+    pub direction: Direction
 }
 
 impl Widget for GDivider {
@@ -69,11 +84,13 @@ impl LiveHook for GDivider {
 impl GDivider {
     fn add_render(&mut self, cx: &mut Cx) {
         let stroke_width = self.stroke_width;
+        let direction = self.direction.to_f32();
         // now set stroke width to draw_view
         self.draw_view.apply_over(
             cx,
             live! {
-                stroke_width: (stroke_width)
+                stroke_width: (stroke_width),
+                direction: (direction)
             },
         );
     }

@@ -90,6 +90,27 @@ live_design! {
                         }
                     }
                 }
+                <GHLayout>{
+                    height: Fit,
+                    width: Fill,
+                    <GLabel>{
+                        text: "Left"
+                    }
+                    <GDivider>{
+                        direction: Vertical,
+                        height: 60.0,
+                        theme: Error,
+                        width: Fit,
+                        stroke_width: 2.0,
+                        margin: { left: 8.0, right: 8.0 },
+                        <GIcon>{
+                            icon_type: Open
+                        }
+                    }
+                    <GLabel>{
+                        text: "Right"
+                    }
+                }
             }
             code = {
                 body: {
