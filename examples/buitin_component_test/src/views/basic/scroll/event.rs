@@ -1,5 +1,3 @@
-use std::borrow::BorrowMut;
-
 use gen_components::components::{
     button::GButtonWidgetExt,
     view::{GView, GViewWidgetExt},
@@ -68,7 +66,38 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
+                scroll_view = <GHLayout>{
+                    clip_x: true,
+                    clip_y: true,
+                    height: 200.0,
+                    width: Fill,
+                    spacing: 16.0,
+                    scroll_bars: <GScrollBars>{},
+                    <GView>{
+                        theme: Error,
+                        height: 300.0,
+                        width: 300.0,
+                    }
+                    <GView>{
+                        theme: Success,
+                        height: 100.0,
+                        width: 600.0,
+                    }
+                }
+                e_btn = <GButton>{
+                    slot: {
+                        text: "Adjust ScrollBar",
+                    }
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
+                    let scroll_view = self.gview(id!(scroll_view));
+                    let e_btn = self.gbutton(id!(e_btn));
+                    if e_btn.clicked(&actions).is_some() {
+                        scroll_view.set_scroll_pos(cx, Some(32.0), Some(88.0));
+                    }
+                }
                             "#;
                         }
                     }

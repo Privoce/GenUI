@@ -36,7 +36,7 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Link",
+                text: "Scroll",
             }
         }
         <ScrollUsagePage>{}
@@ -44,12 +44,12 @@ live_design! {
         <GLabel>{
             font_size: 12.0,
             font_family: (BOLD_FONT),
-            text: "Link API",
+            text: "Scroll API",
         }
         <GLabel>{
             font_size: 10.0,
             font_family: (BOLD_FONT),
-            text: "Link Props",
+            text: "Scroll Props",
         }
     }
 }
