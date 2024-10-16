@@ -8,6 +8,7 @@ pub mod icon;
 pub mod image;
 pub mod divider;
 pub mod link;
+pub mod scroll;
 
 pub fn register(cx: &mut Cx){
     self::svg::register(cx);
@@ -18,4 +19,5 @@ pub fn register(cx: &mut Cx){
     self::icon::register(cx);
     self::divider::register(cx);
     self::link::register(cx);
+    self::scroll::register(cx);
 }

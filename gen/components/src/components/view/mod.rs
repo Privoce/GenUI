@@ -860,13 +860,7 @@ impl GView {
             margin: walk.margin,
         }
     }
-    pub fn set_scroll_pos(&mut self, cx: &mut Cx, v: DVec2) {
-        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-            scroll_bars.set_scroll_pos(cx, v);
-        } else {
-            self.layout.scroll = v;
-        }
-    }
+
     pub fn child_count(&self) -> usize {
         self.children.len()
     }
@@ -950,6 +944,28 @@ impl GView {
             },
         );
         // self.draw_view.redraw(cx);
+    }
+    /// ## set the absolute position of the view
+    /// x, y range: `[0.0, 100.0]`, 0.0 means the left or top, 100.0 means the right or bottom
+    /// - if x, y is None, do nothing and return None
+    /// - if x, y is Some, set the absolute position of the view and return `Some(bool)`
+    ///     - if x, y is the same as the current position, return `Some(false)`
+    pub fn set_scroll_pos(&mut self, cx: &mut Cx, x: Option<f64>, y: Option<f64>) -> Option<bool> {
+        if x.is_none() && y.is_none() {
+            return None;
+        }
+
+        // first get the current scroll pos
+        if let Some(sc) = self.scroll_bars_obj.as_mut() {
+            let current = sc.get_scroll_pos();
+            // check x, y is some
+            let x = x.unwrap_or(current.x);
+            let y = y.unwrap_or(current.y);
+            // set the scroll pos
+            Some(sc.set_scroll_pos(cx, dvec2(x, y)))
+        } else {
+            None
+        }
     }
 }
 
@@ -1037,9 +1053,11 @@ impl GViewRef {
         }
     }
 
-    pub fn set_scroll_pos(&self, cx: &mut Cx, v: DVec2) {
+    pub fn set_scroll_pos(&self, cx: &mut Cx, x: Option<f64>, y: Option<f64>) -> Option<bool> {
         if let Some(mut inner) = self.borrow_mut() {
-            inner.set_scroll_pos(cx, v)
+            inner.set_scroll_pos(cx, x, y)
+        }else{
+            None
         }
     }
 

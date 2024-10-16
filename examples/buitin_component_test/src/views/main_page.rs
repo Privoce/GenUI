@@ -23,6 +23,7 @@ live_design! {
     import crate::views::basic::icon::*;
     import crate::views::basic::divider::*;
     import crate::views::basic::link::*;
+    import crate::views::basic::scroll::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -136,7 +137,6 @@ live_design! {
                             }
                         }
                         tab_view = <GMenuItem>{
-                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -193,6 +193,15 @@ live_design! {
                                 text: "Link",
                             }
                         }
+                        tab_scroll = <GMenuItem>{
+                            selected: true,
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Scroll",
+                            }
+                        }
                     }
                 }
             }
@@ -242,6 +251,9 @@ live_design! {
                     }
                     link_page = <GBarPage>{
                         <LinkPage>{}
+                    }
+                    scroll_page = <GBarPage>{
+                        <ScrollPage>{}
                     }
                 }
             }
@@ -341,12 +353,13 @@ impl Widget for AppMainPage {
                                 image_page,
                                 icon_page,
                                 divider_page,
-                                link_page
+                                link_page,
+                                scroll_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(divider_page))
+                        .active(id!(scroll_page))
                         .build(cx);
                 });
             })
@@ -394,6 +407,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(divider_page));
             } else if e.selected_id == id!(tab_link)[0] {
                 router.nav_to(cx, id!(link_page));
+            } else if e.selected_id == id!(tab_scroll)[0] {
+                router.nav_to(cx, id!(scroll_page));
             }
         }
 
