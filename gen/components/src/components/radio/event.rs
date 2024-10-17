@@ -9,13 +9,15 @@ pub enum GRadioEvent {
 
 #[derive(Clone, Debug)]
 pub struct GRadioClickedParam {
-    pub value: bool,
+    pub value: Option<String>,
+    pub selected: bool,
     pub e: FingerUpEvent,
 }
 
 #[derive(Clone, Debug)]
 pub struct GRadioHoverParam {
-    pub value: bool,
+    pub value: Option<String>,
+    pub selected: bool,
     pub e: FingerHoverEvent,
 }
 
@@ -29,6 +31,9 @@ pub enum GRadioGroupEvent {
 
 #[derive(Clone, Debug)]
 pub struct GRadioGroupEventParam {
+    /// The index of the selected radio.
     pub selected: usize,
+    /// The value of the selected radio.
+    pub value: Option<String>,
     pub e: FingerUpEvent,
 }

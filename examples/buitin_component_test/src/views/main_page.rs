@@ -24,6 +24,7 @@ live_design! {
     import crate::views::basic::divider::*;
     import crate::views::basic::link::*;
     import crate::views::basic::scroll::*;
+    import crate::views::form::radio::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -204,6 +205,24 @@ live_design! {
                         }
                     }
                 }
+                sub4 = <GSubMenu>{
+                    title: {
+                        <GLabel>{
+                            font_size: 11.0,
+                            text: "Form",
+                        }
+                    }
+                    items: {
+                        tab_radio = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Radio",
+                            }
+                        }
+                    }
+                }
             }
         }
         <GVLayout>{
@@ -254,6 +273,9 @@ live_design! {
                     }
                     scroll_page = <GBarPage>{
                         <ScrollPage>{}
+                    }
+                    radio_page = <GBarPage>{
+                        <RadioPage>{}
                     }
                 }
             }
@@ -354,12 +376,13 @@ impl Widget for AppMainPage {
                                 icon_page,
                                 divider_page,
                                 link_page,
-                                scroll_page
+                                scroll_page,
+                                radio_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(scroll_page))
+                        .active(id!(radio_page))
                         .build(cx);
                 });
             })
@@ -409,7 +432,9 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(link_page));
             } else if e.selected_id == id!(tab_scroll)[0] {
                 router.nav_to(cx, id!(scroll_page));
-            }
+            } else if e.selected_id == id!(tab_radio)[0] {
+                router.nav_to(cx, id!(radio_page));
+            } 
         }
 
         router.borrow_mut().map(|mut route| {
