@@ -54,9 +54,7 @@ live_design! {
                 <GRadio>{
                     theme: Error,
                     radio_type: Cross,
-                    selected: true,
-                    background_color: #6CB6FF,
-                    background_visible: true
+                    text: "Error Cross Radio"
                 }
             }
             code = {
@@ -94,7 +92,7 @@ live_design! {
                     <GRadio>{
                         theme: Error,
                         radio_type: Cross,
-                        selected: true
+                        text: "Error Cross Radio"
                     }
                             "#;
                         }

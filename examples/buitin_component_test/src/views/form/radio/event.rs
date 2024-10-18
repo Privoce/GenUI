@@ -106,6 +106,7 @@ live_design! {
 #[derive(Live, Widget)]
 pub struct RadioEnPage {
     #[deref]
+    #[redraw]
     pub deref_widget: GView,
 }
 
@@ -117,9 +118,7 @@ impl LiveHook for RadioEnPage {
 
 impl Widget for RadioEnPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        let _ = self.deref_widget.draw_walk(cx, scope, walk);
-
-        DrawStep::done()
+        self.deref_widget.draw_walk(cx, scope, walk)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
@@ -133,5 +132,8 @@ impl Widget for RadioEnPage {
             val_label.set_text_and_redraw(cx, &e.value.unwrap_or("Empty".to_string()));
             selected_label.set_text_and_redraw(cx, &e.selected.to_string());
         }
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
     }
 }
