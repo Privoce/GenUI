@@ -3,7 +3,8 @@ use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpE
 #[derive(Debug, Clone, DefaultNone)]
 pub enum GRadioEvent {
     Clicked(GRadioClickedParam),
-    Hover(GRadioHoverParam),
+    HoverIn(GRadioHoverParam),
+    HoverOut(GRadioHoverParam),
     None,
 }
 
@@ -16,8 +17,6 @@ pub struct GRadioClickedParam {
 
 #[derive(Clone, Debug)]
 pub struct GRadioHoverParam {
-    pub value: Option<String>,
-    pub selected: bool,
     pub e: FingerHoverEvent,
 }
 

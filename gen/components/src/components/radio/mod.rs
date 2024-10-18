@@ -9,10 +9,13 @@ use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn,
+    active_event, animatie_fn, default_hit_hover_in, default_hit_hover_out, event_option,
+    play_animation, ref_area, ref_area_ext, ref_event_option, ref_redraw, ref_render, set_event,
+    set_scope_path, set_text_and_visible_fn,
     shader::{
         draw_radio::{DrawGRadio, GChooseType},
         draw_text::DrawGText,
+        draw_view::DrawGView,
     },
     themes::Themes,
     utils::{get_font_family, set_cursor, BoolToF32, ThemeColor},
@@ -26,11 +29,6 @@ live_design! {
     GRadioBase = {{GRadio}}{
         height: 18.0,
         width: Fit,
-        draw_radio_wrap: {
-            fn pixel(self) ->vec4{
-                return vec4(0.0);
-            }
-        },
         font_size: 10.0,
         spacing: 6.0,
         align: {
@@ -43,13 +41,17 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_radio: {hover: 0.0}
+                        draw_radio: {hover: 0.0},
+                        draw_radio_wrap: {hover: 0.0},
+                        draw_text: {hover: 0.0}
                     }
                 }
                 on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_radio: {hover: 1.0}
+                        draw_radio: {hover: 1.0},
+                        draw_radio_wrap: {hover: 1.0},
+                        draw_text: {hover: 1.0}
                     }
                 }
             }
@@ -58,13 +60,17 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_radio: {selected: 0.0}
+                        draw_radio: {selected: 0.0},
+                        draw_radio_wrap: {focus: 0.0},
+                        draw_text: {focus: 0.0}
                     }
                 }
                 on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_radio: {selected: 1.0}
+                        draw_radio: {selected: 1.0},
+                        draw_radio_wrap: {focus: 1.0},
+                        draw_text: {focus: 1.0}
                     }
                 }
             }
@@ -76,6 +82,7 @@ live_design! {
 pub struct GRadio {
     #[live]
     pub theme: Themes,
+    // text ----------------------------
     #[live]
     pub color: Option<Vec4>,
     #[live]
@@ -92,16 +99,19 @@ pub struct GRadio {
     pub wrap: TextWrap,
     #[live]
     pub font_family: LiveDependency,
+    #[live(true)]
+    pub text_visible: bool,
+    // radio -------------------------------
     #[live(8.0)]
     pub size: f32,
     #[live]
-    pub background_color: Option<Vec4>,
+    pub radio_background_color: Option<Vec4>,
     #[live(true)]
-    pub background_visible: bool,
+    pub radio_background_visible: bool,
     #[live]
-    pub hover_color: Option<Vec4>,
+    pub radio_hover_color: Option<Vec4>,
     #[live]
-    pub selected_color: Option<Vec4>,
+    pub radio_selected_color: Option<Vec4>,
     #[live]
     pub stroke_color: Option<Vec4>,
     #[live]
@@ -109,11 +119,34 @@ pub struct GRadio {
     #[live]
     pub stroke_selected_color: Option<Vec4>,
     #[live]
-    pub border_color: Option<Vec4>,
+    pub radio_border_color: Option<Vec4>,
     #[live(1.0)]
-    pub border_width: f32,
+    pub radio_border_width: f32,
     #[live(0.48)]
     pub scale: f32,
+    // radio_wrap -------------------
+    #[live]
+    pub background_color: Option<Vec4>,
+    #[live]
+    pub hover_color: Option<Vec4>,
+    #[live]
+    pub focus_color: Option<Vec4>,
+    #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live]
+    pub border_color: Option<Vec4>,
+    #[live]
+    pub background_visible: bool,
+    #[live(0.0)]
+    pub border_width: f32,
+    #[live(0.0)]
+    pub border_radius: f32,
+    #[live(0.0)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
     #[live(MouseCursor::Hand)]
     pub cursor: Option<MouseCursor>,
     // value --------------------
@@ -136,7 +169,7 @@ pub struct GRadio {
     pub draw_text: DrawGText,
     #[redraw]
     #[live]
-    pub draw_radio_wrap: DrawQuad,
+    pub draw_radio_wrap: DrawGView,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -153,18 +186,21 @@ pub struct GRadio {
     pub grab_key_focus: bool,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GRadio {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
+        self.set_scope_path(&scope.path);
         let font = get_font_family(&self.font_family, cx);
 
         self.draw_text.text_style.font = font;
         self.draw_radio_wrap.begin(cx, walk, self.layout);
-        let size = self.size + self.border_width;
+        let size = self.size + self.radio_border_width;
         let radio_walk = Walk {
             width: Size::Fixed((size * 2.0) as f64),
             height: Size::Fixed((size * 2.0) as f64),
@@ -209,66 +245,15 @@ impl LiveHook for GRadio {
         if !self.visible {
             return;
         }
-        // ----------------- background color -------------------------------------------
-        let bg_color = self.background_color.get(self.theme, 50);
-        let stroke_color = if self.background_visible {
-            self.stroke_color.get(self.theme, 50)
-        } else {
-            vec4(0.0, 0.0, 0.0, 0.0)
-        };
-        // ------------------ hover color -----------------------------------------------
-        let color = self.color.get(self.theme, 50);
-        let text_hover_color = self.text_hover_color.get(self.theme, 25);
-        let text_focus_color = self.text_focus_color.get(self.theme, 100);
-        let hover_color = self.hover_color.get(self.theme, 100);
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
-        // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 600);
-        // ------------------ selected color ---------------------------------------------
-        let selected_color = self.selected_color.get(self.theme, 500);
-        let stroke_selected_color = self.stroke_selected_color.get(self.theme, 50);
-        let selected = self.selected.to_f32();
-        let background_visible = self.background_visible.to_f32();
-        // ------------------ apply to draw_radio ----------------------------------------
-        self.draw_radio.apply_over(
-            cx,
-            live! {
-                background_color: (bg_color),
-                background_visible: (background_visible),
-                hover_color: (hover_color),
-                selected_color: (selected_color),
-                stroke_color: (stroke_color),
-                stroke_hover_color: (stroke_hover_color),
-                stroke_selected_color: (stroke_selected_color),
-                border_color: (border_color),
-                border_width: (self.border_width),
-                scale: (self.scale),
-                size: (self.size),
-                scale: (self.scale),
-                selected: (selected)
-            },
-        );
-        self.draw_radio.apply_type(self.radio_type.clone());
-        self.draw_text.apply_over(
-            cx,
-            live! {
-                color: (color),
-                stroke_hover_color: (text_hover_color),
-                stroke_focus_color: (text_focus_color),
-                text_style: {
-                    // top_drop: (self.top_drop),
-                    font_size: (self.font_size),
-                    height_factor: (self.height_factor),
-                }
-            },
-        );
-        self.draw_text.wrap = self.wrap.clone();
-        self.draw_radio.redraw(cx);
-        self.draw_text.redraw(cx);
+        self.render(cx);
+        // self.draw_radio.redraw(cx);
+        // self.draw_text.redraw(cx);
     }
 }
 
 impl GRadio {
+    set_scope_path!();
+    play_animation!();
     widget_area! {
         area, draw_radio_wrap,
         area_radio, draw_radio,
@@ -276,24 +261,160 @@ impl GRadio {
     }
     event_option! {
         clicked: GRadioEvent::Clicked => GRadioClickedParam,
-        hover: GRadioEvent::Hover => GRadioHoverParam
+        hover_in: GRadioEvent::HoverIn => GRadioHoverParam,
+        hover_out: GRadioEvent::HoverOut => GRadioHoverParam
+    }
+    active_event! {
+        active_hover_in: GRadioEvent::HoverIn |e: FingerHoverEvent| => GRadioHoverParam {e},
+        active_hover_out: GRadioEvent::HoverOut |e: FingerHoverEvent| => GRadioHoverParam {e}
+    }
+    fn active_clicked(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GRadioEvent::Clicked(GRadioClickedParam {
+                    value: self.value.clone(),
+                    selected: self.selected,
+                    e,
+                }),
+            );
+        });
+    }
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_radio_wrap.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_radio.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                selected: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
+    pub fn render(&mut self, cx: &mut Cx) -> () {
+        // ----------------- radio -----------------------------------------------------
+        let radio_background_color = self.radio_background_color.get(self.theme, 50);
+        let radio_hover_color = self.radio_hover_color.get(self.theme, 100);
+        let radio_selected_color = self.radio_selected_color.get(self.theme, 500);
+        let radio_border_color = self.radio_border_color.get(self.theme, 600);
+        let stroke_color = if self.radio_background_visible {
+            self.stroke_color.get(self.theme, 50)
+        } else {
+            vec4(0.0, 0.0, 0.0, 0.0)
+        };
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
+        let stroke_selected_color = self.stroke_selected_color.get(self.theme, 50);
+        let radio_background_visible = self.radio_background_visible.to_f32();
+        // ----------------- radio_wrap ------------------------------------------------
+        let background_color = self.background_color.get(self.theme, 500);
+        let hover_color = self.hover_color.get(self.theme, 400);
+        let focus_color = self.focus_color.get(self.theme, 600);
+        let border_color = self.border_color.get(self.theme, 600);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
+        let background_visible = self.background_visible.to_f32();
+        // ----------------- text ------------------------------------------------------
+        let color = self.color.get(self.theme, 50);
+        let text_hover_color = self.text_hover_color.get(self.theme, 25);
+        let text_focus_color = self.text_focus_color.get(self.theme, 100);
+        // selected --------------------------------------------------------------------
+        let selected = self.selected.to_f32();
+        // ------------------ apply to draw_radio ---------------------------------------
+        self.draw_radio_wrap.apply_over(
+            cx,
+            live! {
+                background_color: (background_color),
+                background_visible: (background_visible),
+                border_color: (border_color),
+                border_width: (self.border_width),
+                border_radius: (self.border_radius),
+                focus_color: (focus_color),
+                hover_color: (hover_color),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
+            },
+        );
+        self.draw_radio.apply_over(
+            cx,
+            live! {
+                background_color: (radio_background_color),
+                background_visible: (radio_background_visible),
+                hover_color: (radio_hover_color),
+                selected_color: (radio_selected_color),
+                stroke_color: (stroke_color),
+                stroke_hover_color: (stroke_hover_color),
+                stroke_selected_color: (stroke_selected_color),
+                border_color: (radio_border_color),
+                border_width: (self.radio_border_width),
+                scale: (self.scale),
+                size: (self.size),
+                scale: (self.scale),
+                selected: (selected)
+            },
+        );
+        self.draw_radio.apply_type(self.radio_type.clone());
+        if self.text_visible {
+            self.draw_text.apply_over(
+                cx,
+                live! {
+                    color: (color),
+                    stroke_hover_color: (text_hover_color),
+                    stroke_focus_color: (text_focus_color),
+                    text_style: {
+                        // top_drop: (self.top_drop),
+                        font_size: (self.font_size),
+                        height_factor: (self.height_factor),
+                    }
+                },
+            );
+            self.draw_text.wrap = self.wrap.clone();
+        }
     }
     pub fn toggle(&mut self, cx: &mut Cx, selected: bool) -> () {
         self.selected = selected;
         self.draw_radio.selected = selected.to_f32();
         if selected {
-            self.animator_play(cx, id!(selected.on));
+            self.play_animation(cx, id!(selected.on));
         } else {
-            self.animator_play(cx, id!(selected.off));
+            self.play_animation(cx, id!(selected.off));
         }
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_radio.apply_over(
             cx,
             live! {
                 hover: 1.0,
             },
         );
+        self.draw_radio_wrap.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+        if self.text_visible {
+            self.draw_text.apply_over(
+                cx,
+                live! {
+                    hover: 1.0,
+                },
+            );
+        }
     }
     pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
         self.draw_radio.apply_over(
@@ -302,8 +423,23 @@ impl GRadio {
                 hover: 0.0,
             },
         );
+        self.draw_radio_wrap.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+        if self.text_visible {
+            self.draw_text.apply_over(
+                cx,
+                live! {
+                    hover: 0.0,
+                },
+            );
+        }
     }
     pub fn animate_selected_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.selected = true;
         self.draw_radio.apply_over(
             cx,
@@ -311,6 +447,20 @@ impl GRadio {
                 selected: 1.0,
             },
         );
+        self.draw_radio_wrap.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+        if self.text_visible {
+            self.draw_text.apply_over(
+                cx,
+                live! {
+                    focus: 1.0,
+                },
+            );
+        }
     }
     pub fn animate_selected_off(&mut self, cx: &mut Cx) -> () {
         self.selected = false;
@@ -320,59 +470,58 @@ impl GRadio {
                 selected: 0.0,
             },
         );
+        self.draw_radio_wrap.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
+        if self.text_visible {
+            self.draw_text.apply_over(
+                cx,
+                live! {
+                    focus: 0.0,
+                },
+            );
+        }
+    }
+    fn check_event_scope(&self) -> Option<&HeapLiveIdPath> {
+        self.event_key.then(|| self.scope_path.as_ref()).flatten()
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.draw_text.redraw(cx);
+        self.draw_radio.redraw(cx);
+        self.draw_radio_wrap.redraw(cx);
     }
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
         event: &Event,
-        scope: &mut Scope,
+        _scope: &mut Scope,
         hit: Hit,
         focus_area: Area,
     ) {
-        let uid = self.widget_uid();
         if self.animation_key {
             self.animator_handle_event(cx, event);
         }
 
         match hit {
-            Hit::FingerHoverIn(f_in) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    GRadioEvent::Hover(GRadioHoverParam {
-                        selected: self.selected,
-                        value: self.value.clone(),
-                        e: f_in.clone(),
-                    }),
-                )
+            Hit::FingerHoverIn(e) => {
+                default_hit_hover_in!(self, cx, e);
             }
-            Hit::FingerHoverOut(_) => {
-                cx.set_cursor(MouseCursor::Arrow);
-                self.animator_play(cx, id!(hover.off));
+            Hit::FingerHoverOut(e) => {
+                default_hit_hover_out!(self, cx, e);
             }
             Hit::FingerDown(_fe) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
             }
-            Hit::FingerUp(f_up) => {
-                // if self.selected{
-                //     self.animator_play(cx, id!(selected.on));
-                // }
+            Hit::FingerUp(e) => {
                 if self.animator_in_state(cx, id!(selected.off)) {
                     self.selected = true;
-                    self.animator_play(cx, id!(selected.on));
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GRadioEvent::Clicked(GRadioClickedParam {
-                            selected: self.selected,
-                            e: f_up.clone(),
-                            value: self.value.clone(),
-                        }),
-                    );
+                    self.play_animation(cx, id!(selected.on));
+                    self.active_clicked(cx, e);
                 }
             }
             _ => (),
@@ -381,9 +530,17 @@ impl GRadio {
 }
 
 impl GRadioRef {
+    ref_area!();
+    ref_area_ext! {
+        area_radio,
+        area_text
+    }
+    ref_redraw!();
+    ref_render!();
     ref_event_option! {
         clicked => GRadioClickedParam,
-        hover => GRadioHoverParam
+        hover_in => GRadioHoverParam,
+        hover_out => GRadioHoverParam
     }
     animatie_fn! {
         animate_hover_on,
@@ -397,6 +554,7 @@ impl GRadioRef {
 impl GRadioSet {
     set_event! {
         clicked => GRadioClickedParam,
-        hover => GRadioHoverParam
+        hover_in => GRadioHoverParam,
+        hover_out => GRadioHoverParam
     }
 }

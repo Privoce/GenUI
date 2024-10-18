@@ -1,4 +1,3 @@
-
 /// This macro generates the following functions: `text`, `set_text`, `set_text_and_visible`, `is_visible` in Widget trait
 #[macro_export]
 macro_rules! set_text_and_visible_fn {
@@ -34,7 +33,7 @@ macro_rules! widget_origin_fn {
 /// # Generate Ref Event Function
 ///```rust
 /// impl GBreadCrumbItemRef {
-/// 
+///
 ///     ref_event_option!{
 ///         clicked => GBreadCrumbEventItemParam,
 ///         hover => GBreadCrumbEventItemParam
@@ -216,7 +215,7 @@ macro_rules! events_option {
                         }
                     })
                 });
-        
+
                 res
             }
         )*
@@ -287,6 +286,20 @@ macro_rules! ref_area {
             }
             Area::Empty
         }
+    };
+}
+
+#[macro_export]
+macro_rules! ref_area_ext {
+    ($($area_fn: ident),*) => {
+        $(
+            pub fn $area_fn(&self) -> Area {
+                if let Some(c_ref) = self.borrow() {
+                    return c_ref.$area_fn();
+                }
+                Area::Empty
+            }
+        )*
     };
 }
 
@@ -414,7 +427,7 @@ macro_rules! default_handle_animation {
 macro_rules! set_scope_path {
     () => {
         pub fn set_scope_path(&mut self, path: &HeapLiveIdPath) {
-            if self.scope_path.is_none(){
+            if self.scope_path.is_none() {
                 self.scope_path.replace(path.clone());
             }
         }
@@ -424,7 +437,7 @@ macro_rules! set_scope_path {
 #[macro_export]
 macro_rules! play_animation {
     () => {
-        fn play_animation(&mut self, cx: &mut Cx, state: &[LiveId; 2]) {
+        pub fn play_animation(&mut self, cx: &mut Cx, state: &[LiveId; 2]) {
             if self.animation_key {
                 self.clear_animation(cx);
                 self.animator_play(cx, state);
