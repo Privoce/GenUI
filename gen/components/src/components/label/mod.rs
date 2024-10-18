@@ -123,6 +123,9 @@ impl Widget for GLabel {
         cx.begin_turtle(walk, Layout::default());
         let font = get_font_family(&self.font_family, cx);
         self.draw_text.text_style.font = font;
+        let _ = self.text.as_ref().is_empty().then(|| {
+            let _ = self.set_text(" ");
+        });
         self.draw_text
             .draw_walk(cx, walk, self.align, self.text.as_ref());
         cx.end_turtle_with_area(&mut self.area);

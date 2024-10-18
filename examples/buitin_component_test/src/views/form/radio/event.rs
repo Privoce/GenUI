@@ -35,9 +35,11 @@ live_design! {
         an_box = <CBox>{
             box_wrap = {
                 spacing: 8.0,
+
                 <GVLayout>{
                     height: Fit,
                     spacing: 12.0,
+
                     radio_group = <GRadioGroup>{
                         spacing: 16.0,
                         <GRadio>{
@@ -54,7 +56,14 @@ live_design! {
                         <GRadio>{
                             theme: Error,
                             radio_type: Cross,
-                            value: "Error_Cross"
+                            value: "Error_Cross",
+                            text: "act as button",
+                            background_visible: true,
+                            padding: {
+                                left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
+                            },
+                            background_color: #6F3121,
+                            border_radius: 2.0
                         }
                     }
                 }

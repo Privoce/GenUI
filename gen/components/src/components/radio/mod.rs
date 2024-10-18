@@ -27,10 +27,10 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GRadioBase = {{GRadio}}{
-        height: 18.0,
+        height: Fit,
         width: Fit,
         font_size: 10.0,
-        spacing: 6.0,
+        spacing: 8.0,
         align: {
             x: 0.0,
             y: 0.5
@@ -196,9 +196,7 @@ impl Widget for GRadio {
             return DrawStep::done();
         }
         self.set_scope_path(&scope.path);
-        let font = get_font_family(&self.font_family, cx);
 
-        self.draw_text.text_style.font = font;
         self.draw_radio_wrap.begin(cx, walk, self.layout);
         let size = self.size + self.radio_border_width;
         let radio_walk = Walk {
@@ -207,13 +205,19 @@ impl Widget for GRadio {
             ..Default::default()
         };
         self.draw_radio.draw_walk(cx, radio_walk);
-        let text_walk = Walk {
-            width: Size::Fit,
-            height: Size::Fit,
-            ..Default::default()
-        };
-        self.draw_text
-            .draw_walk(cx, text_walk, Align { x: 0.0, y: 0.0 }, self.text.as_ref());
+
+        if self.text_visible {
+            let font = get_font_family(&self.font_family, cx);
+            self.draw_text.text_style.font = font;
+            let text_walk = Walk {
+                width: Size::Fit,
+                height: Size::Fit,
+                ..Default::default()
+            };
+            self.draw_text
+                .draw_walk(cx, text_walk, Align { x: 0.0, y: 0.0 }, self.text.as_ref());
+        }
+
         self.draw_radio_wrap.end(cx);
         DrawStep::done()
     }
@@ -246,8 +250,6 @@ impl LiveHook for GRadio {
             return;
         }
         self.render(cx);
-        // self.draw_radio.redraw(cx);
-        // self.draw_text.redraw(cx);
     }
 }
 
@@ -512,7 +514,7 @@ impl GRadio {
             Hit::FingerHoverOut(e) => {
                 default_hit_hover_out!(self, cx, e);
             }
-            Hit::FingerDown(_fe) => {
+            Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(focus_area);
                 }
