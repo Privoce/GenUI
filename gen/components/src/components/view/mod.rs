@@ -63,8 +63,18 @@ live_design! {
 /// ## Animation
 ///
 /// This component supports animations, particularly for hover and focus states. The default hover and focus animations are defined using the `animator` field:
-/// - `hover`: Changes the visual state of the view when hovered over by the cursor.
-/// - `focus`: Changes the visual state when the view receives or loses focus.
+/// - **hover.off**:  
+///   - `draw_view.hover`: changes to `0.0`  
+///   - `draw_view.focus`: changes to `0.0`  
+///   - Animation transition: uses `Forward` with a duration of `0.25s`
+/// - **hover.on**:  
+///   - `draw_view.hover`: changes to `1.0`  
+///   - `draw_view.focus`: changes to `0.0`  
+///   - Animation transition: uses `Forward` with a duration of `0.25s`
+/// - **hover.focus**:  
+///   - `draw_view.hover`: changes to `0.0`  
+///   - `draw_view.focus`: changes to `1.0`  
+///   - Animation transition: uses `Forward` with a duration of `0.25s`
 ///
 /// Animations can be customized to control transitions between different states, ensuring smooth visual feedback for user interactions.
 ///

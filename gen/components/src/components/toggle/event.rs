@@ -3,18 +3,19 @@ use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpE
 #[derive(Debug, Clone, DefaultNone)]
 pub enum GToggleEvent {
     Clicked(GToggleClickedParam),
-    Hover(GToggleHoverParam),
+    HoverIn(GToggleHoverParam),
+    HoverOut(GToggleHoverParam),
     None,
 }
 
 #[derive(Clone, Debug)]
 pub struct GToggleClickedParam {
-    pub value: bool,
+    pub selected: bool,
     pub e: FingerUpEvent,
 }
 
 #[derive(Clone, Debug)]
 pub struct GToggleHoverParam {
-    pub value: bool,
+    pub selected: bool,
     pub e: FingerHoverEvent,
 }

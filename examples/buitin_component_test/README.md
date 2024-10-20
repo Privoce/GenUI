@@ -39,11 +39,11 @@ Virtual: in virt.rs
   - [x] Event
   - [x] Usage
   - [x] Virtual (no)
-- [ ] Divider
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
+- [x] Divider
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual
 - [x] Svg
   - [x] Animation
   - [x] Event
@@ -59,22 +59,22 @@ Virtual: in virt.rs
   - [x] Event
   - [x] Usage
   - [x] Virtual (no)
-- [ ] Link
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual (no)
-- [ ] View
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
-- [ ] View
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
-- [ ] View
+- [x] Link
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual (no)
+- [ ] Radio
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual
+- [x] CheckBox
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual
+- [ ] Toggle
   - [ ] Animation
   - [ ] Event
   - [ ] Usage

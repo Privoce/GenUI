@@ -1,6 +1,4 @@
-use gen_components::components::{
-    checkbox::group::GCheckBoxGroupWidgetExt, label::GLabelWidgetExt, view::GView,
-};
+use gen_components::components::{label::GLabelWidgetExt, toggle::GToggleWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -9,7 +7,7 @@ live_design! {
     import gen_components::components::*;
     import crate::styles::*;
 
-    CheckboxEnPage = {{CheckboxEnPage}}{
+    ToggleEnPage = {{ToggleEnPage}}{
         height: Fit,
         width: Fill,
         flow: Down,
@@ -28,47 +26,17 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "CheckBox has 3 events: 1. Clicked 2. HoverIn 3. HoverOut",
-            }
-            <GLabel>{
-                text: "CheckBoxGroup just has 1 event:\n1. Changed\nChanged event can get the selected index and value.",
+                text: "Toggle has 3 events: 1. Clicked 2. HoverIn 3. HoverOut",
             }
         }
 
         an_box = <CBox>{
             box_wrap = {
                 spacing: 8.0,
-
-                <GVLayout>{
-                    height: Fit,
-                    spacing: 12.0,
-
-                    checkbox_group = <GCheckBoxGroup>{
-                        spacing: 16.0,
-                        <GCheckBox>{
-                            theme: Success,
-                            checkbox_type: Round,
-                            value: "Success_Round"
-                        }
-                        <GCheckBox>{
-                            theme: Info,
-                            checkbox_type: Tick,
-                            value: "Info_Tick"
-                            text: "I just a label"
-                        }
-                        <GCheckBox>{
-                            theme: Error,
-                            checkbox_type: Cross,
-                            value: "Error_Cross",
-                            text: "act as button",
-                            background_visible: true,
-                            padding: {
-                                left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
-                            },
-                            background_color: #6F3121,
-                            border_radius: 2.0
-                        }
-                    }
+                tg = <GToggle>{
+                    theme: Warning,
+                    hover_color: #00FF00,
+                    stroke_hover_color: #FF0000,
                 }
                 <GVLayout>{
                     height: Fit,
@@ -77,7 +45,7 @@ live_design! {
                         height: Fit,
                         spacing: 16.0,
                         <GLabel>{
-                            text: "Values: "
+                            text: "Event: "
                         }
                         val_label = <GLabel>{
                             text: "",
@@ -87,7 +55,7 @@ live_design! {
                         height: Fit,
                         spacing: 16.0,
                         <GLabel>{
-                            text: "Selecteds: "
+                            text: "Selected: "
                         }
                         selected_label = <GLabel>{
                             text: "",
@@ -155,19 +123,19 @@ fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
 }
 
 #[derive(Live, Widget)]
-pub struct CheckboxEnPage {
+pub struct ToggleEnPage {
     #[deref]
     #[redraw]
     pub deref_widget: GView,
 }
 
-impl LiveHook for CheckboxEnPage {
+impl LiveHook for ToggleEnPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for CheckboxEnPage {
+impl Widget for ToggleEnPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         self.deref_widget.draw_walk(cx, scope, walk)
     }
@@ -177,25 +145,21 @@ impl Widget for CheckboxEnPage {
         let val_label = self.glabel(id!(val_label));
         let selected_label = self.glabel(id!(selected_label));
 
-        let checkbox_group = self.gcheck_box_group(id!(checkbox_group));
+        let tg = self.gtoggle(id!(tg));
 
-        if let Some(e) = checkbox_group.changed(&actions) {
-            let val_str = e
-                .values
-                .iter()
-                .map(|x| x.as_ref().unwrap_or(&String::new()).to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-
-            val_label.set_text_and_redraw(cx, &val_str);
-            let selected = e
-                .selected
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-
-            selected_label.set_text_and_redraw(cx, &selected);
+        if let Some(e) = tg.clicked(&actions) {
+            val_label.set_text_and_redraw(cx, "Clicked");
+            if e.selected {
+                selected_label.set_text_and_redraw(cx, "Selected");
+            } else {
+                selected_label.set_text_and_redraw(cx, "Unselected");
+            }
+        }
+        if tg.hover_in(&actions).is_some() {
+            val_label.set_text_and_redraw(cx, "Hover In");
+        }
+        if tg.hover_out(&actions).is_some() {
+            val_label.set_text_and_redraw(cx, "Hover Out");
         }
     }
     fn is_visible(&self) -> bool {

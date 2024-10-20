@@ -48,11 +48,19 @@ live_design! {
 /// The `GLabel` component is a customizable label widget with animation and event handling features. It allows for hover, focus, and text styling through various properties, animations, and events.
 ///
 /// ## Animation
-/// The `GLabel` component comes with built-in animations for hover and focus states. The following animations are provided:
-/// - `hover.on`: Animates when the label is hovered.
-/// - `hover.off`: Animates when the hover state is removed.
-/// - `focus.on`: Animates when the label gains focus.
-/// - `focus.off`: Animates when the focus is lost.
+/// This component supports animations, particularly for hover and focus states. The default hover and focus animations are defined using the `animator` field:
+/// - **hover.off**:  
+///   - `draw_text.hover`: changes to `0.0`  
+///   - `draw_text.focus`: changes to `0.0`  
+///   - Animation transition: uses `Forward` with a duration of `0.25s`
+/// - **hover.on**:  
+///   - `draw_text.hover`: changes to `1.0`  
+///   - `draw_text.focus`: changes to `0.0`  
+///   - Animation transition: uses `Forward` with a duration of `0.25s`
+/// - **hover.focus**:  
+///   - `draw_text.hover`: changes to `0.0`  
+///   - `draw_text.focus`: changes to `1.0`  
+///   - Animation transition: uses `Forward` with a duration of `0.25s`
 ///
 /// Animations are controlled by the `Animator` property, which defines the behavior for transitions between hover and focus states.
 ///

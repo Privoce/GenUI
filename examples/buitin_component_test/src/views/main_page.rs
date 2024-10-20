@@ -26,6 +26,7 @@ live_design! {
     import crate::views::basic::scroll::*;
     import crate::views::form::radio::*;
     import crate::views::form::checkbox::*;
+    import crate::views::form::toggle::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -231,6 +232,14 @@ live_design! {
                                 text: "Checkbox",
                             }
                         }
+                        tab_toggle = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Toggle",
+                            }
+                        }
                     }
                 }
             }
@@ -289,6 +298,9 @@ live_design! {
                     }
                     checkbox_page = <GBarPage>{
                         <CheckboxPage>{}
+                    }
+                    toggle_page = <GBarPage>{
+                        <TogglePage>{}
                     }
                 }
             }
@@ -391,12 +403,13 @@ impl Widget for AppMainPage {
                                 link_page,
                                 scroll_page,
                                 radio_page,
-                                checkbox_page
+                                checkbox_page,
+                                toggle_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(checkbox_page))
+                        .active(id!(toggle_page))
                         .build(cx);
                 });
             })
@@ -450,6 +463,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(radio_page));
             } else if e.selected_id == id!(tab_checkbox)[0] {
                 router.nav_to(cx, id!(checkbox_page));
+            } else if e.selected_id == id!(tab_toggle)[0] {
+                router.nav_to(cx, id!(toggle_page));
             }
         }
 

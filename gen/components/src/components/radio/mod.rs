@@ -313,7 +313,6 @@ impl GRadio {
             cx,
             live! {
                 hover: 0.0,
-                selected: 0.0
             },
         );
         self.draw_text.apply_over(

@@ -6,27 +6,28 @@ live_design! {
     DrawGToggle = {{DrawGToggle}} {
 
         fn get_background_color(self) -> vec4 {
+            
             return mix(
                 mix(
                     self.background_color,
-                    self.hover_color,
-                    self.hover
+                    self.selected_color,
+                    self.selected
                 ),
-                self.selected_color,
-                self.selected
-            )
+                self.hover_color,
+                self.hover
+            );
         }
 
         fn get_stroke_color(self) -> vec4 {
             return mix(
                 mix(
                     self.stroke_color,
-                    self.stroke_hover_color,
-                    self.hover
+                    self.stroke_selected_color,
+                    self.selected
                 ),
-                self.stroke_selected_color,
-                self.selected
-            )
+                self.stroke_hover_color,
+                self.hover
+            );
         }
 
         fn pixel(self) -> vec4 {
