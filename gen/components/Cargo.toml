@@ -10,7 +10,7 @@ license = "MIT"
 
 [dependencies]
 arboard = "3.4.1"
-makepad-widgets = { path = "E:/Rust/try/makepad/makepad/rik/makepad/widgets" }
+makepad-widgets = { path = "/Users/shengyifei/projects/makepad/makepad/widgets" }
 open = { version = "5.3.0", optional = true }
 rfd = "0.15.0"
 unicode-segmentation = "1.11.0"

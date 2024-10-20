@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-makepad-widgets = { path = "E:/Rust/try/makepad/makepad/rik/makepad/widgets", version = "0.6.0" }
-gen_components ={ path="E:/Rust/try/makepad/Gen-UI/gen/components" }
+makepad-widgets = { path = "/Users/shengyifei/projects/makepad/makepad/widgets", version = "0.6.0" }
+gen_components ={ path="/Users/shengyifei/projects/gen_ui/GenUI/gen/components" }

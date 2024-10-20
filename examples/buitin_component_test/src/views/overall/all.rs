@@ -220,9 +220,9 @@ live_design! {
                     header = {title = {text: "Radio"}}
                     body = {
                         spacing: 16.0,
-                        <GRadio>{value: true}
+                        <GRadio>{selected: true}
                         <GRadio>{
-                            value: true,
+                            selected: true,
                             radio_type: Tick,
                         }
                     }
@@ -231,8 +231,8 @@ live_design! {
                     header = {title = {text: "CheckBox"}}
                     body = {
                         spacing: 16.0,
-                        <GCheckBox>{value: true}
-                        <GCheckBox>{check_type: Tick, value: true}
+                        <GCheckBox>{selected: true}
+                        <GCheckBox>{check_type: Tick, selected: true}
                     }
                 }
                 <CPreview>{
@@ -240,7 +240,7 @@ live_design! {
                     body = {
                         spacing: 16.0,
                         <GToggle>{
-                            value: true
+                            selected: true
                         }
                         <GToggle>{
                             toggle_type: Rect,

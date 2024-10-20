@@ -1,10 +1,13 @@
 use makepad_widgets::*;
 
-use crate::{components::view::GView, event_option, ref_event_option, set_event};
+use crate::{
+    components::view::GView, event_option, ref_area, ref_event_option, ref_redraw_mut,
+    ref_render, set_event,
+};
 
 use super::{
     event::{GRadioGroupEvent, GRadioGroupEventParam},
-    GRadioWidgetRefExt,
+    GRadioRef, GRadioWidgetRefExt,
 };
 
 live_design! {
@@ -30,11 +33,15 @@ pub struct GRadioGroup {
 
 impl Widget for GRadioGroup {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        let _ = self.deref_widget.draw_walk(cx, scope, walk);
-        DrawStep::done()
+        self.deref_widget.draw_walk(cx, scope, walk)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = self.animator_handle_event(cx, event);
+        if !self.is_visible() {
+            return;
+        }
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.redraw(cx);
+        };
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let mut flag = None;
         let mut selected = 0;
@@ -72,6 +79,9 @@ impl Widget for GRadioGroup {
             );
         }
     }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GRadioGroup {
@@ -102,7 +112,7 @@ impl GRadioGroup {
             });
     }
     fn find_selected(&mut self) -> () {
-        let mut flag = true;
+        let mut flag = false;
         let mut selected = 0;
         let _ = self
             .children
@@ -118,7 +128,7 @@ impl GRadioGroup {
             .for_each(|(index, is_selected)| {
                 if is_selected && flag {
                     selected = index;
-                    flag = false;
+                    flag = true;
                 } else if is_selected && !flag {
                     panic!(
                         "In GRadioGroup only allows one radio be selected! The Second is: {}",
@@ -127,16 +137,23 @@ impl GRadioGroup {
                 }
             });
 
-        if !flag {
+        if flag {
             self.selected = selected as i32;
         }
-        // else{
-        //     // here means no radio is selected
-        //     self.set_selected(cx, 0);
-        // }
     }
     pub fn area(&self) -> Area {
         self.area
+    }
+    pub fn get(&self, index: usize) -> Option<(LiveId, GRadioRef)> {
+        self.children
+            .get(index)
+            .map(|(id, child)| (id.clone(), child.as_gradio()))
+    }
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.deref_widget.redraw(cx);
+    }
+    pub fn render(&mut self, cx: &mut Cx) {
+        self.deref_widget.render(cx);
     }
     event_option! {
         changed: GRadioGroupEvent::Changed => GRadioGroupEventParam
@@ -146,6 +163,14 @@ impl GRadioGroup {
 impl GRadioGroupRef {
     ref_event_option! {
         changed => GRadioGroupEventParam
+    }
+    ref_area!();
+    ref_redraw_mut!();
+    ref_render!();
+    pub fn get(&self, index: usize) -> Option<(LiveId, GRadioRef)> {
+        self.borrow().map(|c_ref|{
+            c_ref.get(index)
+        }).flatten()
     }
 }
 
