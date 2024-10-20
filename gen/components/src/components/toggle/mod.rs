@@ -13,6 +13,9 @@ live_design! {
     import makepad_draw::shader::std::*;
     GLOBAL_DURATION = 0.25
     GToggleBase = {{GToggle}}{
+        width: 36.0,
+        height: 19.0,
+        align: { x: 0.0, y: 0.0 }
         animator: {
             hover = {
                 default: off

@@ -5,7 +5,10 @@ use event::*;
 use makepad_widgets::*;
 pub use register::register;
 
-use crate::{event_bool, ref_event_bool, set_event_bool, widget_area};
+use crate::{
+    event_bool, ref_area, ref_event_bool, ref_redraw, set_event_bool,
+    shader::draw_shader::DrawGShader, utils::BoolToF32, widget_area,
+};
 
 live_design! {
     GShaderBase = {{GShader}} {}
@@ -15,7 +18,7 @@ live_design! {
 pub struct GShader {
     #[redraw]
     #[live]
-    pub draw_shader: DrawQuad,
+    pub draw_shader: DrawGShader,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -42,19 +45,26 @@ impl LiveHook for GShader {
             self.next_frame = cx.new_next_frame();
         }
     }
-    fn after_apply(&mut self, _cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(
+        &mut self,
+        _cx: &mut Cx,
+        _apply: &mut Apply,
+        _index: usize,
+        _nodes: &[LiveNode],
+    ) {
         self.pre_state = self.animation_key;
         if !self.visible {
             return;
         }
+        self.draw_shader.opened = self.animation_key.to_f32();
     }
     fn after_update_from_doc(&mut self, cx: &mut Cx) {
         if self.pre_state != self.animation_key {
             let uid = self.widget_uid();
             if self.pre_state {
-                cx.widget_action(uid, &Scope::empty().path, GShaderEvent::Close);
+                cx.widget_action(uid, &Scope::empty().path, GShaderEvent::Closed);
             } else {
-                cx.widget_action(uid, &Scope::empty().path, GShaderEvent::Open);
+                cx.widget_action(uid, &Scope::empty().path, GShaderEvent::Opened);
             }
         }
     }
@@ -91,22 +101,47 @@ impl GShader {
     widget_area! {
         area, draw_shader
     }
-    event_bool!{
-        open: GShaderEvent::Open,
-        close: GShaderEvent::Close
+    event_bool! {
+        opened: GShaderEvent::Opened,
+        closed: GShaderEvent::Closed
+    }
+    pub fn open(&mut self, cx: &mut Cx) -> () {
+        self.animation_key = true;
+        self.draw_shader.opened = 1.0;
+        self.redraw(cx);
+    }
+    pub fn close(&mut self, cx: &mut Cx) -> () {
+        self.animation_key = false;
+        self.draw_shader.opened = 0.0;
+        self.redraw(cx);
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.draw_shader.redraw(cx);
     }
 }
 
-impl GShaderRef{
+impl GShaderRef {
+    ref_redraw!();
+    ref_area!();
     ref_event_bool! {
-        open,
-        close
+        opened,
+        closed
+    }
+    pub fn open(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.open(cx);
+        }
+    }
+    pub fn close(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.close(cx);
+        }
     }
 }
 
 impl GShaderSet {
-    set_event_bool!{
-        open, 
-        close
+    set_event_bool! {
+        opened,
+        closed
     }
 }

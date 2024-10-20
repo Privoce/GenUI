@@ -374,11 +374,7 @@ live_design! {
     GRadioGroup = <GRadioGroupBase>{}
     GCheckBox = <GCheckBoxBase>{}
     GCheckBoxGroup = <GCheckBoxGroupBase>{}
-    GToggle = <GToggleBase>{
-        width: 36.0,
-        height: 19.0,
-        align: { x: 0.0, y: 0.0 }
-    }
+    GToggle = <GToggleBase>{}
     GSvg = <GSvgBase>{
         width: Fit,
         height: Fit,

@@ -206,7 +206,31 @@ live_design! {
                         }
                     }
                 }
+                <CPreview>{
+                    header = {title = {text: "Shader"}}
+                    body = {
+                        padding: 8.0,
+                        <GShader>{
+                            height: 200.0,
+                            width: 200.0,
+                            animation_key: false,
+                            draw_shader:{
+                                fn pixel(self) -> vec4 {
+                                                
+                                    let uv = self.pos - 0.5;
+                                    uv.x *= self.rect_size.x / self.rect_size.y;
                 
+                                    let radius = length(uv);
+                                    let wave = sin(radius * 10.0 - 1.2 * 2.0);
+                                    let intensity = wave * 0.5 + 0.5;
+                                    let col = vec3(intensity);
+                
+                                    return vec4(col, 1.0);
+                                }
+                            }
+                        }
+                    }
+                }
             }
             <GLabel>{
                 font_size: 12.0,

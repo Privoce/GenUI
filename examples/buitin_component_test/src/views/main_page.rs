@@ -27,6 +27,7 @@ live_design! {
     import crate::views::form::radio::*;
     import crate::views::form::checkbox::*;
     import crate::views::form::toggle::*;
+    import crate::views::basic::shader::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -206,6 +207,14 @@ live_design! {
                                 text: "Scroll",
                             }
                         }
+                        tab_shader = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Shader",
+                            }
+                        }
                     }
                 }
                 sub4 = <GSubMenu>{
@@ -301,6 +310,9 @@ live_design! {
                     }
                     toggle_page = <GBarPage>{
                         <TogglePage>{}
+                    }
+                    shader_page = <GBarPage>{
+                        <ShaderPage>{}
                     }
                 }
             }
@@ -404,12 +416,13 @@ impl Widget for AppMainPage {
                                 scroll_page,
                                 radio_page,
                                 checkbox_page,
-                                toggle_page
+                                toggle_page,
+                                shader_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(toggle_page))
+                        .active(id!(shader_page))
                         .build(cx);
                 });
             })
@@ -465,6 +478,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(checkbox_page));
             } else if e.selected_id == id!(tab_toggle)[0] {
                 router.nav_to(cx, id!(toggle_page));
+            } else if e.selected_id == id!(tab_shader)[0] {
+                router.nav_to(cx, id!(shader_page));
             }
         }
 

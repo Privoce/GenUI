@@ -16,3 +16,4 @@ pub mod draw_toggle;
 pub mod draw_view;
 pub mod icon_lib;
 pub mod manual;
+pub mod draw_shader;
