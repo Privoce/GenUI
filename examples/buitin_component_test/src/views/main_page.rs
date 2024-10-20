@@ -25,6 +25,7 @@ live_design! {
     import crate::views::basic::link::*;
     import crate::views::basic::scroll::*;
     import crate::views::form::radio::*;
+    import crate::views::form::checkbox::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -50,9 +51,10 @@ live_design! {
                     font_size: 12.0,
                     text: "GenUI Components",
                 }
+                visible: false
             }
             body: {
-
+                scroll_bars: <GScrollBars>{},
                 sub1 = <GSubMenu>{
                     title: {
                         <GLabel>{
@@ -221,6 +223,14 @@ live_design! {
                                 text: "Radio",
                             }
                         }
+                        tab_checkbox = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Checkbox",
+                            }
+                        }
                     }
                 }
             }
@@ -276,6 +286,9 @@ live_design! {
                     }
                     radio_page = <GBarPage>{
                         <RadioPage>{}
+                    }
+                    checkbox_page = <GBarPage>{
+                        <CheckboxPage>{}
                     }
                 }
             }
@@ -377,12 +390,13 @@ impl Widget for AppMainPage {
                                 divider_page,
                                 link_page,
                                 scroll_page,
-                                radio_page
+                                radio_page,
+                                checkbox_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(radio_page))
+                        .active(id!(checkbox_page))
                         .build(cx);
                 });
             })
@@ -434,7 +448,9 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(scroll_page));
             } else if e.selected_id == id!(tab_radio)[0] {
                 router.nav_to(cx, id!(radio_page));
-            } 
+            } else if e.selected_id == id!(tab_checkbox)[0] {
+                router.nav_to(cx, id!(checkbox_page));
+            }
         }
 
         router.borrow_mut().map(|mut route| {

@@ -1,5 +1,5 @@
 use gen_components::components::{
-    label::GLabelWidgetExt, radio::group::GRadioGroupWidgetExt, view::GView,
+    checkbox::group::GCheckBoxGroupWidgetExt, label::GLabelWidgetExt, view::GView,
 };
 use makepad_widgets::*;
 
@@ -9,7 +9,7 @@ live_design! {
     import gen_components::components::*;
     import crate::styles::*;
 
-    RadioEnPage = {{RadioEnPage}}{
+    CheckboxEnPage = {{CheckboxEnPage}}{
         height: Fit,
         width: Fill,
         flow: Down,
@@ -28,10 +28,10 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "Radio has 3 events: 1. Clicked 2. HoverIn 3. HoverOut",
+                text: "CheckBox has 3 events: 1. Clicked 2. HoverIn 3. HoverOut",
             }
             <GLabel>{
-                text: "RadioGroup just has 1 event:\n1. Changed\nChanged event can get the selected index and value.",
+                text: "CheckBoxGroup just has 1 event:\n1. Changed\nChanged event can get the selected index and value.",
             }
         }
 
@@ -43,22 +43,22 @@ live_design! {
                     height: Fit,
                     spacing: 12.0,
 
-                    radio_group = <GRadioGroup>{
+                    checkbox_group = <GCheckBoxGroup>{
                         spacing: 16.0,
-                        <GRadio>{
+                        <GCheckBox>{
                             theme: Success,
-                            radio_type: Round,
+                            checkbox_type: Round,
                             value: "Success_Round"
                         }
-                        <GRadio>{
+                        <GCheckBox>{
                             theme: Info,
-                            radio_type: Tick,
+                            checkbox_type: Tick,
                             value: "Info_Tick"
                             text: "I just a label"
                         }
-                        <GRadio>{
+                        <GCheckBox>{
                             theme: Error,
-                            radio_type: Cross,
+                            checkbox_type: Cross,
                             value: "Error_Cross",
                             text: "act as button",
                             background_visible: true,
@@ -77,7 +77,7 @@ live_design! {
                         height: Fit,
                         spacing: 16.0,
                         <GLabel>{
-                            text: "Value: "
+                            text: "Values: "
                         }
                         val_label = <GLabel>{
                             text: "",
@@ -87,7 +87,7 @@ live_design! {
                         height: Fit,
                         spacing: 16.0,
                         <GLabel>{
-                            text: "Selected: "
+                            text: "Selecteds: "
                         }
                         selected_label = <GLabel>{
                             text: "",
@@ -105,22 +105,22 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-radio_group = <GRadioGroup>{
+checkbox_group = <GCheckBoxGroup>{
     spacing: 16.0,
-    <GRadio>{
+    <GCheckBox>{
         theme: Success,
-        radio_type: Round,
+        checkbox_type: Round,
         value: "Success_Round"
     }
-    <GRadio>{
+    <GCheckBox>{
         theme: Info,
-        radio_type: Tick,
+        checkbox_type: Tick,
         value: "Info_Tick"
         text: "I just a label"
     }
-    <GRadio>{
+    <GCheckBox>{
         theme: Error,
-        radio_type: Cross,
+        checkbox_type: Cross,
         value: "Error_Cross",
         text: "act as button",
         background_visible: true,
@@ -138,9 +138,9 @@ fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
     let val_label = self.glabel(id!(val_label));
     let selected_label = self.glabel(id!(selected_label));
 
-    let radio_group = self.gradio_group(id!(radio_group));
+    let checkbox_group = self.gcheckbox_group(id!(checkbox_group));
 
-    if let Some(e) = radio_group.changed(&actions) {
+    if let Some(e) = checkbox_group.changed(&actions) {
         val_label.set_text_and_redraw(cx, &e.value.unwrap_or("Empty".to_string()));
         selected_label.set_text_and_redraw(cx, &e.selected.to_string());
     }
@@ -155,19 +155,19 @@ fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
 }
 
 #[derive(Live, Widget)]
-pub struct RadioEnPage {
+pub struct CheckboxEnPage {
     #[deref]
     #[redraw]
     pub deref_widget: GView,
 }
 
-impl LiveHook for RadioEnPage {
+impl LiveHook for CheckboxEnPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
-impl Widget for RadioEnPage {
+impl Widget for CheckboxEnPage {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         self.deref_widget.draw_walk(cx, scope, walk)
     }
@@ -177,11 +177,26 @@ impl Widget for RadioEnPage {
         let val_label = self.glabel(id!(val_label));
         let selected_label = self.glabel(id!(selected_label));
 
-        let radio_group = self.gradio_group(id!(radio_group));
+        let checkbox_group = self.gcheck_box_group(id!(checkbox_group));
 
-        if let Some(e) = radio_group.changed(&actions) {
-            val_label.set_text_and_redraw(cx, &e.value.unwrap_or("Empty".to_string()));
-            selected_label.set_text_and_redraw(cx, &e.selected.to_string());
+        if let Some(e) = checkbox_group.changed(&actions) {
+            dbg!(&e);
+            let val_str = e
+                .values
+                .iter()
+                .map(|x| x.as_ref().unwrap_or(&String::new()).to_string())
+                .collect::<Vec<String>>()
+                .join(", ");
+
+            val_label.set_text_and_redraw(cx, &val_str);
+            let selected = e
+                .selected
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+                .join(", ");
+
+            selected_label.set_text_and_redraw(cx, &selected);
         }
     }
     fn is_visible(&self) -> bool {

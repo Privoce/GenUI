@@ -1,8 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    components::view::GView, event_option, ref_area, ref_event_option, ref_redraw_mut,
-    ref_render, set_event,
+    components::view::GView, event_option, ref_actives, ref_area, ref_event_option, ref_redraw_mut, ref_render, set_event
 };
 
 use super::{
@@ -19,7 +18,7 @@ live_design! {
         height: Fit,
         width: Fit,
         animation_key: true,
-        spacing: 6.0,
+        spacing: 8.0,
     }
 }
 
@@ -158,6 +157,33 @@ impl GRadioGroup {
     event_option! {
         changed: GRadioGroupEvent::Changed => GRadioGroupEventParam
     }
+    pub fn active_selected(&mut self, cx: &mut Cx, e: Option<FingerUpEvent>) {
+        let value = self
+            .get(self.selected as usize)
+            .map(|(_, child)| child.value())
+            .flatten();
+
+        if let Some(path) = self.scope_path.as_ref() {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GRadioGroupEvent::Changed(GRadioGroupEventParam {
+                    selected: self.selected as usize,
+                    value,
+                    e,
+                }),
+            );
+        }
+    }
+    /// Change the selected radio by index. It will call the changed event.
+    pub fn change(&mut self, cx: &mut Cx, index: usize) {
+        if index >= self.children.len() {
+            panic!("Index out of range!");
+        }
+
+        self.set_selected(cx, index);
+        self.active_selected(cx, None);
+    }
 }
 
 impl GRadioGroupRef {
@@ -168,9 +194,13 @@ impl GRadioGroupRef {
     ref_redraw_mut!();
     ref_render!();
     pub fn get(&self, index: usize) -> Option<(LiveId, GRadioRef)> {
-        self.borrow().map(|c_ref|{
-            c_ref.get(index)
-        }).flatten()
+        self.borrow().map(|c_ref| c_ref.get(index)).flatten()
+    }
+    pub fn change(&self, cx: &mut Cx, index: usize) {
+        self.borrow_mut().map(|mut c_ref| c_ref.change(cx, index));
+    }
+    ref_actives!{
+        active_selected: Option<FingerUpEvent>
     }
 }
 

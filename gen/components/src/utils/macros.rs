@@ -349,6 +349,17 @@ macro_rules! ref_render {
 }
 
 #[macro_export]
+macro_rules! ref_actives {
+    ($($event_fn: ident : $e_ty: ty),*) => {
+       $(
+            pub fn $event_fn(&self, cx: &mut Cx, e: $e_ty) -> () {
+                self.borrow_mut().map(|mut c_ref| c_ref.$event_fn(cx, e));
+            }
+       )*
+    };
+}
+
+#[macro_export]
 macro_rules! active_event{
     ($($event_fn: ident : $event: path |$param: ident : $param_ty: ty| => $return_ty: expr),*) => {
         $(

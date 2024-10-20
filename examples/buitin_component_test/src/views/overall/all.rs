@@ -232,7 +232,7 @@ live_design! {
                     body = {
                         spacing: 16.0,
                         <GCheckBox>{selected: true}
-                        <GCheckBox>{check_type: Tick, selected: true}
+                        <GCheckBox>{checkbox_type: Tick, selected: true}
                     }
                 }
                 <CPreview>{

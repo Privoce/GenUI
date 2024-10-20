@@ -9,9 +9,9 @@ use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 
 use crate::{
-    active_event, animatie_fn, default_hit_hover_in, default_hit_hover_out, event_option,
-    play_animation, ref_area, ref_area_ext, ref_event_option, ref_redraw, ref_render, set_event,
-    set_scope_path, set_text_and_visible_fn,
+    active_event, animatie_fn, default_handle_animation, default_hit_hover_in,
+    default_hit_hover_out, event_option, play_animation, ref_area, ref_area_ext, ref_event_option,
+    ref_redraw, ref_render, set_event, set_scope_path, set_text_and_visible_fn,
     shader::{
         draw_radio::{DrawGRadio, GChooseType},
         draw_text::DrawGText,
@@ -228,6 +228,9 @@ impl Widget for GRadio {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.is_visible() {
+            return;
+        }
         let hit = event.hits_with_options(
             cx,
             self.area(),
@@ -237,6 +240,9 @@ impl Widget for GRadio {
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if !self.is_visible() {
+            return;
+        }
         let focus_area = self.area();
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
@@ -267,10 +273,22 @@ impl GRadio {
         hover_out: GRadioEvent::HoverOut => GRadioHoverParam
     }
     active_event! {
-        active_hover_in: GRadioEvent::HoverIn |e: FingerHoverEvent| => GRadioHoverParam {e},
-        active_hover_out: GRadioEvent::HoverOut |e: FingerHoverEvent| => GRadioHoverParam {e}
+        active_hover_in: GRadioEvent::HoverIn |e: Option<FingerHoverEvent>| => GRadioHoverParam {e},
+        active_hover_out: GRadioEvent::HoverOut |e: Option<FingerHoverEvent>| => GRadioHoverParam {e}
     }
-    fn active_clicked(&mut self, cx: &mut Cx, e: FingerUpEvent) {
+    pub fn value(&self) -> Option<String> {
+        self.value.clone()
+    }
+    pub fn is_selected(&self) -> bool {
+        self.selected
+    }
+    pub fn select(&mut self, cx: &mut Cx) {
+        self.toggle(cx, true);
+    }
+    pub fn unselect(&mut self, cx: &mut Cx) {
+        self.toggle(cx, false);
+    }
+    pub fn active_clicked(&mut self, cx: &mut Cx, e: Option<FingerUpEvent>) {
         self.check_event_scope().map(|path| {
             cx.widget_action(
                 self.widget_uid(),
@@ -395,6 +413,7 @@ impl GRadio {
             self.play_animation(cx, id!(selected.off));
         }
     }
+
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
         self.clear_animation(cx);
         self.draw_radio.apply_over(
@@ -503,16 +522,14 @@ impl GRadio {
         hit: Hit,
         focus_area: Area,
     ) {
-        if self.animation_key {
-            self.animator_handle_event(cx, event);
-        }
+        default_handle_animation!(self, cx, event);
 
         match hit {
             Hit::FingerHoverIn(e) => {
-                default_hit_hover_in!(self, cx, e);
+                default_hit_hover_in!(self, cx, Some(e));
             }
             Hit::FingerHoverOut(e) => {
-                default_hit_hover_out!(self, cx, e);
+                default_hit_hover_out!(self, cx, Some(e));
             }
             Hit::FingerDown(_) => {
                 if self.grab_key_focus {
@@ -523,7 +540,7 @@ impl GRadio {
                 if self.animator_in_state(cx, id!(selected.off)) {
                     self.selected = true;
                     self.play_animation(cx, id!(selected.on));
-                    self.active_clicked(cx, e);
+                    self.active_clicked(cx, Some(e));
                 }
             }
             _ => (),
@@ -551,6 +568,26 @@ impl GRadioRef {
         animate_selected_off
     }
     widget_origin_fn!(GRadio);
+    /// ## Get the value of the radio.
+    /// If the radio has a value, it will return the Some(value).
+    /// Otherwise, it will return None.(include can not find the radio)
+    pub fn value(&self) -> Option<String> {
+        if let Some(c_ref) = self.borrow() {
+            c_ref.value()
+        } else {
+            None
+        }
+    }
+    /// ## Get the selected state of the radio.
+    /// If the radio is selected, it will return true.
+    /// Otherwise, it will return false.(include can not find the radio)
+    pub fn is_selected(&self) -> bool {
+        if let Some(c_ref) = self.borrow() {
+            c_ref.is_selected()
+        } else {
+            false
+        }
+    }
 }
 
 impl GRadioSet {

@@ -7,7 +7,7 @@ pub mod usage;
 pub fn register(cx: &mut Cx) {
     self::live_design(cx);
     self::usage::live_design(cx);
-    // self::animate::live_design(cx);
+    self::animate::live_design(cx);
     self::event::live_design(cx);
 }
 
@@ -19,7 +19,7 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
     import crate::views::form::radio::usage::*;
-    // import crate::views::form::radio::animate::*;
+    import crate::views::form::radio::animate::*;
     import crate::views::form::radio::event::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     RadioPage = {{RadioPage}}{
@@ -43,7 +43,7 @@ live_design! {
             }
         }
         <RadioUsagePage>{}
-        // <RadioAnPage>{}
+        <RadioAnPage>{}
         <RadioEnPage>{}
         <GLabel>{
             font_size: 12.0,

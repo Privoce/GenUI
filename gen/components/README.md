@@ -1,7 +1,7 @@
 # GEN Components (v0.1.0)
 
 - version: `v0.1.0`
-- update date: 2024-10-14
+- update date: 2024-10-24
 - author: [Will-YiFei Sheng](syf20020816@outlook.com)
 - makepad_widget version: `v0.6.0`
 - makepad branch: `rik`
@@ -80,7 +80,7 @@
 - [ ] State Card for Doc(Note, Important, Info)
 - [ ] Button ReBuild (icon + text + slot)
 - [ ] Component disable (组件禁用状态)
-
+  
 ## Experimental function (v0.1.0 ~ v0.5.0)
 
 - [x] Radio Switch Container (多个radio切换) (See RadioGroup)
@@ -92,6 +92,7 @@
 - [ ] Video Api
 - [ ] Theme Config (通过toml配置的方式设置主题色等默认样式)
 - [ ] Right mouse button event (鼠标右击事件展开组件)
+- [ ] CallBack control (回调控制， 例如当开发者调用hover激活组件hover时，也可以调用active_hover方法控制是否需要激活回调)
 
 ## after v0.5.0
 

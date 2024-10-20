@@ -43,6 +43,7 @@ live_design! {
     import crate::components::radio::GRadioBase;
     import crate::components::radio::group::GRadioGroupBase;
     import crate::components::checkbox::GCheckBoxBase;
+    import crate::components::checkbox::group::GCheckBoxGroupBase;
     import crate::components::image::GImageBase;
     import crate::components::input::GInputBase;
     import crate::components::svg::GSvgBase;
@@ -371,11 +372,8 @@ live_design! {
     }
     GRadio = <GRadioBase>{}
     GRadioGroup = <GRadioGroupBase>{}
-    GCheckBox = <GCheckBoxBase>{
-        width: 19.0,
-        height: 19.0,
-        align: { x: 0.0, y: 0.0 }
-    }
+    GCheckBox = <GCheckBoxBase>{}
+    GCheckBoxGroup = <GCheckBoxGroupBase>{}
     GToggle = <GToggleBase>{
         width: 36.0,
         height: 19.0,
