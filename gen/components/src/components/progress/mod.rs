@@ -1,12 +1,19 @@
 pub mod event;
 mod register;
 
+use core::panic;
+
 use event::*;
 use makepad_widgets::*;
 pub use register::register;
 
 use crate::{
-    active_event, animatie_fn, default_handle_animation, event_option, play_animation, ref_area, ref_event_option, ref_redraw, ref_render, set_event, set_scope_path, shader::draw_progress::{DrawGProgress, GProgressType}, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area, widget_origin_fn
+    active_event, animatie_fn, default_handle_animation, event_option, play_animation, ref_area,
+    ref_event_option, ref_redraw, ref_render, set_event, set_scope_path,
+    shader::draw_progress::{DrawGProgress, GProgressType},
+    themes::Themes,
+    utils::{round_to_two_decimals, set_cursor, BoolToF32, ThemeColor},
+    widget_area, widget_origin_fn,
 };
 
 live_design! {
@@ -114,7 +121,9 @@ impl Widget for GProgress {
             return DrawStep::done();
         }
         self.set_scope_path(&scope.path);
-        self.draw_progress.position = self.value as f32;
+        // self.draw_progress.position = self.value as f32;
+        self.draw_progress.position =
+            convert_to_pos(self.value, self.min, self.max, self.step) as f32;
         self.draw_progress.begin(cx, walk, self.layout);
         self.draw_progress.end(cx);
         DrawStep::done()
@@ -160,9 +169,12 @@ impl Widget for GProgress {
     fn data_to_widget(&mut self, cx: &mut Cx, nodes: &[LiveNode], path: &[LiveId]) {
         if let Some(value) = nodes.read_field_value(path) {
             if let Some(value) = value.as_float() {
-                if self.set_internal(value) {
-                    self.redraw(cx)
-                }
+                // if self.set_internal(value) {
+                //     self.redraw(cx)
+                // }
+                self.value = value;
+                self.fix();
+                self.redraw(cx);
             }
         }
     }
@@ -302,31 +314,96 @@ impl GProgress {
             },
         );
     }
+    /// convert the external value to an internal value
+    // fn convert_to(v: f64) -> f64{
+
+    // }
     /// Convert the internal value to an external value
-    fn to_external(&self) -> f64 {
-        let val = self.value * (self.max - self.min) + self.min;
-        if self.step != 0.0 {
-            return (val / self.step).floor() * self.step;
-        } else {
-            val
+    // fn to_external(&self) -> f64 {
+    //     let val = self.value * (self.max - self.min) + self.min;
+    //     let res = if self.step != 0.0 {
+    //         (val / self.step).floor() * self.step
+    //     } else {
+    //         val
+    //     };
+    //     return round_to_two_decimals(res);
+    // }
+    // fn set_internal(&mut self, external: f64) -> bool {
+    //     let old = self.value;
+    //     self.value = round_to_two_decimals((external - self.min) / (self.max - self.min));
+    //     old != self.value
+    // }
+    pub fn get(&self) -> f64 {
+        self.value
+    }
+    pub fn percent(&self) -> f64 {
+        // here we need to convert the value to external percent
+        convert_to_pos(self.value, self.min, self.max, self.step) * 100.0
+    }
+    fn fix(&mut self) {
+        if self.value < self.min {
+            self.value = self.min;
+        } else if self.value > self.max {
+            self.value = self.max;
         }
     }
-    fn set_internal(&mut self, external: f64) -> bool {
-        let old = self.value;
-        self.value = (external - self.min) / (self.max - self.min);
-        old != self.value
+    pub fn set(&mut self, v: f64, cx: &mut Cx) -> () {
+        self.value = v;
+        self.fix();
+        self.redraw(cx);
     }
-    pub fn add(&mut self, v: f64) -> () {
-        self.set_internal(self.to_external() + v);
+    pub fn set_percent(&mut self, v: f64, cx: &mut Cx) -> () {
+        let v = convert_to_value(v, self.min, self.max);
+        self.value = v;
+        self.fix();
+        self.redraw(cx);
     }
-    pub fn sub(&mut self, v: f64) -> () {
-        self.set_internal(self.to_external() - v);
+    pub fn add(&mut self, v: f64, cx: &mut Cx) -> () {
+        if self.value == self.max {
+            return;
+        }
+        self.value += v;
+        self.fix();
+        // self.set_internal(self.to_external() + v);
+        self.redraw(cx);
     }
-    pub fn full(&mut self) -> () {
-        self.set_internal(1.0);
+    /// add percent, v is a percent value [0.0, 1.0] ([0%, 100%])
+    pub fn add_percent(&mut self, v: f64, cx: &mut Cx) -> () {
+        if self.value == self.max {
+            return;
+        }
+        let v = convert_to_value(v, self.min, self.max);
+        self.value += v;
+        self.fix();
+        self.redraw(cx);
     }
-    pub fn clear(&mut self) -> () {
-        self.set_internal(0.0);
+    pub fn sub(&mut self, v: f64, cx: &mut Cx) -> () {
+        if self.value == self.min {
+            return;
+        }
+        self.value -= v;
+        self.fix();
+        // self.set_internal(self.to_external() - v);
+        self.redraw(cx);
+    }
+    pub fn sub_percent(&mut self, v: f64, cx: &mut Cx) -> () {
+        if self.value == self.min {
+            return;
+        }
+        let v = convert_to_value(v, self.min, self.max);
+        self.value -= v;
+        self.fix();
+        self.redraw(cx);
+    }
+    pub fn full(&mut self, cx: &mut Cx) -> () {
+        // self.set_internal(self.max);
+        self.value = self.max;
+        self.redraw(cx);
+    }
+    pub fn clear(&mut self, cx: &mut Cx) -> () {
+        // self.set_internal(0.0);
+        self.value = self.min;
+        self.redraw(cx);
     }
     pub fn handle_widget_event(
         &mut self,
@@ -359,14 +436,14 @@ impl GProgress {
                 self.active_before_changed(cx, Some(e));
             }
             Hit::FingerUp(e) => {
-                if e.is_over{
-                    if e.device.has_hovers(){
+                if e.is_over {
+                    if e.device.has_hovers() {
                         self.play_animation(cx, id!(hover.on));
-                    }else{
+                    } else {
                         self.play_animation(cx, id!(hover.off));
                     }
                     self.active_changed(cx, Some(e));
-                }else{
+                } else {
                     self.dragging = None;
                     self.play_animation(cx, id!(hover.off));
                     self.active_focus_lost(cx, Some(e));
@@ -376,21 +453,28 @@ impl GProgress {
                 if !self.read_only {
                     match self.progress_type {
                         GProgressType::Horizontal => {
-                            let rel = e.abs - e.abs_start;
-                            if let Some(start_pos) = self.dragging {
-                                self.value = (start_pos + rel.x / e.rect.size.x).max(0.0).min(1.0);
-                                self.set_internal(self.to_external());
-                                self.redraw(cx);
+                            let real_len = e.abs.x - e.rect.pos.x;
+                            // percentage
+                            let mut v = real_len / e.rect.size.x;
+                            if v < 0.0 {
+                                v = 0.0;
+                            } else if v > 1.0 {
+                                v = 1.0;
                             }
+                            self.value = convert_to_value(v, self.min, self.max);
+                            self.redraw(cx);
                         }
                         GProgressType::Vertical => {
-                            let rel = e.abs - e.abs_start;
-                            if let Some(start_pos) = self.dragging {
-                                // here we need to rev the y
-                                self.value = (start_pos - rel.y / e.rect.size.y).max(0.0).min(1.0);
-                                self.set_internal(self.to_external());
-                                self.redraw(cx);
+                            let real_len = e.abs.y - e.rect.pos.y;
+                            // percentage
+                            let mut v = real_len / e.rect.size.y;
+                            if v < 0.0 {
+                                v = 0.0;
+                            } else if v > 1.0 {
+                                v = 1.0;
                             }
+                            self.value = convert_to_value(v, self.min, self.max);
+                            self.redraw(cx);
                         }
                     }
                 }
@@ -398,7 +482,7 @@ impl GProgress {
             _ => (),
         }
     }
-    pub fn redraw(&self, cx:&mut Cx){
+    pub fn redraw(&self, cx: &mut Cx) {
         self.draw_progress.redraw(cx);
     }
 }
@@ -416,9 +500,41 @@ impl GProgressRef {
     }
     animatie_fn! {
         animate_hover_on,
-        animate_hover_off
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
     }
     widget_origin_fn!(GProgress);
+    pub fn get(&self) -> Option<f64> {
+        self.borrow().map(|x| x.get())
+    }
+    pub fn clear(&mut self, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.clear(cx));
+    }
+    pub fn full(&mut self, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.full(cx));
+    }
+    pub fn add(&mut self, v: f64, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.add(v, cx));
+    }
+    pub fn sub(&mut self, v: f64, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.sub(v, cx));
+    }
+    pub fn percent(&self) -> Option<f64> {
+        self.borrow().map(|x| x.percent())
+    }
+    pub fn add_percent(&mut self, v: f64, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.add_percent(v, cx));
+    }
+    pub fn sub_percent(&mut self, v: f64, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.sub_percent(v, cx));
+    }
+    pub fn set(&mut self, v: f64, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.set(v, cx));
+    }
+    pub fn set_percent(&mut self, v: f64, cx: &mut Cx) -> () {
+        let _ = self.borrow_mut().map(|mut x| x.set_percent(v, cx));
+    }
 }
 
 impl GProgressSet {
@@ -429,4 +545,30 @@ impl GProgressSet {
         focus_lost => GProgressFocusLostParam,
         changed => GProgressChangedParam
     }
+}
+
+/// convert value to position
+/// position range: [0.0, 1.0]
+/// value range: [min, max]
+fn convert_to_pos(v: f64, min: f64, max: f64, step: f64) -> f64 {
+    if v < min || v > max {
+        panic!("value out of range");
+    }
+    let v = round_to_two_decimals(v);
+    // fix step
+    let v = if v % step != 0.0 {
+        (v / step).floor() * step
+    } else {
+        v
+    };
+
+    round_to_two_decimals((v - min) / (max - min))
+}
+
+/// convert position to value
+fn convert_to_value(pos: f64, min: f64, max: f64) -> f64 {
+    if pos < 0.0 || pos > 1.0 {
+        panic!("position out of range");
+    }
+    round_to_two_decimals(pos * (max - min) + min)
 }

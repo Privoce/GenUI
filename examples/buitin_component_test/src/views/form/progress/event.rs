@@ -1,5 +1,5 @@
 use gen_components::components::{
-    checkbox::group::GCheckBoxGroupWidgetExt, label::GLabelWidgetExt, view::GView,
+    button::GButtonWidgetExt, label::GLabelWidgetExt, progress::GProgressWidgetExt, view::GView,
 };
 use makepad_widgets::*;
 
@@ -28,70 +28,76 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "CheckBox has 3 events: 1. Clicked 2. HoverIn 3. HoverOut",
-            }
-            <GLabel>{
-                text: "CheckBoxGroup just has 1 event:\n1. Changed\nChanged event can get the selected index and value.",
+                text: "In Progress, you should focus on 2 events: 1. Changed 2. BeforeChanged",
             }
         }
-
         an_box = <CBox>{
             box_wrap = {
                 spacing: 8.0,
-
                 <GVLayout>{
                     height: Fit,
                     spacing: 12.0,
-
-                    checkbox_group = <GCheckBoxGroup>{
-                        spacing: 16.0,
-                        <GCheckBox>{
-                            theme: Success,
-                            checkbox_type: Round,
-                            value: "Success_Round"
-                        }
-                        <GCheckBox>{
-                            theme: Info,
-                            checkbox_type: Tick,
-                            value: "Info_Tick"
-                            text: "I just a label"
-                        }
-                        <GCheckBox>{
-                            theme: Error,
-                            checkbox_type: Cross,
-                            value: "Error_Cross",
-                            text: "act as button",
-                            background_visible: true,
-                            padding: {
-                                left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
-                            },
-                            background_color: #6F3121,
-                            border_radius: 2.0
-                        }
+                    progress = <GProgress>{
+                        theme: Info,
+                        value: 36.0,
+                        max: 40.0,
+                        step: 0.5,
+                        read_only: false,
                     }
                 }
                 <GVLayout>{
                     height: Fit,
                     spacing: 8.0,
                     <GHLayout>{
+                        spacing: 8.0,
                         height: Fit,
-                        spacing: 16.0,
-                        <GLabel>{
-                            text: "Values: "
+                        clear = <GButton>{
+                            slot: {text: "Clear"}
                         }
-                        val_label = <GLabel>{
-                            text: "",
+                        set1 = <GButton>{
+                            slot: {text: "Set 50%"}
+                        }
+                        full = <GButton>{
+                            slot: {text: "Full 100%"}
+                        }
+                        get = <GButton>{
+                            slot: {text: "Get Value"}
+                        }
+                        percent = <GButton>{
+                            slot: {text: "Get Value Percent"}
                         }
                     }
                     <GHLayout>{
+                        spacing: 8.0,
                         height: Fit,
-                        spacing: 16.0,
-                        <GLabel>{
-                            text: "Selecteds: "
+                        add = <GButton>{
+                            slot: {text: "Add 10%"}
                         }
-                        selected_label = <GLabel>{
-                            text: "",
+                        sub = <GButton>{
+                            slot: {text: "Sub 10%"}
                         }
+                        add_p = <GButton>{
+                            slot: {text: "Add 12.5"}
+                        }
+                        sub_p = <GButton>{
+                            slot: {text: "Sub 5.0"}
+                        }
+                    }
+                }
+                <GHLayout>{
+                    height: Fit,
+                    spacing: 16.0,
+                    <GLabel>{
+                        text: "Event: "
+                    }
+                    e_label = <GLabel>{
+                        text: "",
+                    }
+                    <GLabel>{
+                        text: "Value: "
+                    }
+                    val_label = <GLabel>{
+                        text: "",
                     }
                 }
 
@@ -105,46 +111,7 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-checkbox_group = <GCheckBoxGroup>{
-    spacing: 16.0,
-    <GCheckBox>{
-        theme: Success,
-        checkbox_type: Round,
-        value: "Success_Round"
-    }
-    <GCheckBox>{
-        theme: Info,
-        checkbox_type: Tick,
-        value: "Info_Tick"
-        text: "I just a label"
-    }
-    <GCheckBox>{
-        theme: Error,
-        checkbox_type: Cross,
-        value: "Error_Cross",
-        text: "act as button",
-        background_visible: true,
-        padding: {
-            left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
-        },
-        background_color: #6F3121,
-        border_radius: 2.0
-    }
-}
 
-fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-
-    let val_label = self.glabel(id!(val_label));
-    let selected_label = self.glabel(id!(selected_label));
-
-    let checkbox_group = self.gcheckbox_group(id!(checkbox_group));
-
-    if let Some(e) = checkbox_group.changed(&actions) {
-        val_label.set_text_and_redraw(cx, &e.value.unwrap_or("Empty".to_string()));
-        selected_label.set_text_and_redraw(cx, &e.selected.to_string());
-    }
-}
                             "#;
                         }
                     }
@@ -173,29 +140,64 @@ impl Widget for ProgressEnPage {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-
+        let mut progress = self.gprogress(id!(progress));
         let val_label = self.glabel(id!(val_label));
-        let selected_label = self.glabel(id!(selected_label));
-
-        let checkbox_group = self.gcheck_box_group(id!(checkbox_group));
-
-        if let Some(e) = checkbox_group.changed(&actions) {
-            let val_str = e
-                .values
-                .iter()
-                .map(|x| x.as_ref().unwrap_or(&String::new()).to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-
-            val_label.set_text_and_redraw(cx, &val_str);
-            let selected = e
-                .selected
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", ");
-
-            selected_label.set_text_and_redraw(cx, &selected);
+        let e_label = self.glabel(id!(e_label));
+        let set1 = self.gbutton(id!(set1));
+        let full = self.gbutton(id!(full));
+        let clear = self.gbutton(id!(clear));
+        let get = self.gbutton(id!(get));
+        let add = self.gbutton(id!(add));
+        let add_p = self.gbutton(id!(add_p));
+        let sub = self.gbutton(id!(sub));
+        let sub_p = self.gbutton(id!(sub_p));
+        let percent = self.gbutton(id!(percent));
+        if get.clicked(&actions).is_some() {
+            progress.get().map(|v| {
+                val_label.set_text_and_redraw(cx, &v.to_string());
+            });
+        }
+        if clear.clicked(&actions).is_some() {
+            progress.clear(cx);
+        }
+        if set1.clicked(&actions).is_some() {
+            progress.set(20.0, cx);
+        }
+        if full.clicked(&actions).is_some() {
+            progress.full(cx);
+        }
+        if add.clicked(&actions).is_some() {
+            progress.add_percent(0.1, cx);
+        }
+        if sub.clicked(&actions).is_some() {
+            progress.sub_percent(0.1, cx);
+        }
+        if add_p.clicked(&actions).is_some() {
+            progress.add(12.5, cx);
+        }
+        if sub_p.clicked(&actions).is_some() {
+            progress.sub(5.0, cx);
+        }
+        if percent.clicked(&actions).is_some() {
+            progress.percent().map(|v| {
+                val_label.set_text_and_redraw(cx, &format!("{:.2}%", v));
+            });
+        }
+        if let Some(e) = progress.changed(&actions) {
+            e_label.set_text_and_redraw(cx, "Changed");
+            val_label.set_text_and_redraw(cx, &e.value.to_string());
+        }
+        if progress.before_changed(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "BeforeChanged");
+        }
+        if progress.hover_in(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "Hover In");
+        }
+        if progress.hover_out(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "Hover Out");
+        }
+        if progress.focus_lost(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "Focus Lost");
         }
     }
     fn is_visible(&self) -> bool {

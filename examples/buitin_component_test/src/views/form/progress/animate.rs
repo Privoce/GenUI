@@ -1,4 +1,6 @@
-use gen_components::components::{button::GButtonWidgetExt, checkbox::GCheckBoxWidgetExt, view::GView};
+use gen_components::components::{
+    button::GButtonWidgetExt, progress::GProgressWidgetExt, view::GView,
+};
 use makepad_widgets::*;
 
 live_design! {
@@ -25,11 +27,7 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "",
-            }
-            <GLabel>{
-                width: Fill,
-                text: r#""#,
+                text: "GProgress has 2 animations: 1. Hover 2. Focus",
             }
         }
         <CBox>{
@@ -41,6 +39,9 @@ live_design! {
                     read_only: false,
                     background_color: #FF0000,
                     hover_color: #00FF00,
+                    focus_color: #FF00FF,
+                    stroke_hover_color: #0000FF,
+                    stroke_focus_color: #FFFF00,
                 }
                 a_btn1 = <GButton>{
                     slot: {
@@ -55,27 +56,47 @@ live_design! {
             }
             code = {
                 body: {
-                    <GLabel>{
-                        theme: Dark,
-                        width: Fill,
-                        text: r#"
-                <GCheckBox>{
-                    theme: Success,
-                    checkbox_type: Tick,
-                    value: "Success_Cross",
-                    text: "act as button",
-                    background_visible: true,
-                    padding: {
-                        left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
-                    },
-                    background_color: #6F3121,
-                    checkbox_background_color: #2D7D9A,
-                    checkbox_border_color: #FF0000,
-                    checkbox_hover_color: #00FF00,
-                    checkbox_selected_color: #FF00FF,
-                    border_radius: 2.0
-                }
-                        "#;
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+                    cb = <GProgress>{
+                        theme: Info,
+                        value: 0.3,
+                        read_only: false,
+                        background_color: #FF0000,
+                        hover_color: #00FF00,
+                        focus_color: #FF00FF,
+                        stroke_hover_color: #0000FF,
+                        stroke_focus_color: #FFFF00,
+                    }
+                    a_btn1 = <GButton>{
+                        slot: {
+                            text: "Hover"
+                        }
+                    }
+                    a_btn2 = <GButton>{
+                        slot: {
+                            text: "Focus(Drag)"
+                        }
+                    }
+                    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+                        let cb = self.gprogress(id!(cb));
+                        let a_btn1 = self.gbutton(id!(a_btn1));
+                        let a_btn2 = self.gbutton(id!(a_btn2));
+                        if a_btn1.clicked(&actions).is_some() {
+                            cb.animate_hover_on(cx);
+                        }
+                        if a_btn2.clicked(&actions).is_some() {
+                            cb.animate_focus_on(cx);
+                        }
+                    }
+                            "#;
+                        }
                     }
                 }
             }
@@ -103,10 +124,14 @@ impl Widget for ProgressAnPage {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-        let cb = self.gcheck_box(id!(cb));
+        let cb = self.gprogress(id!(cb));
         let a_btn1 = self.gbutton(id!(a_btn1));
-        if a_btn1.clicked(&actions).is_some(){
+        let a_btn2 = self.gbutton(id!(a_btn2));
+        if a_btn1.clicked(&actions).is_some() {
             cb.animate_hover_on(cx);
+        }
+        if a_btn2.clicked(&actions).is_some() {
+            cb.animate_focus_on(cx);
         }
     }
 }

@@ -111,7 +111,69 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-              
+                <GVLayout>{
+                    width: Fit,
+                    spacing: 16.0,
+                    <GProgress>{
+                        value: 0.5,
+                        read_only: false,
+                    }
+                    <GProgress>{
+                        theme: Success,
+                        height: 20.0,
+                        border_radius: 2.0,
+                        value: 0.36,
+                        read_only: false,
+                    }
+                    <GProgress>{
+                        theme: Info,
+                        value: 0.0,
+                        read_only: false,
+                    }
+                    <GProgress>{
+                        theme: Warning,
+                        value: 1.0,
+                        read_only: false,
+                    }
+                }
+                <GHLayout>{
+                    height: Fit,
+                    width: Fill,
+                    spacing: 20.0,
+                    <GProgress>{
+                        progress_type: Vertical,
+                        height: 200.0,
+                        width: 16.0,
+                        value: 0.8,
+                        read_only: false,
+                    }
+                    <GProgress>{
+                        theme: Success,
+                        progress_type: Vertical,
+                        height: 200.0,
+                        width: 16.0,
+                        border_radius: 2.0,
+                        value: 0.36,
+                        read_only: false,
+                        background_visible: false,
+                    }
+                    <GProgress>{
+                        theme: Info,
+                        value: 0.0,
+                        read_only: false,
+                        progress_type: Vertical,
+                        height: 200.0,
+                        width: 16.0,
+                    }
+                    <GProgress>{
+                        theme: Warning,
+                        value: 1.0,
+                        read_only: false,
+                        progress_type: Vertical,
+                        height: 200.0,
+                        width: 16.0,
+                    }
+                }
                             "#;
                         }
                     }

@@ -73,46 +73,58 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-checkbox_group = <GCheckBoxGroup>{
-    spacing: 16.0,
-    <GCheckBox>{
-        theme: Success,
-        checkbox_type: Round,
-        value: "Success_Round"
-    }
-    <GCheckBox>{
-        theme: Info,
-        checkbox_type: Tick,
-        value: "Info_Tick"
-        text: "I just a label"
-    }
-    <GCheckBox>{
-        theme: Error,
-        checkbox_type: Cross,
-        value: "Error_Cross",
-        text: "act as button",
-        background_visible: true,
-        padding: {
-            left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
-        },
-        background_color: #6F3121,
-        border_radius: 2.0
-    }
-}
+                tg = <GToggle>{
+                    theme: Warning,
+                    hover_color: #00FF00,
+                    stroke_hover_color: #FF0000,
+                }
+                <GVLayout>{
+                    height: Fit,
+                    spacing: 8.0,
+                    <GHLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        <GLabel>{
+                            text: "Event: "
+                        }
+                        val_label = <GLabel>{
+                            text: "",
+                        }
+                    }
+                    <GHLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        <GLabel>{
+                            text: "Selected: "
+                        }
+                        selected_label = <GLabel>{
+                            text: "",
+                        }
+                    }
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+                    let val_label = self.glabel(id!(val_label));
+                    let selected_label = self.glabel(id!(selected_label));
 
-    let val_label = self.glabel(id!(val_label));
-    let selected_label = self.glabel(id!(selected_label));
+                    let tg = self.gtoggle(id!(tg));
 
-    let checkbox_group = self.gcheckbox_group(id!(checkbox_group));
-
-    if let Some(e) = checkbox_group.changed(&actions) {
-        val_label.set_text_and_redraw(cx, &e.value.unwrap_or("Empty".to_string()));
-        selected_label.set_text_and_redraw(cx, &e.selected.to_string());
-    }
-}
+                    if let Some(e) = tg.clicked(&actions) {
+                        val_label.set_text_and_redraw(cx, "Clicked");
+                        if e.selected {
+                            selected_label.set_text_and_redraw(cx, "Selected");
+                        } else {
+                            selected_label.set_text_and_redraw(cx, "Unselected");
+                        }
+                    }
+                    if tg.hover_in(&actions).is_some() {
+                        val_label.set_text_and_redraw(cx, "Hover In");
+                    }
+                    if tg.hover_out(&actions).is_some() {
+                        val_label.set_text_and_redraw(cx, "Hover Out");
+                    }
+                }
                             "#;
                         }
                     }

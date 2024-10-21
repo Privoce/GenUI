@@ -20,3 +20,7 @@ pub const fn from_str_unchecked(id_str: &str) -> u64 {
     let bytes = id_str.as_bytes();
     from_bytes(LIVE_ID_SEED, bytes, 0, bytes.len())
 }
+
+pub fn round_to_two_decimals(value: f64) -> f64 {
+    (value * 10000.0).round() / 10000.0
+}

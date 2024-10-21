@@ -53,21 +53,24 @@ live_design! {
                         theme: Dark,
                         width: Fill,
                         text: r#"
-                <GCheckBox>{
-                    theme: Success,
-                    checkbox_type: Tick,
-                    value: "Success_Cross",
-                    text: "act as button",
-                    background_visible: true,
-                    padding: {
-                        left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
-                    },
-                    background_color: #6F3121,
-                    checkbox_background_color: #2D7D9A,
-                    checkbox_border_color: #FF0000,
-                    checkbox_hover_color: #00FF00,
-                    checkbox_selected_color: #FF00FF,
-                    border_radius: 2.0
+                tg = <GToggle>{
+                    theme: Warning,
+                    selected: true,
+                    hover_color: #00FF00,
+                    stroke_hover_color: #FF0000,
+                }
+                a_btn1 = <GButton>{
+                    slot: {
+                        text: "Hover"
+                    }
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+                    let tg = self.gtoggle(id!(tg));
+                    let a_btn1 = self.gbutton(id!(a_btn1));
+                    if a_btn1.clicked(&actions).is_some() {
+                        tg.animate_hover_on(cx);
+                    }
                 }
                         "#;
                     }

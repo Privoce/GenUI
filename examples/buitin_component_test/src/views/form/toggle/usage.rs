@@ -65,7 +65,31 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-
+                <GToggle>{
+           
+                }
+                <GToggle>{
+                    theme: Error,
+                    toggle_type: Rect,
+                    animation_key: false,
+                }
+                <GToggle>{
+                    theme: Warning,
+                    selected: true,
+                }
+                <GToggle>{
+                    theme: Warning,
+                    selected: true,
+                    background_visible: false,
+                }
+                <GToggle>{
+                    theme: Success,
+                    selected: true,
+                    toggle_type: Rect,
+                    background_visible: false,
+                    height: 28.0,
+                    width: 60.0
+                }
                             "#;
                         }
                     }
