@@ -13,4 +13,5 @@ pub fn register(cx: &mut Cx){
     self::checkbox::register(cx);
     self::toggle::register(cx);
     self::progress::register(cx);
+    self::upload::register(cx);
 }

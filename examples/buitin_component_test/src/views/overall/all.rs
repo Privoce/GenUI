@@ -272,6 +272,55 @@ live_design! {
                     }
                 }
             }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Progress"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                        <GProgress>{
+                            width: 140.0,
+                            value: 0.6
+                        }
+                        
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Upload"}}
+                    body = {
+                        spacing: 16.0,
+                        <GUpload>{
+                            height: 70.0,
+                            mode: Folder
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Input"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                        <GInput>{
+                            width: Fill,
+                            height: 32.0,
+                        }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Select"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                    
+                    }
+                }
+            }
             <GLabel>{
                 font_size: 12.0,
                 font_family: (BOLD_FONT),

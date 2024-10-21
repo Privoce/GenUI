@@ -1,6 +1,6 @@
-pub mod event;
+mod event;
 mod register;
-use event::*;
+pub use event::*;
 pub use register::register;
 
 use std::{path::PathBuf, str::FromStr};
@@ -10,8 +10,7 @@ use makepad_widgets::*;
 use rfd::FileDialog;
 
 use crate::{
-    events_option, ref_event_option, set_event, shader::manual::UploadMode,
-    utils::filter_widget_actions, widget_area,
+    events_option, ref_area, ref_event_option, ref_redraw, set_event, set_scope_path, shader::manual::UploadMode, utils::filter_widget_actions, widget_area
 };
 
 use super::svg::GSvg;
@@ -59,6 +58,8 @@ pub struct GUpload {
     pub mode: UploadMode,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>
 }
 
 impl Widget for GUpload {
@@ -66,9 +67,12 @@ impl Widget for GUpload {
         if !self.visible {
             return DrawStep::done();
         }
+        self.set_scope_path(&scope.path);
         self.draw_upload.begin(cx, walk, self.layout);
-        let icon_walk = self.icon.walk(cx);
-        let _ = self.icon.draw_walk(cx, scope, icon_walk);
+        if self.icon.is_visible(){
+            let icon_walk = self.icon.walk(cx);
+            let _ = self.icon.draw_walk(cx, scope, icon_walk);
+        }
         self.draw_upload.end(cx);
         DrawStep::done()
     }
@@ -79,6 +83,7 @@ impl Widget for GUpload {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.is_visible(){return;}
         let hit = event.hits_with_options(
             cx,
             self.area(),
@@ -88,9 +93,13 @@ impl Widget for GUpload {
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if !self.is_visible(){return;}
         let focus_area = self.area();
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
     }
 }
 
@@ -113,7 +122,7 @@ impl LiveHook for GUpload {
                             cx.widget_action(
                                 uid,
                                 &Scope::empty().path,
-                                GFileUploadEvent::PathError(PathError {
+                                GUploadEvent::PathError(PathError {
                                     err_msg: format!("{:?} is not exist!", p.to_str()),
                                     path: p.to_str().unwrap().to_string(),
                                 }),
@@ -126,7 +135,7 @@ impl LiveHook for GUpload {
                     cx.widget_action(
                         uid,
                         &Scope::empty().path,
-                        GFileUploadEvent::PathError(PathError {
+                        GUploadEvent::PathError(PathError {
                             err_msg: e.to_string(),
                             path: p.to_string(),
                         }),
@@ -139,16 +148,22 @@ impl LiveHook for GUpload {
 }
 
 impl GUpload {
+    set_scope_path!();
     widget_area! {
         area, draw_upload
     }
     events_option! {
-        clear: GFileUploadEvent::Clear => Vec<PathBuf>,
-        path_error: GFileUploadEvent::PathError => PathError,
-        before_select: GFileUploadEvent::BeforeSelect => bool,
-        after_select: GFileUploadEvent::AfterSelect => Vec<PathBuf>
+        clear: GUploadEvent::Clear => GUploadClearParam,
+        path_error: GUploadEvent::PathError => PathError,
+        before_selected: GUploadEvent::BeforeSelected => GUploadBeforeSelectedParam,
+        selected: GUploadEvent::Selected => GUploadSelectedParam
     }
-
+    pub fn redraw(&self, cx:&mut Cx)->(){
+        if self.icon.is_visible(){
+            self.icon.redraw(cx);
+        }
+        self.draw_upload.redraw(cx);
+    }
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
@@ -165,22 +180,29 @@ impl GUpload {
                     cx.set_key_focus(focus_area);
                 }
             }
-            Hit::FingerUp(_) => {
+            Hit::FingerUp(e) => {
                 if self.clear && self.selected.is_empty() {
-                    let clear_selected = self.selected.clone();
+                    let paths = self.selected.clone();
                     self.selected.clear();
-                    cx.widget_action(uid, &scope.path, GFileUploadEvent::Clear(clear_selected));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GUploadEvent::Clear(GUploadClearParam { paths }),
+                    );
                 }
 
                 // call before selected
                 cx.widget_action(
                     uid,
                     &scope.path,
-                    GFileUploadEvent::BeforeSelect(self.mode.is_multi()),
+                    GUploadEvent::BeforeSelected(GUploadBeforeSelectedParam {
+                        clear: self.clear,
+                        mode: self.mode,
+                    }),
                 );
                 // call system file picker
                 #[cfg(not(target_arch = "wasm32"))]
-                let mut  f_upload = || {
+                let mut f_upload = || {
                     let f = FileDialog::new()
                         .add_filter("allow", &self.filters)
                         .set_directory(self.real_path.as_path());
@@ -215,7 +237,10 @@ impl GUpload {
                 cx.widget_action(
                     uid,
                     &scope.path,
-                    GFileUploadEvent::AfterSelect(self.selected.clone()),
+                    GUploadEvent::Selected(GUploadSelectedParam {
+                        paths: self.selected.clone(),
+                        e: Some(e),
+                    }),
                 );
             }
             _ => {}
@@ -224,19 +249,21 @@ impl GUpload {
 }
 
 impl GUploadRef {
+    ref_area!();
+    ref_redraw!();
     ref_event_option! {
-        clear => Vec<PathBuf>,
+        clear => GUploadClearParam,
         path_error => PathError,
-        before_select => bool,
-        after_select => Vec<PathBuf>
+        before_selected => GUploadBeforeSelectedParam,
+        selected => GUploadSelectedParam
     }
 }
 
 impl GUploadSet {
     set_event! {
-        clear => Vec<PathBuf>,
+        clear => GUploadClearParam,
         path_error => PathError,
-        before_select => bool,
-        after_select => Vec<PathBuf>
+        before_selected => GUploadBeforeSelectedParam,
+        selected => GUploadSelectedParam
     }
 }

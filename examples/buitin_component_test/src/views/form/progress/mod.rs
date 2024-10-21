@@ -39,7 +39,7 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Radio",
+                text: "Progress",
             }
         }
         <ProgressUsagePage>{}

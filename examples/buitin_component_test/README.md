@@ -74,16 +74,16 @@ Virtual: in virt.rs
   - [x] Event
   - [x] Usage
   - [x] Virtual
-- [ ] Toggle
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
-- [ ] View
-  - [ ] Animation
-  - [ ] Event
-  - [ ] Usage
-  - [ ] Virtual
+- [x] Toggle
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual
+- [x] Progress
+  - [x] Animation
+  - [x] Event
+  - [x] Usage
+  - [x] Virtual
 - [ ] View
   - [ ] Animation
   - [ ] Event

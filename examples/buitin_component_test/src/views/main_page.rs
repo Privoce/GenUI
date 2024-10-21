@@ -29,6 +29,7 @@ live_design! {
     import crate::views::form::toggle::*;
     import crate::views::basic::shader::*;
     import crate::views::form::progress::*;
+    import crate::views::form::upload::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -258,6 +259,14 @@ live_design! {
                                 text: "Progress",
                             }
                         }
+                        tab_upload = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Upload",
+                            }
+                        }
                     }
                 }
                 sub5 = <GSubMenu>{
@@ -344,6 +353,9 @@ live_design! {
                     }
                     progress_page = <GBarPage>{
                         <ProgressPage>{}
+                    }
+                    upload_page = <GBarPage>{
+                        <UploadPage>{}
                     }
                 }
             }
@@ -449,12 +461,13 @@ impl Widget for AppMainPage {
                                 checkbox_page,
                                 toggle_page,
                                 shader_page,
-                                progress_page
+                                progress_page,
+                                upload_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(progress_page))
+                        .active(id!(upload_page))
                         .build(cx);
                 });
             })
@@ -514,6 +527,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(shader_page));
             } else if e.selected_id == id!(tab_progress)[0] {
                 router.nav_to(cx, id!(progress_page));
+            } else if e.selected_id == id!(tab_upload)[0] {
+                router.nav_to(cx, id!(upload_page));
             }
         }
 

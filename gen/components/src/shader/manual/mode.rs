@@ -35,7 +35,7 @@ pub enum ComponentMode {
 }
 
 /// The `UploadMode` enum represents the different modes for uploading
-#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
+#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy, Debug)]
 #[live_ignore]
 #[repr(u32)]
 pub enum UploadMode {
