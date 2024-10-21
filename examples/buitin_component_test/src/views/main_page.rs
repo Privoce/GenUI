@@ -30,6 +30,8 @@ live_design! {
     import crate::views::basic::shader::*;
     import crate::views::form::progress::*;
     import crate::views::form::upload::*;
+    import crate::views::data::tag::*;
+    import crate::views::data::loading::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -285,7 +287,14 @@ live_design! {
                                 text: "Tag",
                             }
                         }
-                        
+                        tab_loading = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Loading",
+                            }
+                        }
                     }
                 }
             }
@@ -356,6 +365,12 @@ live_design! {
                     }
                     upload_page = <GBarPage>{
                         <UploadPage>{}
+                    }
+                    tag_page = <GBarPage>{
+                        <TagPage>{}
+                    }
+                    loading_page = <GBarPage>{
+                        <LoadingPage>{}
                     }
                 }
             }
@@ -462,12 +477,14 @@ impl Widget for AppMainPage {
                                 toggle_page,
                                 shader_page,
                                 progress_page,
-                                upload_page
+                                upload_page,
+                                tag_page,
+                                loading_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(upload_page))
+                        .active(id!(loading_page))
                         .build(cx);
                 });
             })
@@ -529,6 +546,10 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(progress_page));
             } else if e.selected_id == id!(tab_upload)[0] {
                 router.nav_to(cx, id!(upload_page));
+            } else if e.selected_id == id!(tab_tag)[0] {
+                router.nav_to(cx, id!(tag_page));
+            } else if e.selected_id == id!(tab_loading)[0] {
+                router.nav_to(cx, id!(loading_page));
             }
         }
 

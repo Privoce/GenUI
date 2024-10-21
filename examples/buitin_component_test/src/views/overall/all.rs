@@ -326,6 +326,46 @@ live_design! {
                 font_family: (BOLD_FONT),
                 text: "Data Components(数据组件)",
             }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Tag"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                        <GTag>{
+                            round: true,
+                            theme: Success,
+                            text: "badge tag1",
+                        }
+                        <GTag>{
+                            theme: Info,
+                            src: dep("crate://self/resources/config.svg"),
+                            text: "other",
+                        }
+                        <GTag>{
+                            theme: Error,
+                            text: "closeable",
+                            closeable: true
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Loading"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                        <GLoading>{
+                            height: 64.0,
+                            width: 64.0,
+                            theme: Error,
+                            animation_key: true,
+                            visible: true,
+                        }
+                    }
+                }
+            }
             <GLabel>{
                 font_size: 12.0,
                 font_family: (BOLD_FONT),

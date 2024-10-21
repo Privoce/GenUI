@@ -1,0 +1,83 @@
+use gen_components::components::view::GView;
+use makepad_widgets::*;
+
+live_design! {
+    import makepad_widgets::base::*;
+    import makepad_widgets::theme_desktop_dark::*;
+    import gen_components::components::*;
+    import crate::styles::*;
+
+    TagUsagePage = {{TagUsagePage}}{
+        height: Fit,
+        width: Fill,
+        flow: Down,
+        background_visible: false,
+        border_radius: 0.0,
+        spacing: 12.0,
+        clip_x: true,
+        clip_y: true,
+        <GLabel>{
+            font_size: 12.0,
+            font_family: (BOLD_FONT),
+            text: "Basic Tag Usage",
+        }
+        <GLabel>{
+            width: Fill,
+            text: "Tag is a simple component that can be used to display a tag with different themes.",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 8.0,
+                <GHLayout>{
+                    height: Fit,
+                    spacing: 8.0,
+                    <GTag>{ }
+                    <GTag>{theme: Dark}
+                    <GTag>{theme: Info}
+                    <GTag>{theme: Success}
+                    <GTag>{theme: Warning}
+                    <GTag>{theme: Error}
+                }
+                
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 300.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+                    
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[derive(Live, Widget)]
+pub struct TagUsagePage {
+    #[deref]
+    pub deref_widget: GView,
+}
+
+impl LiveHook for TagUsagePage {
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.deref_widget.after_apply(cx, apply, index, nodes);
+    }
+}
+
+impl Widget for TagUsagePage {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        let _ = self.deref_widget.draw_walk(cx, scope, walk);
+
+        DrawStep::done()
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+    }
+}

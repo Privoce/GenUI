@@ -43,6 +43,7 @@ impl LiveRegister for App {
         crate::views::guide::register(cx);
         crate::views::basic::register(cx);
         crate::views::form::register(cx);
+        crate::views::data::register(cx);
         crate::styles::live_design(cx);
     }
 }

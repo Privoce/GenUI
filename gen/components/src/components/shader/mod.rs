@@ -6,8 +6,7 @@ use makepad_widgets::*;
 pub use register::register;
 
 use crate::{
-    event_bool, ref_area, ref_event_bool, ref_redraw, set_event_bool,
-    shader::draw_shader::DrawGShader, utils::BoolToF32, widget_area,
+    event_bool, ref_area, ref_event_bool, ref_redraw, set_event_bool, set_scope_path, shader::draw_shader::DrawGShader, utils::BoolToF32, widget_area
 };
 
 live_design! {
@@ -39,6 +38,8 @@ pub struct GShader {
     pub animation_key: bool,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>
 }
 
 impl LiveHook for GShader {
@@ -90,10 +91,11 @@ impl Widget for GShader {
     fn is_visible(&self) -> bool {
         self.visible
     }
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
+        self.set_scope_path(&scope.path);
         self.draw_shader.begin(cx, walk, self.layout);
         self.draw_shader.end(cx);
         DrawStep::done()
@@ -101,6 +103,7 @@ impl Widget for GShader {
 }
 
 impl GShader {
+    set_scope_path!();
     widget_area! {
         area, draw_shader
     }
