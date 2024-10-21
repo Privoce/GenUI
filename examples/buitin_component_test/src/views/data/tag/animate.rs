@@ -1,4 +1,4 @@
-use gen_components::components::view::GView;
+use gen_components::components::{button::GButtonWidgetExt, tag::GTagWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -36,11 +36,32 @@ live_design! {
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
-                flow: Right,
-                <GTag>{
-
+                tg = <GTag>{
+                    hover_color: #FF0000,
+                    focus_color: #00FF00,
+                    text_hover_color: #FFFFFF,
+                    text_focus_color: #4C4C4C,
+                    stroke_hover_color: #0000FF,
+                    stroke_focus_color: #000000,
+                    text: "Animation Tag",
+                    closeable: true,
+                    src: dep("crate://self/resources/config.svg"),
                 }
 
+                <GHLayout>{
+                    height: Fit,
+                    spacing: 16.0,
+                    an_btn1 = <GButton>{
+                        slot: {
+                            text: "Hover"
+                        }
+                    }
+                    an_btn2 = <GButton>{
+                        slot: {
+                            text: "Focus"
+                        }
+                    }
+                }
             }
             code = {
                 body: {
@@ -81,5 +102,14 @@ impl Widget for TagAnPage {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let tg = self.gtag(id!(tg));
+        let an_btn1 = self.gbutton(id!(an_btn1));
+        let an_btn2 = self.gbutton(id!(an_btn2));
+        if an_btn1.clicked(&actions).is_some() {
+            tg.animate_hover_on(cx);
+        }
+        if an_btn2.clicked(&actions).is_some() {
+            tg.animate_focus_on(cx);
+        }
     }
 }

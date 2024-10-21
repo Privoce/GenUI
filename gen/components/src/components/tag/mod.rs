@@ -1,14 +1,19 @@
-pub mod event;
+mod event;
 mod register;
 
-use event::{GTagClickedParam, GTagEvent, GTagHoverParam};
+pub use event::*;
 pub use register::register;
 
 use crate::shader::draw_icon_pixel::DrawGIconPixel;
 use crate::shader::draw_svg::DrawGSvg;
 use crate::shader::draw_text::DrawGText;
-use crate::utils::{get_font_family, set_cursor, BoolToF32, ThemeColor};
-use crate::{animatie_fn, event_option, ref_event_option, set_event, set_text_and_visible_fn, widget_area};
+use crate::utils::{get_font_family, set_cursor, BoolToF32, RectExp, ThemeColor};
+use crate::{
+    active_event, animatie_fn, check_event_scope, default_handle_animation,
+    default_hit_finger_down, default_hit_hover_in, default_hit_hover_out, event_option,
+    play_animation, ref_area, ref_area_ext, ref_event_option, ref_redraw, ref_render, set_event,
+    set_scope_path, set_text_and_visible_fn, widget_area,
+};
 use crate::{shader::draw_view::DrawGView, themes::Themes};
 use makepad_widgets::*;
 
@@ -49,16 +54,30 @@ live_design! {
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
-                        draw_tag: {hover: 0.0}
+                        draw_tag: {hover: 0.0, focus: 0.0},
+                        draw_icon: {hover: 0.0, focus: 0.0},
+                        draw_text: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
+                        all: Forward {duration: (GLOBAL_DURATION)},
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
-                        draw_tag: { hover: 1.0}
+                        draw_tag: {hover: 1.0, focus: 0.0},
+                        draw_icon: {hover: 1.0, focus: 0.0},
+                        draw_text: {hover: 1.0, focus: 0.0}
+                    }
+                }
+
+                focus = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_tag: {hover: 0.0, focus: 1.0},
+                        draw_icon: {hover: 0.0, focus: 1.0},
+                        draw_text: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -79,7 +98,13 @@ pub struct GTag {
     #[live]
     pub stroke_hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub text_hover_color: Option<Vec4>,
+    #[live]
+    pub focus_color: Option<Vec4>,
+    #[live]
+    pub stroke_focus_color: Option<Vec4>,
+    #[live]
+    pub text_focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
@@ -88,14 +113,12 @@ pub struct GTag {
     pub border_radius: f32,
     #[live]
     pub shadow_color: Option<Vec4>,
-    #[live(4.0)]
+    #[live(0.0)]
     pub spread_radius: f32,
     #[live(4.8)]
     pub blur_radius: f32,
     #[live]
     pub shadow_offset: Vec2,
-    #[live(false)]
-    pub round: bool,
     // text ----------------------------
     #[live]
     pub text: ArcStringMut,
@@ -157,19 +180,22 @@ pub struct GTag {
     #[layout]
     layout: Layout,
     // animator -----------------
-    #[live(false)]
+    #[live(true)]
     pub animation_key: bool,
     #[animator]
     animator: Animator,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GTag {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
+        self.set_scope_path(&scope.path);
         let font = get_font_family(&self.font_family, cx);
         self.draw_text.text_style.font = font;
 
@@ -188,59 +214,31 @@ impl Widget for GTag {
         self.draw_tag.end(cx);
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let uid = self.widget_uid();
-
-        if self.animation_key {
-            if self.animator_handle_event(cx, event).must_redraw() {
-                self.draw_tag.redraw(cx);
-            }
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        _scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        if !self.visible {
+            return;
         }
+        let hit = event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
 
-        if self.closeable {
-            match event.hits(cx, self.area_close()) {
-                Hit::FingerUp(f_up) => {
-                    if f_up.is_over {
-                        cx.widget_action(
-                            uid,
-                            &scope.path,
-                            GTagEvent::Close(self.text.as_ref().to_string()),
-                        );
-                    }
-                }
-                _ => {}
-            }
+        self.handle_widget_event(cx, event, hit, sweep_area)
+    }
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        if !self.visible {
+            return;
         }
-
-        match event.hits(cx, self.area()) {
-            Hit::FingerHoverIn(f_in) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GTagEvent::Hover(GTagHoverParam{
-                    text: self.text.as_ref().to_string(),
-                    e: f_in.clone(),
-                }));
-            }
-            Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
-            }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GTagEvent::Clicked(GTagClickedParam{
-                        text: self.text.as_ref().to_string(),
-                        e: f_up.clone(),
-                    }));
-                    if f_up.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
-                    } else {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                } else {
-                    self.animator_play(cx, id!(hover.off));
-                }
-            }
-            _ => (),
-        }
+        let focus_area = self.area();
+        let hit = event.hits(cx, self.area());
+        self.handle_widget_event(cx, event, hit, focus_area)
     }
     set_text_and_visible_fn!();
 }
@@ -250,39 +248,198 @@ impl LiveHook for GTag {
         if !self.visible {
             return;
         }
+        self.render(cx);
+    }
+}
+
+impl GTag {
+    set_scope_path!();
+    play_animation!();
+    widget_area! {
+        area, draw_tag,
+        area_icon, draw_icon,
+        area_text, draw_text
+    }
+    pub fn area_close(&self) -> Area {
+        if self.closeable {
+            return self.draw_close.area;
+        }
+        return Area::Empty;
+    }
+    check_event_scope!();
+    active_event! {
+        active_hover_in: GTagEvent::HoverIn |e: Option<FingerHoverEvent>| => GTagHoverParam {e},
+        active_hover_out: GTagEvent::HoverOut |e: Option<FingerHoverEvent>| => GTagHoverParam {e},
+        active_focus: GTagEvent::Focus |e: Option<FingerDownEvent>| => GTagFocusParam {e},
+        active_focus_lost: GTagEvent::FocusLost |e: Option<FingerUpEvent>| => GTagFocusLostParam {e}
+    }
+    pub fn active_clicked(&mut self, cx: &mut Cx, e: Option<FingerUpEvent>) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GTagEvent::Clicked(GTagClickedParam {
+                    text: self.text.as_ref().to_string(),
+                    e,
+                }),
+            );
+        });
+    }
+    pub fn active_closed(&mut self, cx: &mut Cx, e: Option<FingerUpEvent>) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GTagEvent::Closed(GTagClosedParam {
+                    text: self.text.as_ref().to_string(),
+                    e,
+                }),
+            );
+        });
+    }
+    event_option! {
+        hover_in: GTagEvent::HoverIn => GTagHoverParam,
+        hover_out: GTagEvent::HoverOut => GTagHoverParam,
+        focus: GTagEvent::Focus => GTagFocusParam,
+        focus_lost: GTagEvent::FocusLost => GTagFocusLostParam,
+        clicked: GTagEvent::Clicked => GTagClickedParam,
+        closed: GTagEvent::Closed => GTagClosedParam
+    }
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        // if self.closeable{
+        //     self.draw_close.apply_over(cx, live!{
+        //         hover: 0.0,
+        //         focus: 0.0
+        //     });
+        // }
+    }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+    }
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+    }
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_tag.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.draw_text.redraw(cx);
+        self.draw_icon.redraw(cx);
+        self.draw_close.redraw(cx);
+        self.draw_tag.redraw(cx);
+    }
+    pub fn render(&mut self, cx: &mut Cx) -> () {
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 800);
-        // ------------------ font ------------------------------------------------------
-        let font_color = self.color.get(self.theme, 100);
+        // ------------------ text ------------------------------------------------------
+        let text_color = self.color.get(self.theme, 50);
+        let text_hover_color = self.text_hover_color.get(self.theme, 25);
+        let text_focus_color = self.text_focus_color.get(self.theme, 100);
         // ------------------icon color -----------------------------------------------
-        let icon_color = self.icon_color.get(self.theme, 100);
-        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 50);
-        // ------------------ round -----------------------------------------------------
-
-        if self.round {
-            self.border_radius = match self.walk.height {
-                Size::Fixed(h) => (h * 0.25) as f32,
-                Size::Fit => {
-                    let mut radius = ((self.draw_text.text_style.font_size
-                        + self.walk.margin.top
-                        + self.walk.margin.bottom
-                        + self.layout.padding.top
-                        + self.layout.padding.bottom)
-                        * 0.25) as f32;
-                    radius += self.border_width;
-                    radius += self.font_size as f32 / 8.0 + radius / 10.0;
-                    radius
-                }
-                _ => panic!("round only support fixed and fit"),
-            };
-        }
+        let icon_color = self.icon_color.get(self.theme, 50);
+        let stroke_hover_color = self.stroke_hover_color.get(self.theme, 25);
+        let stroke_focus_color = self.stroke_focus_color.get(self.theme, 100);
         let background_visible = self.background_visible.to_f32();
         self.draw_tag.apply_over(
             cx,
@@ -292,7 +449,7 @@ impl LiveHook for GTag {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),
@@ -304,6 +461,7 @@ impl LiveHook for GTag {
             cx,
             live! {
                 stroke_hover_color: (stroke_hover_color),
+                stroke_focus_color: (stroke_focus_color),
                 color: (icon_color),
                 brightness: (self.icon_brightness),
                 curve: (self.icon_curve),
@@ -317,7 +475,9 @@ impl LiveHook for GTag {
         self.draw_text.apply_over(
             cx,
             live! {
-                color: (font_color),
+                color: (text_color),
+                stroke_hover_color: (text_hover_color),
+                stroke_focus_color: (text_focus_color),
                 text_style: {
                     font_size: (self.font_size),
                     // brightness: (default_text_style.brightness),
@@ -341,72 +501,91 @@ impl LiveHook for GTag {
                     linearize: (self.icon_linearize),
                 },
             );
-            self.draw_close.redraw(cx);
         }
-
-        self.draw_tag.redraw(cx);
-        self.draw_text.redraw(cx);
-        self.draw_icon.redraw(cx);
     }
-}
+    pub fn handle_widget_event(&mut self, cx: &mut Cx, event: &Event, hit: Hit, focus_area: Area) {
+        default_handle_animation!(self, cx, event);
+        match hit {
+            Hit::FingerHoverIn(e) => {
+                default_hit_hover_in!(self, cx, Some(e));
+            }
+            Hit::FingerHoverOut(e) => {
+                default_hit_hover_out!(self, cx, Some(e));
+            }
+            Hit::FingerDown(e) => {
+                default_hit_finger_down!(self, cx, focus_area, Some(e));
+            }
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    if e.device.has_hovers() {
+                        self.play_animation(cx, id!(hover.on));
+                    } else {
+                        self.play_animation(cx, id!(hover.off));
+                    }
+                    // use is in to judge
+                    if self.closeable {
+                        if self.area_close().rect(cx).is_in_pos(&e.abs) {
+                            self.active_closed(cx, Some(e.clone()));
+                            return;
+                        }
+                    }
 
-impl GTag {
-    widget_area! {
-        area, draw_tag,
-        area_icon, draw_icon,
-        area_text, draw_text
-    }
-    pub fn area_close(&self) -> Area {
-        if self.closeable {
-            return self.draw_close.area;
+                    self.active_clicked(cx, Some(e));
+                } else {
+                    self.play_animation(cx, id!(hover.off));
+                    self.active_focus_lost(cx, Some(e));
+                }
+            }
+            _ => (),
         }
-        return Area::Empty;
     }
-    event_option! {
-        clicked: GTagEvent::Clicked => GTagClickedParam,
-        hover: GTagEvent::Hover => GTagHoverParam,
-        close: GTagEvent::Close => String
-    }
-    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
-        self.draw_tag.apply_over(
-            cx,
-            live! {
-                hover: 1.0,
-            },
-        );
-    }
-    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
-        self.draw_tag.apply_over(
-            cx,
-            live! {
-                hover: 0.0,
-            },
-        );
+    pub fn set_visible(&mut self, cx: &mut Cx, visible: bool) {
+        self.visible = visible;
+        if visible {
+            self.clear_animation(cx);
+            self.redraw(cx);
+        }
     }
 }
 
 impl GTagRef {
-    pub fn area(&self) -> Area {
-        if let Some(btn_ref) = self.borrow() {
-            return btn_ref.draw_tag.area();
-        }
-        Area::Empty
+    ref_area!();
+    ref_redraw!();
+    ref_render!();
+    ref_area_ext! {
+        area_close,
+        area_icon,
+        area_text
     }
     ref_event_option! {
         clicked => GTagClickedParam,
-        hover => GTagHoverParam,
-        close => String
+        hover_in => GTagHoverParam,
+        hover_out => GTagHoverParam,
+        focus => GTagFocusParam,
+        focus_lost => GTagFocusLostParam,
+        closed => GTagClosedParam
     }
     animatie_fn! {
+        clear_animation,
         animate_hover_on,
-        animate_hover_off
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
+    }
+    pub fn set_visible(&mut self, cx: &mut Cx, visible: bool) {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.set_visible(cx, visible);
+        }
     }
 }
 
 impl GTagSet {
     set_event! {
         clicked => GTagClickedParam,
-        hover => GTagHoverParam,
-        close => String
+        hover_in => GTagHoverParam,
+        hover_out => GTagHoverParam,
+        focus => GTagFocusParam,
+        focus_lost => GTagFocusLostParam,
+        closed => GTagClosedParam
     }
 }

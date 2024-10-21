@@ -279,7 +279,7 @@ live_design! {
                         }
                     }
                     items: {
-                        tab_radio = <GMenuItem>{
+                        tab_tag = <GMenuItem>{
                             icon_slot: {
                                 visible: false,
                             }
@@ -484,7 +484,7 @@ impl Widget for AppMainPage {
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(loading_page))
+                        .active(id!(tag_page))
                         .build(cx);
                 });
             })

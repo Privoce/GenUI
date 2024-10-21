@@ -31,14 +31,13 @@ live_design! {
                 <GHLayout>{
                     height: Fit,
                     spacing: 8.0,
-                    <GTag>{ }
-                    <GTag>{theme: Dark}
-                    <GTag>{theme: Info}
-                    <GTag>{theme: Success}
-                    <GTag>{theme: Warning}
-                    <GTag>{theme: Error}
+                    <GTag>{ text: "Tag1"}
+                    <GTag>{theme: Dark, text: "Tag2"}
+                    <GTag>{theme: Info, text: "Tag3"}
+                    <GTag>{theme: Success, text: "Tag4"}
+                    <GTag>{theme: Warning, text: "Tag5"}
+                    <GTag>{theme: Error, text: "Tag6"}
                 }
-                
             }
             code = {
                 body: {

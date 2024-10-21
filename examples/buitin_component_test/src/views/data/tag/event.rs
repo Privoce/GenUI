@@ -1,4 +1,4 @@
-use gen_components::components::{button::GButtonWidgetExt, label::GLabelWidgetExt, view::GView};
+use gen_components::components::{button::GButtonWidgetExt, label::GLabelWidgetExt, tag::GTagWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -26,20 +26,30 @@ live_design! {
             spacing: 8.0,
             <GLabel>{
                 width: Fill,
-                text: "Button has a series of events:",
+                text: "Tag has a series of events:",
             }
             <GLabel>{
                 width: Fill,
-                text: "1. HoverIn\n2. HoverOut\n3. Focus\n4. FocusLost\n5. Clicked",
+                text: "1. HoverIn\n2. HoverOut\n3. Focus\n4. FocusLost\n5. Clicked\n6. Closed",
             }
         }
         <CBox>{
             box_wrap = {
-                spacing: 48.0,
-                flow: Right,
-                e_btn = <GButton>{
+                spacing: 8.0,
+                tg = <GTag>{
+                    hover_color: #FF0000,
+                    focus_color: #00FF00,
+                    text_hover_color: #FFFFFF,
+                    text_focus_color: #4C4C4C,
+                    stroke_hover_color: #0000FF,
+                    stroke_focus_color: #000000,
+                    text: "Animation Tag",
+                    closeable: true,
+                    src: dep("crate://self/resources/config.svg"),
+                }
+                se_btn = <GButton>{
                     slot: {
-                        text: "Event Button!"
+                        text: "Back Tag Visible"
                     }
                 }
                 e_res = <GLabel>{
@@ -55,35 +65,7 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                e_btn = <GButton>{
-                    slot: {
-                        text: "Event Button!"
-                    }
-                }
-                e_res = <GLabel>{
-                    text: "Event Result"
-                }
-                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-
-                    let e_btn = self.gbutton(id!(e_btn));
-                    let e_res = self.glabel(id!(e_res));
-                    if e_btn.clicked(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Clicked!");
-                    }
-                    if e_btn.hover_in(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Hover In!");
-                    }
-                    if e_btn.hover_out(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Hover Out!");
-                    }
-                    if e_btn.focus(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Focus!");
-                    }
-                    if e_btn.focus_lost(&actions).is_some() {
-                        e_res.set_text_and_redraw(cx, "Button Focus Lost!");
-                    }
-                }
+               
                             "#;
                         }
                     }
@@ -114,22 +96,31 @@ impl Widget for TagEnPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        let e_btn = self.gbutton(id!(e_btn));
+        let mut tg = self.gtag(id!(tg));
+        let se_btn = self.gbutton(id!(se_btn));
         let e_res = self.glabel(id!(e_res));
-        if e_btn.clicked(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Clicked!");
+        if tg.clicked(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Tag Clicked!");
         }
-        if e_btn.hover_in(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Hover In!");
+        if tg.hover_in(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Tag Hover In!");
         }
-        if e_btn.hover_out(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Hover Out!");
+        if tg.hover_out(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Tag Hover Out!");
         }
-        if e_btn.focus(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Focus!");
+        if tg.focus(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Tag Focus!");
         }
-        if e_btn.focus_lost(&actions).is_some() {
-            e_res.set_text_and_redraw(cx, "Button Focus Lost!");
+        if tg.focus_lost(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Tag Focus Lost!");
         }
+        if tg.closed(&actions).is_some() {
+            e_res.set_text_and_redraw(cx, "Tag Closed!");
+            tg.set_visible(cx, false);
+        }
+        if se_btn.clicked(&actions).is_some() {
+            tg.set_visible(cx, true);
+        }
+
     }
 }

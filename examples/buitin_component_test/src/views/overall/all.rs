@@ -335,7 +335,6 @@ live_design! {
                         spacing: 16.0,
                         padding: {left: 16.0, right: 16.0},
                         <GTag>{
-                            round: true,
                             theme: Success,
                             text: "badge tag1",
                         }

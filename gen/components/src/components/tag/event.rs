@@ -1,10 +1,15 @@
-use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent};
+use makepad_widgets::{
+    ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent,
+};
 
 #[derive(Debug, Clone, DefaultNone)]
 pub enum GTagEvent {
     Clicked(GTagClickedParam),
-    Hover(GTagHoverParam),
-    Close(String),
+    HoverIn(GTagHoverParam),
+    HoverOut(GTagHoverParam),
+    Closed(GTagClosedParam),
+    Focus(GTagFocusParam),
+    FocusLost(GTagFocusLostParam),
     None,
 }
 
@@ -12,11 +17,26 @@ pub enum GTagEvent {
 pub struct GTagClickedParam {
     /// tag text
     pub text: String,
-    pub e: FingerUpEvent,
+    pub e: Option<FingerUpEvent>,
 }
 
 #[derive(Clone, Debug)]
 pub struct GTagHoverParam {
+    pub e: Option<FingerHoverEvent>,
+}
+
+#[derive(Clone, Debug)]
+pub struct GTagClosedParam {
     pub text: String,
-    pub e: FingerHoverEvent,
+    pub e: Option<FingerUpEvent>,
+}
+
+#[derive(Clone, Debug)]
+pub struct GTagFocusParam {
+    pub e: Option<FingerDownEvent>,
+}
+
+#[derive(Clone, Debug)]
+pub struct GTagFocusLostParam {
+    pub e: Option<FingerUpEvent>,
 }

@@ -466,3 +466,12 @@ macro_rules! play_animation {
         }
     };
 }
+
+#[macro_export]
+macro_rules! check_event_scope {
+    () => {
+        fn check_event_scope(&self) -> Option<&HeapLiveIdPath> {
+            self.event_key.then(|| self.scope_path.as_ref()).flatten()
+        }
+    };
+}
