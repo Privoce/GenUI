@@ -376,8 +376,8 @@ live_design! {
     GCheckBoxGroup = <GCheckBoxGroupBase>{}
     GToggle = <GToggleBase>{}
     GSvg = <GSvgBase>{
-        width: Fit,
-        height: Fit,
+        width: 24.0,
+        height: 24.0,
     }
     GIcon = <GIconBase>{
         width: 24.0,
@@ -394,12 +394,8 @@ live_design! {
         font_family: (FONT_FAMILY),
         font_size: (FONT_SIZE),
     }
-    GShader = <GShaderBase>{
-        width: Fill,
-        height: Fill,
-    }
+    GShader = <GShaderBase>{}
     GDivider = <GDividerBase>{}
-    
     GPopupContainer = <GPopupContainerBase>{
         height: Fill,
         width: Fill,

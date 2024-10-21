@@ -37,6 +37,10 @@ live_design! {
                 font_family: (BOLD_FONT),
                 text: "Shader",
             }
+            <GLabel>{
+                width: Fill,
+                text: "Shader is a component for drawing custom graphics, you can use self.opened to control the shader(if you need to use self.time).",
+            }
         }
         <CBox>{
             box_wrap = {

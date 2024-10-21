@@ -28,6 +28,7 @@ live_design! {
     import crate::views::form::checkbox::*;
     import crate::views::form::toggle::*;
     import crate::views::basic::shader::*;
+    import crate::views::form::progress::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -249,6 +250,33 @@ live_design! {
                                 text: "Toggle",
                             }
                         }
+                        tab_progress = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Progress",
+                            }
+                        }
+                    }
+                }
+                sub5 = <GSubMenu>{
+                    title: {
+                        <GLabel>{
+                            font_size: 11.0,
+                            text: "Data",
+                        }
+                    }
+                    items: {
+                        tab_radio = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Tag",
+                            }
+                        }
+                        
                     }
                 }
             }
@@ -313,6 +341,9 @@ live_design! {
                     }
                     shader_page = <GBarPage>{
                         <ShaderPage>{}
+                    }
+                    progress_page = <GBarPage>{
+                        <ProgressPage>{}
                     }
                 }
             }
@@ -417,12 +448,13 @@ impl Widget for AppMainPage {
                                 radio_page,
                                 checkbox_page,
                                 toggle_page,
-                                shader_page
+                                shader_page,
+                                progress_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(shader_page))
+                        .active(id!(progress_page))
                         .build(cx);
                 });
             })
@@ -480,6 +512,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(toggle_page));
             } else if e.selected_id == id!(tab_shader)[0] {
                 router.nav_to(cx, id!(shader_page));
+            } else if e.selected_id == id!(tab_progress)[0] {
+                router.nav_to(cx, id!(progress_page));
             }
         }
 

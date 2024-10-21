@@ -359,6 +359,16 @@ macro_rules! ref_actives {
     };
 }
 
+/// ## Example
+/// ```rust
+/// active_event! {
+///     active_hover_in: GButtonEvent::HoverIn |e: FingerHoverEvent| => GButtonHoverParam {e},
+///     active_hover_out: GButtonEvent::HoverOut |e: FingerHoverEvent| => GButtonHoverParam {e},
+///     active_focus: GButtonEvent::Focus |e: FingerDownEvent| => GButtonFocusParam {e},
+///     active_focus_lost: GButtonEvent::FocusLost |e: FingerUpEvent| => GButtonFocusLostParam {e},
+///     active_clicked: GButtonEvent::Clicked |e: FingerUpEvent| => GButtonClickedParam {e}
+/// }
+/// ```
 #[macro_export]
 macro_rules! active_event{
     ($($event_fn: ident : $event: path |$param: ident : $param_ty: ty| => $return_ty: expr),*) => {

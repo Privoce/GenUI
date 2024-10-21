@@ -57,7 +57,9 @@ live_design! {
                     height: Fill,
                     width: Fill,
                     flow: Down,
-                    
+                    <GProgress>{
+                        value: 0.3
+                    }
                     
                     // <GTabbarItem>{}
                     // <TPage>{}
@@ -221,11 +223,11 @@ live_design! {
                     //     }
                     // }
                     // <GBreadCrumbExample>{}
-                    <GDivider>{
-                        direction: Vertical,
-                        height: 100.0,
-                        theme: Error
-                    }
+                    // <GDivider>{
+                    //     direction: Vertical,
+                    //     height: 100.0,
+                    //     theme: Error
+                    // }
                     // <GLinkExample>{}
                     // <GSvgExample>{}
                     // <GIconLibExample>{}

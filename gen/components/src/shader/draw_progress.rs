@@ -6,17 +6,25 @@ live_design!{
 
         fn get_background_color(self) -> vec4 {
             return mix(
-                self.background_color,
-                self.hover_color,
-                self.hover
-            )
+                mix(
+                    self.background_color,
+                    self.hover_color,
+                    self.hover
+                ),
+                self.focus_color,
+                self.focus
+            );
         }
         fn get_stroke_color(self) -> vec4 {
             return mix(
-                self.stroke_color,
-                self.stroke_hover_color,
-                self.hover
-            )
+                mix(
+                    self.stroke_color,
+                    self.stroke_hover_color,
+                    self.hover
+                ),
+                self.stroke_focus_color,
+                self.focus
+            );
         }
 
         fn pixel(self) -> vec4 {
@@ -80,9 +88,13 @@ pub struct  DrawGProgress{
     #[live]
     pub hover_color: Vec4, // 盒子的hover颜色
     #[live]
-    pub stroke_color: Vec4, // 盒子的背景色
+    pub focus_color: Vec4, // 盒子的focus颜色
     #[live]
-    pub stroke_hover_color: Vec4, // 盒子的hover颜色
+    pub stroke_color: Vec4,
+    #[live]
+    pub stroke_hover_color: Vec4,
+    #[live]
+    pub stroke_focus_color: Vec4, 
     #[live]
     pub border_color: Vec4, // 盒子的边框颜色
     #[live(1.0)]
@@ -91,6 +103,8 @@ pub struct  DrawGProgress{
     pub border_radius: f32, // 盒子的圆角半径
     #[live]
     pub hover: f32, // 盒子的hover状态
+    #[live]
+    pub focus: f32, // 盒子的focus状态
 }
 
 #[derive(Live, LiveHook, Clone)]

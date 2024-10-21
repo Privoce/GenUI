@@ -11,7 +11,10 @@ use crate::{
 };
 
 live_design! {
-    GShaderBase = {{GShader}} {}
+    GShaderBase = {{GShader}} {
+        width: Fill,
+        height: Fill,
+    }
 }
 
 #[derive(Live, Widget)]
