@@ -5,7 +5,7 @@ pub fn register(cx: &mut Cx) {
 }
 
 use gen_components::components::{
-     label::GLabelWidgetExt, view::GView,
+    label::GLabelWidgetExt, tool_btn::GToolButtonWidgetExt, view::GView,
 };
 use makepad_widgets::*;
 
@@ -43,21 +43,24 @@ live_design! {
             box_wrap = {
                 spacing: 16.0,
                 flow: Right,
-                <GToolButton>{
+                min = <GToolButton>{
                     os_type: Mac,
                     icon_type: Min
                 }
-                <GToolButton>{
+                max = <GToolButton>{
                     os_type: Mac,
                     icon_type: Max
                 }
-                <GToolButton>{
+                full = <GToolButton>{
                     os_type: Mac,
                     icon_type: FullScreen
                 }
-                <GToolButton>{
+                close = <GToolButton>{
                     os_type: Mac,
                     icon_type: Close
+                }
+                lb = <GLabel>{
+                    text: ""
                 }
             }
             code = {
@@ -66,10 +69,48 @@ live_design! {
                         height: 240.0,
                         scroll_bars: <GScrollBars>{}
                         <GLabel>{
-                            height: 180.0,
                             theme: Dark,
                             width: Fill,
                             text: r#"
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: Min
+                            }
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: Max
+                            }
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: FullScreen
+                            }
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: Close
+                            }
+                            fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                                let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+                                let min = self.gtool_button(id!(min));
+                                let max = self.gtool_button(id!(max));
+                                let full = self.gtool_button(id!(full));
+                                let close = self.gtool_button(id!(close));
+                                let lb = self.glabel(id!(lb));
+
+                                if let Some(e) = min.clicked(&actions) {
+                                    lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+                                }
+
+                                if let Some(e) = max.clicked(&actions) {
+                                    lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+                                }
+
+                                if let Some(e) = full.clicked(&actions) {
+                                    lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+                                }
+                                if let Some(e) = close.clicked(&actions) {
+                                    lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+                                }
+                            }
                             "#;
                         }
                     }
@@ -173,10 +214,96 @@ live_design! {
                         height: 240.0,
                         scroll_bars: <GScrollBars>{}
                         <GLabel>{
-                            height: 180.0,
                             theme: Dark,
                             width: Fill,
                             text: r#"
+                <GHLayout>{
+                    height: Fit,
+                    align: {y: 0.5},
+                    <GLabel>{
+                        width: 90.0,
+                        text: "MacOs:",
+                        margin: {right: 12.0},
+                    }
+                    <GHLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        <GToolButton>{
+                            os_type: Mac,
+                            icon_type: Min
+                        }
+                        <GToolButton>{
+                            os_type: Mac,
+                            icon_type: Max
+                        }
+                        <GToolButton>{
+                            os_type: Mac,
+                            icon_type: FullScreen
+                        }
+                        <GToolButton>{
+                            os_type: Mac,
+                            icon_type: Close
+                        }
+                    }
+                }
+                <GHLayout>{
+                    height: Fit,
+                    align: {y: 0.5},
+                    <GLabel>{
+                        width: 90.0,
+                        text: "Linux:",
+                        margin: {right: 12.0},
+                    }
+                    <GHLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        <GToolButton>{
+                            os_type: Linux,
+                            icon_type: Min
+                        }
+                        <GToolButton>{
+                            os_type: Linux,
+                            icon_type: Max
+                        }
+                        <GToolButton>{
+                            os_type: Linux,
+                            icon_type: FullScreen
+                        }
+                        <GToolButton>{
+                            os_type: Linux,
+                            icon_type: Close
+                        }
+                    }
+                }
+                <GHLayout>{
+                    height: Fit,
+                    align: {y: 0.5},
+                    <GLabel>{
+                        width: 90.0,
+                        text: "Windows:",
+                        margin: {right: 16.0},
+                    }
+                    <GHLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        <GToolButton>{
+                            os_type: Windows,
+                            icon_type: Min
+                        }
+                        <GToolButton>{
+                            os_type: Windows,
+                            icon_type: Max
+                        }
+                        <GToolButton>{
+                            os_type: Windows,
+                            icon_type: FullScreen
+                        }
+                        <GToolButton>{
+                            os_type: Windows,
+                            icon_type: Close
+                        }
+                    }
+                }
                             "#;
                         }
                     }
@@ -206,6 +333,25 @@ impl Widget for ToolBtnPage {
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-        
+        let min = self.gtool_button(id!(min));
+        let max = self.gtool_button(id!(max));
+        let full = self.gtool_button(id!(full));
+        let close = self.gtool_button(id!(close));
+        let lb = self.glabel(id!(lb));
+
+        if let Some(e) = min.clicked(&actions) {
+            lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+        }
+
+        if let Some(e) = max.clicked(&actions) {
+            lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+        }
+
+        if let Some(e) = full.clicked(&actions) {
+            lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+        }
+        if let Some(e) = close.clicked(&actions) {
+            lb.set_text_and_redraw(cx, &format!("{}", e.icon_type));
+        }
     }
 }

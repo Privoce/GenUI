@@ -57,7 +57,47 @@ live_design! {
                         theme: Dark,
                         width: Fill,
                         text: r#"
-                
+                <GRadioGroup>{
+                    <GRadio>{
+                        theme: Error,
+                        radio_type: Cross,
+                        value: "Error_Cross",
+                        text: "act as button",
+                        background_visible: true,
+                        padding: {
+                            left: 12.0, right: 12.0, top: 8.0, bottom: 8.0
+                        },
+                        background_color: #6F3121,
+                        radio_background_color: #2D7D9A,
+                        radio_border_color: #FF0000,
+                        radio_hover_color: #00FF00,
+                        radio_selected_color: #FF00FF,
+                        stroke_color: #0000FF,
+                        border_radius: 2.0
+                    }
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+
+                    let hover_btn = self.gbutton(id!(do_hover));
+                    let focus_btn = self.gbutton(id!(do_focus));
+                    let clear_hover = self.gbutton(id!(clear_hover));
+                    let clear_focus = self.gbutton(id!(clear_focus));
+                    let hover_lb = self.glabel(id!(lb_hover));
+                    let focus_lb = self.glabel(id!(lb_focus));
+                    if hover_btn.clicked(&actions).is_some() {
+                        hover_lb.animate_hover_on(cx);
+                    }
+                    if focus_btn.clicked(&actions).is_some() {
+                        focus_lb.animate_focus_on(cx);
+                    }
+                    if clear_hover.clicked(&actions).is_some() {
+                        hover_lb.animate_hover_off(cx);
+                    }
+                    if clear_focus.clicked(&actions).is_some() {
+                        focus_lb.animate_focus_off(cx);
+                    }
+                }
                         "#;
                     }
                 }

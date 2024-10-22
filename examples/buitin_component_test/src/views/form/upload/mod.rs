@@ -131,10 +131,32 @@ live_design! {
                         height: 240.0,
                         scroll_bars: <GScrollBars>{}
                         <GLabel>{
-                            height: 180.0,
                             theme: Dark,
                             width: Fill,
                             text: r#"
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let up1 = self.gupload(id!(up1));
+        let e_label = self.glabel(id!(e_label));
+        let c_label = self.glabel(id!(c_label));
+        let s_label = self.glabel(id!(s_label));
+        let m_label = self.glabel(id!(m_label));
+
+        if let Some(e) = up1.clear(&actions) {
+            c_label.set_text_and_redraw(cx, &format!("{:?}", e.paths));
+            e_label.set_text_and_redraw(cx, "Clear"); 
+        }
+
+        if let Some(e) = up1.before_selected(&actions) {
+            m_label.set_text_and_redraw(cx, &format!("Clear: {:?}, {:?}", e.clear, e.mode));
+            e_label.set_text_and_redraw(cx, "Before Selected");
+        }
+
+        if let Some(e) = up1.selected(&actions) {
+            s_label.set_text_and_redraw(cx, &format!("{:?}", e.paths));
+            e_label.set_text_and_redraw(cx, "Selected");
+        }
+    }
                             "#;
                         }
                     }

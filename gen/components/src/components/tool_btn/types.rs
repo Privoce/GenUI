@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use makepad_widgets::*;
 
 use crate::{shader::icon_lib::types::base::Base, themes::hex_to_vec4};
@@ -139,5 +141,16 @@ impl From<GToolButtonType> for Base {
             GToolButtonType::FullScreen => Base::FullScreen,
             GToolButtonType::Close => Base::Close,
         }
+    }
+}
+
+impl Display for GToolButtonType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            GToolButtonType::Min => "Min",
+            GToolButtonType::Max => "Max",
+            GToolButtonType::FullScreen => "FullScreen",
+            GToolButtonType::Close => "Close",
+        })
     }
 }

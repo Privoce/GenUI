@@ -39,7 +39,6 @@ live_design! {
             code = {
                 body: {
                     <GLabel>{
-                        height: 180.0,
                         theme: Dark,
                         width: Fill,
                         text: r#"

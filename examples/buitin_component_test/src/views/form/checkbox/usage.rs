@@ -50,7 +50,6 @@ live_design! {
                         height: 240.0,
                         scroll_bars: <GScrollBars>{}
                         <GLabel>{
-                            height: 180.0,
                             theme: Dark,
                             width: Fill,
                             text: r#"
@@ -105,7 +104,6 @@ live_design! {
                         height: 240.0,
                         scroll_bars: <GScrollBars>{}
                         <GLabel>{
-                            height: 180.0,
                             theme: Dark,
                             width: Fill,
                             text: r#"

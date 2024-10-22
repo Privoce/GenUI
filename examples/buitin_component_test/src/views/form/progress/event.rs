@@ -111,7 +111,68 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let mut progress = self.gprogress(id!(progress));
+        let val_label = self.glabel(id!(val_label));
+        let e_label = self.glabel(id!(e_label));
+        let set1 = self.gbutton(id!(set1));
+        let full = self.gbutton(id!(full));
+        let clear = self.gbutton(id!(clear));
+        let get = self.gbutton(id!(get));
+        let add = self.gbutton(id!(add));
+        let add_p = self.gbutton(id!(add_p));
+        let sub = self.gbutton(id!(sub));
+        let sub_p = self.gbutton(id!(sub_p));
+        let percent = self.gbutton(id!(percent));
+        if get.clicked(&actions).is_some() {
+            progress.get().map(|v| {
+                val_label.set_text_and_redraw(cx, &v.to_string());
+            });
+        }
+        if clear.clicked(&actions).is_some() {
+            progress.clear(cx);
+        }
+        if set1.clicked(&actions).is_some() {
+            progress.set(20.0, cx);
+        }
+        if full.clicked(&actions).is_some() {
+            progress.full(cx);
+        }
+        if add.clicked(&actions).is_some() {
+            progress.add_percent(0.1, cx);
+        }
+        if sub.clicked(&actions).is_some() {
+            progress.sub_percent(0.1, cx);
+        }
+        if add_p.clicked(&actions).is_some() {
+            progress.add(12.5, cx);
+        }
+        if sub_p.clicked(&actions).is_some() {
+            progress.sub(5.0, cx);
+        }
+        if percent.clicked(&actions).is_some() {
+            progress.percent().map(|v| {
+                val_label.set_text_and_redraw(cx, &format!("{:.2}%", v));
+            });
+        }
+        if let Some(e) = progress.changed(&actions) {
+            e_label.set_text_and_redraw(cx, "Changed");
+            val_label.set_text_and_redraw(cx, &e.value.to_string());
+        }
+        if progress.before_changed(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "BeforeChanged");
+        }
+        if progress.hover_in(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "Hover In");
+        }
+        if progress.hover_out(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "Hover Out");
+        }
+        if progress.focus_lost(&actions).is_some() {
+            e_label.set_text_and_redraw(cx, "Focus Lost");
+        }
+    }
                             "#;
                         }
                     }
