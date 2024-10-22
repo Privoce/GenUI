@@ -922,8 +922,6 @@ live_design! {
                 width: Fill,
                 align: {x: 0.5, y: 0.5},
                 spacing: 6.0,
-                background_visible: true,
-                background_color: #FF0000,
                 icon = <GImage>{
                     visible: false,
                     src: dep("crate://self/resources/icons/logo.png"),

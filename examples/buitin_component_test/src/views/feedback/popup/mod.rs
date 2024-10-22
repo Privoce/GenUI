@@ -35,45 +35,90 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Splitter",
+                text: "Popup",
             }
 
         }
         <GLabel>{
             width: Fill,
-            text: "Splitter can help you split the view, you can use it to split the view into two parts, and you can drag the splitter to change the size of the two parts.",
+            text: "Popup is a floating window that can be used to display information or ask for user input. It can be used to display information or ask for user input.",
         }
         <CBox>{
             box_wrap = {
-                spacing: 8.0,
+                spacing: 24.0,
                 flow: Right,
-                <GSplitter>{
-                    height: 200.0,
-                    align: FromA(100),
-                    a: <GView>{
-                        height: 200.0,
-                        width: 200.0,
-                        theme: Error
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Click to open"
+                        }
                     },
-                    b: <GView>{
-                        height: 200.0,
+                    popup :<GPopup> {
+                        height: 150.0,
                         width: 200.0,
-                        theme: Success
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
+                            }
+                        }
                     }
                 }
-                <GSplitter>{
-                    height: 200.0,
-                    align: Weighted(0.5),
-                    axis: Vertical,
-                    a: <GView>{
-                        height: 200.0,
-                        width: Fill,
-                        theme: Error
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    position: Right,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Position: Right"
+                        }
                     },
-                    b: <GView>{
-                        height: 200.0,
-                        width: Fill,
-                        theme: Success
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
+                            }
+                        }
+                    }
+                }
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    trigger_mode: Hover,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Hover to open"
+                        }
+                    },
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
+                            }
+                        }
                     }
                 }
             }
@@ -86,35 +131,80 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                            <GSplitter>{
-                                height: 200.0,
-                                align: FromA(100),
-                                a: <GView>{
-                                    height: 200.0,
-                                    width: 200.0,
-                                    theme: Error
-                                },
-                                b: <GView>{
-                                    height: 200.0,
-                                    width: 200.0,
-                                    theme: Success
-                                }
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Click to open"
+                        }
+                    },
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
                             }
-                            <GSplitter>{
-                                height: 200.0,
-                                align: Weighted(0.5),
-                                axis: Vertical,
-                                a: <GView>{
-                                    height: 200.0,
-                                    width: Fill,
-                                    theme: Error
-                                },
-                                b: <GView>{
-                                    height: 200.0,
-                                    width: Fill,
-                                    theme: Success
-                                }
+                        }
+                    }
+                }
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    position: Right,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Position: Right"
+                        }
+                    },
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
                             }
+                        }
+                    }
+                }
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    trigger_mode: Hover,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Hover to open"
+                        }
+                    },
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
+                            }
+                        }
+                    }
+                }
                             "#;
                         }
                     }

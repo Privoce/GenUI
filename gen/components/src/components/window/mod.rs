@@ -95,7 +95,7 @@ pub struct GWindow {
     pub btns_width: f64,
     #[rust]
     pub pre_btns_width: f64,
-    #[rust]
+    #[rust(0.5)]
     pub offset: f64,
     #[rust(true)]
     pub redraw_flag: bool,
@@ -452,24 +452,29 @@ impl GWindow {
         cx.end_pass_sized_turtle();
         self.main_draw_list.end(cx);
         cx.end_pass(&self.pass);
-        let _ = self.get_btns_width(cx);
-        self.gview(id!(window_bar.window_title))
-            .borrow_mut()
-            .map(|mut view| {
-                if self.redraw_flag {
-                    view.layout.align = Align {
-                        x: self.offset,
-                        y: view.layout.align.y,
-                    };
-                    view.redraw(cx);
-                }
-            });
+        // let _ = self.get_btns_width(cx);
+        // self.gview(id!(window_bar.window_title))
+        //     .borrow_mut()
+        //     .map(|mut view| {
+        //         dbg!(self.redraw_flag);
+        //         if self.redraw_flag {
+        //             view.layout.align = Align {
+        //                 // x: self.offset,
+        //                 x: if self.offset < 0.0 || self.offset > 1.0 {
+        //                     view.layout.align.x
+        //                 } else {
+        //                     self.offset
+        //                 },
+        //                 y: view.layout.align.y,
+        //             };
+        //             view.redraw(cx);
+        //         }
+        //     });
     }
     pub fn redraw(&mut self, cx: &mut Cx) -> () {
         self.deref_widget.redraw(cx);
     }
     pub fn handle_window_actions(&mut self, cx: &mut Cx, actions: &Actions) {
-        dbg!(actions);
         for action in actions {
             if let Some(action) = action.as_widget_action() {
                 if let GWindowEvent::Minimize = action.cast() {
