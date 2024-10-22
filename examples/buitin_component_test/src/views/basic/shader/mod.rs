@@ -114,6 +114,64 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
+                sd = <GShader>{
+                    height: 200.0,
+                    width: 200.0,
+                    animation_key: false,
+                    draw_shader:{
+                        fn draw(self) -> vec4 {
+                                        
+                            let uv = self.pos - 0.5;
+                            
+                            let time = mix(1.0, self.time * 0.5, self.opened);
+        
+                            let col = vec3(0.0);
+                            let noise = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+                            
+                            col += 0.1 * vec3(noise, noise* 0.5, noise * 0.2);
+        
+                            let r = length(uv);
+                            let a = atan(uv.y, uv.x);
+                            let f = 0.5 + 0.5 * sin(6.0 * (a + time) + r * 10.0);
+                            col += vec3(f* 0.3, f* 0.2, f* 0.5);
+                            let i = 0;
+                            for _i in 0..10 {
+                                // let x = sin(float(i)) * 0.1 + time;
+                                // let star_posi = vec2(fract( * 0.1 + time), fract(sin(float(i) * 23421.6313) * 0.1 + time));
+                                let star_pos = vec2(fract(sin(float(i) * 43758.5453) * 0.1 + time), fract(sin(float(i) * 23421.6313) * 0.1 + time));
+                                star_pos = star_pos * 2.0 - 1.0;
+                                star_pos.x *= uv.x / uv.y;
+                                let d = uv - star_pos;
+                                let star = 1.0 / length(d) * 0.05;
+                                col += vec3(star);
+                                i = i + 1;
+                            }
+                            let flicker = fract(sin(dot(uv.xy + time * 20.0, vec2(12.9898,78.233))) * 43758.5453);
+                            col += 0.1 * vec3(flicker, flicker * 0.5, flicker * 0.2);
+        
+                            let plasma = sin(uv.x * 10.0 + time * 2.0) * cos(uv.y * 10.0 + time * 2.0); 
+                            col += vec3(0.2, 0.1, 0.3) * plasma;
+                            
+                            let morph = sin(time + r * 10.0) * 0.5 + 0.5;
+                            col *= vec3(morph, morph * 0.8, morph * 1.2);
+        
+                            return vec4(col, 1.0);
+                        }
+                    }
+                }
+                fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                    let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+                    let mut sd = self.gshader(id!(sd));
+                    let open_btn = self.gbutton(id!(open_btn));
+                    let close_btn = self.gbutton(id!(close_btn));
+
+                    if open_btn.clicked(&actions).is_some(){
+                        sd.open(cx);
+                    }
+                    if close_btn.clicked(&actions).is_some(){
+                        sd.close(cx);
+                    }
+                }
                             "#;
                         }
                     }

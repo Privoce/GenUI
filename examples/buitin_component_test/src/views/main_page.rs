@@ -32,8 +32,15 @@ live_design! {
     import crate::views::form::upload::*;
     import crate::views::data::tag::*;
     import crate::views::data::loading::*;
+    import crate::views::data::splitter::*;
     import crate::views::nav::tool_btn::*;
     import crate::views::nav::window::*;
+    import crate::views::feedback::state::*;
+    import crate::views::feedback::popup::*;
+    import crate::views::feedback::tool_tip::*;
+    import crate::views::feedback::dialog::*;
+    import crate::views::feedback::drawer::*;
+
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -297,6 +304,14 @@ live_design! {
                                 text: "Loading",
                             }
                         }
+                        tab_splitter = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Splitter",
+                            }
+                        }
                     }
                 }
                 sub6 = <GSubMenu>{
@@ -321,6 +336,56 @@ live_design! {
                             }
                             text_slot: {
                                 text: "Tool Button",
+                            }
+                        }
+                    }
+                }
+                sub7 = <GSubMenu>{
+                    title: {
+                        <GLabel>{
+                            font_size: 11.0,
+                            text: "Feedback",
+                        }
+                    }
+                    items: {
+                        tab_state = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "State",
+                            }
+                        }
+                        tab_popup = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Popup",
+                            }
+                        }
+                        tab_tool_tip = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "ToolTip",
+                            }
+                        }
+                        tab_dialog = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Dialog",
+                            }
+                        }
+                        tab_drawer = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Drawer",
                             }
                         }
                     }
@@ -405,6 +470,24 @@ live_design! {
                     }
                     window_page = <GBarPage>{
                         <WindowPage>{}
+                    }
+                    split_page = <GBarPage>{
+                        <SplitterPage>{}
+                    }
+                    state_page = <GBarPage>{
+                        <StatePage>{}
+                    }
+                    popup_page = <GBarPage>{
+                        <PopupPage>{}
+                    }
+                    tool_tip_page = <GBarPage>{
+                        <ToolTipPage>{}
+                    }
+                    dialog_page = <GBarPage>{
+                        <DialogPage>{}
+                    }
+                    drawer_page = <GBarPage>{
+                        <DrawerPage>{}
                     }
                 }
             }
@@ -515,12 +598,18 @@ impl Widget for AppMainPage {
                                 tag_page,
                                 loading_page,
                                 tool_btn_page,
-                                window_page
+                                window_page,
+                                split_page,
+                                state_page,
+                                popup_page,
+                                tool_tip_page,
+                                dialog_page,
+                                drawer_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(window_page))
+                        .active(id!(state_page))
                         .build(cx);
                 });
             })
@@ -590,7 +679,19 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(tool_btn_page));
             } else if e.selected_id == id!(tab_window)[0] {
                 router.nav_to(cx, id!(window_page));
-            } 
+            } else if e.selected_id == id!(tab_splitter)[0] {
+                router.nav_to(cx, id!(split_page));
+            } else if e.selected_id == id!(tab_state)[0]{
+                router.nav_to(cx, id!(state_page));
+            } else if e.selected_id == id!(tab_popup)[0]{
+                router.nav_to(cx, id!(popup_page));
+            } else if e.selected_id == id!(tab_tool_tip)[0]{
+                router.nav_to(cx, id!(tool_tip_page));
+            } else if e.selected_id == id!(tab_dialog)[0]{
+                router.nav_to(cx, id!(dialog_page));
+            } else if e.selected_id == id!(tab_drawer)[0]{
+                router.nav_to(cx, id!(drawer_page));
+            }
         }
 
         router.borrow_mut().map(|mut route| {

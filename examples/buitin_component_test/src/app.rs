@@ -1,7 +1,4 @@
-use gen_components::components::window::{GWindowEvent, GWindowWidgetRefExt};
 use makepad_widgets::*;
-
-use crate::views::main_page::AppMainPageWidgetRefExt;
 
 live_design! {
     import makepad_widgets::base::*;
@@ -48,6 +45,7 @@ impl LiveRegister for App {
         crate::views::form::register(cx);
         crate::views::data::register(cx);
         crate::views::nav::register(cx);
+        crate::views::feedback::register(cx);
         crate::styles::live_design(cx);
     }
 }
@@ -55,20 +53,6 @@ impl LiveRegister for App {
 impl MatchEvent for App {
     fn handle_startup(&mut self, _cx: &mut Cx) {
         log!("App started!");
-        if let Some(w) = self.root.window(id!(main_window)).borrow() {
-            dbg!("window");
-        }else{
-            dbg!("no window");
-        }
-        if let Some(e) = self.root.app_main_page(id!(body)).borrow() {
-            dbg!("app main");
-        }else{
-            dbg!("no app");
-        }
-    }
-    fn handle_actions(&mut self, cx: &mut Cx, actions:&Actions) {
-        // dbg!(&actions);
-        
     }
 }
 
