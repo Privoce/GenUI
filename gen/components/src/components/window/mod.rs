@@ -272,42 +272,39 @@ impl LiveHook for GWindow {
             .set_depth_texture(cx, &self.depth_texture, PassClearDepth::ClearWith(1.0));
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        let mut os_type = cx.os_type().clone();
+        self.current_os = cx.os_type().clone();
 
-        let show = self
-            .os_type
-            .as_ref()
-            .map_or(false, |g_os_type| match g_os_type {
-                GOsType::Windows => {
-                    os_type = g_os_type.clone().into();
-                    true
-                }
-                _ => false,
-            });
-
-        self.current_os = os_type;
+        // get user want os type
+        let show =
+            self.os_type
+                .as_ref()
+                .map_or((true, false, false), |g_os_type| match g_os_type {
+                    GOsType::Mac => (false, true, false),
+                    GOsType::Linux => (false, false, true),
+                    _ => (true, false, false),
+                });
 
         self.render(show);
     }
 }
 
 impl GWindow {
-    pub fn render(&mut self, show: bool) -> () {
+    pub fn render(&mut self, show: (bool, bool, bool)) -> () {
         match self.current_os {
             OsType::Windows => {
                 // in windows: show icon and title on the left, window buttons are on the right
                 self.show_icon(true);
                 self.show_title(true);
-                self.show_btns(id!(window_bar.win_btns_wrap), true);
-                self.show_btns(id!(window_bar.mac_btns_wrap), false);
-                self.show_btns(id!(window_bar.linux_btns_wrap), false);
+                self.show_btns(id!(window_bar.win_btns_wrap), show.0);
+                self.show_btns(id!(window_bar.mac_btns_wrap), show.1);
+                self.show_btns(id!(window_bar.linux_btns_wrap), show.2);
             }
             OsType::Macos => {
                 // in macos: do not show icon , show title on the center, window buttons are on the left
                 self.show_icon(false);
                 self.show_title(true);
                 self.show_btns(id!(window_bar.win_btns_wrap), false);
-                self.show_btns(id!(window_bar.mac_btns_wrap), show);
+                self.show_btns(id!(window_bar.mac_btns_wrap), false);
                 self.show_btns(id!(window_bar.linux_btns_wrap), false);
             }
             OsType::LinuxDirect | OsType::LinuxWindow(_) => {
@@ -316,7 +313,7 @@ impl GWindow {
                 self.show_title(true);
                 self.show_btns(id!(window_bar.win_btns_wrap), false);
                 self.show_btns(id!(window_bar.mac_btns_wrap), false);
-                self.show_btns(id!(window_bar.linux_btns_wrap), show);
+                self.show_btns(id!(window_bar.linux_btns_wrap), false);
             }
             _ => {}
         }
