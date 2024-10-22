@@ -32,6 +32,7 @@ live_design! {
     import crate::views::form::upload::*;
     import crate::views::data::tag::*;
     import crate::views::data::loading::*;
+    import crate::views::nav::tool_btn::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -297,6 +298,32 @@ live_design! {
                         }
                     }
                 }
+                sub6 = <GSubMenu>{
+                    title: {
+                        <GLabel>{
+                            font_size: 11.0,
+                            text: "Nav",
+                        }
+                    }
+                    items: {
+                        tab_window = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Window",
+                            }
+                        }
+                        tab_tool_btn = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Tool Button",
+                            }
+                        }
+                    }
+                }
             }
         }
         <GVLayout>{
@@ -371,6 +398,9 @@ live_design! {
                     }
                     loading_page = <GBarPage>{
                         <LoadingPage>{}
+                    }
+                    tool_btn_page = <GBarPage>{
+                        <ToolBtnPage>{}
                     }
                 }
             }
@@ -479,12 +509,13 @@ impl Widget for AppMainPage {
                                 progress_page,
                                 upload_page,
                                 tag_page,
-                                loading_page
+                                loading_page,
+                                tool_btn_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(tag_page))
+                        .active(id!(tool_btn_page))
                         .build(cx);
                 });
             })
@@ -550,6 +581,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(tag_page));
             } else if e.selected_id == id!(tab_loading)[0] {
                 router.nav_to(cx, id!(loading_page));
+            } else if e.selected_id == id!(tab_tool_btn)[0] {
+                router.nav_to(cx, id!(tool_btn_page));
             }
         }
 

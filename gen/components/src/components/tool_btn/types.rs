@@ -111,10 +111,10 @@ impl GOsType {
                 | GToolButtonType::Close => (vec4(0.0, 0.0, 0.0, 0.0), 0.0),
             },
             GOsType::Mac | GOsType::Linux => match btn_type {
-                GToolButtonType::Min => (hex_to_vec4("#fdbc21"), 1.0),
-                GToolButtonType::Max => (hex_to_vec4("#17d82e"), 1.0),
-                GToolButtonType::FullScreen => (hex_to_vec4("#cbc5ce"), 1.0),
-                GToolButtonType::Close => (hex_to_vec4("#ec4f48"), 1.0),
+                GToolButtonType::Min => (hex_to_vec4("#fdbc21"), 0.0),
+                GToolButtonType::Max => (hex_to_vec4("#17d82e"), 0.0),
+                GToolButtonType::FullScreen => (hex_to_vec4("#cbc5ce"), 0.0),
+                GToolButtonType::Close => (hex_to_vec4("#ec4f48"), 0.0),
             },
         }
     }

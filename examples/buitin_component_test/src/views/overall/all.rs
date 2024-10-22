@@ -370,6 +370,68 @@ live_design! {
                 font_family: (BOLD_FONT),
                 text: "Nav Components(导航组件)",
             }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Window"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                        
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Tool Button"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: {left: 16.0, right: 16.0},
+                        flow: Down,
+                        <GHLayout>{
+                            align: {x: 0.5},
+                            height: Fit,
+                            spacing: 8.0,
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: Min
+                            }
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: Max
+                            }
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: FullScreen
+                            }
+                            <GToolButton>{
+                                os_type: Mac,
+                                icon_type: Close
+                            }
+                        }
+                        <GHLayout>{
+                            height: Fit,
+                            align: {x: 0.5},
+                            spacing: 8.0,
+                            <GToolButton>{
+                                os_type: Windows,
+                                icon_type: Min
+                            }
+                            <GToolButton>{
+                                os_type: Windows,
+                                icon_type: Max
+                            }
+                            <GToolButton>{
+                                os_type: Windows,
+                                icon_type: FullScreen
+                            }
+                            <GToolButton>{
+                                os_type: Windows,
+                                icon_type: Close
+                            }
+                        }
+                    }
+                }
+            }
             <GLabel>{
                 font_size: 12.0,
                 font_family: (BOLD_FONT),

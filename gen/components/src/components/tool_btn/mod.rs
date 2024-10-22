@@ -1,21 +1,18 @@
-pub mod event;
+mod event;
 mod register;
 pub mod types;
 
-use event::*;
+pub use event::*;
 pub use register::register;
 
 use makepad_widgets::*;
 use types::{GOsType, GToolButtonType};
 
 use crate::{
-    animatie_fn, event_option, ref_event_option, set_event,
-    shader::{
+    active_event, animatie_fn, default_handle_animation, default_hit_finger_down, default_hit_hover_in, default_hit_hover_out, event_option, play_animation, ref_area, ref_area_ext, ref_event_option, ref_redraw, ref_render, set_event, set_scope_path, shader::{
         draw_view::DrawGView,
         icon_lib::{base::DrawGIconBase, types::base::Base},
-    },
-    utils::{set_cursor, ThemeColor},
-    widget_area,
+    }, utils::{set_cursor, ThemeColor}, widget_area
 };
 
 live_design! {
@@ -27,47 +24,33 @@ live_design! {
         color: #768390,
         stroke_hover_color: #768390,
         stroke_focus_color: #768390,
-        // draw_icon: {
-        //     instance focus: 0.0,
-        //     instance stroke_focus_color: vec4,
-        //     fn stroke_color(self) -> vec4 {
-        //         return mix(
-        //             mix(
-        //                 self.stroke_color,
-        //                 self.stroke_focus_color,
-        //                 self.focus
-        //             ),
-        //             self.stroke_hover_color,
-        //             self.hover
-        //         );
-        //     }
-        // }
         animator: {
             hover = {
                 default: off,
                 off = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
+                        draw_tool_btn: {hover: 0.0, focus: 0.0},
                         draw_icon: {hover: 0.0, focus: 0.0},
-                        draw_tool_btn: {hover: 0.0, focus: 0.0}
                     }
                 }
 
                 on = {
                     from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
+                        all: Forward {duration: (GLOBAL_DURATION)},
+                        focus: Forward {duration: (GLOBAL_DURATION)}
                     }
                     apply: {
+                        draw_tool_btn: {hover: 1.0, focus: 0.0},
                         draw_icon: {hover: 1.0, focus: 0.0},
-                        draw_tool_btn: {hover: 1.0, focus: 0.0}
                     }
                 }
 
                 focus = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
+                        draw_tool_btn: {hover: 0.0, focus: 1.0},
                         draw_icon: {hover: 0.0, focus: 1.0},
-                        draw_tool_btn: {hover: 0.0, focus: 1.0}
                     }
                 }
             }
@@ -77,6 +60,7 @@ live_design! {
 
 #[derive(Live, Widget)]
 pub struct GToolButton {
+    // inner icon ------------------------
     #[live]
     pub color: Option<Vec4>,
     #[live]
@@ -85,6 +69,7 @@ pub struct GToolButton {
     pub stroke_width: f32,
     #[live]
     pub stroke_focus_color: Option<Vec4>,
+    // tool button do not need add control style
     #[redraw]
     #[live]
     pub draw_tool_btn: DrawGView,
@@ -112,13 +97,16 @@ pub struct GToolButton {
     pub cursor: Option<MouseCursor>,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GToolButton {
-    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, mut walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, mut walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
+        self.set_scope_path(&scope.path);
         let mut icon_walk = Walk::default();
         match self.os_type.as_ref().unwrap() {
             GOsType::Windows | GOsType::Other => {
@@ -126,10 +114,10 @@ impl Widget for GToolButton {
                 icon_walk.height = Size::Fixed(16.0);
             }
             GOsType::Mac | GOsType::Linux => {
-                walk.width = Size::Fixed(18.0);
-                walk.height = Size::Fixed(18.0);
-                icon_walk.width = Size::Fixed(10.0);
-                icon_walk.height = Size::Fixed(10.0);
+                walk.width = Size::Fixed(16.0);
+                walk.height = Size::Fixed(16.0);
+                icon_walk.width = Size::Fixed(12.0);
+                icon_walk.height = Size::Fixed(12.0);
             }
         }
         let _ = self.draw_tool_btn.begin(cx, walk, self.layout);
@@ -145,6 +133,9 @@ impl Widget for GToolButton {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
+        if !self.is_visible(){
+            return;
+        }
         let hit = event.hits_with_options(
             cx,
             self.area(),
@@ -154,6 +145,9 @@ impl Widget for GToolButton {
         self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if !self.is_visible(){
+            return;
+        }
         let focus_area = self.area();
         let hit = event.hits(cx, self.area());
         self.handle_widget_event(cx, event, scope, hit, focus_area)
@@ -168,6 +162,50 @@ impl LiveHook for GToolButton {
         if !self.visible {
             return;
         }
+
+        self.render(cx);
+    }
+}
+
+impl GToolButton {
+    set_scope_path!();
+    play_animation!();
+    widget_area! {
+        area, draw_tool_btn,
+        area_icon, draw_icon
+    }
+    event_option! {
+        hover_in: GToolButtonEvent::HoverIn => GToolButtonHoverParam,
+        hover_out: GToolButtonEvent::HoverOut => GToolButtonHoverParam,
+        focus: GToolButtonEvent::Focus => GToolButtonFocusParam,
+        focus_lost: GToolButtonEvent::FocusLost => GToolButtonFocusLostParam,
+        clicked: GToolButtonEvent::Clicked => GToolButtonClickedParam
+    }
+    active_event! {
+        active_hover_in: GToolButtonEvent::HoverIn |e: Option<FingerHoverEvent>| => GToolButtonHoverParam {e},
+        active_hover_out: GToolButtonEvent::HoverOut |e: Option<FingerHoverEvent>| => GToolButtonHoverParam {e},
+        active_focus: GToolButtonEvent::Focus |e: Option<FingerDownEvent>| => GToolButtonFocusParam {e},
+        active_focus_lost: GToolButtonEvent::FocusLost |e: Option<FingerUpEvent>| => GToolButtonFocusLostParam {e}
+    }
+    pub fn active_clicked(&mut self, cx: &mut Cx, e: Option<FingerUpEvent>) {
+        if self.event_key {
+            if let Some(path) = self.scope_path.as_ref() {
+                cx.widget_action(
+                    self.widget_uid(),
+                    path,
+                    GToolButtonEvent::Clicked(GToolButtonClickedParam {
+                        e,
+                        icon_type: self.icon_type,
+                    }),
+                );
+            }
+        }
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.draw_icon.redraw(cx);
+        self.draw_tool_btn.redraw(cx);
+    }
+    pub fn render(&mut self, cx: &mut Cx) -> () {
         if self.os_type.is_none() {
             self.os_type = Some(GOsType::get());
         }
@@ -220,74 +258,65 @@ impl LiveHook for GToolButton {
             },
         );
         self.draw_icon.apply_type(Base::from(self.icon_type));
-        self.draw_icon.redraw(cx);
-        self.draw_tool_btn.redraw(cx);
     }
-}
-
-impl GToolButton {
-    widget_area! {
-        area, draw_tool_btn
-    }
-    event_option! {
-        clicked: GToolButtonEvent::Clicked => GToolButtonClickParam,
-        focus: GToolButtonEvent::Pressed => FingerDownEvent,
-        hover: GToolButtonEvent::Hover => FingerHoverEvent
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_tool_btn.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
     }
     pub fn handle_widget_event(
         &mut self,
         cx: &mut Cx,
         event: &Event,
-        scope: &mut Scope,
+        _scope: &mut Scope,
         hit: Hit,
         focus_area: Area,
     ) {
-        if self.animation_key {
-            self.animator_handle_event(cx, event);
-        }
-        let uid = self.widget_uid();
+        default_handle_animation!(self, cx, event);
 
         match hit {
-            Hit::FingerDown(fe) => {
-                if self.grab_key_focus {
-                    cx.set_key_focus(focus_area);
-                }
-                cx.widget_action(uid, &scope.path, GToolButtonEvent::Pressed(fe.clone()));
-                self.animator_play(cx, id!(hover.focus));
+            Hit::FingerDown(e) => {
+                default_hit_finger_down!(self, cx, focus_area, Some(e));
             }
-            Hit::FingerHoverIn(f_in) => {
-                set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GToolButtonEvent::Hover(f_in.clone()));
+            Hit::FingerHoverIn(e) => {
+                default_hit_hover_in!(self, cx, Some(e));
             }
-            Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
+            Hit::FingerHoverOut(e) => {
+                default_hit_hover_out!(self, cx, Some(e));
             }
-            Hit::FingerUp(fe) => {
-                if fe.is_over {
-                    cx.widget_action(uid, &scope.path, GToolButtonEvent::Clicked(GToolButtonClickParam{
-                        e: fe.clone(),
-                        mode: self.icon_type,
-                    }));
-                    if fe.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    if e.device.has_hovers() {
+                        self.play_animation(cx, id!(hover.on));
                     } else {
-                        self.animator_play(cx, id!(hover.off));
+                        self.play_animation(cx, id!(hover.off));
                     }
+                    self.active_clicked(cx, Some(e));
                 } else {
-                    // cx.widget_action(uid, &scope.path, ButtonAction::Released(fe.modifiers));
-                    self.animator_play(cx, id!(hover.off));
+                    self.play_animation(cx, id!(hover.off));
+                    self.active_focus_lost(cx, Some(e));
                 }
             }
             _ => (),
         };
     }
     pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_icon.apply_over(
             cx,
             live! {
                 hover: 1.0,
-                focus: 0.0
             },
         );
     }
@@ -296,38 +325,57 @@ impl GToolButton {
             cx,
             live! {
                 hover: 0.0,
-                focus: 0.0
             },
         );
     }
-    pub fn animate_focus(&mut self, cx: &mut Cx) -> () {
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
         self.draw_icon.apply_over(
             cx,
             live! {
-                hover: 0.0,
                 focus: 1.0
+            },
+        );
+    }
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_icon.apply_over(
+            cx,
+            live! {
+                focus: 0.0
             },
         );
     }
 }
 
 impl GToolButtonRef {
+    ref_area!();
+    ref_redraw!();
+    ref_render!();
+    ref_area_ext!{
+        area_icon
+    }
     ref_event_option! {
-        clicked => GToolButtonClickParam,
-        focus => FingerDownEvent,
-        hover => FingerHoverEvent
+        hover_in => GToolButtonHoverParam,
+        hover_out => GToolButtonHoverParam,
+        focus => GToolButtonFocusParam,
+        focus_lost => GToolButtonFocusLostParam,
+        clicked => GToolButtonClickedParam
     }
     animatie_fn! {
+        clear_animation,
         animate_hover_on,
         animate_hover_off,
-        animate_focus
+        animate_focus_on,
+        animate_focus_off
     }
 }
 
 impl GToolButtonSet {
     set_event! {
-        clicked => GToolButtonClickParam,
-        focus => FingerDownEvent,
-        hover => FingerHoverEvent
+        hover_in => GToolButtonHoverParam,
+        hover_out => GToolButtonHoverParam,
+        focus => GToolButtonFocusParam,
+        focus_lost => GToolButtonFocusLostParam,
+        clicked => GToolButtonClickedParam
     }
 }
