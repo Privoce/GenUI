@@ -920,7 +920,7 @@ live_design! {
             window_title = <GHLayout>{
                 height: Fill,
                 width: Fill,
-                align: {x: 0.0, y: 0.5},
+                align: {x: 0.5, y: 0.5},
                 spacing: 6.0,
                 icon = <GImage>{
                     src: dep("crate://self/resources/icons/logo.png"),

@@ -1,17 +1,18 @@
-pub mod event;
+mod event;
 mod register;
 pub mod types;
 
+pub use event::*;
 use makepad_widgets::*;
 use nav_control::NavControl;
 
 pub use register::register;
 
 use super::{
-    view::{GView, GViewWidgetExt},
     image::GImageWidgetExt,
     label::GLabelWidgetExt,
     tool_btn::{types::GOsType, GToolButtonWidgetExt},
+    view::{GView, GViewWidgetExt},
 };
 
 live_design! {
@@ -111,7 +112,6 @@ impl Widget for GWindow {
             return DrawStep::done();
         }
         let _ = self.deref_widget.draw_walk(cx, scope, walk)?;
-
         self.end(cx);
         DrawStep::done()
     }
@@ -133,7 +133,6 @@ impl Widget for GWindow {
             }
         };
         // ---------------------------------------------------------------------
-
         let uid = self.widget_uid();
         self.overlay.handle_event(cx, event);
         // self.deref_widget.handle_event(cx, event, scope);
@@ -254,6 +253,9 @@ impl Widget for GWindow {
             }
         }
     }
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GWindow {
@@ -271,10 +273,26 @@ impl LiveHook for GWindow {
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         let mut os_type = cx.os_type().clone();
-        let _ = self.os_type.as_ref().map(|g_os_type| {
-            os_type = g_os_type.clone().into();
-        });
+
+        let show = self
+            .os_type
+            .as_ref()
+            .map_or(false, |g_os_type| match g_os_type {
+                GOsType::Windows => {
+                    os_type = g_os_type.clone().into();
+                    true
+                }
+                _ => false,
+            });
+
         self.current_os = os_type;
+
+        self.render(show);
+    }
+}
+
+impl GWindow {
+    pub fn render(&mut self, show: bool) -> () {
         match self.current_os {
             OsType::Windows => {
                 // in windows: show icon and title on the left, window buttons are on the right
@@ -289,7 +307,7 @@ impl LiveHook for GWindow {
                 self.show_icon(false);
                 self.show_title(true);
                 self.show_btns(id!(window_bar.win_btns_wrap), false);
-                self.show_btns(id!(window_bar.mac_btns_wrap), true);
+                self.show_btns(id!(window_bar.mac_btns_wrap), show);
                 self.show_btns(id!(window_bar.linux_btns_wrap), false);
             }
             OsType::LinuxDirect | OsType::LinuxWindow(_) => {
@@ -298,11 +316,10 @@ impl LiveHook for GWindow {
                 self.show_title(true);
                 self.show_btns(id!(window_bar.win_btns_wrap), false);
                 self.show_btns(id!(window_bar.mac_btns_wrap), false);
-                self.show_btns(id!(window_bar.linux_btns_wrap), true);
+                self.show_btns(id!(window_bar.linux_btns_wrap), show);
             }
             _ => {}
         }
-
         self.show_icon.clone().take().map(|show| {
             self.show_icon(show);
         });
@@ -311,9 +328,6 @@ impl LiveHook for GWindow {
             self.show_title(show);
         });
     }
-}
-
-impl GWindow {
     pub fn show_icon(&mut self, show: bool) {
         self.gimage(id!(window_bar.window_title.icon))
             .borrow_mut()
@@ -450,5 +464,74 @@ impl GWindow {
                     view.redraw(cx);
                 }
             });
+    }
+    pub fn redraw(&mut self, cx: &mut Cx) -> () {
+        self.deref_widget.redraw(cx);
+    }
+    pub fn handle_window_actions(&mut self, cx: &mut Cx, actions: &Actions) {
+        dbg!(actions);
+        for action in actions {
+            if let Some(action) = action.as_widget_action() {
+                if let GWindowEvent::Minimize = action.cast() {
+                    self.minimize(cx);
+                } else if let GWindowEvent::Maximize = action.cast() {
+                    self.maximize(cx);
+                }
+            }
+        }
+    }
+    pub fn api(&self) -> &WindowHandle {
+        &self.window
+    }
+    pub fn open(&mut self, cx: &mut Cx) -> () {
+        self.visible = true;
+        self.redraw(cx);
+    }
+    pub fn close(&mut self, cx: &mut Cx) -> () {
+        self.window.close(cx);
+    }
+    pub fn maximize(&mut self, cx: &mut Cx) -> () {
+        self.window.maximize(cx);
+    }
+    pub fn minimize(&mut self, cx: &mut Cx) -> () {
+        self.window.minimize(cx);
+    }
+    pub fn fullscreen(&mut self, cx: &mut Cx) -> () {
+        self.window.fullscreen(cx);
+    }
+    pub fn can_fullscreen(&mut self, cx: &mut Cx) -> bool {
+        self.window.can_fullscreen(cx)
+    }
+    pub fn is_fullscreen(&mut self, cx: &mut Cx) -> bool {
+        self.window.is_fullscreen(cx)
+    }
+    pub fn size(&self, cx: &mut Cx) -> DVec2 {
+        self.window.get_inner_size(cx)
+    }
+    pub fn pos(&self, cx: &mut Cx) -> DVec2 {
+        self.window.get_position(cx)
+    }
+}
+
+impl GWindowRef {
+    pub fn handle_window_actions(&mut self, cx: &mut Cx, actions: &Actions) -> () {
+        if let Some(mut w) = self.borrow_mut() {
+            w.handle_window_actions(cx, actions);
+        }
+    }
+    pub fn open(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut w) = self.borrow_mut() {
+            w.open(cx);
+        }
+    }
+    pub fn close(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut w) = self.borrow_mut() {
+            w.close(cx);
+        }
+    }
+    pub fn minimize(&mut self, cx: &mut Cx) -> () {
+        if let Some(mut w) = self.borrow_mut() {
+            w.minimize(cx);
+        }
     }
 }

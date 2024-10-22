@@ -33,6 +33,7 @@ live_design! {
     import crate::views::data::tag::*;
     import crate::views::data::loading::*;
     import crate::views::nav::tool_btn::*;
+    import crate::views::nav::window::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     AppMainPage = {{AppMainPage}}{
         height: Fill,
@@ -402,6 +403,9 @@ live_design! {
                     tool_btn_page = <GBarPage>{
                         <ToolBtnPage>{}
                     }
+                    window_page = <GBarPage>{
+                        <WindowPage>{}
+                    }
                 }
             }
             <GView>{
@@ -510,12 +514,13 @@ impl Widget for AppMainPage {
                                 upload_page,
                                 tag_page,
                                 loading_page,
-                                tool_btn_page
+                                tool_btn_page,
+                                window_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(tool_btn_page))
+                        .active(id!(window_page))
                         .build(cx);
                 });
             })
@@ -583,7 +588,9 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(loading_page));
             } else if e.selected_id == id!(tab_tool_btn)[0] {
                 router.nav_to(cx, id!(tool_btn_page));
-            }
+            } else if e.selected_id == id!(tab_window)[0] {
+                router.nav_to(cx, id!(window_page));
+            } 
         }
 
         router.borrow_mut().map(|mut route| {
