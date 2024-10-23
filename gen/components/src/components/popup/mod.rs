@@ -6,7 +6,7 @@ pub use register::register;
 use crate::{
     shader::{
         draw_popup::DrawGPopup,
-        manual::{PopupMode, Position},
+        manual::{CloseMode, PopupMode, Position},
     },
     themes::Themes,
     utils::{BoolToF32, ThemeColor},
@@ -121,6 +121,8 @@ pub struct GPopup {
     pub cursor: Option<MouseCursor>,
     #[live]
     pub mode: PopupMode,
+    #[live]
+    pub close_mode: CloseMode,
     #[live]
     pub shadow_color: Option<Vec4>,
     #[live(0.0)]
@@ -331,5 +333,11 @@ impl GPopup {
     ) {
         self.container
             .handle_event_with(cx, event, sweep_area, scope)
+    }
+    pub fn get(&self) -> &GPopupContainer {
+        &self.container
+    }
+    pub fn get_mut(&mut self) -> &mut GPopupContainer {
+        &mut self.container
     }
 }

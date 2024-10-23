@@ -3,7 +3,7 @@ use makepad_widgets::*;
 use crate::components::menu::sub_menu::GSubMenuWidgetRefExt;
 
 /// The `PopupMode` enum represents the different modes for a popup
-#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
+#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy, Debug)]
 #[live_ignore]
 #[repr(u32)]
 pub enum PopupMode {
@@ -14,6 +14,12 @@ pub enum PopupMode {
     Drawer,
 }
 
+impl Default for PopupMode {
+    fn default() -> Self {
+        PopupMode::Popup
+    }
+}
+
 /// The `TriggerMode` enum represents the different modes for a trigger
 #[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]
 #[live_ignore]
@@ -22,7 +28,41 @@ pub enum TriggerMode {
     #[pick]
     Click = shader_enum(1),
     Hover = shader_enum(2),
+    Press = shader_enum(3),
 }
+
+impl TriggerMode{
+    pub fn is_click(&self) -> bool {
+        matches!(self, TriggerMode::Click)
+    }
+    pub fn is_hover(&self) -> bool {
+        matches!(self, TriggerMode::Hover)
+    }
+    pub fn is_press(&self) -> bool {
+        matches!(self, TriggerMode::Press)
+    }
+}
+
+/// Popup Close Mode
+#[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy, Debug)]
+#[live_ignore]
+#[repr(u32)]
+pub enum CloseMode {
+    /// Virtual Close, means you can not close if you click the outer, you must call close by code
+    Virtual = shader_enum(1),
+    #[pick]
+    /// Only Outer Can Close Popup, always use when you have no close button in the popup
+    Out = shader_enum(2),
+    
+}
+
+impl Default for CloseMode {
+    fn default() -> Self {
+        CloseMode::Out
+    }
+}
+
+
 
 /// The `ComponentMode` enum represents the different modes for a component
 #[derive(Live, LiveHook, PartialEq, Eq, Clone, Copy)]

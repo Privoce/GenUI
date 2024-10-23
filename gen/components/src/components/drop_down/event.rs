@@ -1,24 +1,25 @@
 use makepad_widgets::{
-    ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent, KeyFocusEvent,
+    ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent
 };
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GDropDownEvent {
-    Toggle(GDropDownEventParam),
+    Changed(GDropDownChangedParam),
     None,
 }
 
 #[derive(Debug, Clone)]
-pub struct GDropDownEventParam {
+pub struct GDropDownChangedParam {
     pub e: GDropDownToggleKind,
     pub opened: bool,
 }
 
 #[derive(Debug, Clone, Default)]
 pub enum GDropDownToggleKind {
-    Clicked(FingerUpEvent),
+    Click(FingerUpEvent),
     Hover(FingerHoverEvent),
-    KetFocusLost(KeyFocusEvent),
+    Press(FingerDownEvent),
+    // KetFocusLost(KeyFocusEvent),
     #[default]
     Other,
 }

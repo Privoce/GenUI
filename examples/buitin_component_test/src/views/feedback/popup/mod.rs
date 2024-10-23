@@ -9,7 +9,9 @@ pub fn register(cx: &mut Cx) {
     self::live_design(cx);
 }
 
-use gen_components::components::view::GView;
+use gen_components::components::{
+    button::GButtonWidgetExt, drop_down::GDropDownWidgetExt, view::GView,
+};
 use makepad_widgets::*;
 
 live_design! {
@@ -121,6 +123,31 @@ live_design! {
                         }
                     }
                 }
+                <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    trigger_mode: Press,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Press to open"
+                        }
+                    },
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
+                            }
+                        }
+                    }
+                }
             }
             code = {
                 body: {
@@ -211,6 +238,69 @@ live_design! {
                 }
             }
         }
+        <CBox>{
+            box_wrap = {
+                spacing: 24.0,
+                flow: Right,
+                <GVLayout>{
+                    height: Fit,
+                    width: Fit,
+                    spacing: 16.0,
+                    <GLabel>{
+                        text: "You can set nothing as trigger(use virtual trigger)",
+                    }
+                    <GLabel>{
+                        text: "You can set abs_pos to set the position of the popup",
+                    }
+                }
+                pop = <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    abs_pos: vec2(300.0, 300.0),
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            close = <GButton>{
+                                theme: Dark,
+                                slot: {text:"close inner"}
+                            }
+                        }
+                    }
+                }
+                <GVLayout>{
+                    height: Fit,
+                    spacing: 16.0,
+                    open = <GButton>{
+                        slot: {
+                            text:"virtual open"
+                        }
+                    }
+
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 300.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -233,6 +323,19 @@ impl Widget for PopupPage {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let mut pop = self.gdrop_down(id!(pop));
+        let open = self.gbutton(id!(open));
+
+        if open.clicked(&actions).is_some() {
+            pop.open(cx);
+        }
+        pop.get_mut(cx, |cx, pop, container| {
+            let close = container.gbutton(id!(close));
+
+            if close.clicked(&actions).is_some() {
+                pop.close(cx);
+            }
+        });
     }
 }
