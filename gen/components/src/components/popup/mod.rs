@@ -34,7 +34,7 @@ impl LiveHook for GPopupContainer {
         // if !self.visible {
         //     return;
         // }
-        
+
         // // ----------------- background color -------------------------------------------
         // let bg_color = self.background_color.get(self.theme, 500);
         // // ------------------ hover color -----------------------------------------------
@@ -233,29 +233,32 @@ impl GPopup {
         cx.end_pass_sized_turtle_with_shift(shift_area, shift);
         self.draw_list.end(cx);
     }
-    pub fn redraw_container(&mut self, cx: &mut Cx){
+    pub fn redraw_container(&mut self, cx: &mut Cx) {
         self.draw_popup.redraw(cx);
         self.container.redraw(cx);
     }
     pub fn redraw(&mut self, cx: &mut Cx) {
-        
         self.draw_list.redraw(cx);
-        
         // self.draw_popup.redraw(cx);
     }
     /// ## Draw items
-    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope, position: Option<Position>, angle_offset: f32, redraw: &mut bool) {
+    pub fn draw_container(
+        &mut self,
+        cx: &mut Cx2d,
+        scope: &mut Scope,
+        position: Option<Position>,
+        angle_offset: f32,
+        redraw: &mut bool,
+    ) {
         let _ = position.map(|position| {
             self.draw_popup.position = position;
         });
         self.draw_popup.angle_offset = angle_offset;
         self.container.draw_item(cx, scope);
-        if *redraw{
+        if *redraw {
             self.draw_popup.redraw(cx);
             *redraw = !*redraw;
         }
-
-        dbg!(self.draw_popup.position, self.draw_popup.angle_offset);
     }
     pub fn draw_container_drawer(
         &mut self,
@@ -263,7 +266,9 @@ impl GPopup {
         scope: &mut Scope,
         position: Position,
         proportion: f32,
+        redraw: &mut bool,
     ) {
+        dbg!("draw_container_drawer");
         self.draw_popup.position = position;
         let _ = self.virtual_box.draw_walk(
             cx,
@@ -337,6 +342,11 @@ impl GPopup {
 
         self.container
             .draw_item_drawer(cx, scope, self.container_walk.unwrap());
+
+        if *redraw {
+            self.draw_popup.redraw(cx);
+            *redraw = !*redraw;
+        }
     }
 
     pub fn container_area(&self) -> Area {

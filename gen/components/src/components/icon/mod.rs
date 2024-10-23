@@ -355,7 +355,6 @@ impl LiveHook for GIcon {
             }
         }
         self.render(cx);
-        self.draw_icon.redraw(cx);
     }
 }
 
@@ -512,7 +511,7 @@ impl GIcon {
         }
     }
     pub fn redraw(&self, cx: &mut Cx) {
-        self.draw_icon.redraw(cx);
+        // self.draw_icon.redraw(cx);
         match self.draw_type.as_ref().unwrap() {
             DrawGIconType::Base => {
                 self.icon_base.as_ref().unwrap().redraw(cx);

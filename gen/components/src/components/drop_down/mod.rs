@@ -274,7 +274,7 @@ impl Widget for GDropDown {
                 }
                 PopupMode::Drawer => {
                     let _ =
-                        popup_menu.draw_container_drawer(cx, scope, self.position, self.proportion);
+                        popup_menu.draw_container_drawer(cx, scope, self.position, self.proportion, &mut self.redraw_flag);
                     popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
             }
