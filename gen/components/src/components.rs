@@ -731,10 +731,11 @@ live_design! {
         font_size: (FONT_SIZE),
         icon: <GIcon>{
             theme: Dark,
-            height: 14.0,
-            width: 14.0,
+            height: 18.0,
+            width: 18.0,
             icon_type: Home,
             cursor: Hand,
+            animation_key: true,
         },
         crumb_item: <GBreadCrumbItem>{
             theme: Dark,

@@ -16,7 +16,26 @@ pub enum Themes {
     Info,
 }
 
-impl Themes{
+impl Default for Themes {
+    fn default() -> Self {
+        Themes::Primary
+    }
+}
+
+impl ToLiveValue for Themes {
+    fn to_live_value(&self) -> LiveValue {
+        match self {
+            Themes::Dark => LiveValue::BareEnum(live_id!(Dark)),
+            Themes::Primary => LiveValue::BareEnum(live_id!(Primary)),
+            Themes::Error => LiveValue::BareEnum(live_id!(Error)),
+            Themes::Warning => LiveValue::BareEnum(live_id!(Warning)),
+            Themes::Success => LiveValue::BareEnum(live_id!(Success)),
+            Themes::Info => LiveValue::BareEnum(live_id!(Info)),
+        }
+    }
+}
+
+impl Themes {
     pub fn get(&self, v: u32) -> Vec4 {
         match self {
             Themes::Dark => ThemeDark::v(v),
@@ -37,7 +56,7 @@ impl Themes{
             Themes::Info => ThemeInfo::hex(v),
         }
     }
-    pub fn to_vec(&self) -> Vec<Vec4>{
+    pub fn to_vec(&self) -> Vec<Vec4> {
         let levels = vec![25, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900];
         levels.iter().map(|v| self.get(*v)).collect()
     }
@@ -281,7 +300,6 @@ impl ThemeInfo {
     pub const _800: &'static str = "#1D2939";
     pub const _900: &'static str = "#101828";
 }
-
 
 color_v_trait!(ThemePrimary);
 color_v_trait!(ThemeError);

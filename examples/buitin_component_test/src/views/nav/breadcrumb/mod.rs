@@ -91,6 +91,79 @@ live_design! {
                 }
             }
         }
+        <GLabel>{
+            font_size: 12.0,
+            font_family: (BOLD_FONT),
+            text: "BreadCrumb (Virtual)",
+        }
+        <GLabel>{
+            width: Fill,
+            text: "BreadCrumb is a virtual component, you can set the labels to generate the breadcrumb.You can also set the crumb_item to set the style of the item.",
+        }
+        <GLabel>{
+            width: Fill,
+            text: "If labels.len() > 3, it will use a omit item to replace the middle items.",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                <GBreadCrumb>{
+                    labels: ["home", "components", "button"],
+                }
+                <GBreadCrumb>{
+                    labels: ["home", "components", "gen", "ui", "crumb"],
+                    icon: {theme: Primary},
+                    crumb_item: {
+                        theme: Primary,
+                        split_type: Arrow,
+                    }
+                }
+                <GBreadCrumb>{
+                    background_visible: true,
+                    border_radius: 2.0,
+                    labels: ["home", "components", "gen", "ui", "crumb"],
+                    icon: {
+                        theme: Error,
+                        stroke_hover_color: #F69D50,
+                        stroke_focus_color: #FF7043,
+                    },
+                    crumb_item: {
+                        theme: Error,
+                        text_hover_color: #F69D50,
+                        text_focus_color: #FF7043,
+                        split_type: Arrow,
+                    }
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+                <GBreadCrumbItem>{
+                    theme: Error,
+                    text: "Spliter",
+                }
+                <GBreadCrumbItem>{
+                    text: "Line",
+                    split_type: Line
+                }
+                <GBreadCrumbItem>{
+                    theme: Success,
+                    text: "Arrow",
+                    split_type: Arrow
+                }
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }
 

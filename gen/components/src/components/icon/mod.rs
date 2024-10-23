@@ -403,8 +403,8 @@ impl GIcon {
         }
 
         let colors = [
-            self.color.get(self.theme, 25),
-            self.stroke_hover_color.get(self.theme, 100),
+            self.color.get(self.theme, 50),
+            self.stroke_hover_color.get(self.theme, 25),
             self.stroke_focus_color.get(self.theme, 100),
         ];
 
