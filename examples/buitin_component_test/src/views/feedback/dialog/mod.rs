@@ -9,7 +9,9 @@ pub fn register(cx: &mut Cx) {
     self::live_design(cx);
 }
 
-use gen_components::components::view::GView;
+use gen_components::components::{
+    button::GButtonWidgetExt, drop_down::GDropDownWidgetExt, icon::GIconWidgetExt, view::GView,
+};
 use makepad_widgets::*;
 
 live_design! {
@@ -35,45 +37,89 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Splitter",
+                text: "Dialog",
             }
 
         }
         <GLabel>{
             width: Fill,
-            text: "Splitter can help you split the view, you can use it to split the view into two parts, and you can drag the splitter to change the size of the two parts.",
+            text: "Dialog is a popup that can be used to show some information or ask for user input. It usually has a close button to close the dialog.",
+        }
+        <GLabel>{
+            width: Fill,
+            text: "But you need to define yourself, such as following the example below.",
         }
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
                 flow: Right,
-                <GSplitter>{
-                    height: 200.0,
-                    align: FromA(100),
-                    a: <GView>{
-                        height: 200.0,
-                        width: 200.0,
-                        theme: Error
+                dialog = <GDropDown>{
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Open Dialog"
+                        }
                     },
-                    b: <GView>{
-                        height: 200.0,
-                        width: 200.0,
-                        theme: Success
-                    }
-                }
-                <GSplitter>{
-                    height: 200.0,
-                    align: Weighted(0.5),
-                    axis: Vertical,
-                    a: <GView>{
-                        height: 200.0,
-                        width: Fill,
-                        theme: Error
-                    },
-                    b: <GView>{
-                        height: 200.0,
-                        width: Fill,
-                        theme: Success
+                    popup :<GDialog> {
+                        container: {
+                            height: 220.0,
+                            width: 360.0,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GView>{
+                                height: Fill,
+                                width: Fill,
+                                spread_radius: 4.6,
+                                blur_radius: 4.6,
+                                spacing: 12.0,
+                                flow: Down,
+                                clip_x: false,
+                                clip_y: false,
+                                padding: 16.0,
+                                shadow_offset: vec2(0.0, 2.0),
+                                header = <GHLayout>{
+                                    height: 32.0,
+                                    align: { y: 0.5},
+                                    <GLabel>{
+                                        text: "Dialog",
+                                        font_size: 14.0,
+                                        font_family: (BOLD_FONT),
+                                    }
+                                    <GHLayout>{
+                                        align: {x: 1.0, y: 0.5},
+                                        close_icon = <GIcon>{
+                                            height: 10.0,
+                                            width: 10.0,
+                                            animation_key: true,
+                                            stroke_hover_color: #FF0000,
+                                            icon_type: Close,
+                                        }
+                                    }
+                                }
+                                body = <GVLayout>{
+                                    height: Fill,
+                                    <GLabel>{
+                                        text: "This is a dialog",
+                                    }
+                                }
+                                footer = <GHLayout>{
+                                    height: 60.0,
+                                    align: {x: 1.0, y: 0.5},
+                                    spacing: 16.0,
+                                    cancel = <GButton>{
+                                        theme: Info,
+                                        slot: {
+                                            text: "Cancel"
+                                        }
+                                    }
+                                    confirm = <GButton>{
+                                        slot: {
+                                            text: "Confirm"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -86,35 +132,85 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                            <GSplitter>{
-                                height: 200.0,
-                                align: FromA(100),
-                                a: <GView>{
-                                    height: 200.0,
-                                    width: 200.0,
-                                    theme: Error
-                                },
-                                b: <GView>{
-                                    height: 200.0,
-                                    width: 200.0,
-                                    theme: Success
+                    popup :<GDialog> {
+                        container: {
+                            height: 220.0,
+                            width: 360.0,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GView>{
+                                height: Fill,
+                                width: Fill,
+                                spread_radius: 4.6,
+                                blur_radius: 4.6,
+                                spacing: 12.0,
+                                flow: Down,
+                                clip_x: false,
+                                clip_y: false,
+                                padding: 16.0,
+                                shadow_offset: vec2(0.0, 2.0),
+                                header = <GHLayout>{
+                                    height: 32.0,
+                                    align: { y: 0.5},
+                                    <GLabel>{
+                                        text: "Dialog",
+                                        font_size: 14.0,
+                                        font_family: (BOLD_FONT),
+                                    }
+                                    <GHLayout>{
+                                        align: {x: 1.0, y: 0.5},
+                                        close_icon = <GIcon>{
+                                            height: 12.0,
+                                            width: 12.0,
+                                            animation_key: true,
+                                            stroke_hover_color: #FF0000,
+                                            icon_type: Close,
+                                        }
+                                    }
+                                }
+                                body = <GVLayout>{
+                                    height: Fill,
+                                    <GLabel>{
+                                        text: "This is a dialog",
+                                    }
+                                }
+                                footer = <GHLayout>{
+                                    height: 60.0,
+                                    align: {x: 1.0, y: 0.5},
+                                    spacing: 16.0,
+                                    cancel = <GButton>{
+                                        theme: Info,
+                                        slot: {
+                                            text: "Cancel"
+                                        }
+                                    }
+                                    confirm = <GButton>{
+                                        slot: {
+                                            text: "Confirm"
+                                        }
+                                    }
                                 }
                             }
-                            <GSplitter>{
-                                height: 200.0,
-                                align: Weighted(0.5),
-                                axis: Vertical,
-                                a: <GView>{
-                                    height: 200.0,
-                                    width: Fill,
-                                    theme: Error
-                                },
-                                b: <GView>{
-                                    height: 200.0,
-                                    width: Fill,
-                                    theme: Success
-                                }
+                        }
+                    }
+                    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+                        let mut dialog = self.gdrop_down(id!(dialog));
+
+                        dialog.get_mut(cx, |cx, dialog, container| {
+                            let close_icon = container.gicon(id!(close_icon));
+                            let cancel = container.gbutton(id!(cancel));
+                            let confirm = container.gbutton(id!(confirm));
+
+                            if close_icon.clicked(&actions).is_some()
+                                || cancel.clicked(&actions).is_some()
+                                || confirm.clicked(&actions).is_some()
+                            {
+                                dialog.close(cx);
                             }
+                        });
+                    }
                             "#;
                         }
                     }
@@ -143,6 +239,20 @@ impl Widget for DialogPage {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let mut dialog = self.gdrop_down(id!(dialog));
+
+        dialog.get_mut(cx, |cx, dialog, container| {
+            let close_icon = container.gicon(id!(close_icon));
+            let cancel = container.gbutton(id!(cancel));
+            let confirm = container.gbutton(id!(confirm));
+
+            if close_icon.clicked(&actions).is_some()
+                || cancel.clicked(&actions).is_some()
+                || confirm.clicked(&actions).is_some()
+            {
+                dialog.close(cx);
+            }
+        });
     }
 }
