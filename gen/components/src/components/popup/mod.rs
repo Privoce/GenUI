@@ -139,8 +139,6 @@ pub struct GPopup {
     // deref ---------------------
     #[live]
     pub draw_popup: DrawGPopup,
-    #[live]
-    pub virtual_box: GView,
     #[walk]
     pub walk: Walk,
     #[layout]
@@ -268,19 +266,14 @@ impl GPopup {
         proportion: f32,
         redraw: &mut bool,
     ) {
-        dbg!("draw_container_drawer");
         self.draw_popup.position = position;
-        let _ = self.virtual_box.draw_walk(
-            cx,
-            scope,
-            Walk {
-                height: Size::All,
-                width: Size::All,
-                ..Default::default()
-            },
-        );
+        let w = Walk {
+            height: Size::All,
+            width: Size::All,
+            ..Default::default()
+        };
+        let popup_size = cx.peek_walk_turtle(w).size;
         // now get virtual box as rect
-        let popup_size = self.virtual_box.area().rect(cx).size;
         let (adjust_size, adjust_pos) = match position {
             Position::Left | Position::LeftTop | Position::LeftBottom => {
                 let x = if proportion > 1.0 {
@@ -329,16 +322,13 @@ impl GPopup {
                 (size, pos)
             }
         };
-        self.virtual_box.visible = false;
 
-        if self.container_walk.is_none() {
-            self.container_walk.replace(Walk {
-                abs_pos: Some(adjust_pos),
-                width: Size::Fixed(adjust_size.x),
-                height: Size::Fixed(adjust_size.y),
-                ..Default::default()
-            });
-        }
+        self.container_walk.replace(Walk {
+            abs_pos: Some(adjust_pos),
+            width: Size::Fixed(adjust_size.x),
+            height: Size::Fixed(adjust_size.y),
+            ..Default::default()
+        });
 
         self.container
             .draw_item_drawer(cx, scope, self.container_walk.unwrap());
