@@ -233,10 +233,11 @@ impl GPopup {
         // self.draw_popup.redraw(cx);
     }
     /// ## Draw items
-    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope, position: Option<Position>) {
+    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope, position: Option<Position>, angle_offset: f32) {
         let _ = position.map(|position| {
             self.draw_popup.position = position;
         });
+        self.draw_popup.angle_offset = angle_offset;
         self.container.draw_item(cx, scope);
     }
     pub fn draw_container_drawer(

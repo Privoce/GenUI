@@ -35,45 +35,302 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Splitter",
+                text: "ToolTip",
             }
 
         }
         <GLabel>{
             width: Fill,
-            text: "Splitter can help you split the view, you can use it to split the view into two parts, and you can drag the splitter to change the size of the two parts.",
+            text: "ToolTips are a great way to provide additional information to users. They are displayed when users hover over an element with their mouse or focus on an element using a keyboard or other device. Tooltips are usually short and appear in a small box near the element.",
         }
         <CBox>{
             box_wrap = {
                 spacing: 8.0,
-                flow: Right,
-                <GSplitter>{
-                    height: 200.0,
-                    align: FromA(100),
-                    a: <GView>{
-                        height: 200.0,
-                        width: 200.0,
-                        theme: Error
-                    },
-                    b: <GView>{
-                        height: 200.0,
-                        width: 200.0,
-                        theme: Success
+                <GHLayout>{
+                    height: Fit,
+                    spacing: 16.0,
+                    align: {x: 0.5},
+                    <GDropDown>{
+                        height: Fit,
+                        width: Fit,
+                        position: TopLeft,
+                        trigger = <GButton>{slot: {
+                            text:"open top left"
+                        }},
+                        popup :<GToolTip> {
+                            height: 100.0,
+                            width: 200.0,
+                            container: {
+                                height: Fill,
+                                width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
+                            }
+                        }
+                    }
+                    <GDropDown>{
+                        height: Fit,
+                        width: Fit,
+                        position: Top,
+                        trigger = <GButton>{slot: {
+                            text:"open top"
+                        }},
+                        popup :<GToolTip> {
+                            height: 100.0,
+                            width: 200.0,
+                            container: {
+                                height: Fill,
+                                width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
+                            }
+                        }
+                    }
+                    <GDropDown>{
+                        height: Fit,
+                        width: Fit,
+                        position: TopRight,
+                        trigger = <GButton>{slot: {
+                            text:"open top right"
+                        }},
+                        popup :<GToolTip> {
+                            height: 100.0,
+                            width: 200.0,
+                            container: {
+                                height: Fill,
+                                width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
+                            }
+                        }
                     }
                 }
-                <GSplitter>{
-                    height: 200.0,
-                    align: Weighted(0.5),
-                    axis: Vertical,
-                    a: <GView>{
-                        height: 200.0,
-                        width: Fill,
-                        theme: Error
-                    },
-                    b: <GView>{
-                        height: 200.0,
-                        width: Fill,
-                        theme: Success
+                <GHLayout>{
+                    height: Fit,
+                    <GVLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        align: {x: 0.0},
+                        <GDropDown>{
+                            height: Fit,
+                            width: Fit,
+                            position: RightTop,
+                            trigger = <GButton>{slot: {
+                                text:"open right top"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                        <GDropDown>{
+                            height: Fit,
+                            width: Fit,
+                            position: Right,
+                            trigger = <GButton>{slot: {
+                                text:"open right"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                        <GDropDown>{
+                            height: Fit,
+                            width: Fit,
+                            position: RightBottom,
+                            trigger = <GButton>{slot: {
+                                text:"open right bottom"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    <GVLayout>{
+                        height: Fit,
+                        spacing: 16.0,
+                        align: {x: 1.0},
+                        <GDropDown>{
+                            height: Fit,
+                            width: Fit,
+                            position: LeftTop,
+                            trigger = <GButton>{slot: {
+                                text:"open left top"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                        <GDropDown>{
+                            height: Fit,
+                            width: Fit,
+                            position: Left,
+                            trigger = <GButton>{slot: {
+                                text:"open left"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                        <GDropDown>{
+                            height: Fit,
+                            width: Fit,
+                            position: LeftBottom,
+                            trigger = <GButton>{slot: {
+                                text:"open left bottom"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                <GHLayout>{
+                    height: Fit,
+                    spacing: 16.0,
+                    align: {x: 0.5},
+                    <GDropDown>{
+                        height: Fit,
+                        width: Fit,
+                        position: BottomRight,
+                        trigger = <GButton>{slot: {
+                            text:"open bottom right"
+                        }},
+                        popup :<GToolTip> {
+                            height: 150.0,
+                            width: 200.0,
+                            container: {
+                                height: Fill,
+                                width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
+                            }
+                        }
+                    }
+                    <GDropDown>{
+                        height: Fit,
+                        width: Fit,
+                        position: Bottom,
+                        trigger = <GButton>{slot: {
+                            text:"open bottom"
+                        }},
+                        popup :<GToolTip> {
+                            height: 150.0,
+                            width: 200.0,
+                            container: {
+                                height: Fill,
+                                width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
+                            }
+                        }
+                    }
+                    <GDropDown>{
+                        height: Fit,
+                        width: Fit,
+                        position: BottomLeft,
+                        trigger = <GButton>{slot: {
+                            text:"open bottom left"
+                        }},
+                        popup :<GToolTip> {
+                            height: 150.0,
+                            width: 200.0,
+                            container: {
+                                height: Fill,
+                                width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
+                            }
+                        }
                     }
                 }
             }

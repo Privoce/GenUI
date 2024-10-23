@@ -57,4 +57,18 @@ impl Position {
             Position::Bottom | Position::BottomLeft | Position::BottomRight => Position::Bottom,
         }
     }
+    /// return angle offset
+    pub fn angle_offset(&self, size: DVec2) -> f32 {
+        match self {
+            Position::Left | Position::Right | Position::Bottom | Position::Top => 0.0,
+            Position::LeftTop
+            | Position::LeftBottom
+            | Position::RightTop
+            | Position::RightBottom => (size.y / 2.0) as f32,
+            Position::TopLeft
+            | Position::TopRight
+            | Position::BottomLeft
+            | Position::BottomRight => (size.x / 2.0) as f32,
+        }
+    }
 }

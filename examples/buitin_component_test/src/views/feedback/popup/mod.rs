@@ -10,7 +10,7 @@ pub fn register(cx: &mut Cx) {
 }
 
 use gen_components::components::{
-    button::GButtonWidgetExt, drop_down::GDropDownWidgetExt, view::GView,
+    button::GButtonWidgetExt, drop_down::GDropDownWidgetExt, label::GLabelWidgetExt, view::GView
 };
 use makepad_widgets::*;
 
@@ -238,21 +238,18 @@ live_design! {
                 }
             }
         }
+        <GLabel>{
+            text: "You can set nothing as trigger(use virtual trigger)",
+        }
+        <GLabel>{
+            text: "You can set abs_pos to set the position of the popup",
+        }
         <CBox>{
             box_wrap = {
                 spacing: 24.0,
                 flow: Right,
-                <GVLayout>{
-                    height: Fit,
-                    width: Fit,
-                    spacing: 16.0,
-                    <GLabel>{
-                        text: "You can set nothing as trigger(use virtual trigger)",
-                    }
-                    <GLabel>{
-                        text: "You can set abs_pos to set the position of the popup",
-                    }
-                }
+                height: 100.0,
+
                 pop = <GDropDown>{
                     offset: 6.0,
                     height: Fit,
@@ -294,7 +291,76 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
+        let mut pop = self.gdrop_down(id!(pop));
+        let e_label = self.glabel(id!(e_label));
+        let open = self.gbutton(id!(open));
 
+        if open.clicked(&actions).is_some() {
+            pop.open(cx);
+        }
+        pop.get_mut(cx, |cx, pop, container| {
+            let close = container.gbutton(id!(close));
+
+            if close.clicked(&actions).is_some() {
+                pop.close(cx);
+            }
+        });
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
+        <GLabel>{
+            text: "You can use changed callback",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 24.0,
+                
+                pop2 = <GDropDown>{
+                    offset: 6.0,
+                    height: Fit,
+                    width: Fit,
+                    position: Top,
+                    trigger = <GButton>{
+                        slot: {
+                            text:"Click to open"
+                        }
+                    },
+                    popup :<GPopup> {
+                        height: 150.0,
+                        width: 200.0,
+                        container: <GPopupContainer> {
+                            height: Fill,
+                            width: Fill,
+                            flow: Down,
+                            spacing: 10.0,
+                            padding: 10.0,
+                            <GLabel>{
+                                text:"This is a popup",
+                            }
+                        }
+                    }
+                }
+                e_label = <GLabel>{
+                    text: "Popup: None",
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 300.0,
+                        scroll_bars: <GScrollBars>{},
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let mut pop2 = self.gdrop_down(id!(pop2));
+        if let Some(e) = pop2.changed(&actions) {
+            e_label.set_text_and_redraw(cx, &format!("Popup: {:?}", e.opened));
+        }
                             "#;
                         }
                     }
@@ -325,6 +391,8 @@ impl Widget for PopupPage {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let mut pop = self.gdrop_down(id!(pop));
+        let mut pop2 = self.gdrop_down(id!(pop2));
+        let e_label = self.glabel(id!(e_label));
         let open = self.gbutton(id!(open));
 
         if open.clicked(&actions).is_some() {
@@ -337,5 +405,9 @@ impl Widget for PopupPage {
                 pop.close(cx);
             }
         });
+
+        if let Some(e) = pop2.changed(&actions) {
+            e_label.set_text_and_redraw(cx, &format!("Popup: {:?}", e.opened));
+        }
     }
 }

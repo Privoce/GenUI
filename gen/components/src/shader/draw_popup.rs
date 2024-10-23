@@ -19,4 +19,7 @@ pub struct DrawGPopup {
     pub opactiy: f32,
     #[live(0.4)]
     pub proportion: f32,
+    /// The angle offset of the popup, usually used in tooltips to get the angle center when painting
+    #[live]
+    pub angle_offset: f32,
 }

@@ -609,7 +609,7 @@ impl Widget for AppMainPage {
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(state_page))
+                        .active(id!(tool_tip_page))
                         .build(cx);
                 });
             })

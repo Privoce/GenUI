@@ -418,8 +418,10 @@ live_design! {
                 let h = self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0);
                 let center = vec2((self.pos.x + w) * 0.5, (self.pos.y + h)  * 0.5);
                 let start_p = vec2(self.inset.x + self.border_width, self.inset.y + self.border_width);
-                let quarter_w = w * 0.25;
-                let quarter_h = h * 0.25;
+                // let quarter_w = w * 0.25;
+                let quarter_w = self.angle_offset;
+                // let quarter_h = h * 0.25;
+                let quarter_h = self.angle_offset;
                 match self.position{
                     Position::Left => {
                         let end_w = self.inset.x + self.border_width + w - spacing;

@@ -202,7 +202,8 @@ impl Widget for GDropDown {
             match self.mode {
                 PopupMode::Popup | PopupMode::ToolTip => {
                     let area = self.area().rect(cx);
-                    popup_menu.draw_container(cx, scope, Some(self.position.clone()));
+                    let angle_offset = self.position.angle_offset(area.size);
+                    popup_menu.draw_container(cx, scope, Some(self.position.clone()), angle_offset);
                     let container = popup_menu.container_area().rect(cx);
                     let mut shift = match self.position {
                         Position::Bottom => DVec2 {
@@ -262,7 +263,7 @@ impl Widget for GDropDown {
                 }
 
                 PopupMode::Dialog => {
-                    popup_menu.draw_container(cx, scope, None);
+                    popup_menu.draw_container(cx, scope, None, 0.0);
                     popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
                 PopupMode::Drawer => {
@@ -384,6 +385,13 @@ impl GDropDownRef {
     pub fn toggle(&mut self, cx: &mut Cx) {
         if let Some(mut c_ref) = self.borrow_mut() {
             c_ref.toggle(cx);
+        }
+    }
+    pub fn changed(&mut self, actions: &Actions) -> Option<GDropDownChangedParam> {
+        if let Some(mut c_ref) = self.borrow_mut() {
+            c_ref.changed(actions)
+        } else {
+            None
         }
     }
 }
