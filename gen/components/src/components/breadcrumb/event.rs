@@ -1,4 +1,4 @@
-use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent};
+use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerDownEvent, FingerHoverEvent, FingerUpEvent};
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GBreadCrumbEvent {
@@ -26,19 +26,31 @@ pub struct GBreadCrumbClickedParam {
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GBreadCrumbItemEvent {
-    Hover(GBreadCrumbItemHoverParam),
+    HoverIn(GBreadCrumbItemHoverParam),
+    HoverOut(GBreadCrumbItemHoverParam),
     Clicked(GBreadCrumbItemClickedParam),
+    Focus(GBreadCrumbItemFocusParam),
+    FocusLost(GBreadCrumbItemFocusLostParam),
     None,
 }
 
 #[derive(Clone, Debug)]
 pub struct GBreadCrumbItemHoverParam {
-    pub item: String,
-    pub e: FingerHoverEvent,
+    pub e: Option<FingerHoverEvent>,
+}
+
+#[derive(Clone, Debug)]
+pub struct GBreadCrumbItemFocusParam {
+    pub e: Option<FingerDownEvent>,
+}
+
+#[derive(Clone, Debug)]
+pub struct GBreadCrumbItemFocusLostParam {
+    pub e: Option<FingerUpEvent>,
 }
 
 #[derive(Clone, Debug)]
 pub struct GBreadCrumbItemClickedParam {
     pub item: String,
-    pub e: FingerUpEvent,
+    pub e: Option<FingerUpEvent>,
 }

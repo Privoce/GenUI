@@ -18,9 +18,9 @@ live_design! {
                 }
                 GSplitType::Arrow => {
                     // draw a `>` icon as a split
-                    sdf.move_to(q_size, self.pos.y);
-                    sdf.line_to(self.rect_size.x - q_size, center.y);
-                    sdf.line_to(q_size, self.pos.y + self.rect_size.y);
+                    sdf.move_to(q_size, center.y - q_size * 1.2);
+                    sdf.line_to(self.rect_size.x - q_size * 1.2, center.y);
+                    sdf.line_to(q_size, center.y + q_size * 1.2);
                     sdf.stroke(self.color, 1.2);
                 }
                 GSplitType::Line => {

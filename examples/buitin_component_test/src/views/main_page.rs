@@ -35,6 +35,10 @@ live_design! {
     import crate::views::data::splitter::*;
     import crate::views::nav::tool_btn::*;
     import crate::views::nav::window::*;
+    import crate::views::nav::breadcrumb::*;
+    import crate::views::nav::router::*;
+    import crate::views::nav::menu::*;
+    import crate::views::nav::tabbar::*;
     import crate::views::feedback::state::*;
     import crate::views::feedback::popup::*;
     import crate::views::feedback::tool_tip::*;
@@ -212,7 +216,6 @@ live_design! {
                             }
                         }
                         tab_scroll = <GMenuItem>{
-                            selected: true,
                             icon_slot: {
                                 visible: false,
                             }
@@ -336,6 +339,39 @@ live_design! {
                             }
                             text_slot: {
                                 text: "Tool Button",
+                            }
+                        }
+                        tab_breadcrumb = <GMenuItem>{
+                            selected: true,
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Breadcrumb",
+                            }
+                        }
+                        tab_menu = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Menu",
+                            }
+                        }
+                        tab_tabbar = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "TabBar",
+                            }
+                        }
+                        tab_router = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Router",
                             }
                         }
                     }
@@ -489,6 +525,18 @@ live_design! {
                     drawer_page = <GBarPage>{
                         <DrawerPage>{}
                     }
+                    breadcrumb_page = <GBarPage>{
+                        <BreadCrumbPage>{}
+                    }
+                    menu_page = <GBarPage>{
+                        <MenuPage>{}
+                    }
+                    tabbar_page = <GBarPage>{
+                        <TabbarPage>{}
+                    }
+                    router_page = <GBarPage>{
+                        <RouterPage>{}
+                    }
                 }
             }
             <GView>{
@@ -604,12 +652,16 @@ impl Widget for AppMainPage {
                                 popup_page,
                                 tool_tip_page,
                                 dialog_page,
-                                drawer_page
+                                drawer_page,
+                                breadcrumb_page,
+                                menu_page,
+                                tabbar_page,
+                                router_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(drawer_page))
+                        .active(id!(breadcrumb_page))
                         .build(cx);
                 });
             })
@@ -691,6 +743,14 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(dialog_page));
             } else if e.selected_id == id!(tab_drawer)[0]{
                 router.nav_to(cx, id!(drawer_page));
+            } else if e.selected_id == id!(tab_breadcrumb)[0] {
+                router.nav_to(cx, id!(breadcrumb_page));
+            } else if e.selected_id == id!(tab_menu)[0] {
+                router.nav_to(cx, id!(menu_page));
+            } else if e.selected_id == id!(tab_tabbar)[0] {
+                router.nav_to(cx, id!(tabbar_page));
+            } else if e.selected_id == id!(tab_router)[0] {
+                router.nav_to(cx, id!(router_page));
             }
         }
 

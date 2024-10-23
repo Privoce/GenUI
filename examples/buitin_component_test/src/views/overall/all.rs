@@ -7,7 +7,7 @@ live_design! {
     import gen_components::components::*;
     BOLD_FONT = dep("crate://self/resources/OPPOSans-Bold.ttf");
     CPreview = <GView>{
-        height: 120.0,
+        height: 140.0,
         width: Fill,
         border_radius: 4.0,
         theme: Dark,
@@ -332,8 +332,9 @@ live_design! {
                 <CPreview>{
                     header = {title = {text: "Tag"}}
                     body = {
-                        spacing: 16.0,
-                        padding: {left: 16.0, right: 16.0},
+                        spacing: 4.0,
+                        padding: 6.0,
+                        flow: Down,
                         <GTag>{
                             theme: Success,
                             text: "badge tag1",
@@ -364,6 +365,26 @@ live_design! {
                         }
                     }
                 }
+                <CPreview>{
+                    header = {title = {text: "Splitter"}}
+                    body = {
+                        padding: 12.0,
+                        <GSplitter>{
+                            height: Fill,
+                            align: FromA(60),
+                            a: <GView>{
+                                height: Fill,
+                                width: 100.0,
+                                theme: Error
+                            },
+                            b: <GView>{
+                                height: Fill,
+                                width: 100.0,
+                                theme: Success
+                            }
+                        }
+                    }
+                }
             }
             <GLabel>{
                 font_size: 12.0,
@@ -377,8 +398,51 @@ live_design! {
                     header = {title = {text: "Window"}}
                     body = {
                         spacing: 16.0,
-                        padding: {left: 16.0, right: 16.0},
-                        
+                        padding: 12.0,
+                        <GView>{
+                            border_width: 1.0,
+                            height: Fill,
+                            width: Fill,
+                            background_color: #DDD,
+                            window_bar = <GHLayout>{
+                                height: 32.0,
+                                width: Fill,
+                                background_color: #1F1E25,
+                                background_visible: true,
+                                align: {
+                                    x: 0.0, y: 0.5
+                                }
+                                spacing: 0.0,
+                                mac_btns_wrap = <GHLayout>{
+                                    visible: true
+                                    height: 32.0,
+                                    width: Fit,
+                                    spacing: 6.0,
+                                    align: {x: 0.0, y: 0.5},
+                                    padding: {left: 6.0},
+                                    close = <GToolButton> {icon_type: Close, os_type: Mac}
+                                    max = <GToolButton> {icon_type: Max, os_type: Mac}
+                                    min = <GToolButton> {icon_type: Min, os_type: Mac}
+                                }
+                                window_title = <GHLayout>{
+                                    height: Fill,
+                                    width: Fill,
+                                    align: {x: 0.5, y: 0.5},
+                                    spacing: 6.0,
+                                    icon = <GImage>{
+                                        
+                                        src: dep("crate://self/resources/rust.png"),
+                                        height: 16.0,
+                                        width: 16.0,
+                                    },
+                                    title = <GLabel>{
+                                        height: Fit,
+                                        text: "Window",
+                                        font_size: 9.0,
+                                    },
+                                }
+                            }
+                        }
                     }
                 }
                 <CPreview>{
@@ -436,6 +500,185 @@ live_design! {
                 font_size: 12.0,
                 font_family: (BOLD_FONT),
                 text: "Feedback Components(反馈组件)",
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "State"}}
+                    body = {
+                        padding: 4.0,
+                        <GVLayout>{
+                            theme: Success,
+                            height: Fill,
+                            width: Fill,
+                            spacing: 8.0,
+                            align: {x: 0.5, y: 0.5},
+                            <GIcon>{
+                                color: #DDD,
+                                height: 32.0,
+                                width: 32.0,
+                                icon_type: Help,
+                                stroke_width: 1.6,
+                            }
+                            <GLabel>{
+                                text: "This a help message"
+                            }
+                            <GHLayout>{
+                                height: Fit,
+                                spacing: 16.0,
+                                align: {x: 0.5},
+                                <GButton>{theme: Info, slot: {text: "Cancel"}}
+                                <GButton>{theme: Success, slot: {text: "OK"}}
+                            }
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Popup"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: 16.0,
+                        flow: Down,
+                        <GDropDown>{
+                            offset: 6.0,
+                            height: Fit,
+                            width: Fit,
+                            trigger = <GButton>{
+                                slot: {
+                                    text:"Click to open"
+                                }
+                            },
+                            popup :<GPopup> {
+                                height: 150.0,
+                                width: 200.0,
+                                container: <GPopupContainer> {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "ToolTip"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: 16.0,
+                        flow: Down,
+                        <GDropDown>{
+                            position: TopLeft,
+                            trigger = <GButton>{slot: {
+                                text:"open top left"
+                            }},
+                            popup :<GToolTip> {
+                                height: 100.0,
+                                width: 200.0,
+                                container: {
+                                    height: Fill,
+                                    width: Fill,
+                                    flow: Down,
+                                    spacing: 10.0,
+                                    padding: 10.0,
+                                    <GLabel>{
+                                        text:"This is a popup",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Dialog"}}
+                    body = {
+                        padding: 4.0,
+                        <GView>{
+                            height: Fill,
+                            width: Fill,
+                            spread_radius: 4.6,
+                            blur_radius: 4.6,
+                            spacing: 8.0,
+                            flow: Down,
+                            clip_x: false,
+                            clip_y: false,
+                            padding: 8.0,
+                            shadow_offset: vec2(0.0, 2.0),
+                            header = <GHLayout>{
+                                height: 24.0,
+                                align: { y: 0.5},
+                                <GLabel>{
+                                    text: "Dialog",
+                                    font_size: 12.0,
+                                    font_family: (BOLD_FONT),
+                                }
+                                <GHLayout>{
+                                    align: {x: 1.0, y: 0.5},
+                                    close_icon = <GIcon>{
+                                        height: 10.0,
+                                        width: 10.0,
+                                        animation_key: true,
+                                        stroke_hover_color: #FF0000,
+                                        icon_type: Close,
+                                    }
+                                }
+                            }
+                            body = <GVLayout>{
+                                height: Fill,
+                                <GLabel>{
+                                    text: "This is a dialog",
+                                }
+                            }
+                            footer = <GHLayout>{
+                                height: 60.0,
+                                align: {x: 1.0, y: 0.5},
+                                spacing: 16.0,
+                                cancel = <GButton>{
+                                    theme: Info,
+                                    slot: {
+                                        text: "Cancel"
+                                    }
+                                }
+                                confirm = <GButton>{
+                                    slot: {
+                                        text: "Confirm"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Drawer"}}
+                    body = {
+                        spacing: 16.0,
+                        padding: 16.0,
+                        flow: Down,
+                        <GView>{
+                            theme: Info,
+                            height: Fill,
+                            width: Fill,
+                            border_width: 1.0,
+                            align: {x: 1.0}
+                            <GView>{
+                                background_color: #DDD,
+                                width: 60.0,
+                                height: Fill,
+
+                            }
+                        }
+                    }
+                }
+                
             }
             <GLabel>{
                 font_size: 12.0,

@@ -434,6 +434,23 @@ macro_rules! default_hit_finger_up {
 }
 
 #[macro_export]
+macro_rules! default_hit_finger_up_some {
+    ($self:ident, $cx:ident, $e:expr) => {
+        if $e.is_over {
+            if $e.device.has_hovers() {
+                $self.play_animation($cx, id!(hover.on));
+            } else {
+                $self.play_animation($cx, id!(hover.off));
+            }
+            $self.active_clicked($cx, Some($e));
+        } else {
+            $self.play_animation($cx, id!(hover.off));
+            $self.active_focus_lost($cx, Some($e));
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! default_handle_animation {
     ($self:ident, $cx:ident, $event: ident) => {
         if $self.animation_key {

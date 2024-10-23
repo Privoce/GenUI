@@ -1,7 +1,7 @@
-pub mod event;
+mod event;
 pub mod item;
 mod register;
-use event::{GBreadCrumbClickedParam, GBreadCrumbEvent, GBreadCrumbHoverParam};
+pub use event::*;
 pub use register::register;
 
 use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};

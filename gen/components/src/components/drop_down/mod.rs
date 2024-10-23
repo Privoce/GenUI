@@ -278,11 +278,6 @@ impl Widget for GDropDown {
                     popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
             }
-            // if self.redraw_flag{
-            //     popup_menu.redraw_container(cx);
-            //     self.redraw_flag = true;
-            // }
-            
         }
 
         DrawStep::done()
