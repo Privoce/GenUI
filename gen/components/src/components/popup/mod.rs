@@ -23,50 +23,52 @@ live_design! {
 }
 #[derive(Live, LiveRegister)]
 pub struct GPopupContainer {
-    #[live]
+    // #[live]
     #[deref]
     pub deref_widget: GView,
 }
 
 impl LiveHook for GPopupContainer {
-    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible {
-            return;
-        }
-        // ----------------- background color -------------------------------------------
-        let bg_color = self.background_color.get(self.theme, 500);
-        // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ focus color ---------------------------------------------
-        let focus_color = self.focus_color.get(self.theme, 600);
-        // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 800);
-        let shadow_color = self.shadow_color.get(self.theme, 700);
-        // ------------------ is background_visible --------------------------------------------
-        let background_visible = self.background_visible.to_f32();
-        // ------------------ apply draw_popup --------------------------------------------
-        let border_width = self.border_width;
-        let border_radius = self.border_radius;
-        let shadow_offset = self.shadow_offset;
-        let spread_radius = self.spread_radius;
-        let blur_radius = self.blur_radius;
-        self.draw_view.apply_over(
-            cx,
-            live! {
-                background_color: (bg_color),
-                border_color: (border_color),
-                border_width: (border_width),
-                border_radius: (border_radius),
-                focus_color: (focus_color),
-                hover_color: (hover_color),
-                background_visible: (background_visible),
-                shadow_color: (shadow_color),
-                shadow_offset: (shadow_offset),
-                spread_radius: (spread_radius),
-                blur_radius: (blur_radius)
-            },
-        );
-        self.draw_view.redraw(cx);
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.deref_widget.after_apply(cx, apply, index, nodes);
+        // if !self.visible {
+        //     return;
+        // }
+        
+        // // ----------------- background color -------------------------------------------
+        // let bg_color = self.background_color.get(self.theme, 500);
+        // // ------------------ hover color -----------------------------------------------
+        // let hover_color = self.hover_color.get(self.theme, 400);
+        // // ------------------ focus color ---------------------------------------------
+        // let focus_color = self.focus_color.get(self.theme, 600);
+        // // ------------------ border color ----------------------------------------------
+        // let border_color = self.border_color.get(self.theme, 800);
+        // let shadow_color = self.shadow_color.get(self.theme, 700);
+        // // ------------------ is background_visible --------------------------------------------
+        // let background_visible = self.background_visible.to_f32();
+        // // ------------------ apply draw_popup --------------------------------------------
+        // let border_width = self.border_width;
+        // let border_radius = self.border_radius;
+        // let shadow_offset = self.shadow_offset;
+        // let spread_radius = self.spread_radius;
+        // let blur_radius = self.blur_radius;
+        // self.draw_view.apply_over(
+        //     cx,
+        //     live! {
+        //         background_color: (bg_color),
+        //         border_color: (border_color),
+        //         border_width: (border_width),
+        //         border_radius: (border_radius),
+        //         focus_color: (focus_color),
+        //         hover_color: (hover_color),
+        //         background_visible: (background_visible),
+        //         shadow_color: (shadow_color),
+        //         shadow_offset: (shadow_offset),
+        //         spread_radius: (spread_radius),
+        //         blur_radius: (blur_radius)
+        //     },
+        // );
+        // self.draw_view.redraw(cx);
     }
 }
 
@@ -90,6 +92,9 @@ impl GPopupContainer {
         let _ = self
             .deref_widget
             .handle_event_with(cx, event, scope, sweep_area);
+    }
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.deref_widget.redraw(cx);
     }
 }
 
@@ -149,14 +154,14 @@ pub struct GPopup {
     #[live]
     draw_list: DrawList2d,
     #[rust]
-    container_walk: Option<Walk>,
+    pub container_walk: Option<Walk>,
 }
 
 impl LiveHook for GPopup {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible {
-            return;
-        }
+        // if !self.visible {
+        //     return;
+        // }
         // ----------------- background color -------------------------------------------
         let bg_color = self.background_color.get(self.theme, 500);
         let shadow_color = self.shadow_color.get(self.theme, 500);
@@ -186,7 +191,7 @@ impl LiveHook for GPopup {
                 blur_radius: (self.blur_radius)
             },
         );
-        self.draw_popup.redraw(cx);
+        // self.draw_popup.redraw(cx);
     }
 }
 
@@ -228,17 +233,29 @@ impl GPopup {
         cx.end_pass_sized_turtle_with_shift(shift_area, shift);
         self.draw_list.end(cx);
     }
+    pub fn redraw_container(&mut self, cx: &mut Cx){
+        self.draw_popup.redraw(cx);
+        self.container.redraw(cx);
+    }
     pub fn redraw(&mut self, cx: &mut Cx) {
+        
         self.draw_list.redraw(cx);
+        
         // self.draw_popup.redraw(cx);
     }
     /// ## Draw items
-    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope, position: Option<Position>, angle_offset: f32) {
+    pub fn draw_container(&mut self, cx: &mut Cx2d, scope: &mut Scope, position: Option<Position>, angle_offset: f32, redraw: &mut bool) {
         let _ = position.map(|position| {
             self.draw_popup.position = position;
         });
         self.draw_popup.angle_offset = angle_offset;
         self.container.draw_item(cx, scope);
+        if *redraw{
+            self.draw_popup.redraw(cx);
+            *redraw = !*redraw;
+        }
+
+        dbg!(self.draw_popup.position, self.draw_popup.angle_offset);
     }
     pub fn draw_container_drawer(
         &mut self,

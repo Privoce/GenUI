@@ -52,6 +52,8 @@ pub struct GDropDown {
     pub event_key: bool,
     #[rust]
     pub close_mode: CloseMode,
+    #[rust(true)]
+    pub redraw_flag: bool,
 }
 
 #[derive(Default, Clone)]
@@ -99,8 +101,10 @@ impl GDropDown {
         }
         // we don't need to care close mode here
         self.opened = false;
+        self.redraw(cx);
         cx.sweep_unlock(self.area());
         self.active_toggled(cx, GDropDownToggleKind::Other);
+        self.redraw_flag = true;
     }
     pub fn toggle(&mut self, cx: &mut Cx) {
         if self.opened {
@@ -138,9 +142,11 @@ impl GDropDown {
         }
         if flag {
             self.opened = false;
+            self.redraw(cx);
             cx.sweep_unlock(self.area());
             self.active_toggled(cx, e_kind);
         }
+        self.redraw_flag = true;
     }
     fn active_toggled(&mut self, cx: &mut Cx, e_kind: GDropDownToggleKind) {
         cx.widget_action(
@@ -203,7 +209,7 @@ impl Widget for GDropDown {
                 PopupMode::Popup | PopupMode::ToolTip => {
                     let area = self.area().rect(cx);
                     let angle_offset = self.position.angle_offset(area.size);
-                    popup_menu.draw_container(cx, scope, Some(self.position.clone()), angle_offset);
+                    popup_menu.draw_container(cx, scope, Some(self.position.clone()), angle_offset, &mut self.redraw_flag);
                     let container = popup_menu.container_area().rect(cx);
                     let mut shift = match self.position {
                         Position::Bottom => DVec2 {
@@ -263,7 +269,7 @@ impl Widget for GDropDown {
                 }
 
                 PopupMode::Dialog => {
-                    popup_menu.draw_container(cx, scope, None, 0.0);
+                    popup_menu.draw_container(cx, scope, None, 0.0, &mut false);
                     popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
                 PopupMode::Drawer => {
@@ -272,7 +278,11 @@ impl Widget for GDropDown {
                     popup_menu.end(cx, scope, Area::Empty, DVec2::default());
                 }
             }
-            popup_menu.redraw(cx);
+            // if self.redraw_flag{
+            //     popup_menu.redraw_container(cx);
+            //     self.redraw_flag = true;
+            // }
+            
         }
 
         DrawStep::done()
@@ -380,7 +390,7 @@ impl GDropDownRef {
     }
     /// ## toggle the popup
     /// If you don't know the state of the popup, you can use this method to toggle the popup
-    /// 
+    ///
     /// This is a easy way to control the popup, and do not worry, open or close fn has been optimized
     pub fn toggle(&mut self, cx: &mut Cx) {
         if let Some(mut c_ref) = self.borrow_mut() {
