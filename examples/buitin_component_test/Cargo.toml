@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 makepad-widgets = { path = "/Users/shengyifei/projects/makepad/makepad/widgets", version = "0.6.0" }
-gen_components ={ path="/Users/shengyifei/projects/gen_ui/GenUI/gen/components" }
+gen_components ={ path="/Users/shengyifei/projects/gen_ui/components" }
