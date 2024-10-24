@@ -674,7 +674,7 @@ impl Widget for AppMainPage {
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(collapse_page))
+                        .active(id!(start_page))
                         .build(cx);
                 });
             })
