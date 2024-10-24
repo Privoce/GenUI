@@ -661,7 +661,7 @@ impl Widget for AppMainPage {
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(breadcrumb_page))
+                        .active(id!(tabbar_page))
                         .build(cx);
                 });
             })

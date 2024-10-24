@@ -1,6 +1,13 @@
 use super::event::*;
 use crate::{
-    components::{label::GLabel, svg::GSvg}, event_option, ref_event_option, shader::draw_view::DrawGView, themes::Themes, utils::{set_cursor, BoolToF32, ThemeColor}, widget_area
+    animatie_fn, check_event_scope,
+    components::{label::GLabel, svg::GSvg},
+    default_handle_animation, event_option, play_animation, ref_area, ref_area_ext,
+    ref_event_option, ref_redraw, ref_render, set_event, set_scope_path,
+    shader::draw_view::DrawGView,
+    themes::Themes,
+    utils::{set_cursor, BoolToF32, ThemeColor},
+    widget_area,
 };
 use makepad_widgets::*;
 
@@ -18,6 +25,40 @@ live_design! {
         },
         cursor: Hand,
         spacing: 2.0,
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        icon_slot: {draw_svg: {hover: 0.0, focus: 0.0}},
+                        text_slot: {draw_text: {hover: 0.0, focus: 0.0}},
+                        draw_item: {hover: 0.0, focus: 0.0}
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)},
+                        focus: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        icon_slot: {draw_svg: {hover: 1.0, focus: 0.0}},
+                        text_slot: {draw_text: {hover: 1.0, focus: 0.0}},
+                        draw_item: {hover: 1.0, focus: 0.0}
+                    }
+                }
+
+                focus = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        icon_slot: {draw_svg: {focus: 1.0, hover: 0.0}},
+                        text_slot: {draw_text: {focus: 1.0, hover: 0.0}},
+                        draw_item: {focus: 1.0, hover: 0.0}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -84,59 +125,63 @@ pub struct GTabbarItem {
     pub selected: bool,
     #[live(true)]
     pub event_key: bool,
+    #[rust]
+    pub scope_path: Option<HeapLiveIdPath>,
 }
 
 impl Widget for GTabbarItem {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.is_visible() {
+            return DrawStep::done();
+        }
+        self.set_scope_path(&scope.path);
+
         let _ = self.draw_item.begin(cx, walk, self.layout);
-        let icon_walk = self.icon_slot.walk(cx);
-        let _ = self.icon_slot.draw_walk(cx, scope, icon_walk);
-        let text_walk = self.text_slot.walk(cx);
-        // let font = get_font_family(&self.font_family, cx);
-        // self.text_slot.draw_text.text_style.font = font;
-        let _ = self.text_slot.draw_walk(cx, scope, text_walk);
+        if self.icon_slot.is_visible() {
+            let icon_walk = self.icon_slot.walk(cx);
+            let _ = self.icon_slot.draw_walk(cx, scope, icon_walk);
+        }
+        if self.text_slot.is_visible() {
+            let text_walk = self.text_slot.walk(cx);
+            let _ = self.text_slot.draw_walk(cx, scope, text_walk);
+        }
         let _ = self.draw_item.end(cx);
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let uid = self.widget_uid();
-
-        if self.animation_key {
-            self.animator_handle_event(cx, event);
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
+        if !self.is_visible() {
+            return;
         }
+        default_handle_animation!(self, cx, event);
+
         match event.hits(cx, self.area()) {
             Hit::FingerDown(_) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(self.area());
                 }
                 if !self.selected {
-                    self.animation_focus(cx);
-                    // cx.widget_action(uid, &scope.path, GTabbarItemEvent::Pressed(f_down.clone()));
+                    // self.play_animation(cx, id!(hover.focus));
+                    self.animate_focus_on(cx); 
                 }
             }
-            Hit::FingerHoverIn(h) => {
+            Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-
                 if !self.selected {
-                    self.animation_hover_on(cx);
-                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Hover(GTabbarItemHoverParam{
-                        value: self.selected,
-                        e: h.clone(),
-                    }));
+                    self.play_animation(cx, id!(hover.on));
+                    self.active_hover_in(cx, e);
                 }
             }
             Hit::FingerHoverOut(_) => {
                 if !self.selected {
-                    self.animation_hover_off(cx);
+                    self.play_animation(cx, id!(hover.off));
                 }
             }
-            Hit::FingerUp(f_up) => {
-                if !self.selected {
-                    self.animation_selected(cx);
-                    cx.widget_action(uid, &scope.path, GTabbarItemEvent::Clicked(GTabbarItemClickedParam{
-                        value: self.selected,
-                        e: f_up.clone(),
-                    }));
+            Hit::FingerUp(e) => {
+                if e.is_over {
+                    if !self.selected {
+                        self.selected(cx);
+                        self.active_clicked(cx, e);
+                    }
                 }
             }
             _ => (),
@@ -154,6 +199,8 @@ impl LiveHook for GTabbarItem {
 }
 
 impl GTabbarItem {
+    set_scope_path!();
+    play_animation!();
     widget_area! {
         area, draw_item,
         area_icon, icon_slot,
@@ -162,6 +209,54 @@ impl GTabbarItem {
     event_option! {
         clicked: GTabbarItemEvent::Clicked => GTabbarItemClickedParam,
         hover: GTabbarItemEvent::Hover => GTabbarItemHoverParam
+    }
+    check_event_scope!();
+    pub fn active_hover_in(&mut self, cx: &mut Cx, e: FingerHoverEvent) -> () {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GTabbarItemEvent::Hover(GTabbarItemHoverParam {
+                    value: self.selected,
+                    e,
+                }),
+            );
+        });
+    }
+    pub fn active_clicked(&mut self, cx: &mut Cx, e: FingerUpEvent) -> () {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GTabbarItemEvent::Clicked(GTabbarItemClickedParam {
+                    value: self.selected,
+                    e,
+                }),
+            );
+        });
+    }
+    pub fn clear_animation(&mut self, cx: &mut Cx) {
+        self.draw_item.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.icon_slot.draw_svg.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.text_slot.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
     }
     pub fn render(&mut self, cx: &mut Cx) -> () {
         // ----------------- background color -------------------------------------------
@@ -193,37 +288,155 @@ impl GTabbarItem {
             },
         );
 
-        self.text_slot.draw_text.focus = selected;
-        self.icon_slot.draw_svg.hover = selected;
+        self.text_slot.draw_text.apply_over(
+            cx,
+            live! {
+                focus: (selected),
+            },
+        );
+        self.icon_slot.draw_svg.apply_over(
+            cx,
+            live! {
+                focus: (selected),
+            },
+        );
     }
-    pub fn animation_hover_on(&mut self, cx: &mut Cx) -> () {
-        self.icon_slot.animate_hover_on(cx);
-        self.text_slot.animate_hover_on(cx);
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
+        self.draw_item.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+        self.icon_slot.draw_svg.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
+        self.text_slot.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+            },
+        );
     }
-    pub fn animation_hover_off(&mut self, cx: &mut Cx) -> () {
-        self.icon_slot.animate_hover_off(cx);
-        self.text_slot.animate_hover_off(cx);
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_item.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+        self.icon_slot.draw_svg.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
+        self.text_slot.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+            },
+        );
     }
-    pub fn animation_focus(&mut self, cx: &mut Cx) -> () {
-        self.icon_slot.animate_hover_on(cx);
-        self.text_slot.animate_focus_on(cx);
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.clear_animation(cx);
+        self.draw_item.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+        self.icon_slot.draw_svg.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
+        self.text_slot.draw_text.apply_over(
+            cx,
+            live! {
+                focus: 1.0,
+            },
+        );
     }
-    pub fn animation_selected(&mut self, cx: &mut Cx) -> () {
-        self.selected = true;
-        self.render(cx);
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_item.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
+        self.icon_slot.draw_svg.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
+        self.text_slot.draw_text.apply_over(
+            cx,
+            live! {
+                focus: 0.0,
+            },
+        );
     }
-    pub fn animation_unselected(&mut self, cx: &mut Cx) -> () {
-        self.selected = false;
-        self.render(cx);
+    pub fn selected(&mut self, cx: &mut Cx) -> () {
+        self.toggle(cx, true);
     }
-    pub fn toggle(&mut self, cx: &mut Cx, selected: bool) ->(){
+    pub fn unselected(&mut self, cx: &mut Cx) -> () {
+        self.toggle(cx, false);
+    }
+    pub fn toggle(&mut self, cx: &mut Cx, selected: bool) -> () {
         self.selected = selected;
         self.render(cx);
+    }
+    pub fn redraw(&self, cx: &mut Cx) -> () {
+        self.icon_slot.redraw(cx);
+        self.text_slot.redraw(cx);
+        self.draw_item.redraw(cx);
     }
 }
 
 impl GTabbarItemRef {
+    ref_area!();
+    ref_redraw!();
+    ref_render!();
+    ref_area_ext! {
+        area_icon,
+        area_text
+    }
     ref_event_option! {
+        clicked => GTabbarItemClickedParam,
+        hover => GTabbarItemHoverParam
+    }
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
+    }
+    pub fn selected(&self, cx: &mut Cx) -> () {
+        self.borrow_mut().map(|mut x| {
+            x.selected(cx);
+        });
+    }
+    pub fn unselected(&self, cx: &mut Cx) -> () {
+        self.borrow_mut().map(|mut x| {
+            x.unselected(cx);
+        });
+    }
+    pub fn toggle(&self, cx: &mut Cx, selected: bool) -> () {
+        self.borrow_mut().map(|mut x| {
+            x.toggle(cx, selected);
+        });
+    }
+}
+
+impl GTabbarItemSet {
+    set_event! {
         clicked => GTabbarItemClickedParam,
         hover => GTabbarItemHoverParam
     }

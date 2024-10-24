@@ -4,7 +4,7 @@ pub fn register(cx: &mut Cx) {
     self::live_design(cx);
 }
 
-use gen_components::components::view::GView;
+use gen_components::components::{button::GButtonWidgetExt, tabbar::item::GTabbarItemWidgetExt, view::GView};
 use makepad_widgets::*;
 
 live_design! {
@@ -30,50 +30,99 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Window",
+                text: "Tabbar",
             }
         }
         <GLabel>{
             width: Fill,
-            text: "Window can help you create a new window, it use in Root and you can call to open a new window.",
+            text: "Tabbar can help you create a tabbar navigation, usually used in the footer of the page.",
         }
         <GLabel>{
             width: Fill,
-            text: "You can use os_type to set window act like MacOs, Windows, Linux or Others.",
+            text: "Tabbar is built into the Router component, but you can also use it separately.",
         }
         <GLabel>{
             width: Fill,
-            text: "You can use show_title, show_icon to control the title and icon of the window.",
+            text: "Tabbar includes multiple TabbarItem components, it has a icon_slot and a text_slot.",
         }
-        <GView>{
-            height: Fit,
-            padding: 12.0,
-            width: Fill,
-            <GLabel>{
-                width: Fill,
-                text: r#"
-        App = {{App}}{
-            root: <Root>{
-                main_window = <GWindow>{
-                    os_type: Mac,
-                    window_bar = {
-                        window_title = {
-                            title = {
-                                text: "GenUI Builtin Components",
-                            }
-                            icon = {
-                                src: dep("crate://self/resources/google.png"),
-                            }
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                flow: Right,
+                a = <GTabbarItem>{
+                    icon_slot: {
+                        src: dep("crate://self/resources/all.svg"),
+                        stroke_focus_color: #FF0000,
+                    }
+                    text_slot: {
+                        text: "All",
+                    }
+                }
+                <GTabbarItem>{
+                    icon_slot: {
+                        src: dep("crate://self/resources/lightning.svg"),
+                    }
+                    text_slot: {
+                        text: "Lightning",
+                    }
+                }
+                btn  = <GButton>{slot: {text: "Unselected"}}
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+
+                            "#;
                         }
                     }
-                    width: Fill,
-                    height: Fill,
-                    window: {inner_size: vec2(920, 800)},
-                    body = <AppMainPage>{}
                 }
             }
         }
-                "#,
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                <GTabbar>{
+                    <GTabbarItem>{
+                        icon_slot: {
+                            src: dep("crate://self/resources/all.svg"),
+                        }
+                        text_slot: {
+                            text: "All",
+                        }
+                    }
+                    <GTabbarItem>{
+                        
+                    }
+                    <GTabbarItem>{
+                        icon_slot: {
+                            src: dep("crate://self/resources/lightning.svg"),
+                        }
+                        text_slot: {
+                            text: "Lightning",
+                        }
+                    }
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+
+                            "#;
+                        }
+                    }
+                }
             }
         }
     }
@@ -98,6 +147,13 @@ impl Widget for TabbarPage {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let a = self.gtabbar_item(id!(a));
+        let btn = self.gbutton(id!(btn));
+        if btn.clicked(&actions).is_some(){
+            a.borrow_mut().map(|mut x|{
+                x.unselected(cx);
+            });
+        }
     }
 }

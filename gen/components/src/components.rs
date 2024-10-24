@@ -1033,6 +1033,7 @@ live_design! {
             color: #161616,
             src: dep("crate://self/resources/icons/home.svg"),
             stroke_hover_color: #FF7043,
+            stroke_focus_color: #FF7043,
             animation_key: true,
         }
         text_slot: <GLabel>{

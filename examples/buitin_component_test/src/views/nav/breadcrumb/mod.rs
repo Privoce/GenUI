@@ -226,7 +226,17 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let cb = self.gbread_crumb(id!(bc));
+        let lb = self.glabel(id!(lb));
+        if let Some(e) = cb.changed(&actions) {
+            lb.set_text_and_redraw(cx, &format!("You clicked: {}, text: {}", e.index, e.text));
+        }
+        if cb.home(&actions).is_some() {
+            lb.set_text_and_redraw(cx, "You clicked home");
+        }
+    }
                             "#;
                         }
                     }

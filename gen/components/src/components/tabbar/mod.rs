@@ -8,7 +8,7 @@ pub use register::register;
 
 use makepad_widgets::*;
 
-use crate::{event_option, ref_event_option, set_event};
+use crate::{default_handle_animation, event_option, ref_event_option, set_event};
 
 use super::view::GView;
 
@@ -30,7 +30,7 @@ impl Widget for GTabbar {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = self.animator_handle_event(cx, event);
+        default_handle_animation!(self, cx, event);
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
         let _ = self.item_action(cx, scope, &actions).map(|_| {
             return;
@@ -140,6 +140,9 @@ impl GTabbar {
             // here means no tabbar_item is selected
             self.set_selected(cx, 0);
         }
+    }
+    pub fn redraw(&mut self, cx: &mut Cx) ->(){
+        self.deref_widget.redraw(cx);
     }
 }
 
