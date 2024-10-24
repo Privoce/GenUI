@@ -28,7 +28,7 @@ pub struct GMenu {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
@@ -258,8 +258,8 @@ impl GMenu {
         let shadow_color = self.shadow_color.get(self.theme, 700);
         // ------------------ hover color -----------------------------------------------
         let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = self.pressed_color.get(self.theme, 600);
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = self.border_color.get(self.theme, 600);
         // ------------------ is background_visible --------------------------------------------
@@ -272,7 +272,7 @@ impl GMenu {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
                 shadow_color: (shadow_color),
                 shadow_offset: (self.shadow_offset),

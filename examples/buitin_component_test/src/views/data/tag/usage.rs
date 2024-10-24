@@ -48,7 +48,12 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                    
+                    <GTag>{ text: "Tag1"}
+                    <GTag>{theme: Dark, text: "Tag2"}
+                    <GTag>{theme: Info, text: "Tag3"}
+                    <GTag>{theme: Success, text: "Tag4"}
+                    <GTag>{theme: Warning, text: "Tag5"}
+                    <GTag>{theme: Error, text: "Tag6"}
                             "#;
                         }
                     }

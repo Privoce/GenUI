@@ -36,7 +36,7 @@ pub struct GSubMenu {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]

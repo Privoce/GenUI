@@ -30,50 +30,270 @@ live_design! {
             <GLabel>{
                 font_size: 14.0,
                 font_family: (BOLD_FONT),
-                text: "Window",
+                text: "Menu",
             }
         }
         <GLabel>{
             width: Fill,
-            text: "Window can help you create a new window, it use in Root and you can call to open a new window.",
+            text: "Menu can help you navigate to different pages in the app.(This is a define way to use menu)",
         }
         <GLabel>{
-            width: Fill,
-            text: "You can use os_type to set window act like MacOs, Windows, Linux or Others.",
+            font_size: 12.0,
+            font_family: (BOLD_FONT),
+            text: "MenuItem",
         }
-        <GLabel>{
-            width: Fill,
-            text: "You can use show_title, show_icon to control the title and icon of the window.",
-        }
-        <GView>{
-            height: Fit,
-            padding: 12.0,
-            width: Fill,
-            <GLabel>{
-                width: Fill,
-                text: r#"
-        App = {{App}}{
-            root: <Root>{
-                main_window = <GWindow>{
-                    os_type: Mac,
-                    window_bar = {
-                        window_title = {
-                            title = {
-                                text: "GenUI Builtin Components",
-                            }
-                            icon = {
-                                src: dep("crate://self/resources/google.png"),
-                            }
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                flow: Right,
+                <GMenuItem>{
+                    text_slot: {text: "No Icon No Right"},
+                    icon_slot: {visible: false}
+                }
+                <GMenuItem>{
+                    theme: Success
+                    text_slot: {text: "With Icon No Right"},
+                    icon_slot: {src: dep("crate://self/resources/dislike.svg")}
+                }
+                <GMenuItem>{
+                    theme: Info,
+                    text_slot: {text: "With Icon With Right"},
+                    icon_slot: {src: dep("crate://self/resources/dislike.svg")},
+                    right: {
+                        align: {x: 0.5, y: 0.5},
+                        visible: true,
+                        <GTag>{
+                            text: "0"
                         }
                     }
-                    width: Fill,
-                    height: Fill,
-                    window: {inner_size: vec2(920, 800)},
-                    body = <AppMainPage>{}
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+                <GMenuItem>{
+                    text_slot: {text: "No Icon No Right"},
+                    icon_slot: {visible: false}
+                }
+                <GMenuItem>{
+                    theme: Success
+                    text_slot: {text: "With Icon No Right"},
+                    icon_slot: {src: dep("crate://self/resources/dislike.svg")}
+                }
+                <GMenuItem>{
+                    theme: Info,
+                    text_slot: {text: "With Icon With Right"},
+                    icon_slot: {src: dep("crate://self/resources/dislike.svg")},
+                    right: {
+                        align: {x: 0.5, y: 0.5},
+                        visible: true,
+                        <GTag>{
+                            text: "0"
+                        }
+                    }
+                }
+                            "#;
+                        }
+                    }
                 }
             }
         }
-                "#,
+        <GLabel>{
+            font_size: 12.0,
+            font_family: (BOLD_FONT),
+            text: "SubMenu",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 24.0,
+                flow: Right,
+                <GSubMenu>{
+                    title: {
+                        <GLabel> {text: "You can define"}
+                    }
+                    items: {
+                        <GMenuItem>{
+                            text_slot: {text: "No Icon No Right"},
+                            icon_slot: {visible: false}
+                        }
+                        <GMenuItem>{
+                            theme: Success
+                            text_slot: {text: "With Icon No Right"},
+                            icon_slot: {src: dep("crate://self/resources/dislike.svg")}
+                        }
+                        <GMenuItem>{
+                            theme: Info,
+                            text_slot: {text: "With Icon With Right"},
+                            icon_slot: {src: dep("crate://self/resources/dislike.svg")},
+                            right: {
+                                align: {x: 0.5, y: 0.5},
+                                visible: true,
+                                <GTag>{
+                                    text: "0"
+                                }
+                            }
+                        }
+                    }
+                }
+                <GSubMenu>{
+                    title: {
+                        <GLabel> {text: "Sub Menu Level1"}
+                    }
+                    items: {
+                        <GMenuItem>{
+                            theme: Warning,
+                            text_slot: {text: "No Icon No Right"},
+                            icon_slot: {visible: false}
+                        }
+                        <GMenuItem>{
+                            theme: Success
+                            text_slot: {text: "With Icon No Right"},
+                            icon_slot: {src: dep("crate://self/resources/dislike.svg")}
+                        }
+                        <GSubMenu>{
+                            margin: {left: 12.0}
+                            title: {
+                                <GLabel> {text: "Sub Menu Level2"}
+                            }
+                            items: {
+                                <GMenuItem>{
+                                    theme: Info,
+                                    text_slot: {text: "With Icon With Right"},
+                                    icon_slot: {src: dep("crate://self/resources/dislike.svg")},
+                                    right: {
+                                        align: {x: 0.5, y: 0.5},
+                                        visible: true,
+                                        <GTag>{
+                                            text: "0"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        <GMenuItem>{
+                            theme: Error
+                            text_slot: {text: "Child Item"},
+                        }
+                    }
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
+        <GLabel>{
+            font_size: 12.0,
+            font_family: (BOLD_FONT),
+            text: "Menu",
+        }
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                flow: Right,
+                height: 400.0,
+                <GMenu>{
+                    height: Fit,
+                    header: {
+                        height: Fit,
+                        visible: true,
+                        <GLabel> {text: "define header"}
+                    }
+                    body: {
+                        height: Fit,
+                        <GSubMenu>{
+                            title: {
+                                <GLabel> {text: "Sub Menu Level1-1"}
+                            }
+                            items: {
+                                <GMenuItem>{
+                                    theme: Warning,
+                                    text_slot: {text: "Menu Item1-1-1"},
+                                    icon_slot: {visible: false}
+                                }
+                            }
+                        }
+                        <GSubMenu>{
+                            title: {
+                                <GLabel> {text: "Sub Menu Level1-2"}
+                            }
+                            items: {
+                                <GMenuItem>{
+                                    selected: true,
+                                    theme: Warning,
+                                    text_slot: {text: "Menu Item1-2-1"},
+                                    icon_slot: {visible: false}
+                                }
+                                <GMenuItem>{
+                                    theme: Success
+                                    text_slot: {text: "Menu Item1-2-2"},
+                                    icon_slot: {src: dep("crate://self/resources/dislike.svg")}
+                                }
+                                <GSubMenu>{
+                                    margin: {left: 12.0}
+                                    title: {
+                                        <GLabel> {text: "Sub Menu Level1-2-1"}
+                                    }
+                                    items: {
+                                        <GMenuItem>{
+                                            theme: Info,
+                                            text_slot: {text: "MenuItem1-2-1-1"},
+                                            icon_slot: {src: dep("crate://self/resources/dislike.svg")},
+                                            right: {
+                                                align: {x: 0.5, y: 0.5},
+                                                visible: true,
+                                                <GTag>{
+                                                    text: "0"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                <GMenuItem>{
+                                    theme: Error
+                                    text_slot: {text: "MenuItem1-2-3"},
+                                }
+                            }
+                        }
+                    }
+                    footer: {
+                        height: Fit,
+                        visible: true,
+                        <GLabel> {text: "define footer"}
+                    }
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
+
+                            "#;
+                        }
+                    }
+                }
             }
         }
     }
