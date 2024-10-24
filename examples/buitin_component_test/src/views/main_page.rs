@@ -33,6 +33,7 @@ live_design! {
     import crate::views::data::tag::*;
     import crate::views::data::loading::*;
     import crate::views::data::splitter::*;
+    import crate::views::data::collapse::*;
     import crate::views::nav::tool_btn::*;
     import crate::views::nav::window::*;
     import crate::views::nav::breadcrumb::*;
@@ -315,6 +316,14 @@ live_design! {
                                 text: "Splitter",
                             }
                         }
+                        tab_collapse = <GMenuItem>{
+                            icon_slot: {
+                                visible: false,
+                            }
+                            text_slot: {
+                                text: "Collapse",
+                            }
+                        }
                     }
                 }
                 sub6 = <GSubMenu>{
@@ -537,6 +546,9 @@ live_design! {
                     router_page = <GBarPage>{
                         <RouterPage>{}
                     }
+                    collapse_page = <GBarPage>{
+                        <CollapsePage>{}
+                    }
                 }
             }
             <GView>{
@@ -656,12 +668,13 @@ impl Widget for AppMainPage {
                                 breadcrumb_page,
                                 menu_page,
                                 tabbar_page,
-                                router_page
+                                router_page,
+                                collapse_page
                             ),
                             None,
                             Some(RouterIndicatorMode::Define),
                         )
-                        .active(id!(tabbar_page))
+                        .active(id!(collapse_page))
                         .build(cx);
                 });
             })
@@ -751,6 +764,8 @@ impl Widget for AppMainPage {
                 router.nav_to(cx, id!(tabbar_page));
             } else if e.selected_id == id!(tab_router)[0] {
                 router.nav_to(cx, id!(router_page));
+            } else if e.selected_id == id!(tab_collapse)[0] {
+                router.nav_to(cx, id!(collapse_page));
             }
         }
 

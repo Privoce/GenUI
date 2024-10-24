@@ -386,6 +386,39 @@ live_design! {
                     }
                 }
             }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "Collapse"}}
+                    body = {
+                        spacing: 4.0,
+                        padding: 6.0,
+                        flow: Down,
+                        <GCollapse>{
+                            height: 100.0,
+                            width: 300.0,
+                            opened: true,
+                            position: Right,
+                            header: {
+                                background_color: #DDD,
+                                <GLabel>{
+                                    text: "Right",
+                                }
+                                width: 60.0,
+                                height: Fill,
+                            }
+                            body: {
+                                background_color: #888,
+                                height: Fill,
+                                width: 240.0,
+                                theme: Dark,
+                            }
+                        }
+                    }
+                }
+                
+            }
             <GLabel>{
                 font_size: 12.0,
                 font_family: (BOLD_FONT),
@@ -492,6 +525,89 @@ live_design! {
                                 os_type: Windows,
                                 icon_type: Close
                             }
+                        }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                <CPreview>{
+                    header = {title = {text: "BreadCrumb"}}
+                    body = {
+                        padding: 4.0,
+                        <GBreadCrumb>{
+                            theme: Info,
+                            path: ["home", "components", "button"],
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Tabbar"}}
+                    body = {
+                        padding: 4.0,
+                        <GTabbar>{
+                            theme: Info,
+                            align: {x: 0.5},
+                            width: Fill,
+                            <GTabbarItem>{
+                                icon_slot: {
+                                    src: dep("crate://self/resources/all.svg"),
+                                }
+                                text_slot: {
+                                    text: "All",
+                                }
+                            }
+                            <GTabbarItem>{
+        
+                            }
+                            <GTabbarItem>{
+                                icon_slot: {
+                                    src: dep("crate://self/resources/lightning.svg"),
+                                }
+                                text_slot: {
+                                    text: "Lightning",
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            <GHLayout>{
+                height: Fit,
+                spacing: 8.0,
+                
+                <CPreview>{
+                    header = {title = {text: "Menu"}}
+                    body = {
+                        spacing: 0.0,
+                        padding: 12.0,
+                        flow: Down,
+                        <GMenuItem>{
+                            text_slot: {text: "Menu item 1"},
+                            icon_slot: {visible: false}
+                        }
+                        <GMenuItem>{
+                            theme: Success
+                            text_slot: {text: "Menu item 2"},
+                            icon_slot: {src: dep("crate://self/resources/dislike.svg")}
+                        }
+                    }
+                }
+                <CPreview>{
+                    header = {title = {text: "Router"}}
+                    body = {
+                        spacing: 0.0,
+                        padding: 4.0,
+                        flow: Down,
+                        <GLabel>{
+                            width: Fill,
+                            text: r#"
+                            {
+                               path: "/home",
+                               component: <HomePage>,
+                            }
+                            "#,
                         }
                     }
                 }

@@ -49,12 +49,15 @@ Virtual: in virt.rs
 - [x] Toggle
 - [x] Progress
 - [x] Upload
+- [ ] Input
+- [ ] Select
 
 ### Data
 
 - [x] Tag
 - [x] Loading
 - [x] Splitter
+- [ ] Collapse
 
 ### Nav
 
@@ -64,7 +67,12 @@ Virtual: in virt.rs
   - [x] BarPage
   - [x] NavPage
   - [x] Tabbar
-- [ ] Menu
+- [x] Menu
+  - [x] SubMenu
+  - [x] MenuItem
+- [x] Tabbar
+- [x] BreadCrumb
+  - [x] BreadCrumbItem
 
 ### Feedback
 
