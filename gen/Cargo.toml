@@ -8,6 +8,6 @@ members = [
     "macros",
     "traits",
     "compiler",
-    "components",
+    # "components",
     # "middleware"
 ] 

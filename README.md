@@ -1,6 +1,6 @@
 # README
 
-The current work branch is `components`
+The current work branch is `combine`
 
 ## Work Description
 
@@ -21,7 +21,7 @@ The current work branch is `components`
   - [x] Makepad Plugin
   - [ ] Other Plugin
 - [ ] GenUI VSCode Plugin
-- [ ] GenUI Makepad Unified Widget Lib
+- [x] GenUI Makepad Unified Widget Lib
 - [x] [Makepad Book](https://palpus-rs.github.io/Gen-UI.github.io/)
 
 ## Features
@@ -33,7 +33,7 @@ The current work branch is `components`
 - [x] ArkUI Template
 - [ ] dyn widget (half support, now working...)
 - [x] wasm
-- [ ] GenUI Builtin-Widget (working...)
+- [x] GenUI Builtin-Widget (working...)
 - [x] rust lang support (use in .gen file, hold in `<script lang="rust">` or `<script>`)
 - [x] Shader
 - [x] Toml Config
