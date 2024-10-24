@@ -231,6 +231,7 @@ impl GTabbarItem {
                 GTabbarItemEvent::Clicked(GTabbarItemClickedParam {
                     value: self.selected,
                     e,
+                    id: path.last(),
                 }),
             );
         });

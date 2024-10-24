@@ -439,4 +439,9 @@ impl GRouterRef {
             router.nav_to(cx, path);
         });
     }
+    pub fn handle_nav_events(&self, cx: &mut Cx, actions: &Actions) {
+        self.borrow_mut().map(|mut router| {
+            router.handle_nav_events(cx, actions);
+        });
+    }
 }

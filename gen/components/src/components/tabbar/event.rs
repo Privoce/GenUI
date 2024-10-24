@@ -1,4 +1,4 @@
-use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent};
+use makepad_widgets::{ActionDefaultRef, DefaultNone, FingerHoverEvent, FingerUpEvent, LiveId};
 
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GTabbarItemEvent {
@@ -17,6 +17,7 @@ pub struct GTabbarItemHoverParam {
 #[derive(Clone, Debug)]
 pub struct GTabbarItemClickedParam {
     pub value: bool,
+    pub id: LiveId,
     pub e: FingerUpEvent,
 }
 

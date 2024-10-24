@@ -1,8 +1,8 @@
-pub mod event;
+mod event;
 pub mod item;
 mod register;
 
-use event::*;
+pub use event::*;
 use item::GTabbarItemWidgetRefExt;
 pub use register::register;
 
@@ -141,7 +141,7 @@ impl GTabbar {
             self.set_selected(cx, 0);
         }
     }
-    pub fn redraw(&mut self, cx: &mut Cx) ->(){
+    pub fn redraw(&mut self, cx: &mut Cx) -> () {
         self.deref_widget.redraw(cx);
     }
 }
