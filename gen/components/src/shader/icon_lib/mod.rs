@@ -8,10 +8,13 @@ pub mod relation;
 pub mod state;
 pub mod time;
 pub mod tool;
-pub mod ui;
 pub mod types;
+pub mod ui;
+
+use std::error::Error;
 
 use makepad_widgets::*;
+use types::IconType;
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -101,13 +104,16 @@ live_design! {
 
         fn stroke_color(self) -> vec4 {
             return mix(
-                self.stroke_color,
-                self.hover_color,
-                self.hover
+                mix(
+                    self.color,
+                    self.stroke_hover_color,
+                    self.hover
+                ),
+                self.stroke_focus_color,
+                self.focus
             );
         }
 
-        instance stroke_width: 1.2;
         fn pixel(self) -> vec4{
             return self.stroke_color();
         }
@@ -120,20 +126,24 @@ live_design! {
 pub struct DrawGIcon {
     #[deref]
     pub deref_draw: DrawQuad,
-    #[live(0.0)]
-    pub hover: f32,
     #[live]
-    pub stroke_color: Vec4,
+    pub color: Vec4,
     #[live]
-    pub hover_color: Vec4,
-    #[live(0.0)]
-    pub border_width: f32,
+    pub stroke_hover_color: Vec4, 
     #[live]
     pub border_color: Vec4,
+    #[live(0.0)]
+    pub border_width: f32,
+    #[live(0.0)]
+    pub stroke_width: f32,
+    #[live(0.0)]
+    pub hover: f32,
+    #[live(0.0)]
+    pub focus: f32,
+    #[live]
+    pub stroke_focus_color: Vec4,
 }
 
-// impl DrawGToolButton {
-//     pub fn apply_button_type(&mut self, tool_button_type: GToolButtonType) {
-//         self.tool_button_type = tool_button_type;
-//     }
-// }
+pub trait ApplyIconType {
+    fn apply_type(&mut self, ty: &IconType) -> Result<(), Box<dyn Error>>;
+}

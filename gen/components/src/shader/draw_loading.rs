@@ -3,111 +3,87 @@ use makepad_widgets::*;
 live_design! {
     import makepad_draw::shader::std::*;
     DrawGLoading = {{DrawGLoading}}{
-        // 顺时针
-        fn arc2(uv: vec2, x: float, y: float, r: float, s: float, e: float, color: vec4, t: float) -> vec4 {
-            let c = uv - vec2(x, y);
-            let pi = 3.141592653589793; // PI constant
+        fn loading_circle(self, color: vec4) -> vec4 {
+            let pi = 3.141592653589793;
+            let uv = self.pos * self.rect_size;
+            let center = self.rect_size * 0.5;
+            let aspect = self.rect_size.x / self.rect_size.y;
             
-            let ang = atan(c.y, c.x);
-            // let ang = if ang < 0.0 { ang + 2.0 * pi } else { ang };
-            if ang < 0.0 {
-                ang += 2.0 * pi;
-            }
+            // 将UV坐标调整为以中心为原点，并考虑宽高比
+            let adjusted_uv = (uv - center) / vec2(aspect, 1.0);
             
-            // 将时间转换为旋转角度
-            let rotate_speed = 1.0; // 控制旋转速度
-            let rotated_angle = ang - t * rotate_speed;
-            // let rotated_angle = if rotated_angle < 0.0 { rotated_angle + 2.0 * pi } else { rotated_angle % (2.0 * pi) };
-            if rotated_angle < 0.0 {
-                rotated_angle += 2.0 * pi;
-            }else{
-                rotated_angle = mod(rotated_angle, 2.0 * pi);
-            }
+            let radius = min(self.rect_size.x, self.rect_size.y) * 0.4;
+            let line_width = min(self.rect_size.x, self.rect_size.y) * 0.03;
+            let glow_size = line_width * 3.0;
             
-            // 计算扇形的起始和结束角度
-            let start_angle = s * 2.0 * pi;
-            let end_angle = e * 2.0 * pi;
-            let flag1 = rotated_angle - start_angle;
-            let flag2 = end_angle - rotated_angle;
-            // rotated_angle >= start_angle && rotated_angle <= end_angle
-            if flag1 >= 0.0 && flag2 >= 0.0 {
-                return vec4(0.0); // 透明
-            } else {
-                // 旋转uv坐标以跟随扇形的旋转
-                let rotation_matrix = mat2(
-                    cos(-t * rotate_speed), -sin(-t * rotate_speed),
-                    sin(-t * rotate_speed), cos(-t * rotate_speed)
-                );
-        
-                let rotated_uv = rotation_matrix * c;
-                
-                // 重新计算渐变因子，这次基于旋转后的 y 坐标
-                let gradient_factor = (rotated_uv.y + r) / (2.0 * r); // 将旋转后的 y 位置归一化为 [0, 1]
-                gradient_factor = clamp(gradient_factor, 0.0, 1.0); // 限制在 [0, 1] 范围内
-                
-                // 设置渐变颜色
-                let s_color = color;  // 起始颜色
-                let e_color = vec4(color.rgb, 0.1); 
-                
-                // 根据渐变因子混合颜色
-                return mix(s_color, e_color, gradient_factor);
-            }
+            let len = length(adjusted_uv);
+            let angle = atan(adjusted_uv.y, adjusted_uv.x);
+            
+            // 计算旋转和渐变效果
+            let rotation_speed = 0.5;
+            let fall_off = fract(-0.5 * (angle / pi) - self.time * rotation_speed);
+            
+            // 计算圆环的形状
+            let circle_shape = smoothstep(line_width, 0.0, abs(radius - len));
+            
+            // 添加发光效果
+            let glow = smoothstep(glow_size * fall_off, 0.0, abs(radius - len) - line_width * 0.5) * 0.5;
+            
+            // 组合形状和发光效果
+            let shape = (circle_shape + glow) * fall_off;
+            
+            // 创建颜色渐变
+            let gradient_color = mix(vec4(color.rgb, 0.1), color, fall_off);
+            
+            return gradient_color * shape;
         }
-        // 逆时针
-        // fn arc2(uv: vec2, x: float, y: float, r: float, s: float, e: float, color: vec4, t: float) -> vec4 {
-        //     let c = uv - vec2(x, y);
-        //     let pi = 3.141592653589793; // PI constant
+        fn rotating_radial_pattern(self) -> vec4 {
+            let r = self.rect_size;
+            let u = (self.pos * r * 2.0 - r) / (r.y * 0.5);
             
-        //     let ang = atan(c.y, c.x);
-        //     if (ang < 0.0) {
-        //         ang += 2.0 * pi;
-        //     }
+            // 初始化输出颜色
+            let o = vec4(0.0);
             
-        //     // 将时间转换为旋转角度
-        //     let rotate_speed = 1.0; // 控制旋转速度
-        //     let rotated_angle = mod(ang + t * rotate_speed, 2.0 * pi);
+            // 创建基本形状
+            let shape = pow(abs(dot(u, u) - 2.0), 18.0);
+            o -= vec4(shape, shape, shape, shape);
             
-        //     // 计算扇形的起始和结束角度
-        //     let start_angle = s * 2.0 * pi;
-        //     let end_angle = e * 2.0 * pi;
+            // 计算旋转角度
+            let angle = atan(u.y, u.x) / 0.7854;
+            let rotation = ceil(8.0 * self.time) - angle;
+            let fract_rotation = rotation - floor(rotation);
             
-        //     if (rotated_angle >= start_angle && rotated_angle <= end_angle) {
-        //         return vec4(0.0); // 透明
-        //     } else {
-                // 旋转uv坐标以跟随扇形的旋转
-                // let rotation_matrix = mat2(
-                //     cos(t * rotate_speed), -sin(t * rotate_speed),
-                //     sin(t * rotate_speed), cos(t * rotate_speed)
-                // );
- 
+            let f = fract_rotation - vec2(0.0, 0.0);
+            let t_f = f.y;
+            // 创建平滑的过渡
+            let transition = smoothstep(0.0, 0.12, f.y);
+            
+            // 创建旋转效果
+            let pattern = floor(rotation);
+           
+            if transition == 1.0 {
+                if mod(pattern, 8.0) - 1.0 < 0.0 { 
+                    o += vec4(0.8); 
+                } else { 
+                    o += self.stroke_color;
+                }
+            }
 
-        //         let rotated_uv = rotation_matrix * c;
-                
-        //         // 重新计算渐变因子，这次基于旋转后的 y 坐标
-        //         let gradient_factor = (rotated_uv.y + r) / (2.0 * r); // 将旋转后的 y 位置归一化为 [0, 1]
-        //         gradient_factor = clamp(gradient_factor, 0.0, 1.0); // 限制在 [0, 1] 范围内
-                
-        //         // 设置渐变颜色
-        //         let s_color = color;  // 起始颜色
-        //         let e_color = vec4(color.rgb, 0.1); 
-                
-        //         // 根据渐变因子混合颜色
-        //         return mix(s_color, e_color, gradient_factor);
-        //     }
-        // }
+            return o;
+        }
         fn pixel(self) -> vec4 {
-            let loading_size = vec2(self.width, self.height);
+            if self.opened == 0.0 {
+                return vec4(0.0);
+            }
+
+            let loading_size =  self.rect_size * 0.86;
             let sdf = Sdf2d::viewport(self.pos * self.rect_size);
             let loading_dot_size = vec2(loading_size.x * 0.2 * 0.96);
             let rotate_time = self.time;
             let center = vec2(self.rect_size.x * 0.5, self.rect_size.y * 0.5);
             match self.loading_type{
                 GLoadingType::Circle => {
-                    sdf.circle(center.x, center.y, loading_size.x * 0.5);
-                    // now add rotate_time to let arc rotate
-                    let c_color = arc2(self.pos * self.rect_size, center.x, center.y, loading_size.x * 0.5, 0.0, 0.25, self.background_color, rotate_time);
-                    sdf.stroke(c_color, 3.0);
-                    // sdf.fill(c_color);
+                    return self.loading_circle(self.stroke_color);
                 }
                 GLoadingType::DotLine => {
                     let r = loading_dot_size.x * 0.5;
@@ -129,31 +105,12 @@ live_design! {
 
                             sdf.circle(dot_pos.x, dot_pos.y, r);
                         }
-                        sdf.fill(self.background_color);
+                        sdf.fill(self.stroke_color);
                         counter += 1.0;
                     }
                 }
                 GLoadingType::CircleDot => {
-                    let counter = 0.0;
-                    // draw 16 dots around as a loading animation
-                    for i in 0..16{
-                        // each dot is a circle and we place it around the circle, with a bit of spacing
-                        // there are 16 dots so angle is 0.125PI
-                        let angle = 0.125 * 3.1415926;
-                        let dot_pos = vec2(
-                            self.rect_size.x * 0.5 - cos(angle * counter) * loading_size.x * 0.5,
-                            self.rect_size.y * 0.5 - sin(angle * counter) * loading_size.y * 0.5
-                        );
-
-                        sdf.circle(dot_pos.x, dot_pos.y, loading_dot_size.x * 0.4 + 0.1 * counter);
-                        // with the time passing, the circle color(self.background_color) will change from deeper to lighter, then back to deeper
-                        // It looks like it's spinning, but it's actually the color changing
-                        // the easy way is to adjust the alpha value of the color
-                        // let circle_color = self.background_color - vec4(0.0, 0.0, 0.0, 0.046 * counter);
-                        sdf.fill(self.background_color * vec4(1.0, 1.0, 1.0, 0.5 + 0.5 * sin(rotate_time * 2 + counter * 0.1)));
-
-                        counter += 1.0;
-                    }
+                    return self.rotating_radial_pattern();
                 }
             }
 
@@ -168,19 +125,17 @@ pub struct DrawGLoading {
     #[deref]
     pub draw_super: DrawQuad,
     #[live]
-    pub background_color: Vec4,
-    #[live(64.0)]
-    pub height: f32,
-    #[live(64.0)]
-    pub width: f32,
+    pub stroke_color: Vec4,
     #[live]
     pub loading_type: GLoadingType,
+    #[live(1.0)]
+    pub opened: f32,
 }
 
 impl LiveHook for DrawGLoading {}
 
 impl DrawGLoading {
-    pub fn apply_loading_type(&mut self, loading_type: GLoadingType) {
+    pub fn apply_type(&mut self, loading_type: GLoadingType) {
         self.loading_type = loading_type;
     }
 }

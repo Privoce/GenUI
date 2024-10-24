@@ -12,7 +12,7 @@ live_design! {
         flow: Down,
         <GDivider>{
             height: Fit,
-            <GCard>{
+            <GView>{
                 height:Fit,
                 width: Fit,
                 padding: {left: 16.0, right: 16.0,}
@@ -36,6 +36,9 @@ live_design! {
                     align: {x: 0.5},
                     <GIcon>{
                         icon_type: Min,
+                        cursor: Hand,
+                        stroke_hover_color: #F00,
+                        animation_key: true,
                     }
                     <GLabel>{
                         text: "Min",

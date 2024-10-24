@@ -1,4 +1,6 @@
 use makepad_widgets::*;
+use crate::error::GError;
+
 use super::IconType;
 
 #[derive(Live, LiveHook, Clone, Debug)]
@@ -52,7 +54,7 @@ pub enum UI {
 }
 
 impl TryFrom<&IconType> for UI {
-    type Error = ();
+    type Error = GError;
 
     fn try_from(value: &IconType) -> Result<Self, Self::Error> {
         match value {
@@ -70,7 +72,7 @@ impl TryFrom<&IconType> for UI {
             IconType::Split => Ok(Self::Split),
             IconType::Split2 => Ok(Self::Split2),
             IconType::Poweroff => Ok(Self::Poweroff),
-            _ => Err(()),
+            _ => Err(GError::IconTypeTransfom),
         }
     }
 }

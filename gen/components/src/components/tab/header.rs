@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_card::DrawCard,
+    shader::draw_view::DrawGView,
     themes::{hex_to_vec4, Themes},
 };
 
@@ -15,20 +15,20 @@ live_design! {
             fn pixel(self) -> vec4 {
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size)
                 sdf.rect(
-                    self.inset.x + self.border_width,
+                    self.border_width,
                     self.rect_size.y - self.border_width - 3.0,
-                    self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
+                    self.rect_size.x - self.border_width * 2.0,
                     3.0
                 );
                 sdf.fill(self.get_color())
                 sdf.box(
-                    self.inset.x + self.border_width,
-                    self.inset.y + self.border_width,
-                    self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
-                    self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
+                    self.border_width,
+                     self.border_width,
+                    self.rect_size.x - self.border_width * 2.0,
+                    self.rect_size.y - self.border_width * 2.0,
                     max(1.0, self.border_radius)
                 )
-                if self.transparent == 0.0 {
+                if self.background_visible == 0.0 {
                    sdf.fill_keep(self.get_color())
                 }
 
@@ -49,7 +49,7 @@ pub struct GTabHeader {
     draw_drag: DrawColor,
     #[redraw]
     #[live]
-    draw_header: DrawCard,
+    draw_header: DrawGView,
     #[live]
     pub selected: usize,
     #[live]
@@ -68,6 +68,8 @@ pub struct GTabHeader {
     pub walk: Walk,
     #[rust]
     pub view_area: Area,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 #[derive(Clone, Debug, DefaultNone)]
@@ -106,8 +108,8 @@ impl Widget for GTabHeader {
         self.draw_header.end(cx);
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, _scope: &mut Scope) {
-        if self.scroll_bars.handle_event(cx, event).len() > 0 {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        if self.scroll_bars.handle_event(cx, event, scope).len() > 0 {
             self.view_area.redraw(cx);
         };
         let t_map = self.children.clone();
@@ -147,7 +149,7 @@ impl LiveHook for GTabHeader {
             cx,
             live! {
                 background_color: (bg_color),
-                transparent: 1.0
+                background_visible: 1.0
             },
         )
     }
@@ -158,9 +160,10 @@ impl GTabHeader {
         &mut self,
         cx: &mut Cx,
         event: &Event,
+        scope: &mut Scope,
         f: &mut dyn FnMut(GTabHeaderEvent),
     ) {
-        if self.scroll_bars.handle_event(cx, event).len() > 0 {
+        if self.scroll_bars.handle_event(cx, event, scope).len() > 0 {
             self.view_area.redraw(cx);
         };
         let t_map = self.children.clone();

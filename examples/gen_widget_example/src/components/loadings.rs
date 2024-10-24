@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
 
     GLoadingExample = <ScrollYView>{
-        height: 180.0,
+        height: 300.0,
         width: Fill,
         spacing: 10.0,
         flow: Down,
@@ -17,9 +17,14 @@ live_design! {
             height: 100.0,
             width: Fill,
             flow: Down,
+            spacing: 16.0,
             align: {x: 0.5, y: 0.5},
             <GLoading>{
+                height: 64.0,
+                width: 64.0,
                 theme: Error,
+                animation_key: true,
+                visible: true,
             }
             <GLabel>{
                 text: "Loading ...",
@@ -29,8 +34,11 @@ live_design! {
             height: 100.0,
             width: Fill,
             flow: Down,
+            spacing: 16.0,
             align: {x: 0.5, y: 0.5},
             <GLoading>{
+                height: 64.0,
+                width: 64.0,
                 loading_type: CircleDot
             }
             <GLabel>{
@@ -41,6 +49,7 @@ live_design! {
             height: 100.0,
             width: Fill,
             flow: Down,
+            spacing: 16.0,
             align: {x: 0.5, y: 0.5},
             <GLoading>{
                 loading_type: DotLine

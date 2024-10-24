@@ -1,9 +1,5 @@
-use makepad_widgets::*;
+mod pos;
+mod mode;
 
-#[derive(Live, LiveHook)]
-#[live_ignore]
-#[repr(u32)]
-pub enum Direction {
-    #[pick] Horizontal = shader_enum(1),
-    Vertical = shader_enum(2),
-}
+pub use pos::*;
+pub use mode::*;

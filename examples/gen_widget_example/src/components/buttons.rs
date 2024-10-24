@@ -4,61 +4,86 @@ live_design! {
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*; 
     import gen_components::components::*;
-
+    
     GButtonExample = <ScrollYView>{
-        height: 200.0,
+        height: 120.0,
         width: Fill,
         flow: Down,
         spacing: 10.0,
         <Label>{
             text: "GButton"
         }
-        <GButton>{
-            text: "Default Button"
-        }
-        <GButton>{
-            theme: Dark,
-            text: "Theme Dark",
-        }
-        <GButton>{
-            theme: Success,
-            text: "Theme Success"
-        }
-        <GButton>{
-            theme: Warning,
-            text: "Theme Warning"
-        }
-        <GButton>{
-            theme: Error,
-            text: "Theme Error",
-        }
-        <GButton>{
-            theme: Error,
-            text: "unvisible button!",
-            visible: false,
-        }
-        <GButton>{
-            round: true,
-            text: "Round Button",
-        }
-        <GButton>{
-            height: 46,
-            width: 160,
-            theme: Success,
-            border_width: 1.4,
-            border_color: #FFF,
-            border_radius: 11.0,
-            text: "Rounded Button!",
-        }
-        <GButton>{
-            theme: Dark,
-            border_width: 1.2,
-            hover_color: #FF0000,
-            pressed_color: #00FF00,
-            text: "GButton!",
-            font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
-            font_size: 12.0,
-            color: #000,
+        <GVLayout>{
+            height: Fit,
+            width: Fill,
+            spacing: 6.0,
+            <GHLayout>{
+                height: Fit,
+                width: Fill,
+                spacing: 6.0,
+                <Button>{
+                    text: "makepad button"
+                }
+                <GButton>{}
+                <GButton>{theme: Error}
+                <GButton>{theme: Warning}
+                <GButton>{theme: Success}
+                <GButton>{theme: Dark}
+                <GButton>{
+                    slot: {
+                        text: "Default Button"
+                    }
+                }
+
+            }
+            <GHLayout>{
+                height: Fit,
+                width: Fill,
+                spacing: 6.0,
+                <GButton>{
+                    theme: Dark,
+                    slot: <GHLayout>{
+                        height: Fit,
+                        width: Fill,
+                        spacing: 4.0,
+                        <GIcon>{
+                            theme: Dark,
+                            height: 16.0,
+                            width: 18.0,
+                            icon_type: Code,
+                            stroke_width: 1.4,
+                            animation_key: true,
+                        }
+                        <GIcon>{
+                            theme: Dark,
+                            height: 16.0,
+                            width: 18.0,
+                            icon_type: Add,
+                            stroke_width: 1.4,
+                            animation_key: true,
+                        }
+                        <GLabel>{
+                            font_size: 12.0,
+                            text: "DarkButton"
+                        }
+                    }
+                }
+                <GButton>{
+                    height: 46,
+                    width: 160,
+                    theme: Success,
+                    border_width: 1.4,
+                    border_color: #FFF,
+                    border_radius: 10.0,
+                    blur_radius: 10.0, // if you donot want shadow, set bigger than 10.0
+                }
+                <GButton>{
+                    theme: Dark,
+                    border_width: 1.5,
+                    hover_color: #FF0000,
+                    focus_color: #00FF00,
+                }
+            }
         }
     }
 }

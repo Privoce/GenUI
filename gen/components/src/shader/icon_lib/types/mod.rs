@@ -24,10 +24,13 @@ use time::Time;
 use tool::Tool;
 use ui::UI;
 
+use crate::error::GError;
+
 #[derive(Live, LiveHook, Clone, Debug)]
 #[live_ignore]
 #[repr(u32)]
 pub enum IconType {
+    #[pick]
     /// `-` (减号, 缩小, 最小化)
     Min = shader_enum(1),
     /// `▢` (最大化)
@@ -117,9 +120,8 @@ pub enum IconType {
     /// 一个电话, 类似📱
     /// a phone, similar to 📱
     Phone = shader_enum(29),
-    #[pick]
-    Default = shader_enum(30),
-    DeleteKey = shader_enum(31),
+    // Default = shader_enum(30),
+    DeleteKey = shader_enum(30),
     FullScreenExpand,
     Setting2,
     Setting3,
@@ -171,7 +173,7 @@ pub enum IconType {
 }
 
 impl IconType {
-    pub fn to_draw_type(&self) -> DrawGIconType {
+    pub fn to_draw_type(&self) -> Result<DrawGIconType, GError> {
         Base::try_from(self)
             .is_ok()
             .then(|| DrawGIconType::Base)
@@ -193,7 +195,41 @@ impl IconType {
             .or_else(|| State::try_from(self).is_ok().then(|| DrawGIconType::State))
             .or_else(|| Time::try_from(self).is_ok().then(|| DrawGIconType::Time))
             .or_else(|| Tool::try_from(self).is_ok().then(|| DrawGIconType::Tool))
-            .unwrap()
+            .ok_or(GError::IconTypeTransfom)
+    }
+}
+
+impl From<Base> for IconType {
+    fn from(value: Base) -> Self {
+        match value {
+            Base::Min => IconType::Min,
+            Base::Max => IconType::Max,
+            Base::FullScreen => IconType::FullScreen,
+            Base::FullScreenExpand => IconType::FullScreenExpand,
+            Base::More => IconType::More,
+            Base::Close => IconType::Close,
+            Base::Upload => IconType::Upload,
+            Base::Download => IconType::Download,
+            Base::Add => IconType::Add,
+            Base::Delete => IconType::Delete,
+            Base::DeleteKey => IconType::DeleteKey,
+            Base::Correct => IconType::Correct,
+            Base::Fresh => IconType::Fresh,
+            Base::Play => IconType::Play,
+            Base::Stop => IconType::Stop,
+            Base::GoOn => IconType::GoOn,
+            Base::Setting => IconType::Setting,
+            Base::Setting2 => IconType::Setting2,
+            Base::Setting3 => IconType::Setting3,
+            Base::Home => IconType::Home,
+            Base::System => IconType::System,
+            Base::Picture => IconType::Picture,
+            Base::Eye => IconType::Eye,
+            Base::EyeClose => IconType::EyeClose,
+            Base::Phone => IconType::Phone,
+            Base::Light => IconType::Light,
+            Base::Menu => IconType::Menu,
+        }
     }
 }
 

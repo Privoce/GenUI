@@ -1,0 +1,10 @@
+[package]
+name = "buitin_component_test"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+makepad-widgets = { path = "/Users/shengyifei/projects/makepad/makepad/widgets", version = "0.6.0" }
+gen_components ={ path="/Users/shengyifei/projects/gen_ui/components" }

@@ -12,7 +12,7 @@ live_design! {
         flow: Down,
         <GDivider>{
             height: Fit,
-            <GCard>{
+            <GView>{
                 height:Fit,
                 width: Fit,
                 padding: {left: 16.0, right: 16.0,}

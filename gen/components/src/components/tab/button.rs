@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::{draw_card::DrawCard, draw_icon_pixel::DrawGIconPixel, draw_tab::DrawTabBtn},
+    shader::{draw_view::DrawGView, draw_icon_pixel::DrawGIconPixel, draw_tab::DrawTabBtn},
     themes::{get_color, hex_to_vec4, Themes},
     utils::{get_font_family, set_cursor, AbsExt, DefaultTextStyle},
 };
@@ -94,7 +94,7 @@ pub struct GTabButton {
     #[live]
     pub draw_msg_count: DrawText,
     #[live]
-    pub draw_msg_wrap: DrawCard,
+    pub draw_msg_wrap: DrawGView,
     #[live]
     pub draw_close: DrawGIconPixel,
     #[redraw]
@@ -132,7 +132,7 @@ impl Widget for GTabButton {
         self.draw_text.draw_walk(
             cx,
             self.text_walk.with_add_padding(Padding {
-                top: 6.0,
+                top: 4.0,
                 bottom: 4.0,
                 ..Default::default()
             }),
@@ -150,8 +150,8 @@ impl Widget for GTabButton {
                 Layout {
                     align: Align { x: 0.5, y: 0.5 },
                     padding: Padding {
-                        top: 4.0,
-                        bottom: 2.0,
+                        top: 2.5,
+                        bottom: 2.5,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -291,24 +291,24 @@ impl GTabButton {
 
         // ------------------ font ------------------------------------------------------
         let font_color = select_color(
-            get_color(self.theme, self.color, plain_color(100, 600)),
+            get_color(self.theme, self.color.as_ref(), plain_color(100, 600)),
             "#667085",
         );
         let text_style = DefaultTextStyle::default();
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, plain_color(500, 600));
+        let bg_color = get_color(self.theme, self.background_color.as_ref(), plain_color(500, 600));
         let msg_bg_color = select_color(
-            get_color(self.theme, self.background_color, plain_color(600, 100)),
+            get_color(self.theme, self.background_color.as_ref(), plain_color(600, 100)),
             "#ECEFF3",
         );
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, plain_color(400, 600));
+        let hover_color = get_color(self.theme, self.hover_color.as_ref(), plain_color(400, 600));
         // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, plain_color(600, 600));
+        let pressed_color = get_color(self.theme, self.pressed_color.as_ref(), plain_color(600, 600));
         // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, plain_color(800, 600));
+        let border_color = get_color(self.theme, self.border_color.as_ref(), plain_color(800, 600));
         let icon_color = select_color(
-            get_color(self.theme, self.icon_color, plain_color(100, 600)),
+            get_color(self.theme, self.icon_color.as_ref(), plain_color(100, 600)),
             "#667085",
         );
 
@@ -317,6 +317,7 @@ impl GTabButton {
                 cx,
                 live! {
                     background_color: (msg_bg_color),
+                    background_visible: 1.0,
                     border_radius: ((self.font_size + 8.0)  * 0.25),
                 },
             );
@@ -325,10 +326,10 @@ impl GTabButton {
                 live! {
                     color: (font_color),
                     text_style: {
-                        brightness: (text_style.brightness),
-                        curve: (text_style.curve),
+                        // brightness: (text_style.brightness),
+                        // curve: (text_style.curve),
                         line_spacing: (text_style.line_spacing),
-                        top_drop: (text_style.top_drop),
+                        // top_drop: (text_style.top_drop),
                         font_size: (self.font_size - 1.0),
                         height_factor: (text_style.height_factor),
                         line_scale: (text_style.line_scale),
@@ -356,10 +357,10 @@ impl GTabButton {
             live! {
                 color: (font_color),
                 text_style: {
-                    brightness: (text_style.brightness),
-                    curve: (text_style.curve),
+                    // brightness: (text_style.brightness),
+                    // curve: (text_style.curve),
                     line_spacing: (text_style.line_spacing),
-                    top_drop: (text_style.top_drop),
+                    // top_drop: (text_style.top_drop),
                     font_size: (self.font_size),
                     height_factor: (text_style.height_factor),
                     line_scale: (text_style.line_scale),

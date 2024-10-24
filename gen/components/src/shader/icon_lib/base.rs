@@ -1,8 +1,11 @@
 use makepad_widgets::*;
 
-use super::{types::base::Base, DrawGIcon};
+use super::{
+    types::{base::Base, IconType},
+    ApplyIconType, DrawGIcon,
+};
 
-live_design!{
+live_design! {
     import makepad_draw::shader::std::*;
     DrawGIconBase = {{DrawGIconBase}}{
         fn pixel(self) -> vec4{
@@ -10,8 +13,8 @@ live_design!{
             // use offset to control not overlap with border
             let stroke_width = self.stroke_width;
             let offset = stroke_width * 1.25;
-            let start_pos = vec2(self.pos.x - self.border_width + offset, self.pos.y - self.border_width + offset);
-            let end_pos = vec2(self.pos.x + self.rect_size.x - self.border_width - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - self.border_width - offset * 1.0);
+            let start_pos = vec2(self.pos.x + offset, self.pos.y + offset);
+            let end_pos = vec2(self.pos.x + self.rect_size.x - offset * 1.0 - 1.0, self.pos.y + self.rect_size.y - offset * 1.0);
             let size = end_pos - start_pos;
             let center_y = self.rect_size.y * 0.5;
             let center_x = self.rect_size.x * 0.5;
@@ -64,7 +67,7 @@ live_design!{
                 Base::More => {
                     // draw a `⋯` icon as a button
                     sdf.circle(start_pos.x , center_y, stroke_width * 1.5);
-                    sdf.circle(center_x, center_y, stroke_width * 1.5);
+                    sdf.circle(center_x - stroke_width * 0.75, center_y, stroke_width * 1.5);
                     sdf.circle(end_pos.x - stroke_width, center_y, stroke_width * 1.5);
                     sdf.fill(self.stroke_color());
                 }
@@ -117,10 +120,10 @@ live_design!{
                 }
                 Base::Add => {
                     let quarter_size = size * 0.15;
-                    sdf.move_to(center_x, start_pos.y + quarter_size.y);
-                    sdf.line_to(center_x, end_pos.y - quarter_size.y);
-                    sdf.move_to(start_pos.x + quarter_size.x, center_y);
-                    sdf.line_to(end_pos.x - quarter_size.x, center_y);
+                    sdf.move_to(center_x, start_pos.y);
+                    sdf.line_to(center_x, end_pos.y);
+                    sdf.move_to(start_pos.x, center_y);
+                    sdf.line_to(end_pos.x, center_y);
 
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
@@ -339,7 +342,7 @@ live_design!{
                     sdf.circle(center_x, center_y, quarter_size.x * 0.6);
                     sdf.stroke(self.stroke_color(), stroke_width);
                 }
-                
+
                 Base::Phone => {
                     let quarter_size = size * 0.25;
                     let w = size.x - quarter_size.x;
@@ -376,7 +379,6 @@ live_design!{
     }
 }
 
-
 #[derive(Live, LiveRegister, LiveHook)]
 #[repr(C)]
 pub struct DrawGIconBase {
@@ -389,5 +391,12 @@ pub struct DrawGIconBase {
 impl DrawGIconBase {
     pub fn apply_type(&mut self, ty: Base) {
         self.icon_type = ty;
+    }
+}
+
+impl ApplyIconType for DrawGIconBase {
+    fn apply_type(&mut self, ty: &IconType) -> Result<(), Box<dyn std::error::Error>> {
+        self.icon_type = ty.try_into()?;
+        Ok(())
     }
 }

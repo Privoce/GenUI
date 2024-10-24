@@ -11,3 +11,4 @@
 /gen-ui/target
 /wiki/**/target
 /gen/middleware/
+**/*.DS_Store

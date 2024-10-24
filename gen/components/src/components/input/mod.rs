@@ -1,29 +1,36 @@
+mod register;
 pub mod types;
 
 use makepad_widgets::*;
+pub use register::register;
 use shader::draw_text::TextWrap;
 use types::{Edit, EditKind, History};
 use unicode_segmentation::{GraphemeCursor, UnicodeSegmentation};
 
 use crate::{
-    shader::{draw_card::DrawCard, draw_text::DrawGText},
-    themes::{get_color, Themes},
-    utils::get_font_family,
+    animatie_fn, event_bool, event_option, ref_event_bool, ref_event_option, set_event, set_event_bool, shader::{draw_view::DrawGView, draw_text::DrawGText}, themes::Themes, utils::{get_font_family, BoolToF32, ThemeColor}, widget_area
 };
 
 live_design! {
     import makepad_draw::shader::std::*;
     GInputBase = {{GInput}}{
-        height: Fit,
+        background_color: vec4(1.0, 1.0, 1.0, 1.0),
+        hover_color: vec4(0.9, 0.9, 0.9, 1.0),
+        focus_color: vec4(0.9, 0.9, 0.9, 1.0),
+        text_hover_color: vec4(0.2, 0.2, 0.2, 1.0),
+        text_focus_color: vec4(0.2, 0.2, 0.2, 1.0),
+        shadow_offset: vec2(0.0, 0.0),
+        color: #667085,
+        height: Fill,
         width: 180.0,
-        align: {x: 0.0, y: 0.5},
+        // align: {x: 0.0, y: 0.0},
         padding: 8.6,
         clip_x: false,
         clip_y: false,
         placeholder: "Please Input",
-        text_align: {x: 0.0, y: 0.0},
-        is_read_only: false,
-        is_numeric_only: false,
+        text_align: {y: 0.},
+        read_only: false,
+        numeric_only: false,
         animator: {
             hover = {
                 default: off
@@ -66,56 +73,25 @@ live_design! {
                 }
             }
         },
-        draw_input: {
-            instance hover: 0.0
-            instance pressed: 0.0
-            instance focus: 0.0
 
-            fn get_color(self) -> vec4 {
-                return self.background_color
-            }
-
-            fn pixel(self) -> vec4 {
-                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
-
-                sdf.box(
-                    1.,
-                    1.,
-                    self.rect_size.x - 2.0,
-                    self.rect_size.y - 2.0,
-                    self.border_radius
-                )
-
-                sdf.fill_keep(self.get_color());
-
-                sdf.stroke(
-                    self.get_border_color(),
-                    self.border_width
-                );
-
-                return sdf.result
-            }
-        }
         draw_text: {
-            instance hover: 0.0
-            instance focus: 0.0
-            wrap: Line,
-
+            // instance focus: 0.0;
+            instance placeholder_color: vec4;
             fn get_color(self) -> vec4 {
                 return mix(
                     mix(
                         self.color,
-                        mix(self.hover_color, self.pressed_color, self.pressed),
+                        mix(self.stroke_hover_color, self.stroke_focus_color, self.focus),
                         self.hover
                     ),
-                    self.hover_color,
+                    self.placeholder_color,
                     self.empty
                 )
             }
         }
 
         draw_cursor: {
-            instance focus: 0.0
+            // instance focus: 0.0
 
             fn pixel(self) -> vec4 {
                 let sdf = Sdf2d::viewport(self.pos * self.rect_size);
@@ -126,31 +102,31 @@ live_design! {
                     self.rect_size.y,
                     self.border_radius
                 )
-                sdf.fill(self.get_color());
+                sdf.fill(self.get_background_color());
                 return sdf.result;
             }
         }
 
-        draw_selection: {
-            instance hover: 0.0
-            instance focus: 0.0
+        // draw_selection: {
+        //     instance hover: 0.0
+        //     instance focus: 0.0
 
-            fn pixel(self) -> vec4 {
-                //return mix(#f00,#0f0,self.pos.y)
-                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
-                sdf.box(
-                    0.,
-                    0.,
-                    self.rect_size.x,
-                    self.rect_size.y,
-                    0.5
-                )
-                sdf.fill(
-                    self.get_color()
-                );
-                return sdf.result
-            }
-        }
+        //     fn pixel(self) -> vec4 {
+        //         //return mix(#f00,#0f0,self.pos.y)
+        //         let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+        //         sdf.box(
+        //             0.,
+        //             0.,
+        //             self.rect_size.x,
+        //             self.rect_size.y,
+        //             0.5
+        //         )
+        //         sdf.fill(
+        //             self.get_color()
+        //         );
+        //         return sdf.result
+        //     }
+        // }
 
     }
 }
@@ -160,21 +136,49 @@ pub struct GInput {
     #[live]
     pub theme: Themes,
     #[live]
+    pub shadow_color: Option<Vec4>,
+    #[live(0.0)]
+    pub spread_radius: f32,
+    #[live(4.8)]
+    pub blur_radius: f32,
+    #[live]
+    pub shadow_offset: Vec2,
+    #[live]
+    pub placeholder_color: Option<Vec4>,
+    #[live]
     pub color: Option<Vec4>,
     #[live]
+    pub cursor_color: Option<Vec4>,
+    #[live]
+    pub select_color: Option<Vec4>,
+    #[live]
     pub background_color: Option<Vec4>,
+    #[live(true)]
+    pub background_visible: bool,
+    #[live(true)]
+    pub visible: bool,
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub pressed_color: Option<Vec4>,
+    pub text_hover_color: Option<Vec4>,
+    #[live]
+    pub text_focus_color: Option<Vec4>,
+    #[live]
+    pub cursor_hover_color: Option<Vec4>,
+    #[live]
+    pub cursor_focus_color: Option<Vec4>,
+    #[live]
+    pub select_hover_color: Option<Vec4>,
+    #[live]
+    pub select_focus_color: Option<Vec4>,
+    #[live]
+    pub focus_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
-    #[live(0.0)]
+    #[live(1.0)]
     pub border_width: f32,
     #[live(2.0)]
     pub border_radius: f32,
-    #[live(false)]
-    pub round: bool,
     // text --------------------
     #[live]
     pub text_align: Align,
@@ -184,8 +188,8 @@ pub struct GInput {
     pub brightness: f32,
     #[live(0.5)]
     pub curve: f32,
-    #[live(1.2)]
-    pub top_drop: f64,
+    // #[live(1.2)]
+    // pub top_drop: f64,
     #[live(1.3)]
     pub height_factor: f64,
     #[live(TextWrap::Word)]
@@ -199,25 +203,23 @@ pub struct GInput {
     animator: Animator,
     #[redraw]
     #[live]
-    draw_input: DrawCard,
+    draw_input: DrawGView,
     #[live]
     draw_text: DrawGText,
     #[live]
-    draw_selection: DrawCard,
+    draw_selection: DrawGView,
     #[live]
-    draw_cursor: DrawCard,
+    draw_cursor: DrawGView,
     #[layout]
     layout: Layout,
     #[walk]
     walk: Walk,
-    #[live]
-    label_align: Align,
     #[live(2.0)]
     cursor_width: f64,
     #[live]
-    pub is_read_only: bool,
+    pub read_only: bool,
     #[live]
-    pub is_numeric_only: bool,
+    pub numeric_only: bool,
     #[live]
     pub placeholder: String,
     #[live]
@@ -228,71 +230,44 @@ pub struct GInput {
     history: History,
     #[live]
     scroll_bars: ScrollBars,
+    #[live(true)]
+    pub event_key: bool,
 }
 
 impl Widget for GInput {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
+        // self.draw_text.wrap = self.wrap.clone();
+        self.draw_text.text_style.font = get_font_family(&self.font_family, cx);
         self.draw_input.begin(cx, walk, self.layout);
 
         self.draw_selection.append_to_draw_call(cx);
-        let font = get_font_family(&self.font_family, cx);
 
-        self.draw_text.text_style.font = font;
-        let real_width = if let Size::Fixed(w) = self.walk.width {
-            Size::Fixed(w - self.layout.padding.left - self.layout.padding.right)
-        } else {
-            self.walk.width
-        };
-
-        let rect_walk = Walk {
-            height: self.walk.height,
-            width: real_width,
-            ..Default::default()
-        };
-        let padded_rect = cx.turtle().padded_rect();
-        let mut cursor_position = self.cursor_position(cx, padded_rect.size.x);
-        let scroll_width = if cursor_position.x > padded_rect.size.x {
-            cursor_position.x
-        } else {
-            padded_rect.size.x
-        };
-        self.scroll_bars.begin(
-            cx,
-            Walk {
-                height: rect_walk.height,
-                width: Size::Fixed(padded_rect.size.x),
-                ..Default::default()
-            },
-            Layout::flow_right(),
-        );
-        
         // Draw text
         if self.text.is_empty() {
-            self.draw_text.empty = 1.0;
+            // self.draw_text.empty = 1.0;
             self.draw_text
-                .draw_walk(cx, Walk::fit(), self.label_align, &self.placeholder);
+                .draw_walk(cx, Walk::fill(), self.text_align, &self.placeholder);
         } else {
-            self.draw_text.empty = 0.0;
+            // self.draw_text.empty = 0.0;
             self.draw_text
-                .draw_walk(cx, Walk::fit(), self.label_align, &self.text);
+                .draw_walk(cx, Walk::fill(), self.text_align, &self.text);
         }
-       
-        // let padded_rect = cx.turtle().padded_rect();
+
+        let padded_rect = cx.turtle().padded_rect();
+
         // Draw selection
         let rects = self.draw_text.selected_rects(
             cx,
-            Walk::fit(),
-            self.label_align,
+            Walk::fill(),
+            self.text_align,
             padded_rect.size.x,
             &self.text,
             self.cursor.head.min(self.cursor.tail),
             self.cursor.head.max(self.cursor.tail),
         );
-
-        let last_pos = rects
-            .last()
-            .map(|rect| padded_rect.pos + rect.pos)
-            .unwrap_or(padded_rect.pos);
         for rect in rects {
             self.draw_selection.draw_abs(
                 cx,
@@ -302,42 +277,22 @@ impl Widget for GInput {
                 },
             );
         }
-        // dbg!(self.scroll_bars.get_viewport_rect(cx));
-        
-        self.scroll_bars.set_scroll_x(cx, last_pos.x);
-       
-        // dbg!(self.scroll_bars.get_scroll_pos());
-        self.scroll_bars.end(cx);
+
         // Draw cursor
-        // let mut cursor_position = self.cursor_position(cx, padded_rect.size.x);
-        // let scroll_width = cursor_position.x;
-        // if cursor_position.x > padded_rect.size.x {
-        //     dbg!(cursor_position.x);
-        //    let mut s_area = self.scroll_bars.area();
-        //    let mut s_rect = s_area.rect(cx).clone();
-        //    s_rect.pos.x = cursor_position.x;
-        //    s_area.set_rect(cx, &s_rect);
-        //    self.scroll_bars.set_area(s_area);
-        // }
+        let cursor_position = self.cursor_position(cx, padded_rect.size.x);
         let cursor_height = self.draw_text.line_height(cx);
-        // dbg!(&cursor_position, &self.text);
-        cursor_position.x = last_pos.x;
-
-        cursor_position.y = last_pos.y;
-        // dbg!(&cursor_position);
-        // self.scroll_bars.set_scroll_pos(cx, cursor_position);
-        
-
-       
         self.draw_cursor.draw_abs(
             cx,
             Rect {
-                pos: cursor_position,
+                pos: padded_rect.pos
+                    + dvec2(
+                        cursor_position.x - 0.5 * self.cursor_width,
+                        cursor_position.y,
+                    ),
                 size: dvec2(self.cursor_width, cursor_height),
             },
         );
-       
-        
+
         self.draw_input.end(cx);
 
         if cx.has_key_focus(self.draw_input.area()) {
@@ -459,17 +414,13 @@ impl Widget for GInput {
                 ..
             }) => {
                 cx.hide_text_ime();
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Return(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Return(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::ReturnKey,
                 modifiers: KeyModifiers { shift: true, .. },
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 self.history
                     .create_or_extend_edit_group(EditKind::Other, self.cursor);
                 self.apply_edit(Edit {
@@ -478,11 +429,7 @@ impl Widget for GInput {
                     replace_with: "\n".to_string(),
                 });
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Escape,
@@ -493,11 +440,11 @@ impl Widget for GInput {
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Backspace,
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 let mut start = self.cursor.start().index;
                 let end = self.cursor.end().index;
                 if start == end {
-                    start = prev_grapheme_boundary(self.text.as_ref(), start).unwrap_or(0);
+                    start = prev_grapheme_boundary(&self.text, start).unwrap_or(0);
                 }
                 self.history
                     .create_or_extend_edit_group(EditKind::Backspace, self.cursor);
@@ -507,21 +454,16 @@ impl Widget for GInput {
                     replace_with: String::new(),
                 });
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::Delete,
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 let start = self.cursor.start().index;
                 let mut end = self.cursor.end().index;
                 if start == end {
-                    end =
-                        next_grapheme_boundary(self.text.as_ref(), end).unwrap_or(self.text.len());
+                    end = next_grapheme_boundary(&self.text, end).unwrap_or(self.text.len());
                 }
                 self.history
                     .create_or_extend_edit_group(EditKind::Delete, self.cursor);
@@ -531,11 +473,7 @@ impl Widget for GInput {
                     replace_with: String::new(),
                 });
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyA,
@@ -559,14 +497,10 @@ impl Widget for GInput {
                         ..
                     },
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 self.undo();
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::KeyDown(KeyEvent {
                 key_code: KeyCode::KeyZ,
@@ -577,21 +511,17 @@ impl Widget for GInput {
                         ..
                     },
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 self.redo();
                 self.draw_input.redraw(cx);
-                cx.widget_action(
-                    uid,
-                    &scope.path,
-                    TextInputAction::Change(self.text.to_string()),
-                );
+                cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
             }
             Hit::TextInput(TextInputEvent {
                 input,
                 replace_last,
                 was_paste,
                 ..
-            }) if !self.is_read_only => {
+            }) if !self.read_only => {
                 let input = self.filter_input(input);
                 if !input.is_empty() {
                     let mut start = self.cursor.start().index;
@@ -599,7 +529,7 @@ impl Widget for GInput {
                     if replace_last {
                         start -= self
                             .history
-                            .last_inserted_text(self.text.as_ref())
+                            .last_inserted_text(&self.text)
                             .map_or(0, |text| text.len());
                     }
                     self.history.create_or_extend_edit_group(
@@ -616,21 +546,15 @@ impl Widget for GInput {
                         replace_with: input,
                     });
                     self.draw_input.redraw(cx);
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        TextInputAction::Change(self.text.to_string()),
-                    );
+                    cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
                 }
             }
             Hit::TextCopy(event) => {
-                let selection =
-                    self.text[self.cursor.start().index..self.cursor.end().index].to_string();
-                *event.response.borrow_mut() = Some(selection);
+                let selection = &self.text[self.cursor.start().index..self.cursor.end().index];
+                *event.response.borrow_mut() = Some(selection.to_string());
             }
             Hit::TextCut(event) => {
-                let selection =
-                    self.text[self.cursor.start().index..self.cursor.end().index].to_string();
+                let selection = &self.text[self.cursor.start().index..self.cursor.end().index];
                 *event.response.borrow_mut() = Some(selection.to_string());
                 if !selection.is_empty() {
                     self.history
@@ -641,11 +565,7 @@ impl Widget for GInput {
                         replace_with: String::new(),
                     });
                     self.draw_input.redraw(cx);
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        TextInputAction::Change(self.text.to_string()),
-                    );
+                    cx.widget_action(uid, &scope.path, TextInputAction::Change(self.text.clone()));
                 }
             }
             Hit::FingerHoverIn(_) => {
@@ -704,48 +624,54 @@ impl Widget for GInput {
         self.cursor.tail.index = self.cursor.tail.index.min(text.len());
         self.history.clear();
     }
+
+    fn is_visible(&self) -> bool {
+        self.visible
+    }
 }
 
 impl LiveHook for GInput {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 25);
-        // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
-        // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
-        // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.color, 800);
-        // ---------------------- is empty ------------------------------------------------
-        let empty = self.text.len().eq(&0) as u8 as f32;
-        // ---------------------- select color ------------------------------------------
-        let mut select_color = font_color.clone();
-        select_color.w = 0.5;
-        // ------------------ round -----------------------------------------------------
-        if self.round {
-            self.border_radius = match self.walk.height {
-                Size::Fixed(h) => (h * 0.25) as f32,
-                Size::Fit => {
-                    ((self.draw_text.text_style.font_size
-                        + self.layout.padding.top
-                        + self.layout.padding.bottom)
-                        * 0.25) as f32
-                }
-                _ => panic!("round only support fixed and fit"),
-            };
+        if !self.visible {
+            return;
         }
+        // ----------------- background color -------------------------------------------
+        let bg_color = self.background_color.get(self.theme, 25);
+        // ------------------ hover color -----------------------------------------------
+        let hover_color = self.hover_color.get(self.theme, 25);
+        let shadow_color = self.shadow_color.get(self.theme, 700);
+        let text_hover_color = self.text_hover_color.get(self.theme, 600);
+        let text_focus_color = self.text_focus_color.get(self.theme, 800);
+        let cursor_color = self.cursor_color.get(self.theme, 800);
+        let cursor_hover_color = self.cursor_hover_color.get(self.theme, 800);
+        let cursor_focus_color = self.cursor_focus_color.get(self.theme, 800);
+        let select_color = self.select_color.get(self.theme, 400);
+        let select_hover_color = self.select_hover_color.get(self.theme, 300);
+        let select_focus_color = self.select_focus_color.get(self.theme, 500);
+        let placeholder_color = self.placeholder_color.use_or("#98A2B3");
+        // ------------------ focus color ---------------------------------------------
+        let focus_color = self.focus_color.get(self.theme, 25);
+        // ------------------ border color ----------------------------------------------
+        let border_color = self.border_color.get(self.theme, 400);
+        // ------------------ font ------------------------------------------------------
+        let font_color = self.color.get(self.theme, 800);
+        // ---------------------- is empty ------------------------------------------------
+        let empty = self.text.len().eq(&0).to_f32();
         // draw input --------------------------------------------------------------
         self.draw_input.apply_over(
             cx,
             live! {
                 background_color: (bg_color),
+                background_visible: (self.background_visible.to_f32()),
                 border_color: (border_color),
                 border_width: (self.border_width),
                 border_radius: (self.border_radius),
-                pressed_color: (pressed_color),
+                focus_color: (focus_color),
                 hover_color: (hover_color),
+                shadow_color: (shadow_color),
+                shadow_offset: (self.shadow_offset),
+                spread_radius: (self.spread_radius),
+                blur_radius: (self.blur_radius)
             },
         );
         // draw text ---------------------------------------------------------------
@@ -753,29 +679,31 @@ impl LiveHook for GInput {
             cx,
             live! {
                 color: (font_color),
-                hover_color: (hover_color),
-                pressed_color: (pressed_color),
+                stroke_hover_color: (text_hover_color),
+                stroke_focus_color: (text_focus_color),
+                placeholder_color:(placeholder_color),
                 empty: (empty),
                 text_style: {
                     // brightness: (self.brightness),
                     // curve: (self.curve),
-                    line_spacing: (self.layout.line_spacing),
-                    top_drop: (self.top_drop),
+                    // line_spacing: (self.layout.line_spacing),
+                    // top_drop: (self.top_drop),
                     font_size: (self.font_size),
-                    height_factor: (self.height_factor),
+                    // height_factor: (self.height_factor),
                 }
             },
         );
+        self.draw_text.wrap = self.wrap.clone();
         // draw cursor -------------------------------------------------------------
         self.draw_cursor.apply_over(
             cx,
             live! {
-                background_color: (font_color),
-                border_color: (border_color),
+                background_color: (cursor_color),
+                // border_color: (border_color),
                 // border_width: (self.border_width),
                 border_radius: (self.cursor_border_radius),
-                pressed_color: (pressed_color),
-                hover_color: (hover_color),
+                focus_color: (cursor_focus_color),
+                hover_color: (cursor_hover_color),
             },
         );
         // draw select -------------------------------------------------------------
@@ -783,18 +711,155 @@ impl LiveHook for GInput {
             cx,
             live! {
                 background_color: (select_color),
-                pressed_color: (pressed_color),
-                hover_color: (hover_color),
+                background_visible: 1.0,
+                focus_color: (select_focus_color),
+                hover_color: (select_hover_color),
+                border_radius: 0.0
             },
         );
-        self.draw_text.redraw(cx);
-        self.draw_input.redraw(cx);
-        self.draw_cursor.redraw(cx);
-        self.draw_selection.redraw(cx);
+        // self.draw_text.redraw(cx);
+        // self.draw_input.redraw(cx);
+        // self.draw_cursor.redraw(cx);
+        // self.draw_selection.redraw(cx);
     }
 }
 
 impl GInput {
+    widget_area! {
+        area, draw_input,
+        area_selection, draw_selection
+    }
+    event_option! {
+        change: TextInputAction::Change => String,
+        r#return: TextInputAction::Return => String
+    }
+    event_bool! {
+        key_focus: TextInputAction::KeyFocus,
+        key_focus_lost: TextInputAction::KeyFocusLost,
+        escape: TextInputAction::Escape
+    }
+    pub fn animate_hover_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                focus: 0.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                focus: 0.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                focus: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 1.0,
+                focus: 0.0
+            },
+        );
+    }
+    pub fn animate_hover_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
+    pub fn animate_focus_on(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 1.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 1.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 1.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 1.0
+            },
+        );
+    }
+
+    pub fn animate_focus_off(&mut self, cx: &mut Cx) -> () {
+        self.draw_input.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_cursor.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_selection.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+        self.draw_text.apply_over(
+            cx,
+            live! {
+                hover: 0.0,
+                focus: 0.0
+            },
+        );
+    }
+
     pub fn set_key_focus(&self, cx: &mut Cx) {
         cx.set_key_focus(self.draw_input.area());
     }
@@ -817,7 +882,7 @@ impl GInput {
     }
 
     pub fn filter_input(&mut self, input: String) -> String {
-        if self.is_numeric_only {
+        if self.numeric_only {
             input
                 .chars()
                 .filter_map(|char| match char {
@@ -843,10 +908,10 @@ impl GInput {
     ) -> IndexAffinity {
         self.draw_text.position_to_index_affinity(
             cx,
-            Walk::fit(),
-            self.label_align,
+            Walk::fill(),
+            self.text_align,
             width,
-            self.text.as_ref(),
+            &self.text,
             position,
         )
     }
@@ -854,16 +919,16 @@ impl GInput {
     fn cursor_position(&self, cx: &mut Cx2d, width: f64) -> DVec2 {
         self.draw_text.index_affinity_to_position(
             cx,
-            Walk::fit(),
-            self.label_align,
+            Walk::fill(),
+            self.text_align,
             width,
-            self.text.as_ref(),
+            &self.text,
             self.cursor.head,
         )
     }
 
     fn move_cursor_left(&mut self, is_select: bool) {
-        let Some(index) = prev_grapheme_boundary(self.text.as_ref(), self.cursor.head.index) else {
+        let Some(index) = prev_grapheme_boundary(&self.text, self.cursor.head.index) else {
             return;
         };
         self.move_cursor_to(
@@ -876,7 +941,7 @@ impl GInput {
     }
 
     fn move_cursor_right(&mut self, is_select: bool) {
-        let Some(index) = next_grapheme_boundary(self.text.as_ref(), self.cursor.head.index) else {
+        let Some(index) = next_grapheme_boundary(&self.text, self.cursor.head.index) else {
             return;
         };
         self.move_cursor_to(
@@ -985,6 +1050,70 @@ impl GInput {
         if let Some(cursor) = self.history.redo(self.cursor, &mut self.text) {
             self.cursor = cursor;
         }
+    }
+}
+
+impl GInputRef {
+    ref_event_bool! {
+        key_focus,
+        key_focus_lost,
+        escape
+    }
+    ref_event_option! {
+        change => String,
+        r#return => String
+    }
+    animatie_fn! {
+        animate_hover_on,
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
+    }
+    pub fn changed(&self, actions: &Actions) -> Option<String> {
+        if let TextInputAction::Change(val) = actions.find_widget_action_cast(self.widget_uid()) {
+            return Some(val);
+        }
+        None
+    }
+
+    pub fn returned(&self, actions: &Actions) -> Option<String> {
+        if let TextInputAction::Return(val) = actions.find_widget_action_cast(self.widget_uid()) {
+            return Some(val);
+        }
+        None
+    }
+
+    pub fn set_cursor(&self, head: usize, tail: usize) {
+        if let Some(mut inner) = self.borrow_mut() {
+            inner.set_cursor(Cursor {
+                head: IndexAffinity {
+                    index: head,
+                    affinity: Affinity::After,
+                },
+                tail: IndexAffinity {
+                    index: tail,
+                    affinity: Affinity::Before,
+                },
+            });
+        }
+    }
+
+    pub fn set_key_focus(&self, cx: &mut Cx) {
+        if let Some(inner) = self.borrow() {
+            inner.set_key_focus(cx);
+        }
+    }
+}
+
+impl GInputSet {
+    set_event_bool! {
+        key_focus,
+        key_focus_lost,
+        escape
+    }
+    set_event! {
+        change => String,
+        r#return => String
     }
 }
 

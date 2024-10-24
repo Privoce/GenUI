@@ -1,10 +1,10 @@
 use makepad_widgets::*;
 
-use crate::components::card::Card;
+use crate::components::view::GView;
 
 live_design! {
     GTabBodyBase = {{GTabBody}}{
-        transparent: true,
+        background_visible: true,
         border_width: 0.0,
         border_radius: 0.0,
         padding: 0.0,
@@ -18,7 +18,7 @@ pub struct GTabBody {
     pub text: ArcStringMut,
     #[live]
     #[deref]
-    pub deref_widget: Card,
+    pub deref_widget: GView,
 }
 
 impl Widget for GTabBody {
