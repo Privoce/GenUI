@@ -5,7 +5,7 @@ pub use event::*;
 pub use register::register;
 
 use crate::{
-    active_event, animatie_fn, default_handle_animation, default_hit_finger_down, default_hit_hover_in, default_hit_hover_out, event::UnifiedEvent, event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_redraw, ref_render, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
+    active_event, animatie_fn, default_handle_animation, default_hit_finger_down, default_hit_hover_in, default_hit_hover_out, event::UnifiedEvent, event_option, play_animation, ref_animate_state, ref_area, ref_event_option, ref_play_animation, ref_redraw, ref_render, set_scope_path, set_text_and_visible_fn, shader::draw_text::DrawGText, themes::Themes, utils::{get_font_family, set_cursor, ThemeColor, ToBool}
 };
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
@@ -327,6 +327,12 @@ impl GLabelRef {
     ref_animate_state!();
     ref_redraw!();
     ref_render!();
+    ref_play_animation!{
+        play_hover_on: id!(hover.on),
+        play_hover_off: id!(hover.off),
+        play_focus_on: id!(hover.focus),
+        play_focus_off: id!(hover.off)
+    }
     ref_event_option! {
         hover_in  => GLabelHoverParam,
         hover_out => GLabelHoverParam,

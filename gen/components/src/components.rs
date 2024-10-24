@@ -728,16 +728,15 @@ live_design! {
         padding: 6.0,
         spacing: 8.0,
         align: <ALIGN_LEFT_WALK>{},
-        font_size: (FONT_SIZE),
-        icon: <GIcon>{
-            theme: Dark,
-            height: 18.0,
-            width: 18.0,
-            icon_type: Home,
+        icon = <GSvg>{
+            src: dep("crate://self/resources/icons/home.svg"),
             cursor: Hand,
             animation_key: true,
+            height: 16.0,
+            width: 16.0,
+            event_key: true,
         },
-        crumb_item: <GBreadCrumbItem>{
+        item: <GBreadCrumbItem>{
             theme: Dark,
         }
     }

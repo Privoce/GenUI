@@ -254,6 +254,19 @@ macro_rules! animatie_fn{
     };
 }
 
+#[macro_export]
+macro_rules! ref_play_animation {
+    ($($an_fn: ident : $state: expr),*) => {
+        $(
+            pub fn $an_fn(&self, cx: &mut Cx) -> () {
+                if let Some(mut c_ref) = self.borrow_mut() {
+                    c_ref.play_animation(cx, $state);
+                }
+            }
+        )*
+    };
+}
+
 /// # Generate Area Function
 /// ```
 /// impl GBreadCrumbItem {

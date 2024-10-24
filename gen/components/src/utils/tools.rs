@@ -1,3 +1,5 @@
+use makepad_widgets::LiveId;
+
 pub const LIVE_ID_SEED: u64 = 0xd6e8_feb8_6659_fd93;
 
 pub const fn from_bytes(seed: u64, id_bytes: &[u8], start: usize, end: usize) -> u64 {
@@ -23,4 +25,14 @@ pub const fn from_str_unchecked(id_str: &str) -> u64 {
 
 pub fn round_to_two_decimals(value: f64) -> f64 {
     (value * 10000.0).round() / 10000.0
+}
+
+pub trait LiveIdGenerate {
+    fn to_live_id(self) -> LiveId;
+}
+
+impl LiveIdGenerate for usize {
+    fn to_live_id(self) -> LiveId {
+        LiveId(self as u64)
+    }
 }

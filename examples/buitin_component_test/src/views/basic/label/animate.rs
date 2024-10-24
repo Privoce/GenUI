@@ -199,18 +199,20 @@ live_design! {
     
         fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
             let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-    
+
             let hover_btn = self.gbutton(id!(do_hover));
             let focus_btn = self.gbutton(id!(do_focus));
             let clear_hover = self.gbutton(id!(clear_hover));
             let clear_focus = self.gbutton(id!(clear_focus));
-            let mut hover_lb = self.glabel(id!(lb_hover));
-            let mut focus_lb = self.glabel(id!(lb_focus));
+            let hover_lb = self.glabel(id!(lb_hover));
+            let focus_lb = self.glabel(id!(lb_focus));
             if hover_btn.clicked(&actions).is_some() {
-                hover_lb.animate_hover_on(cx);
+                // hover_lb.animate_hover_on(cx); // on animate duration and ease
+                hover_lb.play_hover_on(cx);
             }
             if focus_btn.clicked(&actions).is_some() {
-                focus_lb.animate_focus_on(cx);
+                // focus_lb.animate_focus_on(cx); // on animate duration and ease
+                focus_lb.play_focus_on(cx);
             }
             if clear_hover.clicked(&actions).is_some() {
                 hover_lb.animate_hover_off(cx);
@@ -256,10 +258,12 @@ impl Widget for LabelAnPage {
         let hover_lb = self.glabel(id!(lb_hover));
         let focus_lb = self.glabel(id!(lb_focus));
         if hover_btn.clicked(&actions).is_some() {
-            hover_lb.animate_hover_on(cx);
+            // hover_lb.animate_hover_on(cx); // on animate duration and ease
+            hover_lb.play_hover_on(cx);
         }
         if focus_btn.clicked(&actions).is_some() {
-            focus_lb.animate_focus_on(cx);
+            // focus_lb.animate_focus_on(cx); // on animate duration and ease
+            focus_lb.play_focus_on(cx);
         }
         if clear_hover.clicked(&actions).is_some() {
             hover_lb.animate_hover_off(cx);

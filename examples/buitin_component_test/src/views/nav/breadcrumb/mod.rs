@@ -4,7 +4,12 @@ pub fn register(cx: &mut Cx) {
     self::live_design(cx);
 }
 
-use gen_components::components::view::GView;
+use gen_components::components::{
+    breadcrumb::{item::GBreadCrumbItemWidgetExt, GBreadCrumbWidgetExt},
+    button::GButtonWidgetExt,
+    label::GLabelWidgetExt,
+    view::GView,
+};
 use makepad_widgets::*;
 
 live_design! {
@@ -57,10 +62,16 @@ live_design! {
                     text: "Line",
                     split_type: Line
                 }
-                <GBreadCrumbItem>{
+                item = <GBreadCrumbItem>{
                     theme: Success,
                     text: "Arrow",
-                    split_type: Arrow
+                    split_type: Arrow,
+                    text_hover_color: #F69D50,
+                }
+                e_btn = <GButton>{
+                    slot:{
+                        text: "Animation",
+                    }
                 }
             }
             code = {
@@ -108,26 +119,28 @@ live_design! {
             box_wrap = {
                 spacing: 16.0,
                 <GBreadCrumb>{
-                    labels: ["home", "components", "button"],
+                    path: ["home", "components", "button"],
                 }
                 <GBreadCrumb>{
-                    labels: ["home", "components", "gen", "ui", "crumb"],
-                    icon: {theme: Primary},
-                    crumb_item: {
+                    path: ["home", "components", "gen", "ui", "crumb"],
+                    item: {
                         theme: Primary,
                         split_type: Arrow,
                     }
                 }
                 <GBreadCrumb>{
+                    theme: Error,
                     background_visible: true,
                     border_radius: 2.0,
-                    labels: ["home", "components", "gen", "ui", "crumb"],
-                    icon: {
+                    omit: true,
+                    path: ["home", "components", "gen", "ui", "crumb"],
+                    icon = {
+                        src: dep("crate://self/resources/setting.svg"),
                         theme: Error,
                         stroke_hover_color: #F69D50,
                         stroke_focus_color: #FF7043,
                     },
-                    crumb_item: {
+                    item: {
                         theme: Error,
                         text_hover_color: #F69D50,
                         text_focus_color: #FF7043,
@@ -144,18 +157,34 @@ live_design! {
                             theme: Dark,
                             width: Fill,
                             text: r#"
-                <GBreadCrumbItem>{
+                <GBreadCrumb>{
+                    path: ["home", "components", "button"],
+                }
+                <GBreadCrumb>{
+                    path: ["home", "components", "gen", "ui", "crumb"],
+                    item: {
+                        theme: Primary,
+                        split_type: Arrow,
+                    }
+                }
+                <GBreadCrumb>{
                     theme: Error,
-                    text: "Spliter",
-                }
-                <GBreadCrumbItem>{
-                    text: "Line",
-                    split_type: Line
-                }
-                <GBreadCrumbItem>{
-                    theme: Success,
-                    text: "Arrow",
-                    split_type: Arrow
+                    background_visible: true,
+                    border_radius: 2.0,
+                    omit: true,
+                    path: ["home", "components", "gen", "ui", "crumb"],
+                    icon = {
+                        src: dep("crate://self/resources/setting.svg"),
+                        theme: Error,
+                        stroke_hover_color: #F69D50,
+                        stroke_focus_color: #FF7043,
+                    },
+                    item: {
+                        theme: Error,
+                        text_hover_color: #F69D50,
+                        text_focus_color: #FF7043,
+                        split_type: Arrow,
+                    }
                 }
                             "#;
                         }
@@ -163,7 +192,47 @@ live_design! {
                 }
             }
         }
+        <CBox>{
+            box_wrap = {
+                spacing: 16.0,
+                bc = <GBreadCrumb>{
+                    theme: Error,
+                    background_visible: true,
+                    border_radius: 2.0,
+                    path: ["home", "components", "gen", "ui", "crumb"],
+                    icon = {
+                        src: dep("crate://self/resources/setting.svg"),
+                        theme: Error,
+                        stroke_hover_color: #F69D50,
+                        stroke_focus_color: #FF7043,
+                    },
+                    item: {
+                        theme: Error,
+                        text_hover_color: #F69D50,
+                        text_focus_color: #FF7043,
+                        split_type: Arrow,
+                    }
+                }
+                lb = <GLabel>{
+                    text: ""
+                }
+            }
+            code = {
+                body: {
+                    <GVLayout>{
+                        height: 240.0,
+                        scroll_bars: <GScrollBars>{}
+                        <GLabel>{
+                            theme: Dark,
+                            width: Fill,
+                            text: r#"
 
+                            "#;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -186,6 +255,22 @@ impl Widget for BreadCrumbPage {
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let _ = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
+
+        let e_btn = self.gbutton(id!(e_btn));
+        let item = self.gbread_crumb_item(id!(item));
+
+        if e_btn.clicked(&actions).is_some() {
+            item.play_hover_on(cx);
+        }
+
+        let cb = self.gbread_crumb(id!(bc));
+        let lb = self.glabel(id!(lb));
+        if let Some(e) = cb.changed(&actions) {
+            lb.set_text_and_redraw(cx, &format!("You clicked: {}, text: {}", e.index, e.text));
+        }
+        if cb.home(&actions).is_some() {
+            lb.set_text_and_redraw(cx, "You clicked home");
+        }
     }
 }

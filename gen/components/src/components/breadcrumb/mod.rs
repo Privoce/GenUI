@@ -1,334 +1,131 @@
 mod event;
+// mod copy;
 pub mod item;
 mod register;
+
 pub use event::*;
 pub use register::register;
 
-use item::{GBreadCrumbItemRef, GBreadCrumbItemWidgetRefExt};
+use item::GBreadCrumbItemWidgetRefExt;
 use makepad_widgets::*;
 
 use crate::{
-    default_handle_animation, event_bool, event_option, play_animation, ref_event_bool,
-    ref_event_option, set_scope_path,
-    shader::draw_view::DrawGView,
-    themes::Themes,
-    utils::{set_cursor, BoolToF32, ThemeColor},
-    widget_area, widget_origin_fn,
+    active_event, animatie_fn, check_event_scope, event_option, ref_area, ref_event_option,
+    ref_play_animation, ref_redraw_mut, ref_render, utils::LiveIdGenerate, widget_area,
 };
 
-use super::icon::GIcon;
+use super::{
+    svg::{GSvgRef, GSvgWidgetExt},
+    view::GView,
+};
 
 live_design! {
     GLOBAL_DURATION = 0.25;
     GBreadCrumbBase = {{GBreadCrumb}}{
-        animator: {
-            icon_hover = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 0.0, focus: 0.0},
-                            icon_base: {hover: 0.0, focus: 0.0},
-                            icon_arrow: {hover: 0.0, focus: 0.0},
-                            icon_code: {hover: 0.0, focus: 0.0},
-                            icon_emoji: {hover: 0.0, focus: 0.0},
-                            icon_fs: {hover: 0.0, focus: 0.0},
-                            icon_ui: {hover: 0.0, focus: 0.0},
-                            icon_person: {hover: 0.0, focus: 0.0},
-                            icon_relation: {hover: 0.0, focus: 0.0},
-                            icon_state: {hover: 0.0, focus: 0.0},
-                            icon_time: {hover: 0.0, focus: 0.0},
-                            icon_tool: {hover: 0.0, focus: 0.0},
-                        },
-                    },
-                }
-                on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                        focus: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 1.0, focus: 0.0}
-                            icon_base: {hover: 1.0, focus: 0.0},
-                            icon_arrow: {hover: 1.0, focus: 0.0},
-                            icon_code: {hover: 1.0, focus: 0.0},
-                            icon_emoji: {hover: 1.0, focus: 0.0},
-                            icon_fs: {hover: 1.0, focus: 0.0},
-                            icon_ui: {hover: 1.0, focus: 0.0},
-                            icon_person: {hover: 1.0, focus: 0.0},
-                            icon_relation: {hover: 1.0, focus: 0.0},
-                            icon_state: {hover: 1.0, focus: 0.0},
-                            icon_time: {hover: 1.0, focus: 0.0},
-                            icon_tool: {hover: 1.0, focus: 0.0},
-                        },
-                    }
-                }
-
-                focus = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        icon: {
-                            draw_icon: {hover: 0.0, focus: 1.0}
-                            icon_base: {hover: 0.0, focus: 1.0},
-                            icon_arrow: {hover: 0.0, focus: 1.0},
-                            icon_code: {hover: 0.0, focus: 1.0},
-                            icon_emoji: {hover: 0.0, focus: 1.0},
-                            icon_fs: {hover: 0.0, focus: 1.0},
-                            icon_ui: {hover: 0.0, focus: 1.0},
-                            icon_person: {hover: 0.0, focus: 1.0},
-                            icon_relation: {hover: 0.0, focus: 1.0},
-                            icon_state: {hover: 0.0, focus: 1.0},
-                            icon_time: {hover: 0.0, focus: 1.0},
-                            icon_tool: {hover: 0.0, focus: 1.0},
-                        },
-                    }
-                }
-            },
-            text_hover = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {crumb_item: {draw_text: {focus: 0.0, hover: 0.0,}},},
-                }
-                on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                        focus: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {crumb_item: {draw_text: {focus: 0.0, hover: 1.0,}},},
-                }
-                focus = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {crumb_item: {draw_text: {focus: 1.0, hover: 0.0,}},},
-                }
-            }
-            hover = {
-                default: off,
-                off = {
-                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
-                    apply: {
-                        draw_bread_crumb: {focus: 0.0, hover: 0.0},
-                    },
-                }
-
-                on = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                        focus: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        draw_bread_crumb: {focus: 0.0, hover: 1.0},
-                    }
-                }
-
-                focus = {
-                    from: {
-                        all: Forward {duration: (GLOBAL_DURATION)}
-                    }
-                    apply: {
-                        draw_bread_crumb: {focus: 1.0, hover: 0.0},
-                    }
-                }
-            }
-        }
+        animation_key: true,
     }
 }
 
 #[derive(Live, Widget)]
 pub struct GBreadCrumb {
+    #[deref]
+    pub deref_widget: GView,
     #[live]
-    pub theme: Themes,
+    pub path: Vec<String>,
     #[live]
-    pub background_color: Option<Vec4>,
+    pub item: Option<LivePtr>,
+    /// use omit to hide the items if len > 3
     #[live]
-    pub background_visible: bool,
-    #[live]
-    pub hover_color: Option<Vec4>,
-    #[live]
-    pub focus_color: Option<Vec4>,
-    #[live]
-    pub border_color: Option<Vec4>,
-    #[live(0.0)]
-    pub border_width: f32,
-    #[live(4.0)]
-    pub border_radius: f32,
-    #[live]
-    pub shadow_color: Option<Vec4>,
-    #[live(0.0)]
-    pub spread_radius: f32,
-    #[live(4.8)]
-    pub blur_radius: f32,
-    #[live]
-    pub shadow_offset: Vec2,
-    // text -------------------
-    #[live]
-    pub color: Option<Vec4>,
-    #[live(9.0)]
-    pub font_size: f64,
-    #[live]
-    pub text_walk: Walk,
-    #[live]
-    pub labels: Vec<String>,
-    // deref -------------------
-    #[redraw]
-    #[live]
-    pub draw_bread_crumb: DrawGView,
-    #[live]
-    #[find]
-    #[redraw]
-    pub icon: GIcon,
-    #[live]
-    pub crumb_item: Option<LivePtr>,
-    #[rust]
-    pub crumb_items: ComponentMap<LiveId, GBreadCrumbItemRef>,
-    #[walk]
-    pub walk: Walk,
-    #[layout]
-    pub layout: Layout,
-    #[live(true)]
-    pub grab_key_focus: bool,
-    // animator -----------------
-    #[live(true)]
-    pub animation_key: bool,
-    #[animator]
-    pub animator: Animator,
-    #[live(true)]
-    pub visible: bool,
-    #[live(Some(MouseCursor::Hand))]
-    pub cursor: Option<MouseCursor>,
-    #[live(true)]
-    pub event_key: bool,
-    #[rust]
-    pub scope_path: Option<HeapLiveIdPath>,
+    pub omit: bool,
 }
 
 impl Widget for GBreadCrumb {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        if !self.visible {
-            return DrawStep::done();
-        }
-        self.set_scope_path(&scope.path);
-        self.draw_bread_crumb.begin(cx, walk, self.layout);
-        if self.icon.is_visible() {
-            let icon_walk = self.icon.walk(cx);
-            let _ = self.icon.draw_walk(cx, scope, icon_walk);
-        }
-        let len = self.labels.len();
-        let labels = if len <= 3 {
-            self.labels.clone()
-        } else {
-            // if more then 3, just draw the first and latest 2, other do not render use more_crumb to replace
-            vec![
-                self.labels[0].to_string(),
-                "...".to_string(),
-                self.labels[len - 2].to_string(),
-                self.labels[len - 1].to_string(),
-            ]
-        };
-        for (index, data) in labels.iter().enumerate() {
-            let target = self
-                .crumb_items
-                .get_or_insert(cx, LiveId(index as u64), |cx| {
-                    WidgetRef::new_from_ptr(cx, self.crumb_item).as_gbread_crumb_item()
-                });
-            target.set_text(&data);
-            // target.as_origin_mut().unwrap().walk.margin.top = self.font_size * 0.5;
-            target.draw_all(cx, &mut Scope::empty());
-        }
-
-        self.draw_bread_crumb.end(cx);
-        DrawStep::done()
+        self.render_item(cx);
+        self.deref_widget.draw_walk(cx, scope, walk)
     }
-
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let uid = self.widget_uid();
-        default_handle_animation!(self, cx, event);
+        let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
 
-        // if click the home icon, call ToHome Event
-        match event.hits(cx, self.icon_area()) {
-            Hit::FingerDown(_) => {
-                self.play_animation(cx, id!(icon_hover.focus));
-                // self.icon.play_animation(cx, id!(hover.focus));
-                // self.icon.animate_focus_on(cx);
-            }
-            Hit::FingerHoverIn(_) => {
-                self.play_animation(cx, id!(icon_hover.on));
-                let _ = set_cursor(cx, self.icon.cursor.as_ref());
-            }
-            Hit::FingerHoverOut(_) => {
-                self.play_animation(cx, id!(icon_hover.off));
-            }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    if f_up.device.has_hovers() {
-                        self.play_animation(cx, id!(icon_hover.on));
-                    } else {
-                        self.play_animation(cx, id!(icon_hover.off));
-                    }
-                    cx.widget_action(uid, &scope.path, GBreadCrumbEvent::ToHome);
-                } else {
-                    self.play_animation(cx, id!(icon_hover.off));
-                }
-            }
-            _ => {}
+        // icon callback ---------------------------------------------------------------------
+        // if home icon clicked then callback Home
+        let home_icon = self.gsvg(id!(icon));
+        if let Some(e) = home_icon.clicked(&actions) {
+            self.active_home(cx, Some(e.e));
+            return;
         }
+        if let Some(e) = home_icon.hover_in(&actions) {
+            self.active_hover_in(cx, Some(e.e), GBreadCrumbItemKind::Icon);
+            self.play_animation(cx, id!(hover.on));
+            return;
+        }
+        if let Some(e) = home_icon.hover_out(&actions) {
+            self.active_hover_out(cx, Some(e.e), GBreadCrumbItemKind::Icon);
+            self.play_animation(cx, id!(hover.off));
+            return;
+        }
+        if let Some(e) = home_icon.focus(&actions) {
+            self.active_focus(cx, Some(e.e), GBreadCrumbItemKind::Icon);
+            self.play_animation(cx, id!(hover.focus));
+            return;
+        }
+        if let Some(e) = home_icon.focus_lost(&actions) {
+            self.active_focus_lost(cx, Some(e.e));
+            self.play_animation(cx, id!(hover.off));
+            return;
+        }
+        // icon callback ---------------------------------------------------------------------
 
-        for (index, (_id, c_ref)) in self.crumb_items.clone().iter_mut().enumerate() {
-            match event.hits(cx, c_ref.area()) {
-                Hit::FingerDown(_) => {
-                    self.play_animation(cx, id!(text_hover.focus));
+        for (index, (_, child)) in self.children.clone().iter_mut().enumerate() {
+            // cause first is icon, so index need to sub 1
+            if let Some(item) = child.as_gbread_crumb_item().borrow_mut() {
+                let index = index - 1;
+                // item.handle_event(cx, event, scope);
+                if let Some(e) = item.clicked(&actions) {
+                    self.active_changed(cx, e.e, index, e.text);
+                    return;
                 }
-                Hit::FingerHoverIn(f_in) => {
-                    // self.play_animation(cx, id!(hover.on));
-                    let _ = set_cursor(cx, c_ref.as_origin().unwrap().cursor.as_ref());
-                    // c_ref.as_origin_mut().unwrap().draw_text.apply_over(cx, live!{
-                    //     hover: 1.0
-                    // });
-                    // c_ref.animate_hover_on(cx);
-                    self.play_animation(cx, id!(text_hover.on));
-                    cx.widget_action(
-                        uid,
-                        &scope.path,
-                        GBreadCrumbEvent::Hover(GBreadCrumbHoverParam {
+                if let Some(e) = item.hover_in(&actions) {
+                    self.play_animation(cx, id!(hover.on));
+                    self.active_hover_in(
+                        cx,
+                        e.e,
+                        GBreadCrumbItemKind::Item {
+                            text: item.text(),
                             index,
-                            item: c_ref.text(),
-                            e: f_in.clone(),
-                        }),
+                        },
                     );
+                    return;
                 }
-                Hit::FingerHoverOut(_) => {
-                    // c_ref.animate_hover_off(cx);
-                    self.play_animation(cx, id!(text_hover.off));
+                if let Some(e) = item.hover_out(&actions) {
+                    self.play_animation(cx, id!(hover.off));
+                    self.active_hover_out(
+                        cx,
+                        e.e,
+                        GBreadCrumbItemKind::Item {
+                            text: item.text(),
+                            index,
+                        },
+                    );
+                    return;
                 }
-                Hit::FingerUp(f_up) => {
-                    if f_up.is_over {
-                        cx.widget_action(
-                            uid,
-                            &scope.path,
-                            GBreadCrumbEvent::Clicked(GBreadCrumbClickedParam {
-                                index,
-                                item: c_ref.text(),
-                                e: f_up.clone(),
-                            }),
-                        );
-
-                        if f_up.device.has_hovers() {
-                            self.play_animation(cx, id!(text_hover.on));
-                            // c_ref.animate_hover_on(cx);
-                        } else {
-                            self.play_animation(cx, id!(text_hover.off));
-                            // c_ref.animate_hover_off(cx);
-                        }
-                    } else {
-                        self.play_animation(cx, id!(text_hover.off));
-                        // c_ref.animate_hover_off(cx);
-                    }
+                if let Some(e) = item.focus(&actions) {
+                    self.play_animation(cx, id!(hover.focus));
+                    self.active_focus(
+                        cx,
+                        e.e,
+                        GBreadCrumbItemKind::Item {
+                            text: item.text(),
+                            index,
+                        },
+                    );
+                    return;
                 }
-                _ => {}
+                if let Some(e) = item.focus_lost(&actions) {
+                    self.play_animation(cx, id!(hover.off));
+                    self.active_focus_lost(cx, e.e);
+                    return;
+                }
             }
         }
     }
@@ -338,76 +135,157 @@ impl Widget for GBreadCrumb {
 }
 
 impl LiveHook for GBreadCrumb {
-    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-        if !self.visible {
-            return;
-        }
-        self.render(cx);
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.deref_widget.after_apply(cx, apply, index, nodes);
     }
 }
 
 impl GBreadCrumb {
-    set_scope_path!();
-    play_animation!();
     widget_area! {
-        area, draw_bread_crumb,
-        icon_area, icon
+        area, deref_widget
     }
     event_option! {
-        clicked: GBreadCrumbEvent::Clicked => GBreadCrumbClickedParam,
-        hover: GBreadCrumbEvent::Hover => GBreadCrumbHoverParam
+        hover_in: GBreadCrumbEvent::HoverIn => GBreadCrumbHoverParam,
+        hover_out: GBreadCrumbEvent::HoverOut => GBreadCrumbHoverParam,
+        changed: GBreadCrumbEvent::Changed => GBreadCrumbChangedParam,
+        focus: GBreadCrumbEvent::Focus => GBreadCrumbFocusParam,
+        focus_lost: GBreadCrumbEvent::FocusLost => GBreadCrumbFocusLostParam,
+        home: GBreadCrumbEvent::Home => GBreadCrumbHomeParam
     }
-    event_bool! {
-        to_home: GBreadCrumbEvent::ToHome
+    active_event! {
+        active_home: GBreadCrumbEvent::Home |e: Option<FingerUpEvent>| => GBreadCrumbHomeParam {e},
+        active_focus_lost: GBreadCrumbEvent::FocusLost |e: Option<FingerUpEvent>| => GBreadCrumbFocusLostParam {e}
     }
-    pub fn clear_animation(&mut self, cx: &mut Cx) {
-        self.icon.clear_animation(cx);
-        self.draw_bread_crumb.apply_over(
-            cx,
-            live! {
-                hover: 0.0,
-                focus: 0.0
-            },
-        );
+    check_event_scope!();
+    pub fn redraw(&mut self, cx: &mut Cx) {
+        self.deref_widget.redraw(cx);
+    }
+    pub fn render_item(&mut self, cx: &mut Cx) {
+        // if omit is true, just need to display 3 realy items (first, second, omit sign, last)
+        let path = if self.omit && self.path.len() > 3 {
+            vec![
+                self.path[0].clone(),
+                self.path[1].clone(),
+                "…".to_string(),
+                self.path[self.path.len() - 1].clone(),
+            ]
+        } else {
+            self.path.clone()
+        };
+
+        for (index, path) in path.iter().enumerate() {
+            let index = index + 1;
+            if self.children.get(index).is_none() {
+                let child = WidgetRef::new_from_ptr(cx, self.item);
+                let id = index.to_live_id();
+                self.children.push((id, child));
+            }
+
+            self.children.get_mut(index).map(|(_, child)| {
+                child.as_gbread_crumb_item().borrow_mut().map(|mut item| {
+                    item.set_text(&path);
+                });
+            });
+        }
+    }
+    pub fn active_changed(
+        &mut self,
+        cx: &mut Cx,
+        e: Option<FingerUpEvent>,
+        index: usize,
+        text: String,
+    ) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GBreadCrumbEvent::Changed(GBreadCrumbChangedParam { index, text, e }),
+            );
+        });
+    }
+    pub fn active_hover_in(
+        &mut self,
+        cx: &mut Cx,
+        e: Option<FingerHoverEvent>,
+        kind: GBreadCrumbItemKind,
+    ) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GBreadCrumbEvent::HoverIn(GBreadCrumbHoverParam { kind, e }),
+            );
+        });
+    }
+    pub fn active_hover_out(
+        &mut self,
+        cx: &mut Cx,
+        e: Option<FingerHoverEvent>,
+        kind: GBreadCrumbItemKind,
+    ) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GBreadCrumbEvent::HoverOut(GBreadCrumbHoverParam { kind, e }),
+            );
+        });
+    }
+    pub fn active_focus(
+        &mut self,
+        cx: &mut Cx,
+        e: Option<FingerDownEvent>,
+        kind: GBreadCrumbItemKind,
+    ) {
+        self.check_event_scope().map(|path| {
+            cx.widget_action(
+                self.widget_uid(),
+                path,
+                GBreadCrumbEvent::Focus(GBreadCrumbFocusParam { kind, e }),
+            );
+        });
     }
     pub fn render(&mut self, cx: &mut Cx) {
-        // ----------------- background color -------------------------------------------
-        let bg_color = self.background_color.get(self.theme, 500);
-        // ------------------ hover color -----------------------------------------------
-        let hover_color = self.hover_color.get(self.theme, 400);
-        // ------------------ focus color ---------------------------------------------
-        let focus_color = self.focus_color.get(self.theme, 600);
-        // ------------------ border color ----------------------------------------------
-        let border_color = self.border_color.get(self.theme, 600);
-        let shadow_color = self.shadow_color.get(self.theme, 700);
-        let background_visible = self.background_visible.to_f32();
-        // apply over props to draw_button ----------------------------------------------
-        self.draw_bread_crumb.apply_over(
-            cx,
-            live! {
-                background_color: (bg_color),
-                background_visible: (background_visible),
-                border_color: (border_color),
-                border_width: (self.border_width),
-                border_radius: (self.border_radius),
-                focus_color: (focus_color),
-                hover_color: (hover_color),
-                shadow_color: (shadow_color),
-                shadow_offset: (self.shadow_offset),
-                spread_radius: (self.spread_radius),
-                blur_radius: (self.blur_radius)
-            },
-        );
+        self.deref_widget.render(cx);
+    }
+    pub fn path(&self) -> &Vec<String> {
+        &self.path
+    }
+    pub fn icon(&self) -> GSvgRef {
+        self.gsvg(id!(icon))
     }
 }
 
 impl GBreadCrumbRef {
-    widget_origin_fn!(GBreadCrumb);
+    ref_area!();
+    ref_redraw_mut!();
+    ref_render!();
     ref_event_option! {
-        clicked => GBreadCrumbClickedParam,
-        hover => GBreadCrumbHoverParam
+        hover_in => GBreadCrumbHoverParam,
+        hover_out => GBreadCrumbHoverParam,
+        changed => GBreadCrumbChangedParam,
+        focus => GBreadCrumbFocusParam,
+        focus_lost => GBreadCrumbFocusLostParam,
+        home => GBreadCrumbHomeParam
     }
-    ref_event_bool! {
-        to_home
+    animatie_fn! {
+        clear_animation,
+        animate_hover_on,
+        animate_hover_off,
+        animate_focus_on,
+        animate_focus_off
+    }
+    ref_play_animation! {
+        play_hover_on: id!(hover.on),
+        play_hover_off: id!(hover.off),
+        play_focus_on: id!(hover.focus),
+        play_focus_off: id!(hover.off)
+    }
+    pub fn path(&self) -> Vec<String> {
+        if let Some(c_ref) = self.borrow() {
+            c_ref.path().clone()
+        } else {
+            vec![]
+        }
     }
 }
