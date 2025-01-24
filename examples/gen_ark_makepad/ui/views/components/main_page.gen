@@ -1,0 +1,68 @@
+<template>
+    View(){
+        View(){
+            View(){
+                Image().src("crate://self/resources/gosim.png").id("gosim_img")
+                Label().class("common_txt").font_size(16.0).text("Gosim Example")
+                Label().class("common_txt").font_size(10.0).text("We imitated a set of static page examples created by Gosim, through which you can learn how to write GenUI's static pages")
+                LinkLabel().class("common_link").text("https://github.com/palpus-rs/GenUI/tree/ark/examples/gosim_example")
+            }.flow("Down").width(400.0).spacing(12.0)
+            View(){
+                Image().src("crate://self/resources/easy.png").id("components_img")
+                Label().class("common_txt").font_size(16.0).text("Easy Example")
+                Label().class("common_txt").font_size(10.0).text("This case will demonstrate how to use GenUI syntax to build Makepad widgets")
+                LinkLabel().class("common_link").text("https://github.com/palpus-rs/GenUI/tree/ark/examples/gen_makepad_simple")
+            }.flow("Down").width(400.0).spacing(12.0)
+        }.class("common_item")
+    }.id("MainPage")
+</template>
+
+<style>
+#MainPage{
+  width: All;
+  height: 600.0;
+  background_visible: true;
+  spacing: 0.0;
+  padding: 32.0 16.0 0 16.0;
+  .common_txt{
+    width: Fit;
+    font_size: 12.0;
+    font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
+    color: rgb(0, 96, 233);
+  }
+  .common_item{
+    height: Fill;
+    width: Fill;
+    align: 0.5;
+    spacing: 32.0;
+    .common_txt{
+        height: Fit;
+        width: Fill;
+        font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
+        color: #38373d;
+    }
+    .common_link{
+        width: Fill;
+        text_wrap: Word;
+        color: shader(|self|{
+            fn get_color(self) -> vec4{
+                return mix(
+                    #ff7733,
+                    #ffdb69,
+                    self.hover
+                )
+            }
+        });
+    }
+    #gosim_img{
+        height: 360.0;
+        width: 400.0;
+    }
+
+    #components_img{
+        height: 360.0;
+        width: 400.0;
+    }
+  }
+}
+</style>

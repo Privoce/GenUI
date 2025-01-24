@@ -1,0 +1,13 @@
+[package]
+name = "gen_plugin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+toml_edit = "0.22.22"
+syn = { version = "2.0.52", features = ["full", "extra-traits"] }
+quote = "1.0.35"
+proc-macro2 = "1.0.85"
+gen_utils = { path = "../../../utils", features = [
+    "common",
+], default-features = false }

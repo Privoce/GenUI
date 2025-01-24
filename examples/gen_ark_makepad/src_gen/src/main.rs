@@ -1,0 +1,1 @@
+fn main () { src_gen :: app :: app_main () }

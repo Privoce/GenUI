@@ -1,0 +1,8 @@
+[release]
+
+
+
+[develop]
+target = "makepad"
+entry = "app"
+root = "E:/Rust/try/makepad/Gen-UI/examples/gen_ark_makepad/ui/views/root.gen"

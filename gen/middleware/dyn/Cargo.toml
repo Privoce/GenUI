@@ -1,0 +1,10 @@
+[package]
+name = "gen_dyn_run"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+libloading = "0.8.6"
+gen_utils = { path = "../../utils", default-features = false, features = [
+    "common",
+] }

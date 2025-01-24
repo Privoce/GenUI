@@ -1,0 +1,18 @@
+[workspace]
+members = [
+    "converter",
+    "generator/makepad",
+    # "generator/ark",
+    "parser",
+    "utils",
+    "macros",
+    "traits",
+    "middleware/rssyin",
+    # "components",
+    # "middleware"
+    "middleware/script_objs",
+    "middleware/plugins/macro",
+    "tests",
+    "middleware/plugins/plugin",
+    "middleware/dyn",
+]
