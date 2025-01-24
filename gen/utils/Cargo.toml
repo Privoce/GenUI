@@ -3,6 +3,11 @@ name = "gen_utils"
 version = "0.1.0"
 edition = "2021"
 resolver = "2"
+authors = ["Will SHENG<syf20020816@outlook.com>"]
+description = "Utils for GenUI"
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
+keys = ["genui", "tools"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
