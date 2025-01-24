@@ -15,7 +15,7 @@
     <a href="./LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-orange?style=flat-square&logoColor=%23fff&labelColor=%2323B898&color=%2323B898">
     </a>
-    <a href="https://privoce.github.io/GenUI.github.io/gen/introduction.html">
+    <a href="https://privoce.github.io/GenUI.github.io">
       <img src="https://img.shields.io/badge/doc-github-orange?style=flat-square&labelColor=%23393B47&color=%23393B47"> 
     </a>
   </div>
@@ -64,6 +64,13 @@ If you have any questions or need further assistance, please feel free to consul
 - [ ] Powerful Bind
 - [ ] VSCode Plugin
 - [ ] Remote Services
+
+## Releases
+
+- [GenUI](https://github.com/Privoce/GenUI/releases/tag/v0.1.0)
+- [Ract](https://github.com/Privoce/ract/releases/tag/v0.1.1)
+- [GenUI Builtin Component](https://github.com/Privoce/GenUI-Builtin-Component/releases/tag/v0.2.0)
+- [GenUI Book](https://privoce.github.io/GenUI.github.io/index)
 
 ## Collaboration and Feedback
 > [!IMPORTANT]
