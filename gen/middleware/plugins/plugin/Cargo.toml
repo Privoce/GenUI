@@ -2,12 +2,20 @@
 name = "gen_plugin"
 version = "0.1.0"
 edition = "2021"
+description = "GenUI plugin analyzer and generator"
+keywords = ["genui", "middleware", "plugin"]
+authors = ["Will Sheng <syf20020816@outlook.com>"]
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
 
 [dependencies]
 toml_edit = "0.22.22"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }
 quote = "1.0.35"
 proc-macro2 = "1.0.85"
-gen_utils = { path = "../../../utils", features = [
+# gen_utils = { path = "../../../utils", features = [
+#     "common",
+# ], default-features = false }
+gen_utils = { version = "0.1.0", features = [
     "common",
 ], default-features = false }
