@@ -2,25 +2,40 @@
 name = "makepad_gen_plugin"
 version = "0.1.0"
 edition = "2021"
+authors = ["Will SHENG<syf20020816@outlook.com>"]
+description = "gen plugin for makepad, a generator for genui to makepad"
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
+keywords = ["genui", "makepad", "generator", "syntax"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gen_converter = { path = "../../converter" }
-gen_utils = { path = "../../utils" }
-gen_parser = { path = "../../parser" }
-rssyin = { path = "../../middleware/rssyin" }
 proc-macro2 = "1.0.78"
 quote = "1.0.35"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }
-which = "6.0.1"
+which = "7.0.1"
 toml_edit = "0.22.12"
 lazy_static = "1.5.0"
 walkdir = "2.5.0"
-gen_mk_script_objs = { path = "../../middleware/script_objs", features = [
+ra_ap_syntax = "0.0.258"
+# ------------------------------------------------------------------
+# rssyin = { path = "../../middleware/rssyin" }
+# gen_converter = { path = "../../converter" }
+# gen_utils = { path = "../../utils" }
+# gen_parser = { path = "../../parser" }
+# gen_mk_script_objs = { path = "../../middleware/script_objs", features = [
+#     "makepad",
+# ], default-features = false }
+# gen_dyn_run = { path = "../../middleware/dyn" }
+# gen_plugin = { path = "../../middleware/plugins/plugin" }
+
+rssyin = "0.1.0"
+gen_converter = "0.1.0"
+gen_utils = "0.1.0"
+gen_parser = "0.1.0"
+gen_mk_script_objs = { version="0.1.0", features = [
     "makepad",
 ], default-features = false }
-#   /Users/user/Downloads/makepad-rik/widgets
-gen_dyn_run = { path = "../../middleware/dyn" }
-gen_plugin = { path = "../../middleware/plugins/plugin" }
-ra_ap_syntax = "0.0.258"
+gen_dyn_run = "0.1.0"
+gen_plugin = "0.1.0"
