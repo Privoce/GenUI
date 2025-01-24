@@ -1,0 +1,52 @@
+<template>
+    View(){
+        View(){
+            Label().id("logo_label").text("GenUI")
+        }.id("logo_wrap")
+        View(){
+            Label().class("common_txt").font_size(16.0).text("GenUI is an innovative SFP front-end framework developed in the Rust language")
+            Label().class("common_txt").font_size(12.0).text("Intended to help users write front-end projects using Rust more efficiently.")
+        }.id("menu_list")
+    }.id("Banner")
+</template>
+
+<style>
+#Banner{
+  width: All;
+  height: Fit;
+  background_visible: true;
+  spacing: 0.0;
+  padding: 0.0 16.0;
+  flow: Down;
+  #logo_wrap{
+    margin: 36.0 0;
+    height: Fit;
+    width: Fill;
+    align: 0.5;
+    #logo_label{
+        width: Fit;
+        font_size: 52.0;
+        font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
+        color: shader(|self|{
+            fn get_color(self) -> vec4{
+                return vec4(0.0, 0.0, 0.0, 1.0)
+            }
+        });
+    }
+  }
+  #menu_list{
+    height: Fit;
+    width: Fill;
+    align: 0.5;
+    spacing: 26.0;
+    padding: 0.0 32.0 0 32.0;
+    flow: Down;
+    .common_txt{
+        height: Fit;
+        width: Fit;
+        font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
+        color: #dea584;
+    }
+  }
+}
+</style>

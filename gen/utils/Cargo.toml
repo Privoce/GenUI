@@ -1,0 +1,27 @@
+[package]
+name = "gen_utils"
+version = "0.1.0"
+edition = "2021"
+resolver = "2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["full"]
+wasm = ["error"]
+generator = []
+compiler = ["common", "error"]
+error = []
+parser = []
+common = ["error"]
+full = ["wasm", "generator", "compiler", "error", "parser", "common"]
+
+
+[dependencies]
+chrono = { version = "0.4.38", features = ["clock"], default-features = false }
+nom = "7.1.3"
+proc-macro2 = "1.0.78"
+quote = "1.0.35"
+syn = { version = "2.0.52", features = ["full", "extra-traits"] }
+toml_edit = "0.22.12"
+ulid = "1.1.3"
+walkdir = "2.5.0"

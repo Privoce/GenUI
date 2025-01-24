@@ -1,0 +1,17 @@
+[package]
+name = "rssyin"
+version = "0.1.0"
+edition = "2021"
+description = "rssyin is a crate which depends on ra_ap_syntax to identify rust context for tracing and code replacement"
+keywords = ["ra_ap_syntax", "rust", "tracing", "code replacement"]
+authors = ["Will Sheng <syf20020816@outlook.com>"]
+
+[features]
+default = ["makepad"]
+makepad = []
+
+[dependencies]
+gen_mk_script_objs = { path = "../script_objs" }
+syn = {version = "2.0.85", features = ["full", "visit", "visit-mut"]}
+proc-macro2 = "1.0.89"
+quote = "1.0.37"

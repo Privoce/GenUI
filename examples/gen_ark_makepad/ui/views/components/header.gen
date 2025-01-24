@@ -1,0 +1,50 @@
+<template>
+    RectShadowView(){
+        View(){
+            Label().id("logo_label").text("GenUI")
+        }.id("logo_wrap")
+        View(){
+            Label().class("common_txt").text("GenUI Framework")
+            Label().class("common_txt").text("Document")
+            Label().class("common_txt").text("About Us")
+        }.id("menu_list")
+    }.id("Header")
+</template>
+
+<style>
+#Header{
+  width: All;
+  height: 60.0;
+  background_visible: true;
+  spacing: 0.0;
+  padding: 0.0 16.0;
+  .common_txt{
+    width: Fit;
+    font_size: 12.0;
+    font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
+    color: rgb(0, 96, 233);
+  }
+  #logo_wrap{
+    height: Fill;
+    width: 200.0;
+    align: 0.0 0.5;
+    #logo_label{
+        width: Fit;
+        font_size: 24.0;
+        font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
+        color: shader(|self|{
+            fn get_color(self) -> vec4{
+                return vec4(0.0, 0.0, 0.0, 1.0)
+            }
+        });
+    }
+  }
+  #menu_list{
+    height: Fill;
+    width: Fill;
+    align: 1.0 0.5;
+    spacing: 26.0;
+    padding: 0.0 16.0 0.0 0.0;
+  }
+}
+</style>

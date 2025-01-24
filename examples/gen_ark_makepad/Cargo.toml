@@ -1,0 +1,3 @@
+[workspace]
+members=["ui", "src_gen"]
+resolver = "2"

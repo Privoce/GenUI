@@ -1,0 +1,14 @@
+[package]
+name = "tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+gen_parser = { path = "../parser" }
+gen_utils = { path = "../utils", features = [
+    "common",
+], default-features = false }
+gen_converter = { path = "../converter" }
+rssyin = { path = "../middleware/rssyin" }
+syn = {version = "2.0.85", features = ["full", "visit", "visit-mut"]}
+quote = "1.0.37"
