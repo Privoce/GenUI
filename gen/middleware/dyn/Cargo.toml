@@ -2,9 +2,17 @@
 name = "gen_dyn_run"
 version = "0.1.0"
 edition = "2021"
+description = "dynmatic code generator for GenUI (work for plugin)"
+keywords = ["dyn", "middleware", "genui"]
+authors = ["Will Sheng <syf20020816@outlook.com>"]
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
 
 [dependencies]
 libloading = "0.8.6"
-gen_utils = { path = "../../utils", default-features = false, features = [
+# gen_utils = { path = "../../utils", default-features = false, features = [
+#     "common",
+# ] }
+gen_utils = { version = "0.1.0", default-features = false, features = [
     "common",
 ] }
