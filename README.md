@@ -6,10 +6,10 @@
   </strong>
   <hr />
   <div>
-    <a href="https://blog.rust-lang.org/2024/07/25/Rust-1.80.0.html">
-      <img src="https://img.shields.io/badge/rustc-1.8%2B-orange?style=flat-square&logo=rust&logoColor=%23fff&labelColor=%23DEA584&color=%23DEA584"> 
+    <a href="https://blog.rust-lang.org/2024/10/17/Rust-1.82.0.html">
+      <img src="https://img.shields.io/badge/rustc-1.82.0%2B-orange?style=flat-square&logo=rust&logoColor=%23fff&labelColor=%23DEA584&color=%23DEA584"> 
     </a>
-    <a href="https://blog.rust-lang.org/2024/07/25/Rust-1.80.0.html">
+    <a href="https://blog.rust-lang.org/2024/10/17/Rust-1.82.0.html">
       <img src="https://img.shields.io/badge/edtion-2021-orange?style=flat-square&logo=rust&logoColor=%23fff&labelColor=%23DEA584&color=%23DEA584"> 
     </a>
     <a href="./LICENSE">
