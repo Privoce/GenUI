@@ -2,11 +2,20 @@
 name = "gen_converter"
 version = "0.1.0"
 edition = "2021"
+authors = ["Will SHENG<syf20020816@outlook.com>"]
+description = "Converter for gen (Template, Style, Script)"
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
+keys = ["genui", "converter"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gen_parser = { path = "../parser" }
-gen_utils = { path = "../utils", features = [
+gen_parser = "0.1.0"
+# gen_parser = { path = "../parser" }
+# gen_utils = { path = "../utils", features = [
+#     "common",
+# ], default-features = false }
+gen_utils = { version="0.1.0", features = [
     "common",
 ], default-features = false }
