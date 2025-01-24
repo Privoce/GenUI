@@ -1,7 +1,0 @@
-version = "0.0.1"
-edition = "2021"
-authors = ["Will SHENG<syf20020816@outlook.com>"]
-description = "Ract is a conversational CLI tool written in Rust, providing an all-in-one solution for integrating dependencies, setting up environments, generating project templates, running, and packaging projects with frameworks like GenUI and Makepad. Simplify your development workflow with minimal arguments and intuitive dialogs. 🚀"
-license = "MIT"
-repsitory = "https://github.com/Privoce/GenUI"
-keys = ["makepad", "genui", "cli"]
