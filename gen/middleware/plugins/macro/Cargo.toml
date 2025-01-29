@@ -2,6 +2,11 @@
 name = "gen_macro"
 version = "0.1.0"
 edition = "2021"
+description = "GenUI plugin macro"
+keywords = ["genui", "middleware", "plugin"]
+authors = ["Will Sheng <syf20020816@outlook.com>"]
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
 
 [lib]
 proc-macro = true
