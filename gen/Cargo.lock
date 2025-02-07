@@ -160,35 +160,15 @@ dependencies = [
 name = "gen_converter"
 version = "0.1.0"
 dependencies = [
- "gen_parser 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gen_converter"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e526ca29827435a57b3272fa7474b619d414d8e1161a9b1409332191d80f72cb"
-dependencies = [
- "gen_parser 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_parser",
+ "gen_utils",
 ]
 
 [[package]]
 name = "gen_dyn_run"
 version = "0.1.0"
 dependencies = [
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libloading",
-]
-
-[[package]]
-name = "gen_dyn_run"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb837ae586833e59b63a8dde1474280cd4a7bd4b6e01fdc5e4e98d0965b15e16"
-dependencies = [
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_utils",
  "libloading",
 ]
 
@@ -214,21 +194,8 @@ dependencies = [
 name = "gen_mk_script_objs"
 version = "0.1.0"
 dependencies = [
- "gen_converter 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "gen_mk_script_objs"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45da3ed059005ef22b6f55bb3da21241c69d015f0403bf32d0bd13a3831bb112"
-dependencies = [
- "gen_converter 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_converter",
+ "gen_utils",
  "proc-macro2",
  "quote",
  "syn",
@@ -238,21 +205,7 @@ dependencies = [
 name = "gen_parser"
 version = "0.1.0"
 dependencies = [
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "nom",
- "proc-macro2",
- "quote",
- "serde_json",
- "syn",
-]
-
-[[package]]
-name = "gen_parser"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc6eec577651371e82a3d87a039b78889604ebf487a0fa6c065236e799bdb20a"
-dependencies = [
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_utils",
  "nom",
  "proc-macro2",
  "quote",
@@ -264,20 +217,7 @@ dependencies = [
 name = "gen_plugin"
 version = "0.1.0"
 dependencies = [
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "proc-macro2",
- "quote",
- "syn",
- "toml_edit",
-]
-
-[[package]]
-name = "gen_plugin"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c686396c9a00d41de1ec7d40e3479753e98a62e0f1befc5b814853c454a04c2"
-dependencies = [
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_utils",
  "proc-macro2",
  "quote",
  "syn",
@@ -291,22 +231,6 @@ version = "0.1.0"
 [[package]]
 name = "gen_utils"
 version = "0.1.0"
-dependencies = [
- "chrono",
- "nom",
- "proc-macro2",
- "quote",
- "syn",
- "toml_edit",
- "ulid",
- "walkdir",
-]
-
-[[package]]
-name = "gen_utils"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c9ea7a9096dc38012482f6cd13dd634f1031b09b04dcc6bc451b639cab5f2a0"
 dependencies = [
  "chrono",
  "nom",
@@ -444,17 +368,17 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 name = "makepad_gen_plugin"
 version = "0.1.0"
 dependencies = [
- "gen_converter 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_dyn_run 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_mk_script_objs 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_parser 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_plugin 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_utils 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_converter",
+ "gen_dyn_run",
+ "gen_mk_script_objs",
+ "gen_parser",
+ "gen_plugin",
+ "gen_utils",
  "lazy_static",
  "proc-macro2",
  "quote",
  "ra_ap_syntax",
- "rssyin 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rssyin",
  "syn",
  "toml_edit",
  "walkdir",
@@ -666,19 +590,7 @@ dependencies = [
 name = "rssyin"
 version = "0.1.0"
 dependencies = [
- "gen_mk_script_objs 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "rssyin"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22cd1d0e4cb4362bbb4ed9c8d1bf06f993935e1d1e1a48f058ad7b2203d6d307"
-dependencies = [
- "gen_mk_script_objs 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_mk_script_objs",
  "proc-macro2",
  "quote",
  "syn",
@@ -780,11 +692,11 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
- "gen_converter 0.1.0",
- "gen_parser 0.1.0",
- "gen_utils 0.1.0",
+ "gen_converter",
+ "gen_parser",
+ "gen_utils",
  "quote",
- "rssyin 0.1.0",
+ "rssyin",
  "syn",
 ]
 

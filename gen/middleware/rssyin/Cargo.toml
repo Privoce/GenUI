@@ -13,8 +13,8 @@ default = ["makepad"]
 makepad = []
 
 [dependencies]
-# gen_mk_script_objs = { path = "../script_objs" }
-gen_mk_script_objs = "0.1.0"
+gen_mk_script_objs = { path = "../script_objs" }
+# gen_mk_script_objs = "0.1.0"
 syn = {version = "2.0.85", features = ["full", "visit", "visit-mut"]}
 proc-macro2 = "1.0.89"
 quote = "1.0.37"

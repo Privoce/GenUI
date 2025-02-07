@@ -20,22 +20,22 @@ lazy_static = "1.5.0"
 walkdir = "2.5.0"
 ra_ap_syntax = "0.0.258"
 # ------------------------------------------------------------------
-# rssyin = { path = "../../middleware/rssyin" }
-# gen_converter = { path = "../../converter" }
-# gen_utils = { path = "../../utils" }
-# gen_parser = { path = "../../parser" }
-# gen_mk_script_objs = { path = "../../middleware/script_objs", features = [
-#     "makepad",
-# ], default-features = false }
-# gen_dyn_run = { path = "../../middleware/dyn" }
-# gen_plugin = { path = "../../middleware/plugins/plugin" }
-
-rssyin = "0.1.0"
-gen_converter = "0.1.0"
-gen_utils = "0.1.0"
-gen_parser = "0.1.0"
-gen_mk_script_objs = { version="0.1.0", features = [
+rssyin = { path = "../../middleware/rssyin" }
+gen_converter = { path = "../../converter" }
+gen_utils = { path = "../../utils" }
+gen_parser = { path = "../../parser" }
+gen_mk_script_objs = { path = "../../middleware/script_objs", features = [
     "makepad",
 ], default-features = false }
-gen_dyn_run = "0.1.0"
-gen_plugin = "0.1.0"
+gen_dyn_run = { path = "../../middleware/dyn" }
+gen_plugin = { path = "../../middleware/plugins/plugin" }
+
+# rssyin = "0.1.0"
+# gen_converter = "0.1.0"
+# gen_utils = "0.1.0"
+# gen_parser = "0.1.0"
+# gen_mk_script_objs = { version="0.1.0", features = [
+#     "makepad",
+# ], default-features = false }
+# gen_dyn_run = "0.1.0"
+# gen_plugin = "0.1.0"

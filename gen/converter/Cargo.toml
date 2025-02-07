@@ -11,11 +11,12 @@ keys = ["genui", "converter"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gen_parser = "0.1.0"
-# gen_parser = { path = "../parser" }
-# gen_utils = { path = "../utils", features = [
-#     "common",
-# ], default-features = false }
-gen_utils = { version="0.1.0", features = [
+gen_parser = { path = "../parser" }
+gen_utils = { path = "../utils", features = [
     "common",
 ], default-features = false }
+
+# gen_parser = "0.1.0"
+# gen_utils = { version="0.1.0", features = [
+#     "common",
+# ], default-features = false }
