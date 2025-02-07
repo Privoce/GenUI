@@ -13,6 +13,7 @@ pub mod macros;
 mod ulid;
 mod command;
 mod toml;
+mod cargo;
 
 pub use toml::*;
 pub use command::*;
@@ -24,3 +25,4 @@ pub use num::*;
 pub use os::*;
 pub use source::Source;
 pub use ulid::*;
+pub use cargo::*;

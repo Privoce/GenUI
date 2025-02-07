@@ -68,7 +68,7 @@ where
     Ok(status)
 }
 
-pub fn shadow_cmd<I, S, P>(name: &str, args: I, current_dir: Option<P>) -> Result<(), Error>
+fn exec_cmd<I, S, P>(name: &str, args: I, current_dir: Option<P>) -> Command
 where
     I: IntoIterator<Item = S>,
     S: AsRef<OsStr>,
@@ -81,6 +81,16 @@ where
     if let Some(dir) = current_dir {
         cmd.current_dir(dir);
     }
+    cmd
+}
+
+pub fn shadow_cmd<I, S, P>(name: &str, args: I, current_dir: Option<P>) -> Result<(), Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
+{
+    let mut cmd = exec_cmd(name, args, current_dir);
 
     cmd.status().map_or_else(
         |e| Err(Error::from(e.to_string())),
@@ -88,8 +98,33 @@ where
             if status.success() {
                 Ok(())
             } else {
-                Err(Error::from("init git repo failed"))
+                let output = cmd.output().map_err(|e| e.to_string())?;
+                let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                Err(Error::from(stderr))
             }
+        },
+    )
+}
+
+pub fn shadow_cmd_with<I, S, P, F, R>(
+    name: &str,
+    args: I,
+    current_dir: Option<P>,
+    f: F,
+) -> Result<R, Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
+    F: Fn(ExitStatus, std::process::Output) -> Result<R, Error>,
+{
+    let mut cmd = exec_cmd(name, args, current_dir);
+
+    cmd.status().map_or_else(
+        |e| Err(Error::from(e.to_string())),
+        |status| {
+            let output = cmd.output().map_err(|e| e.to_string())?;
+            f(status, output)
         },
     )
 }
