@@ -129,6 +129,22 @@ where
     )
 }
 
+pub fn stream_cmd<I, S, P>(
+    name: &str,
+    args: I,
+    current_dir: Option<P>,
+) -> Result<Child, std::io::Error>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
+{
+    exec_cmd(name, args, current_dir)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+}
+
 pub fn git_download_from_github<I, E, P>(
     plugin: &str,
     is_token: bool,
