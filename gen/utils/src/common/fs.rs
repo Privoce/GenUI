@@ -193,6 +193,16 @@ where
     P: AsRef<Path>,
     Q: AsRef<Path>,
 {
+    copy(from.as_ref(), to.as_ref())?;
+    delete_dir(from)
+}
+
+/// ## Copy the directory|file from `from` to `to`
+pub fn copy<P, Q>(from: P, to: Q) -> Result<(), Error>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+{
     for entry in walkdir::WalkDir::new(from.as_ref())
         .into_iter()
         .filter_map(|e| e.ok())
@@ -208,7 +218,7 @@ where
                 .map_err(|e| Error::Fs(FsError::UnExpected(e.to_string())))?;
         }
     }
-    delete_dir(from)
+    Ok(())
 }
 
 /// ## Create the new file
@@ -487,7 +497,7 @@ where
     }
 }
 
-pub fn relative_to_absolute<P1, P2>(prefix: P1, path: P2) -> PathBuf
+pub fn relative_with_prefix<P1, P2>(prefix: P1, path: P2) -> PathBuf
 where
     P1: AsRef<Path>,
     P2: AsRef<Path>,

@@ -14,7 +14,7 @@ use gen_plugin::{MacroContext, Repo};
 use gen_utils::{
     common::{
         fs::{self, GenUIFs},
-        git_download_from_github, read_to_doc, RustDependence, Source,
+        git_download_plugin_from_github, read_to_doc, RustDependence, Source,
     },
     compiler::{CompilerImpl, ToRs, UnderlayerConfImpl},
     error::{ConvertError, Error},
@@ -138,7 +138,7 @@ impl Compiler {
                         return fs::move_to(path, to_path.as_path());
                     }
                     Repo::Git(_) => {
-                        return git_download_from_github(
+                        return git_download_plugin_from_github(
                             &plugin.plugin.name,
                             false,
                             compiled_src.as_path(),
