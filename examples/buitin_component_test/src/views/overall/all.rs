@@ -22,6 +22,9 @@ live_design! {
             }
         }
         body = <GView>{
+            clip_x: true,
+            clip_y: true,
+            background_color: #393C48,
             height: Fill,
             width: Fill,
             align: {
@@ -117,7 +120,7 @@ live_design! {
                         <GImage>{
                             height: 36.0,
                             width: 42.0,
-                            src: dep("crate://self/resources/rust.png"),
+                            src: Live(dep("crate://self/resources/rust.png")),
                         }
                     }
                 }
@@ -464,7 +467,7 @@ live_design! {
                                     spacing: 6.0,
                                     icon = <GImage>{
                                         
-                                        src: dep("crate://self/resources/rust.png"),
+                                        src: Live(dep("crate://self/resources/rust.png")),
                                         height: 16.0,
                                         width: 16.0,
                                     },

@@ -21,21 +21,21 @@ live_design! {
             <GImage>{
                 height: 32.0,
                 width: 36.0,
-                src: dep("crate://self/resources/rust.png"),
+                src: Live(dep("crate://self/resources/rust.png")),
                 rotation:30.0,
             }
             <GImage>{
                 rotation: 1.0,
                 opacity: 0.6,
-                src: dep("crate://self/resources/robius.png"),
+                src: Live(dep("crate://self/resources/robius.png")),
             }
             <GImage>{
                 scale: 0.6,
-                src: dep("crate://self/resources/robius.png"),
+                src: Live(dep("crate://self/resources/robius.png")),
             }
             <GImage>{
                 scale: 2.0,
-                src: dep("crate://self/resources/robius.png"),
+                src: Live(dep("crate://self/resources/robius.png")),
             }
         }
     }

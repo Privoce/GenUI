@@ -14,7 +14,7 @@ live_design!{
                         text: "GenUI Builtin Components",
                     }
                     icon = {
-                        src: dep("crate://self/resources/google.png"),
+                        src: Live(dep("crate://self/resources/google.png")),
                     }
                 }
             }

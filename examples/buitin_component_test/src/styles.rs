@@ -32,7 +32,8 @@ live_design!{
                 height: Fit,
                 width: Fill,
                 scroll_bars: <GScrollBars>{},
-    
+                clip_x: true,
+                clip_y: true,
             }
         }
     }

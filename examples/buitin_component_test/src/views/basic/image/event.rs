@@ -32,7 +32,7 @@ live_design! {
                 e_image = <GImage>{
                     height: 56.0,
                     width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
+                    src: Live(dep("crate://self/resources/rust.png")),
                 }
                 e_res = <GLabel>{
                     text: "Event Result"
@@ -50,7 +50,7 @@ live_design! {
                 e_image = <GImage>{
                     height: 56.0,
                     width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
+                    src: Live(dep("crate://self/resources/rust.png")),
                 }
                 e_res = <GLabel>{
                     text: "Event Result"

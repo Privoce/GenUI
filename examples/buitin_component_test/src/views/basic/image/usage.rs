@@ -47,17 +47,17 @@ live_design! {
                 <GImage>{
                     height: 32.0,
                     width: 32.0,
-                    src: dep("crate://self/resources/google.png"),
+                    src: Live(dep("crate://self/resources/google.png")),
                 }
                 <GImage>{
                     height: 56.0,
                     width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
+                    src: Live(dep("crate://self/resources/rust.png")),
                 }
                 <GImage>{
                     height: 56.0,
                     width: 96.0,
-                    src: dep("crate://self/resources/rust2.jpg"),
+                    src: Live(dep("crate://self/resources/rust2.jpg")),
                 }
             }
             code = {
@@ -73,17 +73,17 @@ live_design! {
                 <GImage>{
                     height: 32.0,
                     width: 32.0,
-                    src: dep("crate://self/resources/google.png"),
+                    src: Live(dep("crate://self/resources/google.png")),
                 }
                 <GImage>{
                     height: 56.0,
                     width: 64.0,
-                    src: dep("crate://self/resources/rust.png"),
+                    src: Live(dep("crate://self/resources/rust.png")),
                 }
                 <GImage>{
                     height: 56.0,
                     width: 64.0,
-                    src: dep("crate://self/resources/rust2.jpg"),
+                    src: Live(dep("crate://self/resources/rust2.jpg"),
                 }
                             "#;
                         }
