@@ -8,13 +8,16 @@ use std::collections::HashMap;
 //     CloseType, Ident, Value,
 // };
 
-use crate::model::TemplateModel;
+use crate::model::Template;
+use crate::{Comment, Props, PropsKey};
 
 use gen_utils::error::{Error, ParseError};
+use gen_utils::parser::parse_sign_key;
 use gen_utils::{
     common::tokenizer::{END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN},
     parser::{parse_bind_key, parse_function_key, parse_normal, parse_string, trim},
 };
+use nom::combinator::opt;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while_m_n},
@@ -45,7 +48,7 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
 /// let input = r#"<button value="Hello world" class="button1" @clicked="handle_actions"/>"#;
 /// let res = parse_tag_start(input).unwrap();
 /// ```
-pub fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
+pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
     let (remain, (name, props)) = trim(preceded(
         char('<'),
         tuple((parse_tag_name, parse_properties)),
@@ -60,17 +63,18 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
                 .collect::<HashMap<_, _>>(),
         )
     };
-    let mut tag = Tag::new_tag_props(name, props);
+    // let mut tag = Tag::new_tag_props(name, props);
+    let template = Template::new(name);
     let mut remain = remain.trim();
     // check if remain start with `/>`, if true, is end tag
     if remain.starts_with(SELF_END_SIGN) {
         remain = remain.trim_start_matches(SELF_END_SIGN);
-        tag.set_ty(CloseType::SelfClosed);
+        // tag.set_ty(CloseType::SelfClosed);
     } else {
         remain = remain.trim_start_matches(END_SIGN);
     }
 
-    Ok((remain, tag.into()))
+    Ok((remain, template))
 }
 
 /// ## parse property key 🆗
@@ -79,6 +83,14 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
 /// - function: @k
 #[allow(dead_code)]
 fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
+    /// ## parse sign then get parse_value
+    /// format: `_xxx_zzz` | `@sss_vvv`
+    fn parse_sign_key<'a>(input: &'a str, sign: &'a str) -> IResult<&'a str, (&'a str, &'a str)> {
+        let (input, sign) = tag(sign)(input)?;
+        let (input, value) = parse_value(input)?;
+        Ok((input, (sign, value)))
+    }
+
     fn parse_normal_key(input: &str) -> IResult<&str, (&str, &str)> {
         let (input, value) = recognize(pair(
             alphanumeric1,
@@ -86,6 +98,20 @@ fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
         ))(input)?;
         Ok((input, ("", value)))
     }
+    /// ## parse property bind key 🆗
+    /// - `:xxx`
+    /// - `:xxx_zzz`
+    fn parse_bind_key(input: &str) -> IResult<&str, (&str, &str)> {
+        parse_sign_key(input, ":")
+    }
+
+    /// ## parse property function key 🆗
+    /// - `@xxx`
+    /// - `@xxx_zzz`
+    fn parse_function_key(input: &str) -> IResult<&str, (&str, &str)> {
+        parse_sign_key(input, "@")
+    }
+
     alt((parse_bind_key, parse_function_key, parse_normal_key))(input)
 }
 
@@ -96,7 +122,7 @@ fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
 /// ### return
 /// (property_type, property_key, property_value)
 #[allow(dead_code)]
-fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> {
+fn parse_property(input: &str) -> IResult<&str, Option<Props>> {
     let (input, (key_type, key)) = parse_property_key(input)?;
     let input = input.trim();
     let key_type: PropertyKeyType = key_type.into();
@@ -150,11 +176,8 @@ fn parse_tag_end(input: &str) -> IResult<&str, &str> {
 }
 
 #[allow(dead_code)]
-fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
-    match parse_common_comment(input) {
-        Ok((input, comment)) => Ok((input, comment.into())),
-        Err(e) => Err(e),
-    }
+fn parse_comment(input: &str) -> IResult<&str, Option<Comment>> {
+    opt(Comment::parse)(input)
 }
 
 #[deprecated = "use parse_end_tag_common instead"]
@@ -217,60 +240,59 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
     Ok((input, (END_START_SIGN, value)))
 }
 
-/// ## parse tag ✅ 🆗
+/// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-pub fn parse_tag<'a>(
-    input: &'a str,
-) -> Result<(&'a str, ASTNodes), nom::Err<nom::error::Error<&'a str>>> {
-    // parse tag start or comment return ASTNodes, we can use is_tag to check
-    let (input, mut ast_node) = trim(alt((parse_comment, parse_tag_start)))(input)?;
-    let (is_tag, is_self_closed) = ast_node.is_tag_close();
-    if is_tag && !is_self_closed {
-        // is tag, nest parse tag
-        let tag_name = ast_node.get_tag_name().to_string();
-        // trim input and check is start with `</tag_name>`
-        match parse_end_tag(input, tag_name.clone()) {
-            Ok((input, _)) => {
+pub fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
+    // [parse comment if exist] ------------------------------------------------------------------------------------
+    let (input, comments) = parse_comment(input)?;
+    // [parse tag start] -------------------------------------------------------------------------------------------
+
+    let (input, mut template) = parse_tag_start(input)?;
+    // let (is_tag, is_self_closed) = template.is_tag_close();
+    // is tag, nest parse tag
+    let tag_name = template.get_tag_name().to_string();
+    // trim input and check is start with `</tag_name>`
+    match parse_end_tag(input, tag_name.clone()) {
+        Ok((input, _)) => {
+            return Ok((input, ast_node));
+        }
+        Err(_) => {
+            // has children, parse children
+            let (input, mut children) = many0(parse_tag)(input)?;
+
+            let input = match parse_end_tag_common(input) {
+                Ok((remain, _)) => remain,
+                Err(_) => input,
+            };
+
+            if !children.is_empty() {
+                children
+                    .iter_mut()
+                    .for_each(|child| child.set_parent(ast_node.clone()));
+
+                ast_node.set_tag_children(children);
+            }
+            let input = input.trim();
+            // dbg!(input);
+            // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
+            if preceded(char('<'), parse_tag_name)(input).is_ok()
+                && parse_end_tag_common(input).is_err()
+            {
+                // // means input still has tags
+                // let (input, mut children_remain) = many0(|i| parse_tag(i, nests))(input)?;
+                // // dbg!(input, &ast_node, &children_remain);
+                // let mut ast_node_no_children = ast_node.clone();
+                // ast_node_no_children.clear_tag_children();
+                // children_remain
+                //     .iter_mut()
+                //     .for_each(|child| child.set_parent(ast_node_no_children.clone()));
+
+                // ast_node.extend_tag_children(children_remain);
                 return Ok((input, ast_node));
             }
-            Err(_) => {
-                // has children, parse children
-                let (input, mut children) = many0(parse_tag)(input)?;
-
-                let input = match parse_end_tag_common(input) {
-                    Ok((remain, _)) => remain,
-                    Err(_) => input,
-                };
-
-                if !children.is_empty() {
-                    children
-                        .iter_mut()
-                        .for_each(|child| child.set_parent(ast_node.clone()));
-
-                    ast_node.set_tag_children(children);
-                }
-                let input = input.trim();
-                // dbg!(input);
-                // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
-                if preceded(char('<'), parse_tag_name)(input).is_ok()
-                    && parse_end_tag_common(input).is_err()
-                {
-                    // // means input still has tags
-                    // let (input, mut children_remain) = many0(|i| parse_tag(i, nests))(input)?;
-                    // // dbg!(input, &ast_node, &children_remain);
-                    // let mut ast_node_no_children = ast_node.clone();
-                    // ast_node_no_children.clear_tag_children();
-                    // children_remain
-                    //     .iter_mut()
-                    //     .for_each(|child| child.set_parent(ast_node_no_children.clone()));
-
-                    // ast_node.extend_tag_children(children_remain);
-                    return Ok((input, ast_node));
-                }
-                return Ok((input, ast_node));
-            }
-        };
-    }
+            return Ok((input, ast_node));
+        }
+    };
     // if is not tag, is comment -> do recursive parse
     Ok((input, ast_node))
 }
@@ -278,14 +300,14 @@ pub fn parse_tag<'a>(
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, Error> {
-    match many1(parse_tag)(input) {
-        Ok((remain, asts)) => {
+pub fn parse_template(input: &str) -> Result<Template, Error> {
+    match parse_tag(input) {
+        Ok((remain, template)) => {
             if remain.is_empty() {
-                return Ok(asts);
+                return Ok(template);
             }
             Err(ParseError::template(remain).into())
         }
-        Result::Err(e) => Err(ParseError::template(&e.to_string()).into()),
+        Err(e) => Err(ParseError::template(&e.to_string()).into()),
     }
 }

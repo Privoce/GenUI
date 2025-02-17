@@ -1,16 +1,8 @@
-use super::parse_sign_key;
 use nom::{
     bytes::complete::{tag, take_until1},
     sequence::delimited,
     IResult,
 };
-
-/// ## parse property function key 🆗
-/// - `@xxx`
-/// - `@xxx_zzz`
-pub fn parse_function_key(input: &str) -> IResult<&str, (&str, &str)> {
-    parse_sign_key(input, "@")
-}
 
 pub fn parse_closure_body(input: &str) -> IResult<&str, &str> {
     let (input, _) = take_until1("|{")(input)?;

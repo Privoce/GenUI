@@ -1,6 +1,7 @@
 mod prop;
-
-
+mod comment;
+pub use prop::*;
+pub use comment::*;
 use std::{collections::HashMap, str::FromStr};
 
 // use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
@@ -9,6 +10,8 @@ use gen_utils::{
     common::ulid,
     error::{Error, ParseError},
 };
+
+use crate::value::Value;
 
 /// ## 事件回调集合
 /// 用于标识外部传入组件的事件的集合
@@ -53,7 +56,7 @@ pub struct Template {
     /// 对GenUI来说，不需要关心这些属性的默认值是什么，这些都由插入的转化框架来决定
     /// 但是，GenUI需要关心这些属性是否是绑定的还是静态的
     /// 对于自定义组件来说，这些属性却是一个重要的部分，因为这些属性需要被外部传入
-    pub props: Props,
+    pub props: Option<Props>,
     /// 由GenUI提供的组件的属性的语法糖
     /// 例如: `[for, if, else_if, else]`
     /// 同样也会从props中提取这些属性
@@ -68,14 +71,16 @@ pub struct Template {
     /// 若继承另一个组件，当前组件就会自动继承另一个组件的所有属性和事件
     /// 注意这个属性只能是normal的不能是动态绑定的
     pub inherits: Option<String>,
-    /// 当前组件是否为根组件
-    /// 根组件指的是当前组件是整个.gen文件的组件树的根
-    /// 在GenUI中，每个.gen文件都有一个根组件
-    pub root: bool,
+    // 当前组件是否为根组件 (#[deprecated]) 可以直接确认无需传入
+    // 根组件指的是当前组件是整个.gen文件的组件树的根
+    // 在GenUI中，每个.gen文件都有一个根组件
+    // pub root: bool,
     /// 组件的子组件
     pub children: Option<Vec<Template>>,
     /// 记录父组件的标识
     pub parent: Option<Parent>,
+    /// 注释
+    pub comments: Option<Vec<Comment>>
     // /// 组件的插槽(暂不开启)
     // /// 插槽的作用在于将子组件插入到指定的位置
     // /// 在GenUI中插槽使用<slot>标签进行指定
@@ -99,6 +104,15 @@ pub struct Template {
 }
 
 impl Template {
+
+    pub fn new(name: &str) -> Self {
+        let mut template = Self::default();
+        template.name = name.to_string();
+        template
+    }
+
+
+
     pub fn set_special(&mut self, special: &str) -> () {
         let _ = self.special.replace(special.to_string());
     }

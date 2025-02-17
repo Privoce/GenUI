@@ -2,6 +2,8 @@ use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use gen_utils::{common::tokenizer::SPACE, error::Error};
 
+use crate::value::{Bind, Function, Value};
+
 // use crate::{Bind, Function, Value};
 /// # Builtin props
 /// |Name    | Description              | Format                         |
@@ -122,7 +124,7 @@ impl From<&str> for PropKeyType {
 /// - bind: `:name`
 /// - function: `@name`
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct PropsKey {
+pub struct PropKey {
     /// property key name
     name: String,
     /// same as function
@@ -133,9 +135,9 @@ pub struct PropsKey {
     ty: PropKeyType,
 }
 
-impl PropsKey {
+impl PropKey {
     pub fn new(name: &str, is_style: bool, ty: PropKeyType) -> Self {
-        PropsKey {
+        PropKey {
             name: name.to_string(),
             is_style,
             ty,
@@ -185,14 +187,14 @@ impl PropsKey {
     }
     pub fn from_value_with(v: &Value, name: &str, is_style: bool) -> Self {
         match v {
-            Value::Bind(_) => PropsKey::new_bind(name, is_style),
-            Value::Function(_) => PropsKey::new_fn(name, is_style),
-            _ => PropsKey::new(name, is_style, PropKeyType::Normal),
+            Value::Bind(_) => PropKey::new_bind(name, is_style),
+            Value::Function(_) => PropKey::new_fn(name, is_style),
+            _ => PropKey::new(name, is_style, PropKeyType::Normal),
         }
     }
 }
 
-impl Display for PropsKey {
+impl Display for PropKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.ty {
             PropKeyType::Normal => f.write_str(self.name()),
@@ -214,11 +216,11 @@ impl Display for PropsKey {
     }
 }
 
-pub type Props = Option<HashMap<PropsKey, Value>>;
+pub type Props = HashMap<PropKey, Value>;
 
 pub fn props_to_string<'a, F>(props: Props, format: F) -> String
 where
-    F: FnMut((PropsKey, Value)) -> String,
+    F: FnMut((PropKey, Value)) -> String,
 {
     match props {
         Some(props) => props

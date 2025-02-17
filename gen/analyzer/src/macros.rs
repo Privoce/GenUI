@@ -32,3 +32,10 @@ macro_rules! parse_base_value {
         )*
     };
 }
+
+#[macro_export]
+macro_rules! nom_err {
+    ($input: expr, $e_kind: path) => {
+        nom::Err::Error(nom::error::Error::new($input, $e_kind))
+    };
+}

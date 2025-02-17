@@ -23,13 +23,6 @@ pub fn parse_value(input: &str) -> IResult<&str, &str> {
     parse_normal(input, '_')
 }
 
-/// ## parse sign then get parse_value
-/// format: `_xxx_zzz` | `@sss_vvv`
-pub fn parse_sign_key<'a>(input: &'a str, sign: &'a str) -> IResult<&'a str, (&'a str, &'a str)> {
-    let (input, sign) = tag(sign)(input)?;
-    let (input, value) = parse_value(input)?;
-    Ok((input, (sign, value)))
-}
 
 /// ## trim any parser left and right multispace(if exist)
 #[allow(unused_mut)]

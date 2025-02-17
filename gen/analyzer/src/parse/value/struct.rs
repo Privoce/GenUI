@@ -6,7 +6,8 @@ use gen_utils::{
 };
 use nom::{bytes::complete::take_till1, character::complete::char, multi::many0, IResult};
 
-use crate::PropertyKeyType;
+
+use crate::PropKeyType;
 
 use super::Value;
 
@@ -82,8 +83,8 @@ impl From<Vec<(&str, &str)>> for Struct {
     }
 }
 
-impl From<Vec<(&str, (Value, PropertyKeyType))>> for Struct {
-    fn from(value: Vec<(&str, (Value, PropertyKeyType))>) -> Self {
+impl From<Vec<(&str, (Value, PropKeyType))>> for Struct {
+    fn from(value: Vec<(&str, (Value, PropKeyType))>) -> Self {
         let mut fields = BTreeMap::new();
         for (k, (v, _)) in value {
             fields.insert(k.to_string(), v);
