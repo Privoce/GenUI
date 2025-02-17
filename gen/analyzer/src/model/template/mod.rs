@@ -19,7 +19,7 @@ use crate::value::Value;
 /// - 事件名称
 /// - 事件指针（这个指针只是代表这个事件在代码中赋值的变量名，例如let `btn_click` = || {}， btn_click就是这个指针）
 /// - 事件
-pub type Callbacks = HashMap<PropsKey, Value>;
+pub type Callbacks = HashMap<PropKey, Value>;
 /// 记录组件中是否有绑定的属性和事件
 /// 这个类型会记录下组件树中所有的绑定属性和事件, 使用`Template.get_props_tree()`获取
 /// 返回结果为双元素元组，第一个元素是绑定属性，第二个元素是绑定事件
@@ -35,7 +35,7 @@ pub struct Template {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
     /// 以此来在不同的文件中区分相同的组件
-    pub special: Option<String>,
+    pub special: String,
     /// class是一个数组，一个组件模型可以有多个class
     /// 这些class指向style中的样式
     /// 这些class可以是动态绑定的
@@ -112,13 +112,6 @@ impl Template {
     }
 
 
-
-    pub fn set_special(&mut self, special: &str) -> () {
-        let _ = self.special.replace(special.to_string());
-    }
-    pub fn set_class(&mut self, class: Value) -> () {
-        let _ = self.class.replace(class);
-    }
     /// judge the root template tag is `<component>` or not
     pub fn is_static(&self) -> bool {
         // self.get_name().ne("component")
@@ -131,24 +124,7 @@ impl Template {
 
         self.callbacks.is_none() && !is_dyn
     }
-    pub fn set_id(&mut self, id: String) -> () {
-        let _ = self.id.replace(id);
-    }
-    pub fn get_name(&self) -> &String {
-        &self.name
-    }
-    pub fn set_name(&mut self, name: &str) -> () {
-        self.name = name.to_string();
-    }
-    pub fn get_props(&self) -> &Props {
-        &self.props
-    }
-    pub fn set_props(&mut self, props: Props) -> () {
-        self.props = props;
-    }
-    pub fn has_props(&self) -> bool {
-        self.props.is_some()
-    }
+    
     pub fn push_prop(&mut self, key: PropsKey, value: Value) -> () {
         match &mut self.props {
             Some(props) => {
@@ -281,8 +257,11 @@ impl Template {
             }
         }
     }
-    pub fn set_parent(&mut self, special: String, name: String, is_root: bool) -> () {
-        let _ = self.parent.replace((special, name, is_root).into());
+    pub fn set_parent(&mut self, special: String, name: String) -> () {
+        let _ = self.parent.replace((special, name).into());
+    }
+    pub fn as_parent(&self) -> (String, String){
+        (self.special.to_string(), self.name.to_string() )
     }
     pub fn convert(ast: &ASTNodes, is_root: bool) -> Result<Self, Error> {
         match ast {
@@ -481,18 +460,19 @@ fn convert_template(tag: &Tag, is_root: bool) -> Result<Template, Error> {
 impl Default for Template {
     fn default() -> Self {
         Self {
-            special: Default::default(),
+            special: ulid(),
             class: Default::default(),
             id: Default::default(),
             name: Default::default(),
             props: Default::default(),
             callbacks: Default::default(),
             inherits: Default::default(),
-            root: Default::default(),
+            // root: Default::default(),
             children: Default::default(),
             parent: Default::default(),
             as_prop: None,
             sugar_props: SugarProps::default(),
+            comments: None
         }
     }
 }
@@ -525,15 +505,14 @@ pub enum IfSign {
 pub struct Parent {
     pub id: String,
     pub name: String,
-    pub root: bool,
+
 }
 
-impl From<(String, String, bool)> for Parent {
-    fn from(value: (String, String, bool)) -> Self {
+impl From<(String, String)> for Parent {
+    fn from(value: (String, String)) -> Self {
         Self {
             id: value.0,
             name: value.1,
-            root: value.2
         }
     }
 }
