@@ -157,6 +157,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "gen_analyzer"
+version = "0.1.0"
+dependencies = [
+ "gen_utils",
+ "nom",
+ "serde_json",
+]
+
+[[package]]
 name = "gen_converter"
 version = "0.1.0"
 dependencies = [

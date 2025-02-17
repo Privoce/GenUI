@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "converter",
+    "analyzer",
     "generator/makepad",
     # "generator/ark",
     "parser",
