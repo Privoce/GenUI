@@ -229,7 +229,7 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 
 /// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-pub fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
+fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
     // [parse comment if exist] ------------------------------------------------------------------------------------
     let (input, comments) = parse_comment(input)?;
     // [parse tag start] -------------------------------------------------------------------------------------------
@@ -277,7 +277,7 @@ pub fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse_template(input: &str) -> Result<Template, Error> {
+pub fn parse(input: &str) -> Result<Template, Error> {
     match parse_tag(input) {
         Ok((remain, template)) => {
             if remain.is_empty() {

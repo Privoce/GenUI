@@ -1,7 +1,7 @@
-mod prop;
 mod comment;
-pub use prop::*;
+mod prop;
 pub use comment::*;
+pub use prop::*;
 use std::{collections::HashMap, str::FromStr};
 
 // use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
@@ -11,7 +11,7 @@ use gen_utils::{
     error::{Error, ParseError},
 };
 
-use crate::value::Value;
+use crate::{template, value::Value};
 
 /// ## 事件回调集合
 /// 用于标识外部传入组件的事件的集合
@@ -80,382 +80,483 @@ pub struct Template {
     /// 记录父组件的标识
     pub parent: Option<Parent>,
     /// 注释
-    pub comments: Option<Vec<Comment>>
-    // /// 组件的插槽(暂不开启)
-    // /// 插槽的作用在于将子组件插入到指定的位置
-    // /// 在GenUI中插槽使用<slot>标签进行指定
-    // /// ```gen
-    // /// // parent
-    // /// <my-widget>
-    // ///     <slot ptr="footer">
-    // ///         <input></input>
-    // ///     </slot>
-    // /// </my-widget>
-    // ///
-    // /// // child
-    // /// <component name="my-widget">
-    // ///     <view></view>
-    // ///     <view>
-    // ///         <slot name="footer"></slot>
-    // ///     </view>
-    // /// </component>
-    // /// ```
-    // slots:
+    pub comments: Option<Vec<Comment>>, // /// 组件的插槽(暂不开启)
+                                        // /// 插槽的作用在于将子组件插入到指定的位置
+                                        // /// 在GenUI中插槽使用<slot>标签进行指定
+                                        // /// ```gen
+                                        // /// // parent
+                                        // /// <my-widget>
+                                        // ///     <slot ptr="footer">
+                                        // ///         <input></input>
+                                        // ///     </slot>
+                                        // /// </my-widget>
+                                        // ///
+                                        // /// // child
+                                        // /// <component name="my-widget">
+                                        // ///     <view></view>
+                                        // ///     <view>
+                                        // ///         <slot name="footer"></slot>
+                                        // ///     </view>
+                                        // /// </component>
+                                        // /// ```
+                                        // slots:
 }
 
 impl Template {
-
     pub fn new(name: &str) -> Self {
         let mut template = Self::default();
         template.name = name.to_string();
         template
     }
 
-
-    /// judge the root template tag is `<component>` or not
-    pub fn is_static(&self) -> bool {
-        // self.get_name().ne("component")
-        let is_dyn = if let Some(props) = self.props.as_ref() {
-            // check PropsKey is not normal
-            props.iter().any(|(k, _v)| !k.is_normal())
-        } else {
-            false
-        };
-
-        self.callbacks.is_none() && !is_dyn
-    }
-    
-    pub fn push_prop(&mut self, key: PropsKey, value: Value) -> () {
-        match &mut self.props {
-            Some(props) => {
-                let _ = props.insert(key, value);
-            }
-            None => {
-                let mut item = HashMap::new();
-                item.insert(key, value);
-                self.set_props(Some(item));
-            }
-        }
+    pub fn parse(input: &str) -> Result<Self, Error> {
+        let mut template = template::parse(input)?;
+        template.after_parse();
+        Ok(template)
     }
 
-    pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
-        match self.props.as_ref() {
-            Some(props) => Some(props.iter().filter(|(k, _)| k.is_normal()).collect()),
-            None => None,
-        }
-    }
-    pub fn get_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
-        match self.props.as_ref() {
-            Some(props) => Some(props.iter().filter(|(k, _)| k.is_bind()).collect()),
-            None => None,
-        }
-    }
-    /// get all bind props from the template model and children
-    pub fn get_all_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
-        let mut bind_props = HashMap::new();
-        if let Some(items) = self.get_bind_props() {
-            bind_props.extend(items);
-        }
+    pub fn after_parse(&mut self) -> () {
+        // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
+        // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
+        if let Some(props) = self.props.as_ref() {
+            for (k, v) in props {
+                let is_normal = k.is_normal();
+                if let Ok(prop) = BuiltinProps::from_str(k.name()) {
+                    match prop {
+                        BuiltinProps::AsProp => {
+                            if is_normal {
+                                model.as_prop = Some(v.to_string());
+                            } else {
+                                return Err(ParseError::template(
+                                    "as_prop must be a normal property",
+                                )
+                                .into());
+                            }
+                        }
+                        BuiltinProps::Id => {
+                            if is_normal {
+                                model.set_id(v.to_string());
+                            } else {
+                                return Err(
+                                    ParseError::template("id must be a normal property").into()
+                                );
+                            }
+                        }
+                        BuiltinProps::Class => {
+                            if is_normal {
+                                model.set_class(v.clone());
+                            } else {
+                                return Err(ParseError::template(
+                                    "class must be a normal property",
+                                )
+                                .into());
+                            }
+                        }
+                        BuiltinProps::Inherits => {
+                            if is_normal {
+                                model.set_inherits(v.to_string().as_str());
+                            } else {
+                                return Err(ParseError::template(
+                                    "inherits must be a normal property",
+                                )
+                                .into());
+                            }
+                        }
+                        BuiltinProps::For => {
+                            if is_normal {
+                                return Err(ParseError::template(
+                                    "for sugar sync must be a bind property",
+                                )
+                                .into());
+                            } else {
+                                model.sugar_props.set_for(v.clone());
+                            }
+                        }
+                        BuiltinProps::If => {
+                            if is_normal {
+                                return Err(ParseError::template(
+                                    "if sugar sync must be a bind property",
+                                )
+                                .into());
+                            } else {
+                                model.sugar_props.set_if(IfSign::If(v.clone()));
+                            }
+                        }
 
-        // get all bind props from children
-        if let Some(children) = self.get_children() {
-            for child in children {
-                if let Some(items) = child.get_all_bind_props() {
-                    bind_props.extend(items);
-                }
-            }
-        }
-
-        if bind_props.is_empty() {
-            None
-        } else {
-            Some(bind_props)
-        }
-    }
-    pub fn get_callbacks(&self) -> Option<&Callbacks> {
-        self.callbacks.as_ref()
-    }
-    pub fn set_callbacks(&mut self, callbacks: Callbacks) -> () {
-        let _ = self.callbacks.replace(callbacks);
-    }
-    pub fn push_callbacks(&mut self, k: PropsKey, v: Value) -> () {
-        match self.callbacks.as_mut() {
-            Some(callbacks) => {
-                let _ = callbacks.insert(k, v);
-            }
-
-            None => {
-                self.callbacks = Some(
-                    vec![(k, v)]
-                        .into_iter()
-                        .collect::<HashMap<PropsKey, Value>>(),
-                )
-            }
-        }
-    }
-    pub fn has_callbacks(&self) -> bool {
-        self.callbacks.is_some()
-    }
-    pub fn set_callbacks_from_props(&mut self) -> bool {
-        let tmp_props = self.props.clone();
-        match self.props.as_mut() {
-            Some(props) => {
-                // 所有callbacks都是Value::Function的并且也直接在PropKey上的ty是Function
-                tmp_props.unwrap().iter().for_each(|(k, _)| {
-                    if PropertyKeyType::Function.eq(k.ty()) {
-                        match props.remove_entry(k) {
-                            Some((k, v)) => match self.callbacks.as_mut() {
-                                Some(callbacks) => {
-                                    let _ = callbacks.insert(k, v);
-                                }
-
-                                None => {
-                                    self.callbacks = Some(
-                                        vec![(k, v)]
-                                            .into_iter()
-                                            .collect::<HashMap<PropsKey, Value>>(),
-                                    )
-                                }
-                            },
-                            None => (),
+                        BuiltinProps::ElseIf => {
+                            if is_normal {
+                                return Err(ParseError::template(
+                                    "else_if sugar sync must be a bind property",
+                                )
+                                .into());
+                            } else {
+                                model.sugar_props.set_if(IfSign::ElseIf(v.clone()));
+                            }
+                        }
+                        BuiltinProps::Else => {
+                            if is_normal {
+                                return Err(ParseError::template(
+                                    "else sugar sync must be a bind property",
+                                )
+                                .into());
+                            } else {
+                                model.sugar_props.set_if(IfSign::Else);
+                            }
                         }
                     }
-                });
-
-                self.has_callbacks()
-            }
-            None => false,
-        }
-    }
-
-    pub fn is_component(&self) -> bool {
-        self.get_name().eq("component")
-    }
-    pub fn set_inherits(&mut self, inherits: &str) -> () {
-        let _ = self.inherits.replace(inherits.to_string());
-    }
-    pub fn is_root(&self) -> bool {
-        self.root
-    }
-    pub fn set_root(&mut self, root: bool) -> () {
-        self.root = root;
-    }
-    pub fn get_children(&self) -> Option<&Vec<Template>> {
-        self.children.as_ref()
-    }
-    pub fn set_children(&mut self, children: Vec<Template>) -> () {
-        let _ = self.children.replace(children);
-    }
-    pub fn has_children(&self) -> bool {
-        self.children.is_some()
-    }
-    pub fn push_child(&mut self, child: Template) -> () {
-        match &mut self.children {
-            Some(children) => children.push(child),
-            None => {
-                let _ = self.children.replace(vec![child]);
-            }
-        }
-    }
-    pub fn set_parent(&mut self, special: String, name: String) -> () {
-        let _ = self.parent.replace((special, name).into());
-    }
-    pub fn as_parent(&self) -> (String, String){
-        (self.special.to_string(), self.name.to_string() )
-    }
-    pub fn convert(ast: &ASTNodes, is_root: bool) -> Result<Self, Error> {
-        match ast {
-            ASTNodes::Tag(tag) => convert_template(&*tag, is_root),
-            _ => Err(ParseError::template("template model must be a tag").into()),
-        }
-    }
-
-    /// this function is used to get all props from the template model
-    /// and return a tuple of two PropTree
-    /// (bind_tree, fn_tree)
-    pub fn get_props_tree(&self) -> (PropTree, PropTree) {
-        fn append(node: &Template) -> (PropTree, PropTree) {
-            let mut bind_tree = Vec::new();
-            let mut fn_tree = Vec::new();
-            if node.get_name().ne("component") {
-                // let id = node.get_id().expect(format!("bind prop need id: {}", node.get_name()).as_str()).to_string();
-                if let Some(id) = node.id.as_ref() {
-                    let name = node.get_name().to_string();
-
-                    let _ = node.get_bind_props().map(|props| {
-                        if !props.is_empty() {
-                            bind_tree.push((
-                                (name.clone(), id.to_string()),
-                                Some(
-                                    props
-                                        .into_iter()
-                                        .map(|(k, v)| (k.clone(), v.clone()))
-                                        .collect(),
-                                ),
-                            ));
-                        }
-                    });
-                    match node.get_callbacks().clone() {
-                        Some(callbacks) => {
-                            fn_tree.push((
-                                (name, id.to_string()),
-                                Some(callbacks.clone().into_iter().collect()),
-                            ));
-                        }
-                        None => (),
-                    }
-                }
-            }
-
-            match node.get_children() {
-                Some(children) => {
-                    for child in children {
-                        let (binds, fns) = append(child);
-                        bind_tree.extend(binds);
-                        fn_tree.extend(fns);
-                    }
-                }
-                None => (),
-            }
-            (bind_tree, fn_tree)
-        }
-
-        // 从根节点开始遍历
-        // 获取每个节点的props以及采集节点名称
-        append(self)
-    }
-}
-
-/// ## 转换模板
-/// 将ASTNodes::Tag转换为Template
-/// - 为模型生成一个唯一标识符
-/// - 获取Tag的名称作为Template的名称
-/// - 获取Tag被设置的属性作为Template传入的属性
-/// - 提取id, class, inherits
-/// - 无需设置prop_ptr和event_ptr（这两个需要解析script才能决定）
-/// - 设置root
-/// - 获取所有外部传入的事件设置到callbacks上
-/// - 设置children
-fn convert_template(tag: &Tag, is_root: bool) -> Result<Template, Error> {
-    let mut model = Template::default();
-    // [生成ulid作为模型的唯一标识符]------------------------------------------------------
-    let special = ulid();
-    model.set_special(&special);
-    model.set_root(is_root);
-    // [获取Tag的名称作为Template的名称]------------------------------------------------
-    model.set_name(tag.get_name());
-    // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
-    // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
-    if let Some(props) = tag.get_props() {
-        for (k, v) in props {
-            let is_normal = k.is_normal();
-            if let Ok(prop) = BuiltinProps::from_str(k.name()) {
-                match prop {
-                    BuiltinProps::AsProp => {
-                        if is_normal {
-                            model.as_prop = Some(v.to_string());
-                        } else {
-                            return Err(
-                                ParseError::template("as_prop must be a normal property").into()
-                            );
-                        }
-                    }
-                    BuiltinProps::Id => {
-                        if is_normal {
-                            model.set_id(v.to_string());
-                        } else {
-                            return Err(ParseError::template("id must be a normal property").into());
-                        }
-                    }
-                    BuiltinProps::Class => {
-                        if is_normal {
-                            model.set_class(v.clone());
-                        } else {
-                            return Err(
-                                ParseError::template("class must be a normal property").into()
-                            );
-                        }
-                    }
-                    BuiltinProps::Inherits => {
-                        if is_normal {
-                            model.set_inherits(v.to_string().as_str());
-                        } else {
-                            return Err(
-                                ParseError::template("inherits must be a normal property").into()
-                            );
-                        }
-                    }
-                    BuiltinProps::For => {
-                        if is_normal {
-                            return Err(ParseError::template(
-                                "for sugar sync must be a bind property",
-                            )
-                            .into());
-                        } else {
-                            model.sugar_props.set_for(v.clone());
-                        }
-                    }
-                    BuiltinProps::If => {
-                        if is_normal {
-                            return Err(ParseError::template(
-                                "if sugar sync must be a bind property",
-                            )
-                            .into());
-                        } else {
-                            model.sugar_props.set_if(IfSign::If(v.clone()));
-                        }
-                    }
-
-                    BuiltinProps::ElseIf => {
-                        if is_normal {
-                            return Err(ParseError::template(
-                                "else_if sugar sync must be a bind property",
-                            )
-                            .into());
-                        } else {
-                            model.sugar_props.set_if(IfSign::ElseIf(v.clone()));
-                        }
-                    }
-                    BuiltinProps::Else => {
-                        if is_normal {
-                            return Err(ParseError::template(
-                                "else sugar sync must be a bind property",
-                            )
-                            .into());
-                        } else {
-                            model.sugar_props.set_if(IfSign::Else);
-                        }
-                    }
-                }
-            } else {
-                model.push_prop(k.clone(), v.clone());
-            }
-        }
-    }
-    // [设置callbacks]------------------------------------------------------------------
-    model.set_callbacks_from_props();
-    // [设置children]-------------------------------------------------------------------
-    if tag.has_children() {
-        let children = tag
-            .get_children()
-            .unwrap()
-            .iter()
-            .map(|child| {
-                let mut c_model = Template::convert(child, false).unwrap();
-                let id = if let Some(id) = model.id.as_ref() {
-                    id.to_string()
                 } else {
-                    special.to_string()
-                };
-                c_model.set_parent(id, model.name.to_string(), is_root);
-                c_model
-            })
-            .collect();
-
-        model.set_children(children);
+                    model.push_prop(k.clone(), v.clone());
+                }
+            }
+        }
+        // [设置callbacks]------------------------------------------------------------------
+        self.set_callbacks_from_props();
     }
-    Ok(model)
+
+    // /// judge the root template tag is `<component>` or not
+    // pub fn is_static(&self) -> bool {
+    //     // self.get_name().ne("component")
+    //     let is_dyn = if let Some(props) = self.props.as_ref() {
+    //         // check PropsKey is not normal
+    //         props.iter().any(|(k, _v)| !k.is_normal())
+    //     } else {
+    //         false
+    //     };
+
+    //     self.callbacks.is_none() && !is_dyn
+    // }
+
+    // pub fn push_prop(&mut self, key: PropsKey, value: Value) -> () {
+    //     match &mut self.props {
+    //         Some(props) => {
+    //             let _ = props.insert(key, value);
+    //         }
+    //         None => {
+    //             let mut item = HashMap::new();
+    //             item.insert(key, value);
+    //             self.set_props(Some(item));
+    //         }
+    //     }
+    // }
+
+    // pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
+    //     match self.props.as_ref() {
+    //         Some(props) => Some(props.iter().filter(|(k, _)| k.is_normal()).collect()),
+    //         None => None,
+    //     }
+    // }
+    // pub fn get_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
+    //     match self.props.as_ref() {
+    //         Some(props) => Some(props.iter().filter(|(k, _)| k.is_bind()).collect()),
+    //         None => None,
+    //     }
+    // }
+    // /// get all bind props from the template model and children
+    // pub fn get_all_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
+    //     let mut bind_props = HashMap::new();
+    //     if let Some(items) = self.get_bind_props() {
+    //         bind_props.extend(items);
+    //     }
+
+    //     // get all bind props from children
+    //     if let Some(children) = self.get_children() {
+    //         for child in children {
+    //             if let Some(items) = child.get_all_bind_props() {
+    //                 bind_props.extend(items);
+    //             }
+    //         }
+    //     }
+
+    //     if bind_props.is_empty() {
+    //         None
+    //     } else {
+    //         Some(bind_props)
+    //     }
+    // }
+    // pub fn get_callbacks(&self) -> Option<&Callbacks> {
+    //     self.callbacks.as_ref()
+    // }
+    // pub fn set_callbacks(&mut self, callbacks: Callbacks) -> () {
+    //     let _ = self.callbacks.replace(callbacks);
+    // }
+    // pub fn push_callbacks(&mut self, k: PropsKey, v: Value) -> () {
+    //     match self.callbacks.as_mut() {
+    //         Some(callbacks) => {
+    //             let _ = callbacks.insert(k, v);
+    //         }
+
+    //         None => {
+    //             self.callbacks = Some(
+    //                 vec![(k, v)]
+    //                     .into_iter()
+    //                     .collect::<HashMap<PropsKey, Value>>(),
+    //             )
+    //         }
+    //     }
+    // }
+    // pub fn has_callbacks(&self) -> bool {
+    //     self.callbacks.is_some()
+    // }
+    // pub fn set_callbacks_from_props(&mut self) -> bool {
+    //     let tmp_props = self.props.clone();
+    //     match self.props.as_mut() {
+    //         Some(props) => {
+    //             // 所有callbacks都是Value::Function的并且也直接在PropKey上的ty是Function
+    //             tmp_props.unwrap().iter().for_each(|(k, _)| {
+    //                 if PropertyKeyType::Function.eq(k.ty()) {
+    //                     match props.remove_entry(k) {
+    //                         Some((k, v)) => match self.callbacks.as_mut() {
+    //                             Some(callbacks) => {
+    //                                 let _ = callbacks.insert(k, v);
+    //                             }
+
+    //                             None => {
+    //                                 self.callbacks = Some(
+    //                                     vec![(k, v)]
+    //                                         .into_iter()
+    //                                         .collect::<HashMap<PropsKey, Value>>(),
+    //                                 )
+    //                             }
+    //                         },
+    //                         None => (),
+    //                     }
+    //                 }
+    //             });
+
+    //             self.has_callbacks()
+    //         }
+    //         None => false,
+    //     }
+    // }
+
+    // pub fn is_component(&self) -> bool {
+    //     self.get_name().eq("component")
+    // }
+    // pub fn set_inherits(&mut self, inherits: &str) -> () {
+    //     let _ = self.inherits.replace(inherits.to_string());
+    // }
+    // pub fn is_root(&self) -> bool {
+    //     self.root
+    // }
+    // pub fn set_root(&mut self, root: bool) -> () {
+    //     self.root = root;
+    // }
+    // pub fn get_children(&self) -> Option<&Vec<Template>> {
+    //     self.children.as_ref()
+    // }
+    // pub fn set_children(&mut self, children: Vec<Template>) -> () {
+    //     let _ = self.children.replace(children);
+    // }
+    // pub fn has_children(&self) -> bool {
+    //     self.children.is_some()
+    // }
+    // pub fn push_child(&mut self, child: Template) -> () {
+    //     match &mut self.children {
+    //         Some(children) => children.push(child),
+    //         None => {
+    //             let _ = self.children.replace(vec![child]);
+    //         }
+    //     }
+    // }
+    // pub fn set_parent(&mut self, special: String, name: String) -> () {
+    //     let _ = self.parent.replace((special, name).into());
+    // }
+    // pub fn as_parent(&self) -> (String, String){
+    //     (self.special.to_string(), self.name.to_string() )
+    // }
+    // pub fn convert(ast: &ASTNodes, is_root: bool) -> Result<Self, Error> {
+    //     match ast {
+    //         ASTNodes::Tag(tag) => convert_template(&*tag, is_root),
+    //         _ => Err(ParseError::template("template model must be a tag").into()),
+    //     }
+    // }
+
+    // /// this function is used to get all props from the template model
+    // /// and return a tuple of two PropTree
+    // /// (bind_tree, fn_tree)
+    // pub fn get_props_tree(&self) -> (PropTree, PropTree) {
+    //     fn append(node: &Template) -> (PropTree, PropTree) {
+    //         let mut bind_tree = Vec::new();
+    //         let mut fn_tree = Vec::new();
+    //         if node.get_name().ne("component") {
+    //             // let id = node.get_id().expect(format!("bind prop need id: {}", node.get_name()).as_str()).to_string();
+    //             if let Some(id) = node.id.as_ref() {
+    //                 let name = node.get_name().to_string();
+
+    //                 let _ = node.get_bind_props().map(|props| {
+    //                     if !props.is_empty() {
+    //                         bind_tree.push((
+    //                             (name.clone(), id.to_string()),
+    //                             Some(
+    //                                 props
+    //                                     .into_iter()
+    //                                     .map(|(k, v)| (k.clone(), v.clone()))
+    //                                     .collect(),
+    //                             ),
+    //                         ));
+    //                     }
+    //                 });
+    //                 match node.get_callbacks().clone() {
+    //                     Some(callbacks) => {
+    //                         fn_tree.push((
+    //                             (name, id.to_string()),
+    //                             Some(callbacks.clone().into_iter().collect()),
+    //                         ));
+    //                     }
+    //                     None => (),
+    //                 }
+    //             }
+    //         }
+
+    //         match node.get_children() {
+    //             Some(children) => {
+    //                 for child in children {
+    //                     let (binds, fns) = append(child);
+    //                     bind_tree.extend(binds);
+    //                     fn_tree.extend(fns);
+    //                 }
+    //             }
+    //             None => (),
+    //         }
+    //         (bind_tree, fn_tree)
+    //     }
+
+    //     // 从根节点开始遍历
+    //     // 获取每个节点的props以及采集节点名称
+    //     append(self)
+    // }
 }
+
+// /// ## 转换模板
+// /// 将ASTNodes::Tag转换为Template
+// /// - 为模型生成一个唯一标识符
+// /// - 获取Tag的名称作为Template的名称
+// /// - 获取Tag被设置的属性作为Template传入的属性
+// /// - 提取id, class, inherits
+// /// - 无需设置prop_ptr和event_ptr（这两个需要解析script才能决定）
+// /// - 设置root
+// /// - 获取所有外部传入的事件设置到callbacks上
+// /// - 设置children
+// fn convert_template(tag: &Tag, is_root: bool) -> Result<Template, Error> {
+//     let mut model = Template::default();
+//     // [生成ulid作为模型的唯一标识符]------------------------------------------------------
+//     let special = ulid();
+//     model.set_special(&special);
+//     model.set_root(is_root);
+//     // [获取Tag的名称作为Template的名称]------------------------------------------------
+//     model.set_name(tag.get_name());
+//     // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
+//     // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
+//     if let Some(props) = tag.get_props() {
+//         for (k, v) in props {
+//             let is_normal = k.is_normal();
+//             if let Ok(prop) = BuiltinProps::from_str(k.name()) {
+//                 match prop {
+//                     BuiltinProps::AsProp => {
+//                         if is_normal {
+//                             model.as_prop = Some(v.to_string());
+//                         } else {
+//                             return Err(
+//                                 ParseError::template("as_prop must be a normal property").into()
+//                             );
+//                         }
+//                     }
+//                     BuiltinProps::Id => {
+//                         if is_normal {
+//                             model.set_id(v.to_string());
+//                         } else {
+//                             return Err(ParseError::template("id must be a normal property").into());
+//                         }
+//                     }
+//                     BuiltinProps::Class => {
+//                         if is_normal {
+//                             model.set_class(v.clone());
+//                         } else {
+//                             return Err(
+//                                 ParseError::template("class must be a normal property").into()
+//                             );
+//                         }
+//                     }
+//                     BuiltinProps::Inherits => {
+//                         if is_normal {
+//                             model.set_inherits(v.to_string().as_str());
+//                         } else {
+//                             return Err(
+//                                 ParseError::template("inherits must be a normal property").into()
+//                             );
+//                         }
+//                     }
+//                     BuiltinProps::For => {
+//                         if is_normal {
+//                             return Err(ParseError::template(
+//                                 "for sugar sync must be a bind property",
+//                             )
+//                             .into());
+//                         } else {
+//                             model.sugar_props.set_for(v.clone());
+//                         }
+//                     }
+//                     BuiltinProps::If => {
+//                         if is_normal {
+//                             return Err(ParseError::template(
+//                                 "if sugar sync must be a bind property",
+//                             )
+//                             .into());
+//                         } else {
+//                             model.sugar_props.set_if(IfSign::If(v.clone()));
+//                         }
+//                     }
+
+//                     BuiltinProps::ElseIf => {
+//                         if is_normal {
+//                             return Err(ParseError::template(
+//                                 "else_if sugar sync must be a bind property",
+//                             )
+//                             .into());
+//                         } else {
+//                             model.sugar_props.set_if(IfSign::ElseIf(v.clone()));
+//                         }
+//                     }
+//                     BuiltinProps::Else => {
+//                         if is_normal {
+//                             return Err(ParseError::template(
+//                                 "else sugar sync must be a bind property",
+//                             )
+//                             .into());
+//                         } else {
+//                             model.sugar_props.set_if(IfSign::Else);
+//                         }
+//                     }
+//                 }
+//             } else {
+//                 model.push_prop(k.clone(), v.clone());
+//             }
+//         }
+//     }
+//     // [设置callbacks]------------------------------------------------------------------
+//     model.set_callbacks_from_props();
+//     // [设置children]-------------------------------------------------------------------
+//     if tag.has_children() {
+//         let children = tag
+//             .get_children()
+//             .unwrap()
+//             .iter()
+//             .map(|child| {
+//                 let mut c_model = Template::convert(child, false).unwrap();
+//                 let id = if let Some(id) = model.id.as_ref() {
+//                     id.to_string()
+//                 } else {
+//                     special.to_string()
+//                 };
+//                 c_model.set_parent(id, model.name.to_string(), is_root);
+//                 c_model
+//             })
+//             .collect();
+
+//         model.set_children(children);
+//     }
+//     Ok(model)
+// }
 
 impl Default for Template {
     fn default() -> Self {
@@ -467,12 +568,11 @@ impl Default for Template {
             props: Default::default(),
             callbacks: Default::default(),
             inherits: Default::default(),
-            // root: Default::default(),
             children: Default::default(),
             parent: Default::default(),
             as_prop: None,
             sugar_props: SugarProps::default(),
-            comments: None
+            comments: None,
         }
     }
 }
@@ -505,7 +605,6 @@ pub enum IfSign {
 pub struct Parent {
     pub id: String,
     pub name: String,
-
 }
 
 impl From<(String, String)> for Parent {
