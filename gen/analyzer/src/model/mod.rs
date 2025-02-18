@@ -4,12 +4,14 @@ mod strategy;
 mod template;
 
 use nom::{
-    bytes::complete::{tag, take_until},
-    combinator::opt,
-    IResult,
+    bytes::complete::{tag, take_until}, combinator::opt, multi::many0, IResult
 };
 pub use script::*;
-use std::{collections::HashMap, fs::File, io::Read, path::Path, sync::mpsc, thread};
+use std::{
+    collections::HashMap,
+    sync::mpsc::{self, RecvError},
+    thread,
+};
 pub use strategy::*;
 
 use crate::value::Value;
@@ -18,15 +20,15 @@ use crate::value::Value;
 // use gen_parser::{ParseResult, ParseTarget, Script, Strategy};
 use gen_utils::{
     common::{fs, Source},
-    error::{ConvertError, Error, ParseError},
+    error::{Error, ParseError}, parser::trim,
 };
 
 pub use template::*;
 
 #[derive(Debug, Clone)]
 pub enum ConvertResult {
-    Template(Result<Template, gen_utils::error::Error>),
-    Style(Option<Style>),
+    Template(Template),
+    Style(Style),
 }
 
 pub type StyleVal = HashMap<PropKey, Value>;
@@ -276,18 +278,19 @@ impl Model {
     /// try parse `<template>...</template>`, `<style>...</style>`, `<script>...</script>`
     /// use nom take till
     pub fn parse(&mut self, input: &str) -> Result<(), Error> {
-        fn parse_tag<'a>(name: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, Option<&'a str>> {
+        fn parse_tag<'a>(name: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, Option<String>> {
             move |input: &str| {
-                let (input, _) = tag(format!("<{}>", name).as_str())(input)?;
-                let (input, template_str) = take_until(format!("</{}>", name).as_str())(input)?;
-                let (input, _) = tag(format!("</{}>", name).as_str())(input)?;
+                let (input, _) = many0(Comment::parse)(input)?;
+                let (input, _) = trim(tag(format!("<{}>", name).as_str()))(input)?;
+                let (input, template_str) = trim(take_until(format!("</{}>", name).as_str()))(input)?;
+                let (input, _) = trim(tag(format!("</{}>", name).as_str()))(input)?;
                 if template_str.is_empty() {
                     Ok((input, None))
                 } else {
-                    Ok((input, Some(template_str)))
+                    Ok((input, Some(template_str.to_string())))
                 }
             }
-        };
+        }
 
         let (input, template) =
             opt(parse_tag("template"))(input).map_err(|e| Error::from(e.to_string()))?;
@@ -295,35 +298,94 @@ impl Model {
             opt(parse_tag("style"))(input).map_err(|e| Error::from(e.to_string()))?;
         let (input, script) =
             opt(parse_tag("script"))(input).map_err(|e| Error::from(e.to_string()))?;
+        if !input.trim().is_empty() {
+            return Err(ParseError::template("parse error!").into());
+        }
 
         let template = template.flatten();
         let style = style.flatten();
         let script = script.flatten();
 
         match (template, style, script) {
-            (Some(t), Some(s), Some(sc)) => {}
-            (Some(t), Some(s), None) => {
-                println!("template: {}", t);
-                println!("style: {}", s);
-            }
-            (Some(t), None, Some(sc)) => {
-                println!("template: {}", t);
-                println!("script: {}", sc);
-            }
-            (Some(t), None, None) => {
-                println!("template: {}", t);
-            }
-            (None, Some(s), Some(sc)) => {
-                println!("style: {}", s);
-                println!("script: {}", sc);
-            }
-            (None, Some(s), None) => {
-                println!("style: {}", s);
-            }
-            (None, None, Some(sc)) => {
+            (Some(t), Some(s), Some(sc)) => {
+                self.strategy = Strategy::All;
+                let (sender, receiver) = mpsc::channel();
+                let style_sender = sender.clone();
+                let _ = thread::spawn(move || -> Result<(), Error> {
+                    let res = Template::parse(&t)?;
+                    sender
+                        .send(ConvertResult::Template(res))
+                        .expect("send template error");
+                    Ok(())
+                });
+                let _ = thread::spawn(move || -> Result<(), Error> {
+                    let res = crate::parse::style::parse(&s)?;
+                    style_sender
+                        .send(ConvertResult::Style(res))
+                        .expect("send style error");
+                    Ok(())
+                });
+                let _ = receiver
+                    .recv()
+                    .and_then(|t| {
+                        if let ConvertResult::Template(t) = t {
+                            self.template.replace(t);
+                            Ok(())
+                        } else {
+                            Err(RecvError)
+                        }
+                    })
+                    .map_err(|_| ParseError::template("template parse error!"))?;
+                let _ = receiver
+                    .recv()
+                    .and_then(|s| {
+                        if let ConvertResult::Style(s) = s {
+                            self.style.replace(s);
+                            Ok(())
+                        } else {
+                            Err(RecvError)
+                        }
+                    })
+                    .map_err(|_| ParseError::template("style parse error!"))?;
                 self.script.replace(sc.into());
             }
-            (None, None, None) => {}
+            (Some(t), Some(s), None) => {
+                self.strategy = Strategy::TemplateStyle;
+                let (sender, receiver) = mpsc::channel();
+                let _ = thread::spawn(move || -> Result<(), Error> {
+                    let res = Template::parse(&t)?;
+                    sender.send(res).expect("send template error");
+                    Ok(())
+                });
+                let _ = receiver.recv().map(|t| self.template.replace(t));
+                self.style.replace(crate::parse::style::parse(&s)?);
+            }
+            (Some(t), None, Some(sc)) => {
+                self.strategy = Strategy::TemplateScript;
+                let (sender, receiver) = mpsc::channel();
+                let _ = thread::spawn(move || -> Result<(), Error> {
+                    let res = Template::parse(&t)?;
+                    sender.send(res).expect("send template error");
+                    Ok(())
+                });
+                let _ = receiver.recv().map(|t| self.template.replace(t));
+                self.script.replace(sc.into());
+            }
+            (Some(t), None, None) => {
+                self.strategy = Strategy::SingleTemplate;
+                self.template.replace(Template::parse(&t)?);
+            }
+            (None, Some(s), None) => {
+                self.strategy = Strategy::SingleStyle;
+                self.style.replace(crate::parse::style::parse(&s)?);
+            }
+            (None, None, Some(sc)) => {
+                self.strategy = Strategy::SingleScript;
+                self.script.replace(sc.into());
+            }
+            (None, None, None) => {
+                self.strategy = Strategy::None;
+            }
             _ => {
                 return Err(ParseError::template("the parse strategy is invalid!").into());
             }
@@ -332,19 +394,3 @@ impl Model {
         Ok(())
     }
 }
-
-// pub fn file_data<P>(path: P) -> Result<String, Error>
-// where
-//     P: AsRef<Path>,
-// {
-//     match File::open(path) {
-//         Ok(mut file) => {
-//             let mut buffer = String::new();
-//             let _ = file
-//                 .read_to_string(&mut buffer)
-//                 .expect("can not read file buffer");
-//             Ok(buffer)
-//         }
-//         Err(e) => Err(Box::new(e)),
-//     }
-// }

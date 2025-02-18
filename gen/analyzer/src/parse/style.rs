@@ -6,7 +6,6 @@ use gen_utils::{
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_until1},
-    combinator::{opt, recognize},
     error::ErrorKind,
     multi::many0,
     sequence::{pair, tuple},
@@ -61,15 +60,11 @@ fn parse_property_key(input: &str) -> IResult<&str, &str> {
 fn parse_property(input: &str) -> IResult<&str, (PropKey, Value)> {
     // maybe user write some comment before the property
     let (input, _) = parse_comment(input)?;
+    let (input, (key, _, value)) =
+        tuple((parse_property_key, trim(tag(":")), take_until1(";")))(input)?;
 
-    let (input, (key, _, value)) = tuple((
-        parse_property_key,
-        trim(tag(":")),
-        recognize(take_until1(";")),
-    ))(input)?;
-
-    // //remove `;`
-    // let (input, _) = trim(tag(";"))(input)?;
+    //remove `;`
+    let (input, _) = trim(tag(";"))(input)?;
     // let (remain, (sign, (name, params, is_style))) = alt((bind, function, normal))(value)?;
     match Value::parse_style(value) {
         Ok(value) => {
@@ -87,8 +82,8 @@ fn parse_properties(input: &str) -> IResult<&str, Vec<(PropKey, Value)>> {
 }
 
 #[allow(dead_code)]
-fn parse_comment(input: &str) -> IResult<&str, Option<Vec<Comment>>> {
-    opt(many0(Comment::parse))(input)
+fn parse_comment(input: &str) -> IResult<&str, Vec<Comment>> {
+    many0(Comment::parse)(input)
 }
 
 /// ## parse single style
@@ -109,7 +104,7 @@ fn parse_single(input: &str) -> IResult<&str, Style> {
     // [parse comment if exist] --------------------------------------------------------------------------------------------------
     let (input, _) = parse_comment(input)?;
     // [parse style ident] -------------------------------------------------------------------------------------------------------
-    let (input, key) = parse_ident(input)?;
+    let (input, key) = trim(parse_ident)(input)?;
     let mut style = Style::new();
     // [find open `{`] -----------------------------------------------------------------------------------------------------------
     let (input, _) = trim(tag(HOLDER_START))(input)?;
@@ -155,7 +150,7 @@ fn parse_single(input: &str) -> IResult<&str, Style> {
 /// ## Test
 /// See [test_style](tests/src/parser/target/style.rs)
 #[allow(dead_code)]
-pub fn parse_style(input: &str) -> Result<Style, Error> {
+pub fn parse(input: &str) -> Result<Style, Error> {
     match many0(parse_single)(input) {
         Ok((remain, styles)) => {
             if remain.is_empty() {

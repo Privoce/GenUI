@@ -1,4 +1,4 @@
 pub mod template;
-mod style;
+pub mod style;
 // mod script;
 pub mod value;

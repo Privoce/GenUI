@@ -166,8 +166,8 @@ fn parse_tag_end(input: &str) -> IResult<&str, &str> {
 }
 
 #[allow(dead_code)]
-fn parse_comment(input: &str) -> IResult<&str, Option<Vec<Comment>>> {
-    opt(many0(Comment::parse))(input)
+fn parse_comment(input: &str) -> IResult<&str, Vec<Comment>> {
+    many0(Comment::parse)(input)
 }
 
 #[deprecated = "use parse_end_tag_common instead"]
@@ -237,7 +237,9 @@ fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
     let (input, comments) = parse_comment(input)?;
     // [parse tag start] -------------------------------------------------------------------------------------------
     let (input, mut template) = parse_tag_start(input)?;
-    template.comments = comments;
+    if !comments.is_empty(){
+        template.comments.replace(comments);
+    }
     // let (is_tag, is_self_closed) = template.is_tag_close();
     // is tag, nest parse tag
     let tag_name = template.name.to_string();

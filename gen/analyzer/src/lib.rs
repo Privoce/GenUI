@@ -13,6 +13,24 @@ mod test_analyzer{
 
     use crate::Model;
 
+    fn handle(source: Source){
+        let t = Instant::now();
+        let model = Model::new(source, false);
+        dbg!(t.elapsed());
+        dbg!(model);
+    }
+
+    #[test]
+    fn parse_style(){
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello",
+            "components/styles.gen",
+            "src_gen_0/src/components/styles.gen",
+        );
+
+        handle(source);
+    }
+
     #[test]
     fn parse_template(){
         let source = Source::new(
@@ -21,9 +39,7 @@ mod test_analyzer{
             "src_gen_0/src/components/easy.gen",
         );
 
-        let model = Model::new(source, false);
-
-        dbg!(model);
+        handle(source);
     }
 
     #[test]
@@ -34,9 +50,7 @@ mod test_analyzer{
             "src_gen_0/src/views/home.gen",
         );
 
-        let model = Model::new(source, false);
-
-        dbg!(model);
+        handle(source);
     }
 
     #[test]
@@ -47,10 +61,7 @@ mod test_analyzer{
             "src_gen_0/src/views/mod.gen",
         );
 
-        let t = Instant::now();
-        let model = Model::new(source, false);
-        dbg!(t.elapsed());
-        dbg!(model);
+        handle(source);
     }
 
     #[test]
