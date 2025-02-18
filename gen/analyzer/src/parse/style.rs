@@ -137,7 +137,7 @@ fn parse_single(input: &str) -> IResult<&str, Style> {
         Some(children) => {
             for child in children {
                 // let all children key add parent key
-                style.extend(child.into_iter().map(|(k, v)| (format!("{}{}", key, k), v)));
+                style.extend(child.into_iter().map(|(k, v)| (format!("{}-{}", key, k), v)));
             }
         }
         None => {}
