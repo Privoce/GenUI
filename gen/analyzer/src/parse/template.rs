@@ -57,9 +57,9 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
     let mut remain = remain.trim();
     // check if remain start with `/>`, if true, is end tag
     if remain.starts_with(SELF_END_SIGN) {
-        remain = remain.trim_start_matches(SELF_END_SIGN);
-        // tag.set_ty(CloseType::SelfClosed);
         unimplemented!("self closed tag not support yet, please use `>` to close tag, expect support version 0.2.1+");
+        // remain = remain.trim_start_matches(SELF_END_SIGN);
+        // tag.set_ty(CloseType::SelfClosed);
     } else {
         remain = remain.trim_start_matches(END_SIGN);
     }
@@ -259,7 +259,7 @@ fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
                 let (special, name) = template.as_parent();
                 children
                     .iter_mut()
-                    .for_each(|child| child.set_parent(special, name));
+                    .for_each(|child| child.set_parent(special.to_string(), name.to_string()));
 
                 template.children.replace(children);
             }
@@ -275,7 +275,7 @@ fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
         }
     };
     // if is not tag, is comment -> do recursive parse
-    Ok((input, template))
+    // Ok((input, template))
 }
 
 /// ## parse template Ⓜ️

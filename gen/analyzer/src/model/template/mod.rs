@@ -101,113 +101,11 @@ impl Template {
     pub fn after_parse(&mut self) -> Result<(), Error> {
         // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
-        if let Some(props) = self.props.as_ref() {
+        if let Some(props) = self.props.take() {
             for (k, v) in props {
-                match k.ty{
-                    PropKeyType::Normal => {
-                        if let Ok(prop) = BuiltinProps::from_str(&k.name){
-                            match prop {
-                                BuiltinProps::AsProp => {
-                                    if is_normal {
-                                        self.as_prop = Some(v.to_string());
-                                    } else {
-                                        return Err(ParseError::template(
-                                            "as_prop must be a normal property",
-                                        )
-                                        .into());
-                                    }
-                                }
-                                BuiltinProps::Id => {
-                                    if is_normal {
-                                        self.id.replace(v.to_string());
-                                    } else {
-                                        return Err(
-                                            ParseError::template("id must be a normal property").into()
-                                        );
-                                    }
-                                }
-                                BuiltinProps::Class => {
-                                    if is_normal {
-                                        self.class.replace(v.clone());
-                                    } else {
-                                        return Err(ParseError::template(
-                                            "class must be a normal property",
-                                        )
-                                        .into());
-                                    }
-                                }
-                                BuiltinProps::Inherits => {
-                                    if is_normal {
-                                        self.inherits.replace(v.to_string());
-                                    } else {
-                                        return Err(ParseError::template(
-                                            "inherits must be a normal property",
-                                        )
-                                        .into());
-                                    }
-                                }
-                                BuiltinProps::For => {
-                                    if is_normal {
-                                        return Err(ParseError::template(
-                                            "for sugar sync must be a bind property",
-                                        )
-                                        .into());
-                                    } else {
-                                        self.sugar_props.set_for(v.clone());
-                                    }
-                                }
-                                BuiltinProps::If => {
-                                    if is_normal {
-                                        return Err(ParseError::template(
-                                            "if sugar sync must be a bind property",
-                                        )
-                                        .into());
-                                    } else {
-                                        self.sugar_props.set_if(IfSign::If(v.clone()));
-                                    }
-                                }
-        
-                                BuiltinProps::ElseIf => {
-                                    if is_normal {
-                                        return Err(ParseError::template(
-                                            "else_if sugar sync must be a bind property",
-                                        )
-                                        .into());
-                                    } else {
-                                        self.sugar_props.set_if(IfSign::ElseIf(v.clone()));
-                                    }
-                                }
-                                BuiltinProps::Else => {
-                                    if is_normal {
-                                        return Err(ParseError::template(
-                                            "else sugar sync must be a bind property",
-                                        )
-                                        .into());
-                                    } else {
-                                        self.sugar_props.set_if(IfSign::Else);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    PropKeyType::Bind => todo!(),
-                    PropKeyType::Function => todo!(),
-                }
-
-
-
-
-
-                let is_normal = k.is_normal();
-                if let Ok(prop) = BuiltinProps::from_str(k.name()) {
-                    
-                } else {
-                    self.push_prop(k.clone(), v.clone());
-                }
+                self.push_prop(k, v)?;
             }
         }
-        // [设置callbacks]------------------------------------------------------------------
-        self.set_callbacks_from_props();
 
         Ok(())
     }
@@ -225,17 +123,116 @@ impl Template {
     //     self.callbacks.is_none() && !is_dyn
     // }
 
-    pub fn push_prop(&mut self, key: PropKey, value: Value) -> () {
-        match &mut self.props {
-            Some(props) => {
-                let _ = props.insert(key, value);
-            }
-            None => {
-                let mut item = HashMap::new();
-                item.insert(key, value);
-                self.props.replace(item);
+    pub fn push_prop(&mut self, key: PropKey, value: Value) -> Result<(), Error> {
+        fn insert_prop(props: &mut Option<Props>, key: PropKey, value: Value) -> () {
+            match props {
+                Some(props) => {
+                    let _ = props.insert(key, value);
+                }
+                None => {
+                    let mut item = HashMap::new();
+                    item.insert(key, value);
+                    props.replace(item);
+                }
             }
         }
+
+        // [if is special props]---------------------------------------------------------------------------
+        if let Ok(prop) = BuiltinProps::from_str(&key.name) {
+            match prop {
+                BuiltinProps::AsProp => {
+                    if key.is_normal() {
+                        self.as_prop = Some(value.to_string());
+                    } else {
+                        return Err(
+                            ParseError::template("as_prop must be a normal property").into()
+                        );
+                    }
+                }
+                BuiltinProps::Id => {
+                    if key.is_normal() {
+                        self.id.replace(value.to_string());
+                    } else {
+                        return Err(ParseError::template("id must be a normal property").into());
+                    }
+                }
+                BuiltinProps::Class => {
+                    if key.is_normal() {
+                        self.class.replace(value.clone());
+                    } else {
+                        return Err(ParseError::template("class must be a normal property").into());
+                    }
+                }
+                BuiltinProps::Inherits => {
+                    if key.is_normal() {
+                        self.inherits.replace(value.to_string());
+                    } else {
+                        return Err(
+                            ParseError::template("inherits must be a normal property").into()
+                        );
+                    }
+                }
+                BuiltinProps::For => {
+                    if key.is_bind() {
+                        self.sugar_props.set_for(value.clone());
+                    } else {
+                        return Err(
+                            ParseError::template("for sugar sync must be a bind property").into(),
+                        );
+                    }
+                }
+                BuiltinProps::If => {
+                    if key.is_bind() {
+                        self.sugar_props.set_if(IfSign::If(value.clone()));
+                    } else {
+                        return Err(
+                            ParseError::template("if sugar sync must be a bind property").into(),
+                        );
+                    }
+                }
+
+                BuiltinProps::ElseIf => {
+                    if key.is_bind() {
+                        self.sugar_props.set_if(IfSign::ElseIf(value.clone()));
+                    } else {
+                        return Err(ParseError::template(
+                            "else_if sugar sync must be a bind property",
+                        )
+                        .into());
+                    }
+                }
+                BuiltinProps::Else => {
+                    if key.is_bind() {
+                        self.sugar_props.set_if(IfSign::Else);
+                    } else {
+                        return Err(ParseError::template(
+                            "else sugar sync must be a bind property",
+                        )
+                        .into());
+                    }
+                }
+            }
+        } else {
+            // [other props]---------------------------------------------------------------------------
+            match key.ty {
+                PropKeyType::Normal => {
+                    insert_prop(&mut self.props, key, value);
+                }
+                PropKeyType::Bind => {
+                    insert_prop(&mut self.binds, key, value);
+                }
+                PropKeyType::Function => match self.callbacks.as_mut() {
+                    Some(callbacks) => {
+                        let _ = callbacks.insert(key, value);
+                    }
+                    None => {
+                        self.callbacks = Some(vec![(key, value)].into_iter().collect());
+                    }
+                },
+            }
+        }
+
+        Ok(())
     }
 
     // pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
@@ -328,9 +325,9 @@ impl Template {
     //     }
     // }
 
-    // pub fn is_component(&self) -> bool {
-    //     self.get_name().eq("component")
-    // }
+    pub fn is_component(&self) -> bool {
+        self.name.eq("component")
+    }
     // pub fn set_inherits(&mut self, inherits: &str) -> () {
     //     let _ = self.inherits.replace(inherits.to_string());
     // }
@@ -360,8 +357,8 @@ impl Template {
     pub fn set_parent(&mut self, special: String, name: String) -> () {
         let _ = self.parent.replace((special, name).into());
     }
-    pub fn as_parent(&self) -> (String, String){
-        (self.special.to_string(), self.name.to_string() )
+    pub fn as_parent(&self) -> (String, String) {
+        (self.special.to_string(), self.name.to_string())
     }
     // pub fn convert(ast: &ASTNodes, is_root: bool) -> Result<Self, Error> {
     //     match ast {
@@ -565,6 +562,7 @@ impl Default for Template {
             id: Default::default(),
             name: Default::default(),
             props: Default::default(),
+            binds: Default::default(),
             callbacks: Default::default(),
             inherits: Default::default(),
             children: Default::default(),

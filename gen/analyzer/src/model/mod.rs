@@ -1,16 +1,20 @@
-mod style;
 mod script;
 mod strategy;
+// mod style;
 mod template;
 
-use nom::{bytes::complete::{tag, take_until}, combinator::opt, IResult};
+use nom::{
+    bytes::complete::{tag, take_until},
+    combinator::opt,
+    IResult,
+};
 pub use script::*;
+use std::{collections::HashMap, fs::File, io::Read, path::Path, sync::mpsc, thread};
 pub use strategy::*;
-use std::{ collections::HashMap, fs::File, io::Read, path::Path, sync::mpsc, thread};
 
 use crate::value::Value;
 
-use self::style::handle_styles;
+// use self::style::handle_styles;
 // use gen_parser::{ParseResult, ParseTarget, Script, Strategy};
 use gen_utils::{
     common::{fs, Source},
@@ -118,12 +122,12 @@ impl Model {
             }
         }
     }
-    pub fn get_binds_tree(&self) -> Option<(PropTree, PropTree)> {
-        match self.template.as_ref() {
-            Some(template) => Some(template.get_props_tree()),
-            None => None,
-        }
-    }
+    // pub fn get_binds_tree(&self) -> Option<(PropTree, PropTree)> {
+    //     match self.template.as_ref() {
+    //         Some(template) => Some(template.get_props_tree()),
+    //         None => None,
+    //     }
+    // }
 
     // /// 通过parser层解析的结果和文件路径生成converter层模型
     // /// 这一层只需要处理template和style部分，script不变
@@ -195,7 +199,7 @@ impl Model {
     //                 ConvertResult::Style(s) => {
     //                     if s.is_some() {
     //                         model.set_style(s.unwrap());
-    //                     } 
+    //                     }
     //                     // else {
     //                     //     panic!("style cannot be none in Strategy::TemplateStyle")
     //                     // }
@@ -267,16 +271,16 @@ impl Model {
     //         panic!("special is already set");
     //     }
     // }
-    
+
     /// parse gen file
     /// try parse `<template>...</template>`, `<style>...</style>`, `<script>...</script>`
     /// use nom take till
-    pub fn parse(&mut self, input: &str) ->Result<(), Error>{
-        let parse_tag = |name: &str|{
+    pub fn parse(&mut self, input: &str) -> Result<(), Error> {
+        fn parse_tag<'a>(name: &'a str) -> impl Fn(&'a str) -> IResult<&'a str, Option<&'a str>> {
             move |input: &str| {
-                let (input, _) = tag(format!("<{}>", name))(input)?;
-                let (input, template_str) = take_until(format!("</{}>", name))(input)?;
-                let (input, _) = tag(format!("</{}>", name))(input)?;
+                let (input, _) = tag(format!("<{}>", name).as_str())(input)?;
+                let (input, template_str) = take_until(format!("</{}>", name).as_str())(input)?;
+                let (input, _) = tag(format!("</{}>", name).as_str())(input)?;
                 if template_str.is_empty() {
                     Ok((input, None))
                 } else {
@@ -285,19 +289,19 @@ impl Model {
             }
         };
 
-
-        let (input, template) = opt(parse_tag("template"))(input)?;
-        let (input, style) = opt(parse_tag("style"))(input)?;
-        let (input, script) = opt(parse_tag("script"))(input)?;
+        let (input, template) =
+            opt(parse_tag("template"))(input).map_err(|e| Error::from(e.to_string()))?;
+        let (input, style) =
+            opt(parse_tag("style"))(input).map_err(|e| Error::from(e.to_string()))?;
+        let (input, script) =
+            opt(parse_tag("script"))(input).map_err(|e| Error::from(e.to_string()))?;
 
         let template = template.flatten();
         let style = style.flatten();
         let script = script.flatten();
 
         match (template, style, script) {
-            (Some(t), Some(s), Some(sc)) => {
-               
-            }
+            (Some(t), Some(s), Some(sc)) => {}
             (Some(t), Some(s), None) => {
                 println!("template: {}", t);
                 println!("style: {}", s);
@@ -321,16 +325,12 @@ impl Model {
             }
             (None, None, None) => {}
             _ => {
-                Err(
-                    ParseError::template("the parse strategy is invalid!")
-                )
+                return Err(ParseError::template("the parse strategy is invalid!").into());
             }
         }
 
-
         Ok(())
     }
-
 }
 
 // pub fn file_data<P>(path: P) -> Result<String, Error>

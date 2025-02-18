@@ -22,7 +22,7 @@ impl Script {
     /// is current script is empty or not
     pub fn is_empty(&self) -> bool {
         match self {
-            Script::Rs(block) => block.stmts.is_empty(),
+            Script::Rs(block) => block.is_empty(),
             Script::Other { code, .. } => code.is_empty(),
         }
     }
