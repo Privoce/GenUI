@@ -11,9 +11,6 @@ use nom::combinator::{map, recognize};
 use nom::multi::{many1, separated_list0};
 use nom::sequence::{pair, preceded, separated_pair};
 use nom::{bytes::complete::tag, sequence::delimited, IResult};
-// use proc_macro2::TokenStream;
-// use quote::{quote, ToTokens};
-// use syn::parse_str;
 
 /// # Bind Value
 /// - in template: `:bind="A"` A is a bind ident
@@ -147,7 +144,7 @@ impl For {
             .map(|i| i.to_string())
             .collect::<String>()
     }
-    pub fn fmt_item_clone_tk(&self) -> TokenStream {
+    pub fn fmt_item_clone_tk(&self) -> String {
         self.item.item_clone()
     }
     pub fn fmt_enumerate(&self) -> String {
@@ -314,17 +311,17 @@ impl ForItem {
             _ => false,
         }
     }
-    pub fn item_clone(&self) -> TokenStream {
+    pub fn item_clone(&self) -> String {
         match self {
-            ForItem::Tuple(vec) => vec.iter().fold(TokenStream::new(), |mut tk, item| {
-                tk.extend(item.item_clone());
+            ForItem::Tuple(vec) => vec.iter().fold(String::new(), |mut tk, item| {
+                tk.push_str(&item.item_clone());
                 tk
             }),
             ForItem::Ident(i) => {
-                parse_str::<TokenStream>(format!("let {} = {}.clone();", i, i).as_str()).unwrap()
+                format!("let {} = {}.clone();", i, i)
             }
-            ForItem::More => quote! { .. },
-            ForItem::None => quote! { _ },
+            ForItem::More => "..".to_string(),
+            ForItem::None => "_".to_string(),
         }
     }
 
@@ -495,14 +492,6 @@ impl FromStr for Ident {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::parser(s)
-    }
-}
-
-impl ToTokens for Ident {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        parse_str::<TokenStream>(&self.to_string())
-            .unwrap()
-            .to_tokens(tokens)
     }
 }
 

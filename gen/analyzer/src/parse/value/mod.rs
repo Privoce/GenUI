@@ -3,12 +3,14 @@ mod r#enum;
 mod function;
 mod r#struct;
 mod color;
+mod shader;
 mod special;
 
 use std::{collections::HashMap, fmt::Display, str::FromStr};
 pub use color::*;
 pub use bind::*;
 pub use function::Function;
+pub use shader::*;
 use gen_utils::{
     common::format_float,
     error::{ConvertError, Error},

@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use gen_utils::{
     common::tokenizer::{FUNCTION_SIGN, IMPORT},
     error::{Error, ParseError},
@@ -8,21 +6,20 @@ use gen_utils::{
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_until1},
-    combinator::recognize,
-    multi::{many0, many1},
-    sequence::{delimited, pair},
+    combinator::{opt, recognize},
+    error::ErrorKind,
+    multi::many0,
+    sequence::{pair, tuple},
     IResult,
 };
-
-// use crate::{
-//     ast::{ASTNodes,  PropsKey, Style},
-//     common::{parse_comment as parse_common_comment, Special},
-//     Value,
-// };
 
 use gen_utils::common::tokenizer::{
     HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
+
+use crate::{nom_err, Comment, PropKey, Style, StyleVal};
+
+use super::value::Value;
 
 #[allow(dead_code)]
 pub fn parse_style_tag(input: &str) -> IResult<&str, &str> {
@@ -37,121 +34,136 @@ pub fn parse_style_tag(input: &str) -> IResult<&str, &str> {
 /// - pesudo
 /// - import
 /// - identifier
-fn parse_ident(input: &str) -> IResult<&str, ASTNodes> {
-    let (input, style_type) = alt((
-        trim(tag(STYLE_CLASS)),
-        trim(tag(STYLE_ID)),
-        trim(tag(STYLE_PESUDO)),
-        trim(tag(IMPORT)),
-        trim(tag(FUNCTION_SIGN)),
-    ))(input)?;
+fn parse_ident(input: &str) -> IResult<&str, String> {
+    let (input, (style_type, name)) = pair(
+        alt((
+            trim(tag(STYLE_CLASS)),
+            trim(tag(STYLE_ID)),
+            trim(tag(STYLE_PESUDO)),
+            trim(tag(IMPORT)),
+            trim(tag(FUNCTION_SIGN)),
+        )),
+        parse_value,
+    )(input)?;
 
-    let (input, name) = parse_value(input)?;
-    let style = Style::new_style_start(name, style_type.into());
-    Ok((input, style.into()))
+    // let style = Style::new_style_start(name, style_type.into());
+    Ok((input, format!("{}{}", style_type, name)))
 }
 
 fn parse_property_key(input: &str) -> IResult<&str, &str> {
     parse_value(input)
 }
 
-/// end () `(type, (name,params))`
-pub fn function(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
-    fn normal_fn(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
-        let (input, (name, params)) = pair(
-            parse_property_key,
-            recognize(delimited(tag("("), take_until(")"), tag(")"))),
-        )(input)?;
-
-        Ok((input, ("()", (name, params, Some(true)))))
-    }
-    alt((Special::makepad_shader_parser, normal_fn))(input)
-}
-
 /// ## parse style property
 /// - normal : `xxx:zzz;`
 /// - bind : `xxx:$zzz;`
 /// - function : `xxx:zzz();`
-fn parse_property(input: &str) -> IResult<&str, (PropsKey, Value)> {
-    let (input, key) = parse_property_key(input)?;
-    let (input, _) = trim(tag(":"))(input)?;
-    let (input, value) = take_until1(";")(input)?;
-    //remove `;`
-    let (input, _) = trim(tag(";"))(input)?;
-    // let (remain, (sign, (name, params, is_style))) = alt((bind, function, normal))(value)?;
+fn parse_property(input: &str) -> IResult<&str, (PropKey, Value)> {
+    // maybe user write some comment before the property
+    let (input, _) = parse_comment(input)?;
 
+    let (input, (key, _, value)) = tuple((
+        parse_property_key,
+        trim(tag(":")),
+        recognize(take_until1(";")),
+    ))(input)?;
+
+    // //remove `;`
+    // let (input, _) = trim(tag(";"))(input)?;
+    // let (remain, (sign, (name, params, is_style))) = alt((bind, function, normal))(value)?;
     match Value::parse_style(value) {
         Ok(value) => {
-            let k = PropsKey::from_value_with(&value, key, true);
+            let k = PropKey::from_value_with(&value, key, true);
+            // after all maybe user write some comment, but we do not care
+            let (input, _) = parse_comment(input)?;
             Ok((input, (k, value)))
         }
-        Err(e) => {
-            panic!("value: {} can not parse, more info: {}", value, e);
-        }
+        Err(_) => Err(nom_err!(input, ErrorKind::Fail)),
     }
+}
+
+fn parse_properties(input: &str) -> IResult<&str, Vec<(PropKey, Value)>> {
+    many0(trim(parse_property))(input)
 }
 
 #[allow(dead_code)]
-fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
-    match parse_common_comment(input) {
-        Ok((input, comment)) => Ok((input, comment.into())),
-        Err(e) => Err(e),
-    }
+fn parse_comment(input: &str) -> IResult<&str, Option<Vec<Comment>>> {
+    opt(many0(Comment::parse))(input)
 }
 
-fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
-    let (input, mut ast) = trim(alt((parse_ident, parse_comment)))(input)?;
-    return if ast.is_style() {
-        // find open `{`
-        let (input, _) = trim(tag(HOLDER_START))(input)?;
-        let (input, children, properties) = match trim(tag(HOLDER_END))(input) {
-            Ok((input, _)) => (input, None, None), //end
-            Err(_) => {
-                // parse property
-                let (input, properties) = many0(trim(parse_property))(input)?;
-                let properties = if properties.is_empty() {
-                    None
-                } else {
-                    Some(properties)
-                };
-                // nesting parse
-                let (input, mut children) = many0(parse_single)(input)?;
-                // set parent
-                children
-                    .iter_mut()
-                    .for_each(|child| child.set_parent(ast.clone()));
-                // remove end `}`
-                // let (input, _) = many0(trim(tag(HOLDER_END)))(input)?;
-                let (input, _) = trim(tag(HOLDER_END))(input)?;
-                (input, Some(children), properties)
-            }
-        };
-        //set properties
-        match properties {
-            Some(p) => ast.set_properties(Some(HashMap::from_iter(p.into_iter()))),
-            None => {}
-        };
-        // set children
-        match children {
-            Some(c) => ast.set_children(c),
-            None => {}
-        }
-        Ok((input, ast))
+/// ## parse single style
+/// ```
+/// .a{
+///   color: red;
+///   .b {
+///     color: blue;
+///   }
+/// }
+/// // ----- after ---------    
+/// {
+///     .a : {color: red}, // a class style
+///     .a.b : {color: blue} // b class style, which is a child of a
+/// }
+/// ```
+fn parse_single(input: &str) -> IResult<&str, Style> {
+    // [parse comment if exist] --------------------------------------------------------------------------------------------------
+    let (input, _) = parse_comment(input)?;
+    // [parse style ident] -------------------------------------------------------------------------------------------------------
+    let (input, key) = parse_ident(input)?;
+    let mut style = Style::new();
+    // [find open `{`] -----------------------------------------------------------------------------------------------------------
+    let (input, _) = trim(tag(HOLDER_START))(input)?;
+    // [if end or parse properties] ----------------------------------------------------------------------------------------------
+    let (input, children, properties) = if input.trim().starts_with(HOLDER_END) {
+        // - [end] ---------------------------------------------------------------------------------------------------------------
+        (input, None, None)
     } else {
-        Ok((input, ast))
+        // [parse properties] ----------------------------------------------------------------------------------------------------
+        let (input, properties) = parse_properties(input)?;
+        let properties = if properties.is_empty() {
+            None
+        } else {
+            Some(StyleVal::from_iter(properties.into_iter()))
+        };
+        // [nesting parse] -------------------------------------------------------------------------------------------------------
+        let (input, children) = many0(parse_single)(input)?;
+        // [remove end `}`] ------------------------------------------------------------------------------------------------------
+        let (input, _) = trim(tag(HOLDER_END))(input)?;
+        if children.is_empty() {
+            (input, None, properties)
+        } else {
+            (input, Some(children), properties)
+        }
     };
+    // [set properties] ---------------------------------------------------------------------------------------------------------
+    style.insert(key.to_string(), properties.unwrap_or_default());
+    // [set children] -----------------------------------------------------------------------------------------------------------
+    match children {
+        Some(children) => {
+            for child in children {
+                // let all children key add parent key
+                style.extend(child.into_iter().map(|(k, v)| (format!("{}{}", key, k), v)));
+            }
+        }
+        None => {}
+    }
+    Ok((input, style))
 }
 
 /// # parse styleⓂ️
 /// main style parser
 /// ## Test
-/// See [test_style](tests/src/parser/target/style.rs) 
+/// See [test_style](tests/src/parser/target/style.rs)
 #[allow(dead_code)]
-pub fn parse_style(input: &str) -> Result<Vec<ASTNodes>, Error> {
-    match many1(parse_single)(input) {
-        Ok((remain, asts)) => {
+pub fn parse_style(input: &str) -> Result<Style, Error> {
+    match many0(parse_single)(input) {
+        Ok((remain, styles)) => {
             if remain.is_empty() {
-                return Ok(asts);
+                let mut style = Style::new();
+                for s in styles {
+                    style.extend(s.into_iter());
+                }
+                return Ok(style);
             }
 
             Err(ParseError::template(remain).into())

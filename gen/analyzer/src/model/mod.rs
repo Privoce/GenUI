@@ -6,7 +6,9 @@ mod template;
 use nom::{bytes::complete::{tag, take_until}, combinator::opt, IResult};
 pub use script::*;
 pub use strategy::*;
-use std::{ fs::File, io::Read, path::Path, sync::mpsc, thread};
+use std::{ collections::HashMap, fs::File, io::Read, path::Path, sync::mpsc, thread};
+
+use crate::value::Value;
 
 use self::style::handle_styles;
 // use gen_parser::{ParseResult, ParseTarget, Script, Strategy};
@@ -14,14 +16,21 @@ use gen_utils::{
     common::{fs, Source},
     error::{ConvertError, Error, ParseError},
 };
-pub use style::ConvertStyle;
+
 pub use template::*;
 
 #[derive(Debug, Clone)]
 pub enum ConvertResult {
     Template(Result<Template, gen_utils::error::Error>),
-    Style(Option<ConvertStyle>),
+    Style(Option<Style>),
 }
+
+pub type StyleVal = HashMap<PropKey, Value>;
+/// also name Style
+/// in gen-ui no difference between style and props
+/// so we use the same struct to represent them
+/// `<id|class, HashMap<prop, value>>`
+pub type Style = HashMap<String, StyleVal>;
 
 /// # GenUI文件模型
 /// 用于表示一个.gen文件，这个文件会被解析为一个模型
@@ -56,8 +65,8 @@ pub struct Model {
     pub script: Option<Script>,
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
     /// 也可以认为是模型的属性部分，在GenUI中并没有属性与样式的区别
-    /// ConvertStyle实际上是被平展的样式列表
-    pub style: Option<ConvertStyle>,
+    /// Style实际上是被平展的样式列表
+    pub style: Option<Style>,
     /// 模型是否需要被编译
     /// 在项目中可能存在一个文件被编写，但没有在项目中使用到
     /// 表现为这个文件没有使用Rust的use语句进行引入
@@ -89,7 +98,7 @@ impl Model {
     pub fn set_template(&mut self, template: Template) -> () {
         let _ = self.template.replace(template);
     }
-    pub fn set_style(&mut self, style: ConvertStyle) -> () {
+    pub fn set_style(&mut self, style: Style) -> () {
         let _ = self.style.replace(style);
     }
     pub fn is_component(&self) -> bool {

@@ -1,16 +1,16 @@
 use std::{collections::HashMap, iter};
 
-use gen_parser::{ASTNodes, PropertyKeyType, PropsKey, Style, StyleType, Value};
+// use gen_parser::{ASTNodes, PropertyKeyType, PropKey, Style, StyleType, Value};
 use gen_utils::props_manul;
 
-/// also name ConvertStyle
-/// in gen-ui no difference between style and props
-/// so we use the same struct to represent them
-/// `<id|class, HashMap<prop, value>>`
-pub type ConvertStyle = HashMap<String, HashMap<PropsKey, Value>>;
+use crate::value::Value;
 
-pub fn expand_style(style: &Box<Style>, father_name: Option<String>) -> Option<ConvertStyle> {
-    let mut res: HashMap<String, HashMap<PropsKey, Value>> = HashMap::new();
+use super::PropKey;
+
+
+
+pub fn expand_style(style: &Box<Style>, father_name: Option<String>) -> Option<Style> {
+    let mut res: HashMap<String, HashMap<PropKey, Value>> = HashMap::new();
     // handle props
     if style.has_props() {
         let sig = if style.get_type() == StyleType::Class {
@@ -35,7 +35,7 @@ pub fn expand_style(style: &Box<Style>, father_name: Option<String>) -> Option<C
 
                 let animation_props = props_manul::Animation::props();
 
-                let prop = PropsKey::new(
+                let prop = PropKey::new(
                     format!("animation::{}", style.get_name()).as_str(),
                     true,
                     PropertyKeyType::Normal,
@@ -45,7 +45,7 @@ pub fn expand_style(style: &Box<Style>, father_name: Option<String>) -> Option<C
                     .iter()
                     .filter(|(k, _)| animation_props.contains(&k.name()))
                     .map(|(k, v)| (k.clone(), v.clone()))
-                    .collect::<HashMap<PropsKey, Value>>();
+                    .collect::<HashMap<PropKey, Value>>();
 
                 let value = Value::Animation(animation_values);
 
@@ -81,8 +81,8 @@ pub fn expand_style(style: &Box<Style>, father_name: Option<String>) -> Option<C
 }
 
 /// expand all style sheet
-pub fn handle_styles(styles: &Vec<ASTNodes>) -> Option<ConvertStyle> {
-    let mut res: HashMap<String, HashMap<PropsKey, Value>> = HashMap::new();
+pub fn handle_styles(styles: &Vec<ASTNodes>) -> Option<Style> {
+    let mut res: HashMap<String, HashMap<PropKey, Value>> = HashMap::new();
     for style in styles {
         match style {
             ASTNodes::Style(style) => {

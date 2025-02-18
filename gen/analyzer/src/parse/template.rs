@@ -45,6 +45,7 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
         char('<'),
         tuple((parse_tag_name, parse_properties)),
     ))(input)?;
+
     let props = if let Some(props) = props {
         Some(HashMap::from_iter(props.into_iter()))
     } else {
@@ -52,7 +53,7 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
     };
 
     // let mut tag = Tag::new_tag_props(name, props);
-    let template = Template::new(name);
+    let mut template = Template::new(name);
     let mut remain = remain.trim();
     // check if remain start with `/>`, if true, is end tag
     if remain.starts_with(SELF_END_SIGN) {
@@ -62,6 +63,8 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
     } else {
         remain = remain.trim_start_matches(END_SIGN);
     }
+
+    template.props = props;
 
     Ok((remain, template))
 }
@@ -82,7 +85,7 @@ fn parse_property_key(input: &str) -> IResult<&str, (PropKeyType, &str)> {
         let (input, value) = parse_value(input)?;
         let sign = sign
             .parse::<PropKeyType>()
-            .map_err(|e| nom_err!(e.to_string(), ErrorKind::Tag))?;
+            .map_err(|_| nom_err!(sign, ErrorKind::Tag))?;
         Ok((input, (sign, value)))
     }
 
@@ -135,7 +138,7 @@ fn parse_property(input: &str) -> IResult<&str, (PropKey, Value)> {
     // parse value
     let value = key_type
         .to_value(value)
-        .map_err(|e| nom_err!(e.to_string(), ErrorKind::Tag))?;
+        .map_err(|_| nom_err!(value, ErrorKind::Tag))?;
     Ok((input, (PropKey::new(key, false, key_type), value)))
 }
 
@@ -163,8 +166,8 @@ fn parse_tag_end(input: &str) -> IResult<&str, &str> {
 }
 
 #[allow(dead_code)]
-fn parse_comment(input: &str) -> IResult<&str, Option<Comment>> {
-    opt(Comment::parse)(input)
+fn parse_comment(input: &str) -> IResult<&str, Option<Vec<Comment>>> {
+    opt(many0(Comment::parse))(input)
 }
 
 #[deprecated = "use parse_end_tag_common instead"]
@@ -234,9 +237,10 @@ fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
     let (input, comments) = parse_comment(input)?;
     // [parse tag start] -------------------------------------------------------------------------------------------
     let (input, mut template) = parse_tag_start(input)?;
+    template.comments = comments;
     // let (is_tag, is_self_closed) = template.is_tag_close();
     // is tag, nest parse tag
-    let tag_name = template.get_name();
+    let tag_name = template.name.to_string();
     // trim input and check is start with `</tag_name>`
     match parse_end_tag(input, tag_name.to_string()) {
         Ok((input, _)) => {

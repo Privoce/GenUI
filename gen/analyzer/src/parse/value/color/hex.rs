@@ -1,17 +1,33 @@
+use super::{parse_hex_color, Rgb, Rgba};
 use gen_utils::{
     common::float_to_str,
     error::{Error, ParseError, ParseType},
 };
-use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
 use std::{fmt::Display, str::FromStr};
-use syn::parse_str;
-
-use super::{parse_hex_color, Rgb, Rgba};
 
 /// 16进制颜色
 #[derive(Debug, Clone, PartialEq)]
 pub struct Hex(pub String);
+
+impl Hex {
+    /// 将16进制颜色转换为vec4
+    pub fn hex_to_vec4(hex: &Hex) -> String {
+        fn u8_to_str(hex: &str, start: usize, end: usize) -> String {
+            float_to_str(u8::from_str_radix(&hex[start..end], 16).unwrap() as f32 / 255.0)
+        }
+
+        // 去掉开头的 '#' 符号
+        let hex = hex.0.trim_start_matches('#');
+
+        // 解析 RGB 值
+        let r = u8_to_str(hex, 0, 2);
+        let g = u8_to_str(hex, 2, 4);
+        let b = u8_to_str(hex, 4, 6);
+        let a = u8_to_str(hex, 6, 8);
+
+        format!("vec4({}, {}, {}, {})", r, g, b, a)
+    }
+}
 
 impl TryFrom<&str> for Hex {
     type Error = Error;
@@ -63,36 +79,5 @@ impl From<&Rgba> for Hex {
 impl Display for Hex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
-    }
-}
-
-/// 将16进制颜色转换为vec4
-pub fn hex_to_vec4(hex: &Hex) -> TokenStream {
-    fn u8_to_tk(hex: &str, start: usize, end: usize) -> TokenStream {
-        parse_str::<TokenStream>(
-            float_to_str(u8::from_str_radix(&hex[start..end], 16).unwrap() as f32 / 255.0).as_str(),
-        )
-        .unwrap()
-    }
-
-    // 去掉开头的 '#' 符号
-    let hex = hex.0.trim_start_matches('#');
-
-    // 解析 RGB 值
-    let r = u8_to_tk(hex, 0, 2);
-    let g = u8_to_tk(hex, 2, 4);
-    let b = u8_to_tk(hex, 4, 6);
-    let a = u8_to_tk(hex, 6, 8);
-
-    quote! {
-        vec4(#r, #g, #b, #a)
-    }
-}
-
-impl ToTokens for Hex {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        // let s = self.0.as_str();
-        // tokens.extend(parse_str::<TokenStream>(s).unwrap());
-        tokens.extend(hex_to_vec4(self));
     }
 }

@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use super::{trans_color_rgb, Hex, Rgba};
-use crate::Function;
+use crate::value::Function;
 use gen_utils::error::{Error, ParseError, ParseType};
 
 /// 语法: `rgb(r, g, b)`

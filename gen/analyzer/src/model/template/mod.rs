@@ -51,12 +51,14 @@ pub struct Template {
     /// 组件的名字，这个名字标识了组件应该如何在.gen文件中书写
     /// 例如，如果组件名字是`button`，那么在.gen文件中书写`<button></button>`就是正确的
     pub name: String,
-    /// 组件的属性(由外部设置的属性)
+    /// 组件的静态属性(可由外部设置的属性)
     /// 无论是自定义组件还是内置组件，都有属性，只是有些被显示的书写在.gen文件中，有些被隐藏在组件内部
     /// 对GenUI来说，不需要关心这些属性的默认值是什么，这些都由插入的转化框架来决定
     /// 但是，GenUI需要关心这些属性是否是绑定的还是静态的
     /// 对于自定义组件来说，这些属性却是一个重要的部分，因为这些属性需要被外部传入
     pub props: Option<Props>,
+    /// 组件的动态属性通过绑定的方式传入
+    pub binds: Option<Props>,
     /// 由GenUI提供的组件的属性的语法糖
     /// 例如: `[for, if, else_if, else]`
     /// 同样也会从props中提取这些属性
@@ -101,90 +103,104 @@ impl Template {
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
         if let Some(props) = self.props.as_ref() {
             for (k, v) in props {
+                match k.ty{
+                    PropKeyType::Normal => {
+                        if let Ok(prop) = BuiltinProps::from_str(&k.name){
+                            match prop {
+                                BuiltinProps::AsProp => {
+                                    if is_normal {
+                                        self.as_prop = Some(v.to_string());
+                                    } else {
+                                        return Err(ParseError::template(
+                                            "as_prop must be a normal property",
+                                        )
+                                        .into());
+                                    }
+                                }
+                                BuiltinProps::Id => {
+                                    if is_normal {
+                                        self.id.replace(v.to_string());
+                                    } else {
+                                        return Err(
+                                            ParseError::template("id must be a normal property").into()
+                                        );
+                                    }
+                                }
+                                BuiltinProps::Class => {
+                                    if is_normal {
+                                        self.class.replace(v.clone());
+                                    } else {
+                                        return Err(ParseError::template(
+                                            "class must be a normal property",
+                                        )
+                                        .into());
+                                    }
+                                }
+                                BuiltinProps::Inherits => {
+                                    if is_normal {
+                                        self.inherits.replace(v.to_string());
+                                    } else {
+                                        return Err(ParseError::template(
+                                            "inherits must be a normal property",
+                                        )
+                                        .into());
+                                    }
+                                }
+                                BuiltinProps::For => {
+                                    if is_normal {
+                                        return Err(ParseError::template(
+                                            "for sugar sync must be a bind property",
+                                        )
+                                        .into());
+                                    } else {
+                                        self.sugar_props.set_for(v.clone());
+                                    }
+                                }
+                                BuiltinProps::If => {
+                                    if is_normal {
+                                        return Err(ParseError::template(
+                                            "if sugar sync must be a bind property",
+                                        )
+                                        .into());
+                                    } else {
+                                        self.sugar_props.set_if(IfSign::If(v.clone()));
+                                    }
+                                }
+        
+                                BuiltinProps::ElseIf => {
+                                    if is_normal {
+                                        return Err(ParseError::template(
+                                            "else_if sugar sync must be a bind property",
+                                        )
+                                        .into());
+                                    } else {
+                                        self.sugar_props.set_if(IfSign::ElseIf(v.clone()));
+                                    }
+                                }
+                                BuiltinProps::Else => {
+                                    if is_normal {
+                                        return Err(ParseError::template(
+                                            "else sugar sync must be a bind property",
+                                        )
+                                        .into());
+                                    } else {
+                                        self.sugar_props.set_if(IfSign::Else);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    PropKeyType::Bind => todo!(),
+                    PropKeyType::Function => todo!(),
+                }
+
+
+
+
+
                 let is_normal = k.is_normal();
                 if let Ok(prop) = BuiltinProps::from_str(k.name()) {
-                    match prop {
-                        BuiltinProps::AsProp => {
-                            if is_normal {
-                                self.as_prop = Some(v.to_string());
-                            } else {
-                                return Err(ParseError::template(
-                                    "as_prop must be a normal property",
-                                )
-                                .into());
-                            }
-                        }
-                        BuiltinProps::Id => {
-                            if is_normal {
-                                self.id.replace(v.to_string());
-                            } else {
-                                return Err(
-                                    ParseError::template("id must be a normal property").into()
-                                );
-                            }
-                        }
-                        BuiltinProps::Class => {
-                            if is_normal {
-                                self.class.replace(v.clone());
-                            } else {
-                                return Err(ParseError::template(
-                                    "class must be a normal property",
-                                )
-                                .into());
-                            }
-                        }
-                        BuiltinProps::Inherits => {
-                            if is_normal {
-                                self.inherits.replace(v.to_string());
-                            } else {
-                                return Err(ParseError::template(
-                                    "inherits must be a normal property",
-                                )
-                                .into());
-                            }
-                        }
-                        BuiltinProps::For => {
-                            if is_normal {
-                                return Err(ParseError::template(
-                                    "for sugar sync must be a bind property",
-                                )
-                                .into());
-                            } else {
-                                self.sugar_props.set_for(v.clone());
-                            }
-                        }
-                        BuiltinProps::If => {
-                            if is_normal {
-                                return Err(ParseError::template(
-                                    "if sugar sync must be a bind property",
-                                )
-                                .into());
-                            } else {
-                                self.sugar_props.set_if(IfSign::If(v.clone()));
-                            }
-                        }
-
-                        BuiltinProps::ElseIf => {
-                            if is_normal {
-                                return Err(ParseError::template(
-                                    "else_if sugar sync must be a bind property",
-                                )
-                                .into());
-                            } else {
-                                self.sugar_props.set_if(IfSign::ElseIf(v.clone()));
-                            }
-                        }
-                        BuiltinProps::Else => {
-                            if is_normal {
-                                return Err(ParseError::template(
-                                    "else sugar sync must be a bind property",
-                                )
-                                .into());
-                            } else {
-                                self.sugar_props.set_if(IfSign::Else);
-                            }
-                        }
-                    }
+                    
                 } else {
                     self.push_prop(k.clone(), v.clone());
                 }
@@ -209,18 +225,18 @@ impl Template {
     //     self.callbacks.is_none() && !is_dyn
     // }
 
-    // pub fn push_prop(&mut self, key: PropsKey, value: Value) -> () {
-    //     match &mut self.props {
-    //         Some(props) => {
-    //             let _ = props.insert(key, value);
-    //         }
-    //         None => {
-    //             let mut item = HashMap::new();
-    //             item.insert(key, value);
-    //             self.set_props(Some(item));
-    //         }
-    //     }
-    // }
+    pub fn push_prop(&mut self, key: PropKey, value: Value) -> () {
+        match &mut self.props {
+            Some(props) => {
+                let _ = props.insert(key, value);
+            }
+            None => {
+                let mut item = HashMap::new();
+                item.insert(key, value);
+                self.props.replace(item);
+            }
+        }
+    }
 
     // pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
     //     match self.props.as_ref() {
@@ -341,12 +357,12 @@ impl Template {
     //         }
     //     }
     // }
-    // pub fn set_parent(&mut self, special: String, name: String) -> () {
-    //     let _ = self.parent.replace((special, name).into());
-    // }
-    // pub fn as_parent(&self) -> (String, String){
-    //     (self.special.to_string(), self.name.to_string() )
-    // }
+    pub fn set_parent(&mut self, special: String, name: String) -> () {
+        let _ = self.parent.replace((special, name).into());
+    }
+    pub fn as_parent(&self) -> (String, String){
+        (self.special.to_string(), self.name.to_string() )
+    }
     // pub fn convert(ast: &ASTNodes, is_root: bool) -> Result<Self, Error> {
     //     match ast {
     //         ASTNodes::Tag(tag) => convert_template(&*tag, is_root),

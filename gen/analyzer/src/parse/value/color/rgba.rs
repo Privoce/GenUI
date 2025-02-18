@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use crate::Function;
+
+use crate::value::Function;
 
 use super::{trans_color_rgb, trans_opacity, Rgb};
 use gen_utils::error::{Error, ParseError, ParseType};

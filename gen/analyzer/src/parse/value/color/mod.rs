@@ -14,7 +14,7 @@ pub use radial::*;
 pub use rgb::*;
 pub use rgba::*;
 
-use crate::{Function, Value};
+use crate::value::{Function, Value};
 use gen_utils::error::{ConvertError, Error, ParseError, ParseType};
 use nom::{
     branch::alt,
@@ -26,6 +26,8 @@ use nom::{
 };
 
 use super::MakepadShader;
+
+
 
 /// ## GenUI 内置颜色类型
 /// 颜色写法参考: https://developer.mozilla.org/zh-CN/docs/Web/CSS/color_value

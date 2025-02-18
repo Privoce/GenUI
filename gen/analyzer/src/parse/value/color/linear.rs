@@ -1,4 +1,4 @@
-use crate::Function;
+use crate::value::Function;
 use gen_utils::error::{Error, ParseError, ParseType};
 use std::{fmt::Display, str::FromStr};
 

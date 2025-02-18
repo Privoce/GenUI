@@ -1,7 +1,6 @@
 use std::fmt::Display;
-
 use super::{check_and_fix, trans_hex_percentage, Hex, Percentage};
-use crate::Function;
+use crate::value::Function;
 use gen_utils::error::{Error, ParseError, ParseType};
 
 /// 语法: `radial_gradient(color percentage, color percentage, ...)`

@@ -62,6 +62,19 @@ pub enum PropKeyType {
     Function,
 }
 
+impl FromStr for PropKeyType {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "" => Ok(PropKeyType::Normal),
+            ":" => Ok(PropKeyType::Bind),
+            "@" => Ok(PropKeyType::Function),
+            _ => Err(Error::from(format!("Invalid property key type: {}", s))),
+        }
+    }
+}
+
 #[allow(dead_code)]
 impl PropKeyType {
     /// ## convert value to Builtin Value
@@ -126,13 +139,13 @@ impl From<&str> for PropKeyType {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PropKey {
     /// property key name
-    name: String,
+    pub name: String,
     /// same as function
     /// judge the use place (template|style)
     /// has behave differently
-    is_style: bool,
+    pub is_style: bool,
     /// property key type
-    ty: PropKeyType,
+    pub ty: PropKeyType,
 }
 
 impl PropKey {
@@ -166,12 +179,7 @@ impl PropKey {
             ty: PropKeyType::Function,
         }
     }
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-    pub fn ty(&self) -> &PropKeyType {
-        &self.ty
-    }
+
     pub fn is_bind(&self) -> bool {
         self.ty.is_bind()
     }
@@ -183,7 +191,7 @@ impl PropKey {
     }
     /// ## check current props key is builtin or not
     pub fn is_builtin(&self) -> bool {
-        BUILTIN_PROPS.contains(&self.name())
+        BUILTIN_PROPS.contains(&self.name.as_str())
     }
     pub fn from_value_with(v: &Value, name: &str, is_style: bool) -> Self {
         match v {
@@ -197,19 +205,19 @@ impl PropKey {
 impl Display for PropKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.ty {
-            PropKeyType::Normal => f.write_str(self.name()),
+            PropKeyType::Normal => f.write_str(&self.name),
             PropKeyType::Bind => {
                 if self.is_style {
-                    f.write_str(self.name())
+                    f.write_str(&self.name)
                 } else {
-                    f.write_fmt(format_args!(":{}", self.name()))
+                    f.write_fmt(format_args!(":{}", &self.name))
                 }
             }
             PropKeyType::Function => {
                 if self.is_style {
-                    f.write_str(self.name())
+                    f.write_str(&self.name)
                 } else {
-                    f.write_fmt(format_args!("@{}", self.name()))
+                    f.write_fmt(format_args!("@{}", &self.name))
                 }
             }
         }
@@ -222,14 +230,11 @@ pub fn props_to_string<'a, F>(props: Props, format: F) -> String
 where
     F: FnMut((PropKey, Value)) -> String,
 {
-    match props {
-        Some(props) => props
-            .into_iter()
-            .map(format)
-            .collect::<Vec<String>>()
-            .join(SPACE),
-        None => String::new(),
-    }
+    props
+        .into_iter()
+        .map(format)
+        .collect::<Vec<String>>()
+        .join(SPACE)
 }
 
 pub fn props_to_template_string(props: Props) -> String {

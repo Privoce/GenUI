@@ -1,9 +1,14 @@
 use std::{fmt::Display, str::FromStr};
 
-use gen_utils::error::{Error, ParseError};
+use gen_utils::{
+    error::{Error, ParseError},
+    parser::parse_value,
+};
 use nom::{
+    branch::alt,
     bytes::complete::{tag, take_until},
-    sequence::delimited,
+    combinator::recognize,
+    sequence::{delimited, pair},
     IResult,
 };
 
@@ -50,11 +55,13 @@ impl Function {
     }
     pub fn params_str(&self) -> Option<String> {
         if let Some(params) = self.params.as_ref() {
-            return Some(params
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join(", "));
+            return Some(
+                params
+                    .iter()
+                    .map(|x| x.to_string())
+                    .collect::<Vec<String>>()
+                    .join(", "),
+            );
         } else {
             return None;
         }
@@ -120,7 +127,7 @@ impl TryFrom<(&str, bool)> for Function {
     type Error = Error;
 
     fn try_from(value: (&str, bool)) -> Result<Self, Self::Error> {
-        let (s, is_style) = value;  
+        let (s, is_style) = value;
         match parse_function(s) {
             Ok((remain, (name, params, _))) => {
                 if remain.is_empty() {
@@ -141,6 +148,19 @@ fn parse_function(input: &str) -> IResult<&str, (&str, &str, bool)> {
         }
         Err(e) => Err(e),
     }
+}
+
+/// end () `(type, (name,params))`
+pub fn function(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
+    fn normal_fn(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
+        let (input, (name, params)) = pair(
+            parse_value,
+            recognize(delimited(tag("("), take_until(")"), tag(")"))),
+        )(input)?;
+
+        Ok((input, ("()", (name, params, Some(true)))))
+    }
+    alt((Special::makepad_shader_parser, normal_fn))(input)
 }
 
 fn remove_holder(input: &str) -> IResult<&str, &str> {
