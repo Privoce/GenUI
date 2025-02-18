@@ -4,12 +4,15 @@ mod strategy;
 mod template;
 
 use nom::{
-    bytes::complete::{tag, take_until}, combinator::opt, multi::many0, IResult
+    bytes::complete::{tag, take_until},
+    combinator::opt,
+    multi::many0,
+    IResult,
 };
 pub use script::*;
 use std::{
     collections::HashMap,
-    sync::mpsc::{self, RecvError},
+    sync::mpsc::{self},
     thread,
 };
 pub use strategy::*;
@@ -20,16 +23,11 @@ use crate::value::Value;
 // use gen_parser::{ParseResult, ParseTarget, Script, Strategy};
 use gen_utils::{
     common::{fs, Source},
-    error::{Error, ParseError}, parser::trim,
+    error::{Error, ParseError},
+    parser::trim,
 };
 
 pub use template::*;
-
-#[derive(Debug, Clone)]
-pub enum ConvertResult {
-    Template(Template),
-    Style(Style),
-}
 
 pub type StyleVal = HashMap<PropKey, Value>;
 /// also name Style
@@ -87,12 +85,8 @@ impl Model {
     pub fn new(source: Source, is_entry: bool) -> Result<Self, gen_utils::error::Error> {
         let content = fs::read(source.from_path())?;
         let mut model = Model::default();
-        // let ast = ParseResult::try_from(ParseTarget::try_from(content.as_str())?)?;
         model.parse(&content)?;
         model.special = source;
-
-        // model.strategy = ast.strategy();
-        // let _ = Model::convert(&mut model, ast);
         model.is_entry = is_entry;
         Ok(model)
     }
@@ -147,7 +141,8 @@ impl Model {
             move |input: &str| {
                 let (input, _) = many0(Comment::parse)(input)?;
                 let (input, _) = trim(tag(format!("<{}>", name).as_str()))(input)?;
-                let (input, template_str) = trim(take_until(format!("</{}>", name).as_str()))(input)?;
+                let (input, template_str) =
+                    trim(take_until(format!("</{}>", name).as_str()))(input)?;
                 let (input, _) = trim(tag(format!("</{}>", name).as_str()))(input)?;
                 if template_str.is_empty() {
                     Ok((input, None))
@@ -159,12 +154,14 @@ impl Model {
 
         let (input, template) =
             opt(parse_tag("template"))(input).map_err(|e| Error::from(e.to_string()))?;
-        let (input, style) =
-            opt(parse_tag("style"))(input).map_err(|e| Error::from(e.to_string()))?;
         let (input, script) =
             opt(parse_tag("script"))(input).map_err(|e| Error::from(e.to_string()))?;
+        let (input, style) =
+            opt(parse_tag("style"))(input).map_err(|e| Error::from(e.to_string()))?;
         if !input.trim().is_empty() {
-            return Err(ParseError::template("parse error!").into());
+            return Err(
+                ParseError::template(&format!("parse error! Still remain: {}", input)).into(),
+            );
         }
 
         let template = template.flatten();
@@ -175,41 +172,27 @@ impl Model {
             (Some(t), Some(s), Some(sc)) => {
                 self.strategy = Strategy::All;
                 let (sender, receiver) = mpsc::channel();
-                let style_sender = sender.clone();
+                let (style_sender, style_receiver) = mpsc::channel();
                 let _ = thread::spawn(move || -> Result<(), Error> {
                     let res = Template::parse(&t)?;
-                    sender
-                        .send(ConvertResult::Template(res))
-                        .expect("send template error");
+                    sender.send(res).expect("send template error");
                     Ok(())
                 });
                 let _ = thread::spawn(move || -> Result<(), Error> {
                     let res = crate::parse::style::parse(&s)?;
-                    style_sender
-                        .send(ConvertResult::Style(res))
-                        .expect("send style error");
+                    style_sender.send(res).expect("send style error");
                     Ok(())
                 });
                 let _ = receiver
                     .recv()
-                    .and_then(|t| {
-                        if let ConvertResult::Template(t) = t {
-                            self.template.replace(t);
-                            Ok(())
-                        } else {
-                            Err(RecvError)
-                        }
+                    .map(|t| {
+                        self.template.replace(t);
                     })
                     .map_err(|_| ParseError::template("template parse error!"))?;
-                let _ = receiver
+                let _ = style_receiver
                     .recv()
-                    .and_then(|s| {
-                        if let ConvertResult::Style(s) = s {
-                            self.style.replace(s);
-                            Ok(())
-                        } else {
-                            Err(RecvError)
-                        }
+                    .map(|s| {
+                        self.style.replace(s);
                     })
                     .map_err(|_| ParseError::template("style parse error!"))?;
                 self.script.replace(sc.into());

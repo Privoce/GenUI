@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gen_converter = { path = "../../converter" }
+# gen_converter = { path = "../../converter" }
 gen_utils = { path = "../../utils" }
-gen_parser ={ path = "../../parser"}
+# gen_parser ={ path = "../../parser"}
 proc-macro2 = "1.0.78"
 quote = "1.0.35"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }
