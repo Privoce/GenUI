@@ -1,10 +1,5 @@
-use std::fmt::Display;
-
 use gen_utils::error::{Error, ParseError};
-use quote::quote;
-use syn::Block;
-
-use crate::target::parse_script;
+use std::fmt::Display;
 
 /// # Script
 /// which is from `.gen` file, in `.gen` file, people can write rust code or ets code
@@ -15,7 +10,7 @@ use crate::target::parse_script;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Script {
     /// rust code
-    Rs(Block),
+    Rs(String),
     Other {
         lang: String,
         code: String,
@@ -33,8 +28,14 @@ impl Script {
     }
 }
 
-impl From<Block> for Script {
-    fn from(value: Block) -> Self {
+impl From<&str> for Script {
+    fn from(value: &str) -> Self {
+        Script::Rs(value.to_string())
+    }
+}
+
+impl From<String> for Script {
+    fn from(value: String) -> Self {
         Script::Rs(value)
     }
 }
@@ -45,11 +46,7 @@ impl TryFrom<(&str, Option<String>)> for Script {
     fn try_from(value: (&str, Option<String>)) -> Result<Self, Self::Error> {
         match value.1.as_ref() {
             Some(lang) => match lang.as_str() {
-                "rust" | "rs" => {
-                    let code =
-                        parse_script(value.0)?;
-                    Ok(Script::Rs(code))
-                }
+                "rust" | "rs" => Ok(Script::Rs(value.0.to_string())),
                 other => Ok(Script::Other {
                     lang: other.to_string(),
                     code: value.0.to_string(),
@@ -63,16 +60,7 @@ impl TryFrom<(&str, Option<String>)> for Script {
 impl Display for Script {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Script::Rs(rs) => {
-                // if is rust code use quote to format
-                let res = quote! {
-                    #rs
-                };
-                // remove `{}`
-                let convert_str = res.to_string();
-                let convert_str = &convert_str[1..convert_str.len() - 1];
-                f.write_str(convert_str.trim())
-            }
+            Script::Rs(rs) => f.write_str(&rs),
             Script::Other { code, .. } => f.write_str(code),
         }
     }

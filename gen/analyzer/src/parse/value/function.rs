@@ -7,9 +7,9 @@ use nom::{
     IResult,
 };
 
-use crate::{common::Special, target::function};
+// use crate::{common::Special, target::function};
 
-use super::Value;
+use super::{special::Special, Value};
 
 /// # Function Value
 /// - in template: `:clicked="easy([args...])"` easy is a function, args is a list of function args

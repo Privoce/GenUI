@@ -80,26 +80,7 @@ pub struct Template {
     /// 记录父组件的标识
     pub parent: Option<Parent>,
     /// 注释
-    pub comments: Option<Vec<Comment>>, // /// 组件的插槽(暂不开启)
-                                        // /// 插槽的作用在于将子组件插入到指定的位置
-                                        // /// 在GenUI中插槽使用<slot>标签进行指定
-                                        // /// ```gen
-                                        // /// // parent
-                                        // /// <my-widget>
-                                        // ///     <slot ptr="footer">
-                                        // ///         <input></input>
-                                        // ///     </slot>
-                                        // /// </my-widget>
-                                        // ///
-                                        // /// // child
-                                        // /// <component name="my-widget">
-                                        // ///     <view></view>
-                                        // ///     <view>
-                                        // ///         <slot name="footer"></slot>
-                                        // ///     </view>
-                                        // /// </component>
-                                        // /// ```
-                                        // slots:
+    pub comments: Option<Vec<Comment>>,
 }
 
 impl Template {
@@ -111,11 +92,11 @@ impl Template {
 
     pub fn parse(input: &str) -> Result<Self, Error> {
         let mut template = template::parse(input)?;
-        template.after_parse();
+        template.after_parse()?;
         Ok(template)
     }
 
-    pub fn after_parse(&mut self) -> () {
+    pub fn after_parse(&mut self) -> Result<(), Error> {
         // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
         if let Some(props) = self.props.as_ref() {
@@ -125,7 +106,7 @@ impl Template {
                     match prop {
                         BuiltinProps::AsProp => {
                             if is_normal {
-                                model.as_prop = Some(v.to_string());
+                                self.as_prop = Some(v.to_string());
                             } else {
                                 return Err(ParseError::template(
                                     "as_prop must be a normal property",
@@ -135,7 +116,7 @@ impl Template {
                         }
                         BuiltinProps::Id => {
                             if is_normal {
-                                model.set_id(v.to_string());
+                                self.id.replace(v.to_string());
                             } else {
                                 return Err(
                                     ParseError::template("id must be a normal property").into()
@@ -144,7 +125,7 @@ impl Template {
                         }
                         BuiltinProps::Class => {
                             if is_normal {
-                                model.set_class(v.clone());
+                                self.class.replace(v.clone());
                             } else {
                                 return Err(ParseError::template(
                                     "class must be a normal property",
@@ -154,7 +135,7 @@ impl Template {
                         }
                         BuiltinProps::Inherits => {
                             if is_normal {
-                                model.set_inherits(v.to_string().as_str());
+                                self.inherits.replace(v.to_string());
                             } else {
                                 return Err(ParseError::template(
                                     "inherits must be a normal property",
@@ -169,7 +150,7 @@ impl Template {
                                 )
                                 .into());
                             } else {
-                                model.sugar_props.set_for(v.clone());
+                                self.sugar_props.set_for(v.clone());
                             }
                         }
                         BuiltinProps::If => {
@@ -179,7 +160,7 @@ impl Template {
                                 )
                                 .into());
                             } else {
-                                model.sugar_props.set_if(IfSign::If(v.clone()));
+                                self.sugar_props.set_if(IfSign::If(v.clone()));
                             }
                         }
 
@@ -190,7 +171,7 @@ impl Template {
                                 )
                                 .into());
                             } else {
-                                model.sugar_props.set_if(IfSign::ElseIf(v.clone()));
+                                self.sugar_props.set_if(IfSign::ElseIf(v.clone()));
                             }
                         }
                         BuiltinProps::Else => {
@@ -200,17 +181,19 @@ impl Template {
                                 )
                                 .into());
                             } else {
-                                model.sugar_props.set_if(IfSign::Else);
+                                self.sugar_props.set_if(IfSign::Else);
                             }
                         }
                     }
                 } else {
-                    model.push_prop(k.clone(), v.clone());
+                    self.push_prop(k.clone(), v.clone());
                 }
             }
         }
         // [设置callbacks]------------------------------------------------------------------
         self.set_callbacks_from_props();
+
+        Ok(())
     }
 
     // /// judge the root template tag is `<component>` or not

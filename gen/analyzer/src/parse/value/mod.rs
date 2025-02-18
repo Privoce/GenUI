@@ -3,6 +3,7 @@ mod r#enum;
 mod function;
 mod r#struct;
 mod color;
+mod special;
 
 use std::{collections::HashMap, fmt::Display, str::FromStr};
 pub use color::*;
@@ -17,7 +18,7 @@ pub use r#enum::{Enum, EnumItem};
 
 pub use r#struct::Struct;
 
-use crate::{as_value,  PropsKey};
+use crate::{as_value,  PropKey};
 
 /// # GenUI Value Type
 /// Value Type need to use in <template>|<style> tag to handle the value
@@ -71,7 +72,7 @@ pub enum Value {
     /// Dep means the value is the static dependency ⚠️ deprecated!!! now move to Function
     // Dep(String),
     /// animation value
-    Animation(HashMap<PropsKey, Value>),
+    Animation(HashMap<PropKey, Value>),
 }
 
 impl Value {
@@ -177,7 +178,7 @@ impl Value {
     pub fn is_color_and_get(&self) -> Result<BuiltinColor, Error> {
         self.try_into()
     }
-    pub fn is_animation_and_get(&self) -> Option<&HashMap<PropsKey, Value>> {
+    pub fn is_animation_and_get(&self) -> Option<&HashMap<PropKey, Value>> {
         match self {
             Value::Animation(a) => Some(a),
             _ => None,

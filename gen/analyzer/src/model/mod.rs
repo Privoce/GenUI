@@ -3,15 +3,16 @@ mod script;
 mod strategy;
 mod template;
 
+use nom::{bytes::complete::{tag, take_until}, combinator::opt, IResult};
 pub use script::*;
 pub use strategy::*;
-use std::{error::Error, fs::File, io::Read, path::Path, sync::mpsc, thread};
+use std::{ fs::File, io::Read, path::Path, sync::mpsc, thread};
 
 use self::style::handle_styles;
 // use gen_parser::{ParseResult, ParseTarget, Script, Strategy};
 use gen_utils::{
     common::{fs, Source},
-    error::ConvertError,
+    error::{ConvertError, Error, ParseError},
 };
 pub use style::ConvertStyle;
 pub use template::*;
@@ -71,10 +72,12 @@ impl Model {
     pub fn new(source: Source, is_entry: bool) -> Result<Self, gen_utils::error::Error> {
         let content = fs::read(source.from_path())?;
         let mut model = Model::default();
-        let ast = ParseResult::try_from(ParseTarget::try_from(content.as_str())?)?;
+        // let ast = ParseResult::try_from(ParseTarget::try_from(content.as_str())?)?;
+        model.parse(&content)?;
         model.special = source;
-        model.strategy = ast.strategy();
-        let _ = Model::convert(&mut model, ast);
+
+        // model.strategy = ast.strategy();
+        // let _ = Model::convert(&mut model, ast);
         model.is_entry = is_entry;
         Ok(model)
     }
@@ -113,140 +116,140 @@ impl Model {
         }
     }
 
-    /// 通过parser层解析的结果和文件路径生成converter层模型
-    /// 这一层只需要处理template和style部分，script不变
-    fn convert(model: &mut Model, ast: ParseResult) -> Result<(), gen_utils::error::Error> {
-        // get strategy
-        match &ast.strategy() {
-            Strategy::None => Ok(()),
-            Strategy::SingleTemplate => {
-                let _ =
-                    model.set_template(Template::convert(&ast.template().unwrap()[0], true)?);
-                Ok(())
-            }
-            Strategy::SingleScript => {
-                model.script = ast.script;
-                Ok(())
-            }
-            Strategy::SingleStyle => handle_styles(ast.style().unwrap()).map_or_else(
-                || {
-                    Err(ConvertError::FromTo {
-                        from: "GenUI Common AST (Style)".to_string(),
-                        to: "GenUI AST, Invaild Style".to_string(),
-                    }
-                    .into())
-                },
-                |res| {
-                    model.set_style(res);
-                    Ok(())
-                },
-            ),
-            Strategy::TemplateScript => {
-                let (sender, receiver) = mpsc::channel();
-                let template = ast.template().unwrap()[0].clone();
+    // /// 通过parser层解析的结果和文件路径生成converter层模型
+    // /// 这一层只需要处理template和style部分，script不变
+    // fn convert(model: &mut Model, ast: ParseResult) -> Result<(), gen_utils::error::Error> {
+    //     // get strategy
+    //     match &ast.strategy() {
+    //         Strategy::None => Ok(()),
+    //         Strategy::SingleTemplate => {
+    //             let _ =
+    //                 model.set_template(Template::convert(&ast.template().unwrap()[0], true)?);
+    //             Ok(())
+    //         }
+    //         Strategy::SingleScript => {
+    //             model.script = ast.script;
+    //             Ok(())
+    //         }
+    //         Strategy::SingleStyle => handle_styles(ast.style().unwrap()).map_or_else(
+    //             || {
+    //                 Err(ConvertError::FromTo {
+    //                     from: "GenUI Common AST (Style)".to_string(),
+    //                     to: "GenUI AST, Invaild Style".to_string(),
+    //                 }
+    //                 .into())
+    //             },
+    //             |res| {
+    //                 model.set_style(res);
+    //                 Ok(())
+    //             },
+    //         ),
+    //         Strategy::TemplateScript => {
+    //             let (sender, receiver) = mpsc::channel();
+    //             let template = ast.template().unwrap()[0].clone();
 
-                let _ = thread::spawn(move || {
-                    let convert_res = Template::convert(&template, true);
-                    sender.send(convert_res).expect("send template error");
-                });
+    //             let _ = thread::spawn(move || {
+    //                 let convert_res = Template::convert(&template, true);
+    //                 sender.send(convert_res).expect("send template error");
+    //             });
 
-                match receiver
-                    .recv()
-                    .expect("gen_converter: receive failed when convert!")
-                {
-                    Ok(t) => {
-                        model.set_template(t);
-                    }
-                    Err(e) => {
-                        return Err(e);
-                    }
-                }
-                // 处理script部分
-                model.script = ast.script;
-                Ok(())
-            }
-            Strategy::TemplateStyle => {
-                let (sender, receiver) = mpsc::channel();
-                let template = ast.template().unwrap()[0].clone();
-                let styles = ast.style().unwrap().clone();
-                let _ = thread::spawn(move || {
-                    let convert_res = handle_styles(&styles);
-                    sender
-                        .send(ConvertResult::Style(convert_res))
-                        .expect("send style error");
-                });
+    //             match receiver
+    //                 .recv()
+    //                 .expect("gen_converter: receive failed when convert!")
+    //             {
+    //                 Ok(t) => {
+    //                     model.set_template(t);
+    //                 }
+    //                 Err(e) => {
+    //                     return Err(e);
+    //                 }
+    //             }
+    //             // 处理script部分
+    //             model.script = ast.script;
+    //             Ok(())
+    //         }
+    //         Strategy::TemplateStyle => {
+    //             let (sender, receiver) = mpsc::channel();
+    //             let template = ast.template().unwrap()[0].clone();
+    //             let styles = ast.style().unwrap().clone();
+    //             let _ = thread::spawn(move || {
+    //                 let convert_res = handle_styles(&styles);
+    //                 sender
+    //                     .send(ConvertResult::Style(convert_res))
+    //                     .expect("send style error");
+    //             });
 
-                match receiver
-                    .recv()
-                    .expect("gen_converter: receive failed when convert!")
-                {
-                    ConvertResult::Style(s) => {
-                        if s.is_some() {
-                            model.set_style(s.unwrap());
-                        } 
-                        // else {
-                        //     panic!("style cannot be none in Strategy::TemplateStyle")
-                        // }
-                    }
-                    _ => panic!("Invalid strategy!"),
-                }
+    //             match receiver
+    //                 .recv()
+    //                 .expect("gen_converter: receive failed when convert!")
+    //             {
+    //                 ConvertResult::Style(s) => {
+    //                     if s.is_some() {
+    //                         model.set_style(s.unwrap());
+    //                     } 
+    //                     // else {
+    //                     //     panic!("style cannot be none in Strategy::TemplateStyle")
+    //                     // }
+    //                 }
+    //                 _ => panic!("Invalid strategy!"),
+    //             }
 
-                let convert_template = Template::convert(&template, true);
-                let _ = model.set_template(
-                    convert_template.expect("template cannot be none in Strategy::TemplateStyle"),
-                );
-                Ok(())
-            }
-            Strategy::All => {
-                let (sender, receiver) = mpsc::channel();
-                let template_sender = sender.clone();
-                let style_sender = sender.clone();
-                let template = ast.template().unwrap()[0].clone();
-                let styles = ast.style().unwrap().clone();
-                let _ = thread::spawn(move || {
-                    let convert_res = Template::convert(&template, true);
-                    template_sender
-                        .send(ConvertResult::Template(convert_res))
-                        .expect("send template error");
-                });
-                let _ = thread::spawn(move || {
-                    let convert_res = handle_styles(&styles);
-                    style_sender
-                        .send(ConvertResult::Style(convert_res))
-                        .expect("send style error");
-                });
+    //             let convert_template = Template::convert(&template, true);
+    //             let _ = model.set_template(
+    //                 convert_template.expect("template cannot be none in Strategy::TemplateStyle"),
+    //             );
+    //             Ok(())
+    //         }
+    //         Strategy::All => {
+    //             let (sender, receiver) = mpsc::channel();
+    //             let template_sender = sender.clone();
+    //             let style_sender = sender.clone();
+    //             let template = ast.template().unwrap()[0].clone();
+    //             let styles = ast.style().unwrap().clone();
+    //             let _ = thread::spawn(move || {
+    //                 let convert_res = Template::convert(&template, true);
+    //                 template_sender
+    //                     .send(ConvertResult::Template(convert_res))
+    //                     .expect("send template error");
+    //             });
+    //             let _ = thread::spawn(move || {
+    //                 let convert_res = handle_styles(&styles);
+    //                 style_sender
+    //                     .send(ConvertResult::Style(convert_res))
+    //                     .expect("send style error");
+    //             });
 
-                for _ in 0..2 {
-                    match receiver
-                        .recv()
-                        .expect("gen_converter: receive failed when convert!")
-                    {
-                        ConvertResult::Template(t) => match t {
-                            Ok(t) => {
-                                model.set_template(t);
-                            }
-                            Err(e) => {
-                                return Err(e);
-                            }
-                        },
-                        ConvertResult::Style(s) => {
-                            if s.is_some() {
-                                model.set_style(s.unwrap());
-                            }
-                        }
-                    }
-                }
-                // 处理script部分
-                model.script = ast.script;
-                Ok(())
-            }
-            _ => Err(ConvertError::FromTo {
-                from: "GenUI Common AST".to_string(),
-                to: "GenUI AST, Invaild Strategy!".to_string(),
-            }
-            .into()),
-        }
-    }
+    //             for _ in 0..2 {
+    //                 match receiver
+    //                     .recv()
+    //                     .expect("gen_converter: receive failed when convert!")
+    //                 {
+    //                     ConvertResult::Template(t) => match t {
+    //                         Ok(t) => {
+    //                             model.set_template(t);
+    //                         }
+    //                         Err(e) => {
+    //                             return Err(e);
+    //                         }
+    //                     },
+    //                     ConvertResult::Style(s) => {
+    //                         if s.is_some() {
+    //                             model.set_style(s.unwrap());
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             // 处理script部分
+    //             model.script = ast.script;
+    //             Ok(())
+    //         }
+    //         _ => Err(ConvertError::FromTo {
+    //             from: "GenUI Common AST".to_string(),
+    //             to: "GenUI AST, Invaild Strategy!".to_string(),
+    //         }
+    //         .into()),
+    //     }
+    // }
 
     // pub fn set_special(&mut self, special: &PathBuf, source: &PathBuf) -> () {
     //     if self.special.as_os_str().is_empty() {
@@ -255,20 +258,84 @@ impl Model {
     //         panic!("special is already set");
     //     }
     // }
+    
+    /// parse gen file
+    /// try parse `<template>...</template>`, `<style>...</style>`, `<script>...</script>`
+    /// use nom take till
+    pub fn parse(&mut self, input: &str) ->Result<(), Error>{
+        let parse_tag = |name: &str|{
+            move |input: &str| {
+                let (input, _) = tag(format!("<{}>", name))(input)?;
+                let (input, template_str) = take_until(format!("</{}>", name))(input)?;
+                let (input, _) = tag(format!("</{}>", name))(input)?;
+                if template_str.is_empty() {
+                    Ok((input, None))
+                } else {
+                    Ok((input, Some(template_str)))
+                }
+            }
+        };
+
+
+        let (input, template) = opt(parse_tag("template"))(input)?;
+        let (input, style) = opt(parse_tag("style"))(input)?;
+        let (input, script) = opt(parse_tag("script"))(input)?;
+
+        let template = template.flatten();
+        let style = style.flatten();
+        let script = script.flatten();
+
+        match (template, style, script) {
+            (Some(t), Some(s), Some(sc)) => {
+               
+            }
+            (Some(t), Some(s), None) => {
+                println!("template: {}", t);
+                println!("style: {}", s);
+            }
+            (Some(t), None, Some(sc)) => {
+                println!("template: {}", t);
+                println!("script: {}", sc);
+            }
+            (Some(t), None, None) => {
+                println!("template: {}", t);
+            }
+            (None, Some(s), Some(sc)) => {
+                println!("style: {}", s);
+                println!("script: {}", sc);
+            }
+            (None, Some(s), None) => {
+                println!("style: {}", s);
+            }
+            (None, None, Some(sc)) => {
+                self.script.replace(sc.into());
+            }
+            (None, None, None) => {}
+            _ => {
+                Err(
+                    ParseError::template("the parse strategy is invalid!")
+                )
+            }
+        }
+
+
+        Ok(())
+    }
+
 }
 
-pub fn file_data<P>(path: P) -> Result<String, Box<dyn Error>>
-where
-    P: AsRef<Path>,
-{
-    match File::open(path) {
-        Ok(mut file) => {
-            let mut buffer = String::new();
-            let _ = file
-                .read_to_string(&mut buffer)
-                .expect("can not read file buffer");
-            Ok(buffer)
-        }
-        Err(e) => Err(Box::new(e)),
-    }
-}
+// pub fn file_data<P>(path: P) -> Result<String, Error>
+// where
+//     P: AsRef<Path>,
+// {
+//     match File::open(path) {
+//         Ok(mut file) => {
+//             let mut buffer = String::new();
+//             let _ = file
+//                 .read_to_string(&mut buffer)
+//                 .expect("can not read file buffer");
+//             Ok(buffer)
+//         }
+//         Err(e) => Err(Box::new(e)),
+//     }
+// }
