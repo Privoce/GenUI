@@ -34,9 +34,10 @@ use gen_utils::{
 
 pub use template::*;
 
+/// ### Style Value
 pub type StyleVal = HashMap<PropKey, Value>;
-/// also name Style
-/// in gen-ui no difference between style and props
+/// ## Style
+/// in gen-ui no difference between style and props,
 /// so we use the same struct to represent them
 /// `<id|class, HashMap<prop, value>>`
 pub type Style = HashMap<String, StyleVal>;
@@ -187,7 +188,7 @@ impl Model {
                     Ok(())
                 });
 
-                // 等待并处理结果
+                // wait for parse result
                 match (template_receiver.recv(), style_receiver.recv()) {
                     (Ok(template), Ok(style)) => {
                         self.template.replace(template);

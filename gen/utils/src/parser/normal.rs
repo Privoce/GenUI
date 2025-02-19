@@ -1,5 +1,5 @@
 use nom::{
-    bytes::complete::{tag, take_while_m_n},
+    bytes::complete::take_while_m_n,
     character::complete::{alpha1, multispace0},
     combinator::recognize,
     sequence::{delimited, pair},
@@ -23,7 +23,6 @@ pub fn parse_value(input: &str) -> IResult<&str, &str> {
     parse_normal(input, '_')
 }
 
-
 /// ## trim any parser left and right multispace(if exist)
 #[allow(unused_mut)]
 pub fn trim<'a, P, O>(mut parser: P) -> impl FnMut(&'a str) -> IResult<&'a str, O>
@@ -33,12 +32,6 @@ where
     delimited(multispace0, parser, multispace0)
 }
 
-// pub fn parse_path(input: &str) -> IResult<&str, &str> {
-//     let path = input.trim().trim_matches(|c| c == '\"').trim();
-
-//     PathBuf::from_str(path)
-
-// }
 
 #[cfg(test)]
 mod normal {

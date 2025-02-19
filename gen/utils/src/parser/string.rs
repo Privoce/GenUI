@@ -14,11 +14,6 @@ pub fn parse_string_sign_single(input: &str) -> IResult<&str, &str> {
 /// ## parse tag property value 🆗
 /// parse : `\"xxx\"` , and return without `\"`
 pub fn parse_string(input: &str) -> IResult<&str, &str> {
-    // delimited(
-    //     parse_property_sign,
-    //     recognize(many0(none_of("\""))),
-    //     parse_property_sign,
-    // )(input)
     delimited(
         parse_string_sign_single,
         take_until("\""),

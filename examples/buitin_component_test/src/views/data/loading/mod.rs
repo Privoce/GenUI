@@ -91,6 +91,7 @@ live_design! {
                         ld2 = <GLoading>{
                             height: 64.0,
                             width: 64.0,
+                            theme: Success,
                             loading_type: CircleDot
                         }
                         <GLabel>{
@@ -122,6 +123,7 @@ live_design! {
                         spacing: 16.0,
                         align: {x: 0.5, y: 0.5},
                         ld3 = <GLoading>{
+                            theme: Warning,
                             loading_type: DotLine
                         }
                         <GLabel>{

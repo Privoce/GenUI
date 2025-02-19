@@ -1,4 +1,3 @@
-mod analyzer;
 pub mod lifetime;
 mod model;
 mod utils;

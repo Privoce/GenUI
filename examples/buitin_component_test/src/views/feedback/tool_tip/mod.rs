@@ -64,6 +64,7 @@ live_design! {
                             text:"open top left"
                         }},
                         popup :<GToolTip> {
+                            theme: Info,
                             height: 100.0,
                             width: 200.0,
                             container: {
@@ -86,6 +87,7 @@ live_design! {
                         popup :<GToolTip> {
                             height: 100.0,
                             width: 200.0,
+                            theme: Info,
                             container: {
                                 height: Fill,
                                 width: Fill,
@@ -106,6 +108,7 @@ live_design! {
                         popup :<GToolTip> {
                             height: 100.0,
                             width: 200.0,
+                            theme: Info,
                             container: {
                                 height: Fill,
                                 width: Fill,
@@ -133,6 +136,7 @@ live_design! {
                             popup :<GToolTip> {
                                 height: 100.0,
                                 width: 200.0,
+                                theme: Info,
                                 container: {
                                     height: Fill,
                                     width: Fill,
@@ -153,6 +157,7 @@ live_design! {
                             popup :<GToolTip> {
                                 height: 100.0,
                                 width: 200.0,
+                                theme: Info,
                                 container: {
                                     height: Fill,
                                     width: Fill,
@@ -173,6 +178,7 @@ live_design! {
                             popup :<GToolTip> {
                                 height: 100.0,
                                 width: 200.0,
+                                theme: Info,
                                 container: {
                                     height: Fill,
                                     width: Fill,
@@ -365,6 +371,9 @@ pub struct ToolTipPage {
 impl LiveHook for ToolTipPage {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
         self.deref_widget.after_apply(cx, apply, index, nodes);
+    }
+    fn after_apply_from_doc(&mut self, cx:&mut Cx) {
+        self.deref_widget.after_apply_from_doc( cx);
     }
 }
 
