@@ -1,6 +1,6 @@
 use crate::model::Template;
 use crate::value::{Bind, Ident, Value};
-use crate::{nom_err, Comment, PropKey, PropKeyType};
+use crate::{nom_err, Comment, Polls, PropKey, PropKeyType};
 use gen_utils::error::{Error, ParseError};
 use gen_utils::parser::parse_value;
 use gen_utils::{
@@ -17,7 +17,10 @@ use nom::{
     sequence::{delimited, preceded, tuple},
     IResult,
 };
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 /// ## ⚡️ parse normal label 🆗
 /// use in tag_start | tag_end to parse the tag_name
@@ -232,50 +235,56 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 
 /// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
-    // [parse comment if exist] ------------------------------------------------------------------------------------
-    let (input, comments) = parse_comment(input)?;
-    // [parse tag start] -------------------------------------------------------------------------------------------
-    let (input, mut template) = parse_tag_start(input)?;
-    if !comments.is_empty(){
-        template.comments.replace(comments);
-    }
-    // let (is_tag, is_self_closed) = template.is_tag_close();
-    // is tag, nest parse tag
-    let tag_name = template.name.to_string();
-    // trim input and check is start with `</tag_name>`
-    match parse_end_tag(input, tag_name.to_string()) {
-        Ok((input, _)) => {
-            return Ok((input, template));
+fn parse_tag<'a>(poll: Arc<Mutex<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
+    move |input: &str| {
+        // [parse comment if exist] ------------------------------------------------------------------------------------
+        let (input, comments) = parse_comment(input)?;
+        // [parse tag start] -------------------------------------------------------------------------------------------
+        let (input, mut template) = parse_tag_start(input)?;
+        template
+            .after_parse(Arc::clone(&poll))
+            .map_err(|_| nom_err!(input, ErrorKind::Fail))?;
+        if !comments.is_empty() {
+            template.comments.replace(comments);
         }
-        Err(_) => {
-            // has children, parse children
-            let (input, mut children) = many0(parse_tag)(input)?;
-
-            let input = match parse_end_tag_common(input) {
-                Ok((remain, _)) => remain,
-                Err(_) => input,
-            };
-
-            if !children.is_empty() {
-                let (special, name) = template.as_parent();
-                children
-                    .iter_mut()
-                    .for_each(|child| child.set_parent(special.to_string(), name.to_string()));
-
-                template.children.replace(children);
-            }
-            let input = input.trim();
-            // dbg!(input);
-            // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
-            if preceded(char('<'), parse_tag_name)(input).is_ok()
-                && parse_end_tag_common(input).is_err()
-            {
+        // let (is_tag, is_self_closed) = template.is_tag_close();
+        // is tag, nest parse tag
+        let tag_name = template.name.to_string();
+        // trim input and check is start with `</tag_name>`
+        match parse_end_tag(input, tag_name.to_string()) {
+            Ok((input, _)) => {
                 return Ok((input, template));
             }
-            return Ok((input, template));
+            Err(_) => {
+                // has children, parse children
+                let (input, mut children) = many0(parse_tag(Arc::clone(&poll)))(input)?;
+
+                let input = match parse_end_tag_common(input) {
+                    Ok((remain, _)) => remain,
+                    Err(_) => input,
+                };
+
+                if !children.is_empty() {
+                    let (special, name) = template.as_parent();
+                    children
+                        .iter_mut()
+                        .for_each(|child| child.set_parent(special.to_string(), name.to_string()));
+
+                    template.children.replace(children);
+                }
+                let input = input.trim();
+                // dbg!(input);
+                // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
+                if preceded(char('<'), parse_tag_name)(input).is_ok()
+                    && parse_end_tag_common(input).is_err()
+                {
+                    return Ok((input, template));
+                }
+                return Ok((input, template));
+            }
         }
-    };
+    }
+
     // if is not tag, is comment -> do recursive parse
     // Ok((input, template))
 }
@@ -283,8 +292,8 @@ fn parse_tag<'a>(input: &'a str) -> IResult<&'a str, Template> {
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse(input: &str) -> Result<Template, Error> {
-    match parse_tag(input) {
+pub fn parse(input: &str, poll: Arc<Mutex<Polls>>) -> Result<Template, Error> {
+    match parse_tag(poll)(input) {
         Ok((remain, template)) => {
             if remain.is_empty() {
                 return Ok(template);

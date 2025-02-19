@@ -1,6 +1,7 @@
 mod script;
 mod strategy;
 // mod style;
+mod poll;
 mod template;
 
 use nom::{
@@ -9,10 +10,14 @@ use nom::{
     multi::many0,
     IResult,
 };
+pub use poll::*;
 pub use script::*;
 use std::{
     collections::HashMap,
-    sync::mpsc::{self},
+    sync::{
+        mpsc::{self},
+        Arc, Mutex,
+    },
     thread,
 };
 pub use strategy::*;
@@ -79,6 +84,8 @@ pub struct Model {
     pub is_entry: bool,
     /// 转换策略
     pub strategy: Strategy,
+    /// 池化属性和回调
+    pub polls: Arc<Mutex<Polls>>,
 }
 
 impl Model {
@@ -95,12 +102,6 @@ impl Model {
         self.template.is_none() && self.script.is_none() && self.style.is_none()
     }
 
-    pub fn set_template(&mut self, template: Template) -> () {
-        let _ = self.template.replace(template);
-    }
-    pub fn set_style(&mut self, style: Style) -> () {
-        let _ = self.style.replace(style);
-    }
     pub fn is_component(&self) -> bool {
         if self.template.is_some() {
             return self.template.as_ref().unwrap().is_component();
@@ -173,8 +174,9 @@ impl Model {
                 self.strategy = Strategy::All;
                 let (sender, receiver) = mpsc::channel();
                 let (style_sender, style_receiver) = mpsc::channel();
+                let poll = Arc::clone(&self.polls);
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = Template::parse(&t)?;
+                    let res = Template::parse(&t, poll)?;
                     sender.send(res).expect("send template error");
                     Ok(())
                 });
@@ -199,9 +201,10 @@ impl Model {
             }
             (Some(t), Some(s), None) => {
                 self.strategy = Strategy::TemplateStyle;
+                let poll = Arc::clone(&self.polls);
                 let (sender, receiver) = mpsc::channel();
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = Template::parse(&t)?;
+                    let res = Template::parse(&t, poll)?;
                     sender.send(res).expect("send template error");
                     Ok(())
                 });
@@ -210,9 +213,10 @@ impl Model {
             }
             (Some(t), None, Some(sc)) => {
                 self.strategy = Strategy::TemplateScript;
+                let poll = Arc::clone(&self.polls);
                 let (sender, receiver) = mpsc::channel();
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = Template::parse(&t)?;
+                    let res = Template::parse(&t, poll)?;
                     sender.send(res).expect("send template error");
                     Ok(())
                 });
@@ -221,7 +225,8 @@ impl Model {
             }
             (Some(t), None, None) => {
                 self.strategy = Strategy::SingleTemplate;
-                self.template.replace(Template::parse(&t)?);
+                self.template
+                    .replace(Template::parse(&t, Arc::clone(&self.polls))?);
             }
             (None, Some(s), None) => {
                 self.strategy = Strategy::SingleStyle;

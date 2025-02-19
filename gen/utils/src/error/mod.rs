@@ -4,6 +4,7 @@ mod parse;
 mod strategy;
 mod style;
 mod tag;
+mod macros;
 
 pub use convert::*;
 pub use env::EnvError;

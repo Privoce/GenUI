@@ -21,6 +21,18 @@ mod test_analyzer{
     }
 
     #[test]
+    fn parse_bind(){
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello",
+            "components/hello.gen",
+            "src_gen_0/src/components/hello.gen",
+        );
+
+        handle(source);
+    }
+
+
+    #[test]
     fn parse_style(){
         let source = Source::new(
             "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello",

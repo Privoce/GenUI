@@ -2,16 +2,23 @@ mod comment;
 mod prop;
 pub use comment::*;
 pub use prop::*;
-use std::{collections::HashMap, str::FromStr};
+use std::{
+    collections::HashMap,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
 
 // use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
 
 use gen_utils::{
     common::ulid,
+    err_from_to,
     error::{Error, ParseError},
 };
 
-use crate::{template, value::Value};
+use crate::{template, value::Value, PropComponent};
+
+use super::Polls;
 
 /// ## 事件回调集合
 /// 用于标识外部传入组件的事件的集合
@@ -92,38 +99,37 @@ impl Template {
         template
     }
 
-    pub fn parse(input: &str) -> Result<Self, Error> {
-        let mut template = template::parse(input)?;
-        template.after_parse()?;
-        Ok(template)
+    /// 解析模版部分并返回模版后续进行静态分析的池
+    pub fn parse(input: &str, poll: Arc<Mutex<Polls>>) -> Result<Self, Error> {
+        template::parse(input, poll)
     }
 
-    pub fn after_parse(&mut self) -> Result<(), Error> {
+    /// ## after parse
+    /// 在 template::parse(input) 内部调用在，在所有属性被分析完成后调用这个方法
+    /// See: `push_prop()`
+    pub fn after_parse(&mut self, poll: Arc<Mutex<Polls>>) -> Result<(), Error> {
         // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
+        // 在进行属性处理的时候同时获取出池化属性
         if let Some(props) = self.props.take() {
             for (k, v) in props {
-                self.push_prop(k, v)?;
+                self.push_prop(Arc::clone(&poll), k, v)?;
             }
         }
-
         Ok(())
     }
 
-    // /// judge the root template tag is `<component>` or not
-    // pub fn is_static(&self) -> bool {
-    //     // self.get_name().ne("component")
-    //     let is_dyn = if let Some(props) = self.props.as_ref() {
-    //         // check PropsKey is not normal
-    //         props.iter().any(|(k, _v)| !k.is_normal())
-    //     } else {
-    //         false
-    //     };
+    /// judge the root template tag is `<component>` or not
+    pub fn is_static(&self) -> bool {
+        self.callbacks.is_none() && self.binds.is_none()
+    }
 
-    //     self.callbacks.is_none() && !is_dyn
-    // }
-
-    pub fn push_prop(&mut self, key: PropKey, value: Value) -> Result<(), Error> {
+    pub fn push_prop(
+        &mut self,
+        poll: Arc<Mutex<Polls>>,
+        key: PropKey,
+        value: Value,
+    ) -> Result<(), Error> {
         fn insert_prop(props: &mut Option<Props>, key: PropKey, value: Value) -> () {
             match props {
                 Some(props) => {
@@ -219,6 +225,12 @@ impl Template {
                     insert_prop(&mut self.props, key, value);
                 }
                 PropKeyType::Bind => {
+                    let mut poll = poll.lock().unwrap();
+                    poll.insert_prop(
+                        &value.as_bind()?.ident(),
+                        self.as_prop_component(&key.name)?,
+                    );
+
                     insert_prop(&mut self.binds, key, value);
                 }
                 PropKeyType::Function => match self.callbacks.as_mut() {
@@ -421,6 +433,25 @@ impl Template {
     //     // 获取每个节点的props以及采集节点名称
     //     append(self)
     // }
+
+    /// prop: bind prop name (:color="label_color" => color)
+    pub fn as_prop_component(&self, prop: &str) -> Result<PropComponent, Error> {
+        // [name] -------------------------------------------------------------------------------------------------------
+        let name = self.name.to_string();
+        // [id (needed or err)] -----------------------------------------------------------------------------------------
+        let id = self.id.as_ref()
+        .map_or_else(
+            || Err(err_from_to!("Template" => format!("PropComponent, can not find id in template please check: {}", &name))),
+            |id| Ok(id.to_string())
+        )?;
+
+        Ok(PropComponent {
+            id,
+            name,
+            prop: prop.to_string(),
+            as_prop: self.as_prop.clone(),
+        })
+    }
 }
 
 impl Default for Template {
