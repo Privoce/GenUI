@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use crate::value::Function;
+use gen_utils::error::Error;
+
+use crate::value::{Function, Value};
+
+use super::PropKey;
 
 /// # Polls
 /// 对每个模型中组件的绑定属性和事件属性进行池化，用于进行静态分析
@@ -22,6 +26,9 @@ impl Polls {
             .entry(key.to_string())
             .or_insert_with(Default::default)
             .push(value);
+    }
+    pub fn insert_event(&mut self, value: EventComponent) -> () {
+        self.event_mut().push(value);
     }
 }
 
@@ -53,18 +60,33 @@ pub struct EventComponent {
     pub callbacks: HashMap<String, CallbackFn>,
 }
 
+impl EventComponent {
+    pub fn convert_callbacks(
+        callbacks: &HashMap<PropKey, Value>,
+    ) -> Result<HashMap<String, CallbackFn>, Error> {
+        let mut res = HashMap::new();
+        for (key, value) in callbacks {
+            let func = value.as_fn()?;
+
+            res.insert(
+                func.name.to_string(),
+                CallbackFn::new(func, key.name.to_string()),
+            );
+        }
+
+        Ok(res)
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct CallbackFn {
     pub func: Function,
     /// event name
-    pub name: String,
+    pub event: String,
 }
 
 impl CallbackFn {
-    pub fn new(func: Function, name: String) -> Self {
-        CallbackFn { func, name }
-    }
-    pub fn event(&self) -> String {
-        self.name.to_string()
+    pub fn new(func: Function, event: String) -> Self {
+        CallbackFn { func, event }
     }
 }

@@ -17,7 +17,7 @@ mod test_analyzer{
         let t = Instant::now();
         let model = Model::new(source, false);
         dbg!(t.elapsed());
-        dbg!(model);
+        dbg!(&model);
     }
 
     #[test]
@@ -88,6 +88,6 @@ mod test_analyzer{
 
         let model = Model::new(source, false);
 
-        dbg!(model);
+        dbg!(&model);
     }
 }

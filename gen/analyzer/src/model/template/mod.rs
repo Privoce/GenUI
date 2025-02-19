@@ -5,20 +5,20 @@ pub use prop::*;
 use std::{
     collections::HashMap,
     str::FromStr,
-    sync::{Arc, Mutex},
+    sync::{Arc, RwLock, RwLockWriteGuard},
 };
 
 // use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
 
 use gen_utils::{
     common::ulid,
-    err_from_to,
+    err_from, err_from_to,
     error::{Error, ParseError},
 };
 
 use crate::{template, value::Value, PropComponent};
 
-use super::Polls;
+use super::{EventComponent, Polls};
 
 /// ## 事件回调集合
 /// 用于标识外部传入组件的事件的集合
@@ -100,20 +100,29 @@ impl Template {
     }
 
     /// 解析模版部分并返回模版后续进行静态分析的池
-    pub fn parse(input: &str, poll: Arc<Mutex<Polls>>) -> Result<Self, Error> {
+    pub fn parse(input: &str, poll: Arc<RwLock<Polls>>) -> Result<Self, Error> {
         template::parse(input, poll)
     }
 
     /// ## after parse
     /// 在 template::parse(input) 内部调用在，在所有属性被分析完成后调用这个方法
     /// See: `push_prop()`
-    pub fn after_parse(&mut self, poll: Arc<Mutex<Polls>>) -> Result<(), Error> {
-        // [获取Tag被设置的属性作为Template传入的属性]--------------------------------------
+    pub fn after_parse(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
+        // [获取Tag被设置的属性作为Template传入的属性]------------------------------------------
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
         // 在进行属性处理的时候同时获取出池化属性
         if let Some(props) = self.props.take() {
+            // get write lock
+            let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
+
             for (k, v) in props {
-                self.push_prop(Arc::clone(&poll), k, v)?;
+                self.push_prop(&mut poll, k, v)?;
+            }
+
+            // [set events] ----------------------------------------------------------------
+            // 由于事件的存储是直接存储所有事件在EvenComponent中所以在外面一次性处理
+            if let Some(callbacks) = self.callbacks.as_ref() {
+                poll.insert_event(self.as_event_component(callbacks)?);
             }
         }
         Ok(())
@@ -126,7 +135,7 @@ impl Template {
 
     pub fn push_prop(
         &mut self,
-        poll: Arc<Mutex<Polls>>,
+        poll: &mut RwLockWriteGuard<Polls>,
         key: PropKey,
         value: Value,
     ) -> Result<(), Error> {
@@ -139,6 +148,19 @@ impl Template {
                     let mut item = HashMap::new();
                     item.insert(key, value);
                     props.replace(item);
+                }
+            }
+        }
+
+        fn insert_event(callbacks: &mut Option<Callbacks>, key: PropKey, value: Value) -> () {
+            match callbacks {
+                Some(callbacks) => {
+                    let _ = callbacks.insert(key, value);
+                }
+                None => {
+                    let mut item = HashMap::new();
+                    item.insert(key, value);
+                    callbacks.replace(item);
                 }
             }
         }
@@ -225,7 +247,6 @@ impl Template {
                     insert_prop(&mut self.props, key, value);
                 }
                 PropKeyType::Bind => {
-                    let mut poll = poll.lock().unwrap();
                     poll.insert_prop(
                         &value.as_bind()?.ident(),
                         self.as_prop_component(&key.name)?,
@@ -233,14 +254,9 @@ impl Template {
 
                     insert_prop(&mut self.binds, key, value);
                 }
-                PropKeyType::Function => match self.callbacks.as_mut() {
-                    Some(callbacks) => {
-                        let _ = callbacks.insert(key, value);
-                    }
-                    None => {
-                        self.callbacks = Some(vec![(key, value)].into_iter().collect());
-                    }
-                },
+                PropKeyType::Function => {
+                    insert_event(&mut self.callbacks, key, value);
+                }
             }
         }
 
@@ -434,8 +450,7 @@ impl Template {
     //     append(self)
     // }
 
-    /// prop: bind prop name (:color="label_color" => color)
-    pub fn as_prop_component(&self, prop: &str) -> Result<PropComponent, Error> {
+    fn get_name_and_id(&self) -> Result<(String, String), Error> {
         // [name] -------------------------------------------------------------------------------------------------------
         let name = self.name.to_string();
         // [id (needed or err)] -----------------------------------------------------------------------------------------
@@ -444,12 +459,31 @@ impl Template {
             || Err(err_from_to!("Template" => format!("PropComponent, can not find id in template please check: {}", &name))),
             |id| Ok(id.to_string())
         )?;
+        Ok((name, id))
+    }
+
+    /// prop: bind prop name (:color="label_color" => color)
+    pub fn as_prop_component(&self, prop: &str) -> Result<PropComponent, Error> {
+        let (name, id) = self.get_name_and_id()?;
 
         Ok(PropComponent {
             id,
             name,
             prop: prop.to_string(),
             as_prop: self.as_prop.clone(),
+        })
+    }
+
+    pub fn as_event_component(
+        &self,
+        callbacks: &HashMap<PropKey, Value>,
+    ) -> Result<EventComponent, Error> {
+        let (name, id) = self.get_name_and_id()?;
+
+        Ok(EventComponent {
+            id,
+            name,
+            callbacks: EventComponent::convert_callbacks(callbacks)?,
         })
     }
 }

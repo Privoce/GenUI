@@ -16,7 +16,7 @@ use std::{
     collections::HashMap,
     sync::{
         mpsc::{self},
-        Arc, Mutex,
+        Arc, RwLock,
     },
     thread,
 };
@@ -85,7 +85,7 @@ pub struct Model {
     /// 转换策略
     pub strategy: Strategy,
     /// 池化属性和回调
-    pub polls: Arc<Mutex<Polls>>,
+    pub polls: Arc<RwLock<Polls>>,
 }
 
 impl Model {
@@ -172,32 +172,30 @@ impl Model {
         match (template, style, script) {
             (Some(t), Some(s), Some(sc)) => {
                 self.strategy = Strategy::All;
-                let (sender, receiver) = mpsc::channel();
+                let (template_sender, template_receiver) = mpsc::channel();
                 let (style_sender, style_receiver) = mpsc::channel();
                 let poll = Arc::clone(&self.polls);
                 let _ = thread::spawn(move || -> Result<(), Error> {
                     let res = Template::parse(&t, poll)?;
-                    sender.send(res).expect("send template error");
+                    template_sender.send(res).expect("send template error");
                     Ok(())
                 });
+
                 let _ = thread::spawn(move || -> Result<(), Error> {
                     let res = crate::parse::style::parse(&s)?;
                     style_sender.send(res).expect("send style error");
                     Ok(())
                 });
-                let _ = receiver
-                    .recv()
-                    .map(|t| {
-                        self.template.replace(t);
-                    })
-                    .map_err(|_| ParseError::template("template parse error!"))?;
-                let _ = style_receiver
-                    .recv()
-                    .map(|s| {
-                        self.style.replace(s);
-                    })
-                    .map_err(|_| ParseError::template("style parse error!"))?;
-                self.script.replace(sc.into());
+
+                // 等待并处理结果
+                match (template_receiver.recv(), style_receiver.recv()) {
+                    (Ok(template), Ok(style)) => {
+                        self.template.replace(template);
+                        self.style.replace(style);
+                        self.script.replace(sc.into());
+                    }
+                    _ => return Err(ParseError::template("Failed to receive parse results").into()),
+                }
             }
             (Some(t), Some(s), None) => {
                 self.strategy = Strategy::TemplateStyle;

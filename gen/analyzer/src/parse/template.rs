@@ -17,10 +17,8 @@ use nom::{
     sequence::{delimited, preceded, tuple},
     IResult,
 };
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 /// ## ⚡️ parse normal label 🆗
 /// use in tag_start | tag_end to parse the tag_name
@@ -235,7 +233,7 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 
 /// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-fn parse_tag<'a>(poll: Arc<Mutex<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
+fn parse_tag<'a>(poll: Arc<RwLock<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
     move |input: &str| {
         // [parse comment if exist] ------------------------------------------------------------------------------------
         let (input, comments) = parse_comment(input)?;
@@ -273,7 +271,6 @@ fn parse_tag<'a>(poll: Arc<Mutex<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a 
                     template.children.replace(children);
                 }
                 let input = input.trim();
-                // dbg!(input);
                 // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
                 if preceded(char('<'), parse_tag_name)(input).is_ok()
                     && parse_end_tag_common(input).is_err()
@@ -284,15 +281,12 @@ fn parse_tag<'a>(poll: Arc<Mutex<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a 
             }
         }
     }
-
-    // if is not tag, is comment -> do recursive parse
-    // Ok((input, template))
 }
 
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse(input: &str, poll: Arc<Mutex<Polls>>) -> Result<Template, Error> {
+pub fn parse(input: &str, poll: Arc<RwLock<Polls>>) -> Result<Template, Error> {
     match parse_tag(poll)(input) {
         Ok((remain, template)) => {
             if remain.is_empty() {
