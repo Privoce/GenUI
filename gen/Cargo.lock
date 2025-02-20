@@ -363,7 +363,7 @@ dependencies = [
  "lazy_static",
  "proc-macro2",
  "quote",
- "ra_ap_syntax",
+ "ra_ap_syntax 0.0.258",
  "rssyin",
  "syn",
  "toml_edit",
@@ -373,9 +373,9 @@ dependencies = [
 
 [[package]]
 name = "memchr"
-version = "2.7.2"
+version = "2.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c8640c5d730cb13ebd907d8d04b52f55ac9a2eec55b440c8892f40d56c76c1d"
+checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
 name = "memoffset"
@@ -470,10 +470,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "ra-ap-rustc_lexer"
+version = "0.94.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7a4d402b2f85650e8c1f78e2e2defc241b03948d6e30d9f5254c9b82755cc4d"
+dependencies = [
+ "memchr",
+ "unicode-properties",
+ "unicode-xid",
+]
+
+[[package]]
 name = "ra_ap_edition"
 version = "0.0.258"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7cc6633305d878cafb4a4482e7e7002d1a5d7b15fa837728b6613ff5336f8a4"
+
+[[package]]
+name = "ra_ap_edition"
+version = "0.0.264"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39191bad4865aefc5db6d7e19be264d3289a6e8879c14a90091cd88142a3a04e"
 
 [[package]]
 name = "ra_ap_limit"
@@ -482,15 +499,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90d8a2aecbd488cf79b430bd5abe6650da44ae58b31cd6052c909dbd3f5d5926"
 
 [[package]]
+name = "ra_ap_limit"
+version = "0.0.264"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d6e205acd860a47e7f1b39b39f6732dfbd6d876d0950820ffb1937fe45a0a7d"
+
+[[package]]
 name = "ra_ap_parser"
 version = "0.0.258"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f499b6c33a588d60ed9722d057954a21ec01913b97a5693ff40ba4828ffa7b9"
 dependencies = [
  "drop_bomb",
- "ra-ap-rustc_lexer",
- "ra_ap_edition",
- "ra_ap_limit",
+ "ra-ap-rustc_lexer 0.87.0",
+ "ra_ap_edition 0.0.258",
+ "ra_ap_limit 0.0.258",
+ "tracing",
+]
+
+[[package]]
+name = "ra_ap_parser"
+version = "0.0.264"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4393f287f18c19f8a9a60a8b53e59003e0edffbe355bb2ced96a054f73109a14"
+dependencies = [
+ "drop_bomb",
+ "ra-ap-rustc_lexer 0.94.0",
+ "ra_ap_edition 0.0.264",
+ "ra_ap_limit 0.0.264",
  "tracing",
 ]
 
@@ -510,6 +546,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ra_ap_stdx"
+version = "0.0.264"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37d1ba69f49f11457a8e04ac539504c685e0653a3eed060eb80fdbef5e2a3c68"
+dependencies = [
+ "always-assert",
+ "crossbeam-channel",
+ "itertools",
+ "jod-thread",
+ "libc",
+ "miow",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
 name = "ra_ap_syntax"
 version = "0.0.258"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -519,9 +570,29 @@ dependencies = [
  "either",
  "indexmap",
  "itertools",
- "ra-ap-rustc_lexer",
- "ra_ap_parser",
- "ra_ap_stdx",
+ "ra-ap-rustc_lexer 0.87.0",
+ "ra_ap_parser 0.0.258",
+ "ra_ap_stdx 0.0.258",
+ "rowan",
+ "rustc-hash 2.1.0",
+ "smol_str",
+ "tracing",
+ "triomphe",
+]
+
+[[package]]
+name = "ra_ap_syntax"
+version = "0.0.264"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17547fdea8b5d6f1cb1a0c71b1f5728359b29accdd0ec77bd7099b63963ffcf3"
+dependencies = [
+ "cov-mark",
+ "either",
+ "indexmap",
+ "itertools",
+ "ra-ap-rustc_lexer 0.94.0",
+ "ra_ap_parser 0.0.264",
+ "ra_ap_stdx 0.0.264",
  "rowan",
  "rustc-hash 2.1.0",
  "smol_str",
@@ -579,6 +650,7 @@ dependencies = [
  "gen_mk_script_objs",
  "proc-macro2",
  "quote",
+ "ra_ap_syntax 0.0.264",
  "syn",
 ]
 
@@ -898,6 +970,15 @@ name = "windows-sys"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+dependencies = [
+ "windows-targets 0.52.6",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.59.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e38bc4d79ed67fd075bcc251a1c39b32a1776bbe92e5bef1f0bf1f8c531853b"
 dependencies = [
  "windows-targets 0.52.6",
 ]

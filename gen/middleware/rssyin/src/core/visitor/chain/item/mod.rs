@@ -1,14 +1,16 @@
 mod r#enum;
 mod r#fn;
+mod r#impl;
 mod r#struct;
 
 use r#enum::EnumVisitorChain;
 use r#fn::FnVisitorChain;
+use r#impl::ImplVisitorChain;
 use r#struct::StructVisitorChain;
 
 use super::{
     res_ty::ResultType,
-    traits::{BasicChainVisitor, VisitorEnum, VisitorFn, VisitorItem, VisitorStruct},
+    traits::{BasicChainVisitor, VisitorEnum, VisitorFn, VisitorImpl, VisitorItem, VisitorStruct},
 };
 
 #[derive(Default)]
@@ -16,13 +18,15 @@ pub struct ItemVisitorChain {
     pub enums: EnumVisitorChain,
     pub structs: StructVisitorChain,
     pub fns: FnVisitorChain,
+    pub impls: ImplVisitorChain,
 }
 
 impl ItemVisitorChain {
     pub fn clear(&mut self) {
         self.enums.clear();
         self.structs.clear();
-        self.fns.clear();
+        // self.fns.clear();
+        self.impls.clear();
     }
 }
 
@@ -38,6 +42,12 @@ impl VisitorItem for ItemVisitorChain {
                     return Ok(ResultType::Ignore);
                 }
                 self.enums.visit_item_enum_with(item_enum, bridge)
+            }
+            syn::Item::Impl(item_impl) => {
+                if self.impls.is_empty() {
+                    return Ok(ResultType::Ignore);
+                }
+                self.impls.visit_item_impl_with(item_impl, bridge)
             }
             syn::Item::Fn(item_fn) => {
                 if self.fns.is_empty() {

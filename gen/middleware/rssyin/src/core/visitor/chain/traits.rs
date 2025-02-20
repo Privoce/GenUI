@@ -17,6 +17,14 @@ pub trait ChainVisitor {
     fn clear(&mut self) ->();
 }
 
+// impl -----------------------------------------------------------------------
+pub trait VisitorImpl: BasicVisitor {
+    fn visit_item_impl_with(
+        &mut self,
+        item: &syn::ItemImpl,
+        bridge: &mut ScriptBridger,
+    ) -> SCResult<ResultType>;
+}
 // enum -----------------------------------------------------------------------
 pub trait VisitorEnum: BasicVisitor {
     fn visit_item_enum_with(

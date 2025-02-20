@@ -55,6 +55,11 @@ live_design! {
                             text: "nav2"
                         }
                     }
+                    to_f= <GButton>{
+                        slot: {
+                            text: "nav3"
+                        }
+                    }
                 }
                 app_router = <GRouter>{
                     bar_pages = {
@@ -148,6 +153,28 @@ live_design! {
                                 }
                             }
                         },
+                        nav_page3 = <GNavPage>{
+                            header = {
+                                title_wrap = {
+                                    title = {
+                                        text: "Page3"
+                                    }
+                                }
+                                tool_wrap = {
+                                    <GIcon>{
+                                        theme: Dark,
+                                        icon_type: OpenBottom,
+                                        stroke_width: 1.2
+                                    }
+                                }
+                            }
+                            body = {
+                                theme: Warning,
+                                <GLabel>{
+                                    text: "APP PAGE2"
+                                }
+                            }
+                        },
                     }
                 }
             }
@@ -197,7 +224,7 @@ impl Widget for RouterPage {
                     let _ = router
                         .init(
                             ids!(page1, page2, page3),
-                            Some(ids!(nav_page1, nav_page2)),
+                            Some(ids!(nav_page1, nav_page2, nav_page3)),
                             None,
                         )
                         .active(id!(page1))
@@ -224,6 +251,9 @@ impl Widget for RouterPage {
         }
         if self.gbutton(id!(to_e)).clicked(&actions).is_some() {
             router.nav_to(cx, id!(nav_page2));
+        }
+        if self.gbutton(id!(to_f)).clicked(&actions).is_some() {
+            router.nav_to(cx, id!(nav_page3));
         }
         
         router.handle_nav_events(cx, &actions);

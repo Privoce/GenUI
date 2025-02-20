@@ -469,6 +469,41 @@ mod test_makepad {
         );
     }
 
+    #[test]
+    fn back_to_rust(){
+        let input = r#"
+        {
+            #[prop]
+            pub struct AProp{
+                pub a: i32,
+                pub b: f32,
+            }
+
+            impl Default for AProp {
+                fn default() -> Self {
+                    Self {
+                        a: 10,
+                        b: 10.0,
+                    }
+                }
+            }
+
+            impl AProp {
+                fn btn_clicked(){
+                    println!("btn clicked");
+                }
+            }
+        }
+        "#;
+
+        let block = parse_str::<Block>(&input).unwrap();
+        dbg!(block);
+
+
+    }
+
+
+
     fn handle(input: &str) {
         let block = parse_str::<Block>(&input).unwrap();
         let mut chain = VisitorChain::build();

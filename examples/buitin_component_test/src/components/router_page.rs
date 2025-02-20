@@ -156,6 +156,35 @@ live_design! {
                         <GLabel>{
                             text: "APP PAGE2"
                         }
+                        <Button>{
+                            text: "origin"
+                        }
+                    }
+                },
+                nav_page3 = <GPage>{
+                    visible: false,
+                    height: Fill,
+                    width: Fill,
+                    border_radius: 0.0,
+                    header = {
+                        title_wrap = {
+                            title = {
+                                text: "Page3"
+                            }
+                        }
+                        tool_wrap = {
+                            <GIcon>{
+                                theme: Dark,
+                                icon_type: OpenBottom,
+                                stroke_width: 1.2
+                            }
+                        }
+                    }
+                    body = {
+                        theme: Warning,
+                        <GLabel>{
+                            text: "APP PAGE3"
+                        }
 
                     }
                 },
@@ -186,7 +215,7 @@ impl Widget for TPage {
                     let _ = router
                         .init(
                             ids!(page1, page2, page3),
-                            Some(ids!(nav_page1, nav_page2)),
+                            Some(ids!(nav_page1, nav_page2, nav_page3)),
                             None,
                         )
                         .active(id!(page1))

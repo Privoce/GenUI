@@ -64,6 +64,11 @@ live_design! {
                         body: {
                             theme: Info,
                             height: 140.0,
+                            <View>{
+                                <Button>{
+                                    text: "Click Me",
+                                }
+                            }
                         }
                     }
                     <GCollapse>{

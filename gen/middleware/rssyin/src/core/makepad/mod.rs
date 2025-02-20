@@ -38,9 +38,11 @@ impl MakepadChainExpand for VisitorChain {
         chain.items.enums.push(Box::new(EventVisitor::new()));
         //     | fn --------------------------------------------------------------
         chain.items.fns.push(Box::new(FnVisitor::new()));
+      
+        // 废弃 -----------------------------------------------------------------
         // local -----------------------------------------------------------------
-        //     | instance --------------------------------------------------------
-        chain.locals.push(Box::new(InstanceVisitor::new()));
+        // //     | instance --------------------------------------------------------
+        // chain.locals.push(Box::new(InstanceVisitor::new()));
         //     | closure ---------------------------------------------------------
         chain.locals.push(Box::new(ClosureVisitor::new()));
         chain
