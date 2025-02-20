@@ -5,13 +5,14 @@ use std::str::FromStr;
 
 use proc_macro2::TokenStream;
 use ra_ap_syntax::{
-    ast::{self, HasAttrs}, AstNode, Edition, RustLanguage, SourceFile, SyntaxNode, TextSize, WalkEvent
+    ast::{self, HasAttrs},
+    AstNode, Edition, SourceFile, TextSize,
 };
 use syn::{parse_str, ItemEnum, ItemImpl, ItemStruct};
 use utils::*;
 
 use crate::{
-    bridger::{Import, Imports},
+    bridger::{Imports, ScriptBridger},
     error::Error,
 };
 
@@ -68,28 +69,21 @@ use crate::{
 ///     // 其他代码
 /// }
 /// ```
-struct ScriptAnalyzer {
-    // bridger: ScriptBridger,
-    // current_impl_target: Option<String>,
-}
+struct ScriptAnalyzer;
 
 impl ScriptAnalyzer {
     /// 对rust代码进行分析处理
-    pub fn analyze(code: &str) -> Result<(), Error> {
-       
-
-
-
+    pub fn analyze(code: &str) -> Result<ScriptBridger, Error> {
         let source_file = SourceFile::parse(code, Edition::Edition2021).tree();
 
         let mut start_index = TextSize::new(0);
-        let end_index = source_file.syntax().text_range().end();
+        // let end_index = source_file.syntax().text_range().end();
         let mut import_macro = None;
         let mut prop_struct = None;
         let mut event_enum = None;
         let mut default_impl = None;
-        // let mut impl_prop = None;
-        // let mut others = None;
+        let mut impl_prop = None;
+        let mut others = TokenStream::new();
         let mut lazy: Option<Lazy> = None;
 
         for node in source_file.syntax().descendants() {
@@ -111,14 +105,11 @@ impl ScriptAnalyzer {
                     .unwrap_or_default();
 
                 if is_import {
-                    macro_call.token_tree().map(|tree| {
-                        import_macro.replace(Imports::from_str(&tree.to_string()));
-                    });
+                    if let Some(tree) = macro_call.token_tree() {
+                        import_macro.replace(Imports::from_str(&tree.to_string())?);
+                    }
                     // 记录结束位置
                     start_index = macro_call.syntax().text_range().end();
-
-                    
-
                     continue;
                 }
             }
@@ -131,11 +122,26 @@ impl ScriptAnalyzer {
                 });
 
                 if is_prop {
-                    prop_struct.replace(
-                        parse_str::<ItemStruct>(&strt.syntax().text().to_string())
-                            .map_err(|e| Error::Parse(e))?,
-                    );
+                    let item_struct = parse_str::<ItemStruct>(&strt.syntax().text().to_string())
+                        .map_err(|e| Error::Parse(e))?;
+                    let prop_ident = item_struct.ident.to_string();
+                    prop_struct.replace(item_struct);
                     start_index = strt.syntax().text_range().end();
+                    // [if lazy exists do analyze] --------------------------------------------------------------
+                    if let Some(lazy) = lazy.as_mut() {
+                        lazy.prop_ident.replace(prop_ident);
+                        let lazy_res = lazy.analyze()?;
+                        // [set default impl if exists] ---------------------------------------------------------
+                        lazy_res.default_impl.map(|item_impl| {
+                            default_impl.replace(item_impl);
+                        });
+                        // [set impl prop if exists] ------------------------------------------------------------
+                        lazy_res.impl_prop.map(|item_impl| {
+                            impl_prop.replace(item_impl);
+                        });
+                        // [extend others] ----------------------------------------------------------------------
+                        others.extend(lazy_res.others);
+                    }
                     continue;
                 }
             }
@@ -156,13 +162,8 @@ impl ScriptAnalyzer {
                     continue;
                 }
             }
-            // [default impl] -----------------------------------------------------------------------------------
+            // [default impl or impl] ----------------------------------------------------------------------------
             if let Some(impl_block) = ast::Impl::cast(node.clone()) {
-                let is_default_impl = impl_block
-                    .trait_()
-                    .map(|t| "Default".is_trait(t))
-                    .unwrap_or_default();
-
                 if let Some(prop_struct) = prop_struct.as_ref() {
                     let prop_ident = prop_struct.ident.to_string();
 
@@ -172,40 +173,91 @@ impl ScriptAnalyzer {
                         .map(|self_ty| prop_ident.is_self_type(self_ty))
                         .unwrap_or_default();
 
-                    if is_default_impl && is_prop_impl {
-                        default_impl.replace(
-                            parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
-                                .map_err(|e| Error::Parse(e))?,
-                        );
-                        start_index = impl_block.syntax().text_range().end();
-                        continue;
+                    if let Some(t) = impl_block.trait_() {
+                        if "Default".is_trait(t) && is_prop_impl {
+                            default_impl.replace(
+                                parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
+                                    .map_err(|e| Error::Parse(e))?,
+                            );
+                            start_index = impl_block.syntax().text_range().end();
+                            continue;
+                        }
+                    } else {
+                        // no trait
+                        if is_prop_impl {
+                            impl_prop.replace(
+                                parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
+                                    .map_err(|e| Error::Parse(e))?,
+                            );
+                            start_index = impl_block.syntax().text_range().end();
+                            continue;
+                        } else {
+                            // set into lazy
+                            lazy.get_or_insert(Lazy::default()).impls.push(impl_block);
+                        }
                     }
                 } else {
                     // 这个说明在检测到impl Default for xxx, 但是没有检测到#[prop] xxx无法确定impl的目标
                     // 暂时把这部分代码放到lazy中, 等到检测到#[prop] xxx时再进行处理
-                    
+                    lazy.get_or_insert(Lazy::default())
+                        .default_impls
+                        .push(impl_block);
                 }
             }
         }
 
-        dbg!(default_impl);
-        Ok(())
+        Ok(ScriptBridger {
+            imports: import_macro,
+            prop: prop_struct,
+            instance: default_impl,
+            event: event_enum,
+            impl_prop,
+            others,
+        })
     }
 }
 
-
-struct Lazy{
+#[derive(Debug, Default)]
+struct Lazy {
     default_impls: Vec<ast::Impl>,
     impls: Vec<ast::Impl>,
-    prop_ident: String,  
+    prop_ident: Option<String>,
 }
 
 impl Lazy {
-    pub fn analyze(&self) -> Result<(), Error> {
+    pub fn analyze(&self) -> Result<LazyAnalyzeResult, Error> {
+        let handle = |impls: &Vec<ast::Impl>,
+                      prop_ident: &Option<String>,
+                      target: &mut Option<ItemImpl>,
+                      others: &mut TokenStream|
+         -> Result<(), Error> {
+            for impl_block in impls {
+                if let Some(self_ty) = impl_block.self_ty() {
+                    let is_prop_impl = prop_ident
+                        .as_ref()
+                        .map_or(false, |prop_ident| prop_ident.is_self_type(self_ty));
+
+                    if is_prop_impl {
+                        target.replace(
+                            parse_str::<syn::ItemImpl>(&impl_block.syntax().text().to_string())
+                                .map_err(|e| Error::Parse(e))?,
+                        );
+                    } else {
+                        others.extend(
+                            parse_str::<TokenStream>(&impl_block.syntax().text().to_string())
+                                .map_err(|e| Error::Parse(e))?,
+                        );
+                    }
+                }
+            }
+            Ok(())
+        };
 
         let mut impl_default_prop = None;
+        let mut impl_prop = None;
+        let mut others = TokenStream::new();
 
-        let Lazy{
+        let Lazy {
             default_impls,
             impls,
             prop_ident,
@@ -213,33 +265,28 @@ impl Lazy {
 
         // [default impls] -----------------------------------------------------------------------------------
         // find default impls which self_ty is prop_ident
-        for default_impl in default_impls {
-            if let Some(self_ty) = default_impl.self_ty() {
-                let is_prop_impl = prop_ident.is_self_type(self_ty);
-
-                if is_prop_impl {
-                    // do something
-                    impl_default_prop.replace(parse_str::<syn::ItemImpl>(&default_impl.syntax().text().to_string()).map_err(|e| Error::Parse(e))?);
-                    break;
-                }
-            }
-        }
-
-
-
-
+        handle(
+            default_impls,
+            prop_ident,
+            &mut impl_default_prop,
+            &mut others,
+        )?;
         // [impls] -------------------------------------------------------------------------------------------
+        handle(impls, prop_ident, &mut impl_prop, &mut others)?;
 
-
-
-        Ok(())
+        Ok(LazyAnalyzeResult {
+            default_impl: impl_default_prop,
+            impl_prop,
+            others,
+        })
     }
 }
 
 
-struct AfterLazyAnalyze{
+struct LazyAnalyzeResult {
     default_impl: Option<syn::ItemImpl>,
-    others: TokenStream
+    impl_prop: Option<syn::ItemImpl>,
+    others: TokenStream,
 }
 
 #[cfg(test)]
@@ -251,20 +298,31 @@ mod test_analyzer {
             crate::views::a::*;
         }
 
-        #[prop]
-        struct A{
-            a: String
-        }
-
         impl Default for A{
             fn default(){
                 A{a: "Hello".to_string()}
             }
         }
+
+        #[prop]
+        struct A{
+            a: String
+        }
+
+        
+        impl A{
+            fn click_btn(&self){
+                print!("clicked");
+            }
+            #[before_create]
+            fn before_create(&self){
+                print!("before create");
+            }
+        }
         
         "#;
 
-        super::ScriptAnalyzer::analyze(input);
+        let _ = super::ScriptAnalyzer::analyze(input);
     }
 
     #[test]
@@ -280,7 +338,7 @@ mod test_analyzer {
         "#;
 
         let block = syn::parse_str::<syn::Block>(input);
-        dbg!(block);
+        dbg!(&block);
     }
 }
 // impl Default for A{

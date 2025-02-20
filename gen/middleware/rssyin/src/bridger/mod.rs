@@ -1,24 +1,20 @@
-mod lifecycle;
 mod import;
+mod lifecycle;
 use std::collections::HashMap;
 
-pub use import::{Imports, Import};
+pub use import::{Import, Imports};
 use lifecycle::LifeCycle;
-use ra_ap_syntax::ast::Struct;
+use proc_macro2::TokenStream;
 
+#[derive(Debug)]
 pub struct ScriptBridger {
-    imports: Option<Imports>,
-    prop: Struct,
+    pub imports: Option<Imports>,
+    pub prop: Option<syn::ItemStruct>,
     /// default impl
-    instance: Vec<String>,
-    events: Vec<String>,
-    lifecycles: LifeCycle,
-    regular_methods: Vec<String>,
-    
+    pub instance: Option<syn::ItemImpl>,
+    pub event: Option<syn::ItemEnum>,
+    // lifecycles: LifeCycle,
+    pub impl_prop: Option<syn::ItemImpl>,
     // 非追踪部分
-    raw_code: String,
-    
-    // 依赖关系
-    // dependencies: DependencyResolver,
+    pub others: TokenStream,
 }
-
