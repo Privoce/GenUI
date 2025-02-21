@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 use gen_utils::error::Error;
 
 use crate::{
@@ -141,7 +141,7 @@ impl TryFrom<(&str, &toml_edit::Value)> for Props {
 impl FromGenProps for Prop<Props> {
     type Output = Prop<Props>;
 
-    fn from_prop(prop: gen_parser::Props) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+    fn from_prop(prop: Option<gen_analyzer::Props>) -> Result<Option<Self::Output>, gen_utils::error::Error> {
         if let Some(props) = prop {
             let mut res = Prop::default();
             for (prop, value) in props {
@@ -156,11 +156,11 @@ impl FromGenProps for Prop<Props> {
     }
 }
 
-impl TryFrom<(PropsKey, Value)> for Props {
+impl TryFrom<(PropKey, Value)> for Props {
     type Error = gen_utils::error::Error;
 
-    fn try_from(value: (PropsKey, Value)) -> Result<Self, Self::Error> {
-        match value.0.name() {
+    fn try_from(value: (PropKey, Value)) -> Result<Self, Self::Error> {
+        match value.0.name.as_str() {
             "theme" => Ok(Props::Theme(Themes::try_from(&value.1)?)),
             "background_color" => Ok(Props::BackgroundColor(MakepadColor::try_from((
                 &value.1, None,
@@ -204,7 +204,7 @@ impl TryFrom<(PropsKey, Value)> for Props {
                 } else {
                     return Err(err_from_to(
                         "GenUI Props",
-                        &format!("Makepad GView Prop, Invalid Prop: {}", value.0.name()),
+                        &format!("Makepad GView Prop, Invalid Prop: {}", &value.0.name),
                     )
                     .into());
                 }

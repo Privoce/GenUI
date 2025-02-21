@@ -1,4 +1,4 @@
-use gen_parser::Value;
+use gen_analyzer::value::Value;
 use gen_utils::error::Error;
 use quote::ToTokens;
 use syn::parse_str;

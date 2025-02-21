@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 
 use crate::{
     builtin::prop::{err_from_to, Prop},
@@ -13,16 +13,16 @@ pub enum Props {
 
 from_gen_props!(Props);
 
-impl TryFrom<(PropsKey, Value)> for Props {
+impl TryFrom<(PropKey, Value)> for Props {
     type Error = gen_utils::error::Error;
 
-    fn try_from(value: (PropsKey, Value)) -> Result<Self, Self::Error> {
-        match value.0.name() {
+    fn try_from(value: (PropKey, Value)) -> Result<Self, Self::Error> {
+        match value.0.name.as_str() {
             "scroll_x" => Ok(Props::ShowScrollX(value.1.as_bool()?)),
             "scroll_y" => Ok(Props::ShowScrollY(value.1.as_bool()?)),
             _ => Err(err_from_to(
                 "GenUI Props",
-                &format!("Makepad GScrollBars Prop, Invalid Prop: {}", value.0.name()),
+                &format!("Makepad GScrollBars Prop, Invalid Prop: {}", value.0.name),
             )
             .into()),
         }

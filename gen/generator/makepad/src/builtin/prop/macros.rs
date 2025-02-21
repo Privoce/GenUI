@@ -211,7 +211,7 @@ macro_rules! from_gen_props{
         impl crate::builtin::prop::FromGenProps for Prop<$T> {
             type Output = Prop<$T>;
         
-            fn from_prop(prop: gen_analyzer::value::Props) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+            fn from_prop(prop: Option<gen_analyzer::Props>) -> Result<Option<Self::Output>, gen_utils::error::Error> {
                 if let Some(props) = prop {
                     let mut res = Prop::default();
                     for (prop, value) in props {

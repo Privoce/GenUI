@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 
 use crate::{
     builtin::prop::{
@@ -40,11 +40,11 @@ pub enum Props {
 
 from_gen_props!(Props);
 
-impl TryFrom<(PropsKey, Value)> for Props {
+impl TryFrom<(PropKey, Value)> for Props {
     type Error = gen_utils::error::Error;
 
-    fn try_from(value: (PropsKey, Value)) -> Result<Self, Self::Error> {
-        match value.0.name() {
+    fn try_from(value: (PropKey, Value)) -> Result<Self, Self::Error> {
+        match value.0.name.as_str() {
             "theme" => Ok(Props::Theme(Themes::try_from(&value.1)?)),
             "color" => Ok(Props::Color(MakepadColor::try_from((&value.1, None))?)),
             "stroke_hover_color" => Ok(Props::StrokeHoverColor(MakepadColor::try_from((
@@ -71,7 +71,7 @@ impl TryFrom<(PropsKey, Value)> for Props {
             "grab_key_focus" => Ok(Props::GrabKeyFocus(value.1.as_bool()?)),
             _ => Err(err_from_to(
                 "GenUI Props",
-                &format!("Makepad GLabel Prop, Invalid Prop: {}", value.0.name()),
+                &format!("Makepad GLabel Prop, Invalid Prop: {}", &value.0.name),
             )
             .into()),
         }

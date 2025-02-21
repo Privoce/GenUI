@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 
 use crate::{
     builtin::prop::{
@@ -43,11 +43,11 @@ pub enum Props {
 
 from_gen_props!(Props);
 
-impl TryFrom<(PropsKey, Value)> for Props {
+impl TryFrom<(PropKey, Value)> for Props {
     type Error = gen_utils::error::Error;
 
-    fn try_from(value: (PropsKey, Value)) -> Result<Self, Self::Error> {
-        match value.0.name() {
+    fn try_from(value: (PropKey, Value)) -> Result<Self, Self::Error> {
+        match value.0.name.as_str() {
             "theme" => Ok(Props::Theme(Themes::try_from(&value.1)?)),
             "background_color" => Ok(Props::BackgroundColor(MakepadColor::try_from((
                 &value.1, None,
@@ -100,7 +100,7 @@ impl TryFrom<(PropsKey, Value)> for Props {
                 } else {
                     return Err(err_from_to(
                         "GenUI Props",
-                        &format!("Makepad GView Prop, Invalid Prop: {}", value.0.name()),
+                        &format!("Makepad GView Prop, Invalid Prop: {}", value.0.name),
                     )
                     .into());
                 }

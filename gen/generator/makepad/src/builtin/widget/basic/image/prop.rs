@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 
 use crate::{
     builtin::prop::{err_from_to, ImageFit, Layout, LiveDependency, MouseCursor, Prop, Walk, F32, F64},
@@ -24,11 +24,11 @@ pub enum Props {
 
 from_gen_props!(Props);
 
-impl TryFrom<(PropsKey, Value)> for Props {
+impl TryFrom<(PropKey, Value)> for Props {
     type Error = gen_utils::error::Error;
 
-    fn try_from(value: (PropsKey, Value)) -> Result<Self, Self::Error> {
-        let name = value.0.name().to_string();
+    fn try_from(value: (PropKey, Value)) -> Result<Self, Self::Error> {
+        let name = value.0.name.to_string();
         match name.as_str() {
             "visible" => Ok(Props::Visible(value.1.as_bool()?)),
             "grab_key_focus" => Ok(Props::GrabKeyFocus(value.1.as_bool()?)),

@@ -1,4 +1,4 @@
-use gen_converter::Callbacks;
+use gen_analyzer::Callbacks;
 use gen_utils::error::Error;
 
 // use crate::model::Widget;

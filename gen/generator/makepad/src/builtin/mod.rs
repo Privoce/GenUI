@@ -1,4 +1,4 @@
-use gen_parser::Props;
+use gen_analyzer::Props;
 use gen_utils::{
     common::{camel_to_snake, snake_to_camel},
     error::{CompilerError, Error},
