@@ -11,13 +11,13 @@ pub struct Hex(pub String);
 
 impl Hex {
     /// 将16进制颜色转换为vec4
-    pub fn hex_to_vec4(hex: &Hex) -> String {
+    pub fn to_vec4(&self) -> String {
         fn u8_to_str(hex: &str, start: usize, end: usize) -> String {
             float_to_str(u8::from_str_radix(&hex[start..end], 16).unwrap() as f32 / 255.0)
         }
 
         // 去掉开头的 '#' 符号
-        let hex = hex.0.trim_start_matches('#');
+        let hex = self.0.trim_start_matches('#');
 
         // 解析 RGB 值
         let r = u8_to_str(hex, 0, 2);

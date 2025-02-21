@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use gen_converter::TemplateModel;
-use gen_parser::{Bind, Script};
+use gen_analyzer::{Script, Template, value::Bind};
 use gen_utils::{common::Source, error::Error};
 
 use crate::{
@@ -19,7 +18,7 @@ use super::{PropBinds, TemplatePtrs, TemplateResult};
 pub fn template_script(
     context: &mut Context,
     source: Source,
-    template: Option<TemplateModel>,
+    template: Option<Template>,
     script: Option<Script>,
     is_entry: bool,
 ) -> Result<Widget, Error> {
@@ -79,7 +78,7 @@ pub fn template_script(
 }
 
 fn handle(
-    template: TemplateModel,
+    template: Template,
     template_ptrs: &mut TemplatePtrs,
     sc_poll: &mut ScriptPoll,
     prop_poll: &mut PropBinds,
@@ -89,7 +88,7 @@ fn handle(
 ) -> Result<TemplateResult, Error> {
     let is_static = template.is_static();
     let is_define = template.is_component();
-    let TemplateModel {
+    let Template {
         id,
         as_prop,
         name,

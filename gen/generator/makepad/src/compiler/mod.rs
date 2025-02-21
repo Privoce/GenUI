@@ -8,7 +8,7 @@ use std::{collections::HashSet, path::PathBuf};
 // pub use wasm::*;
 pub use conf::*;
 pub use context::*;
-use gen_converter::Model;
+use gen_analyzer::Model;
 use gen_dyn_run::{compile_dyn_lib, dyn_lib_path, extern_c_fn, DynProcessor};
 use gen_plugin::{MacroContext, Repo};
 use gen_utils::{

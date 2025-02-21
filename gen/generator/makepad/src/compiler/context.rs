@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use gen_dyn_run::DynProcessor;
 use gen_plugin::Token as PluginToken;
-use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
+// use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
 
 use crate::model::{AbsWidget, SimpleAppMain};
 
@@ -22,8 +22,8 @@ pub struct Context {
     // /// 例如上面的代码，编译器会并不会直接生成5个view组件，而是生成一个Makepad中使用`Vec<(LiveId, View)>`的组件
     // /// 这个组件会生成到新的文件中，然后在原始的view组件中替换掉
     // pub virtual_components: HashSet<SimpleVirtualWidget>
-    /// rssyin访问者链, 用于处理GenUI的脚本
-    pub sc_visitor_chain: VisitorChain,
+    /// rssyin访问者链, 用于处理GenUI的脚本 废弃，使用rssyin::ScriptAnalyzer
+    // pub sc_visitor_chain: VisitorChain,
     /// 存储了所有自定义组件的池
     pub define_widget_poll: WidgetPoll,
     /// plugins
@@ -35,7 +35,7 @@ impl Default for Context {
     fn default() -> Self {
         Self {
             app_main: Default::default(),
-            sc_visitor_chain: VisitorChain::build(),
+            // sc_visitor_chain: VisitorChain::build(),
             define_widget_poll: Default::default(),
             plugins: None,
             dyn_processor: None,

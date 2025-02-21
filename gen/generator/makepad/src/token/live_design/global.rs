@@ -1,8 +1,7 @@
 use crate::{
     builtin::prop::handle_prop_value_static, traits::ToTokensExt,
 };
-// use gen_converter::ConvertStyle;
-// use gen_parser::PropsKey;
+use gen_analyzer::{PropKey, Style};
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -37,7 +36,7 @@ use syn::parse_str;
 /// ## TODO
 /// - [ ] import (GenUI version > v0.1.1)
 /// - [ ] Bind (GenUI version > v0.1.1)
-impl ToTokensExt for Option<ConvertStyle> {
+impl ToTokensExt for Option<Style> {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
         let mut tk = TokenStream::new();
         if let Some(props) = self {
@@ -56,11 +55,11 @@ impl ToTokensExt for Option<ConvertStyle> {
     }
 }
 
-fn gen_prop_key(modify: &str, k: &PropsKey, pv: TokenStream) -> Result<TokenStream, Error> {
+fn gen_prop_key(modify: &str, k: &PropKey, pv: TokenStream) -> Result<TokenStream, Error> {
     parse_str::<TokenStream>(&format!(
         "{}__{}",
         modify.to_uppercase(),
-        k.name().to_uppercase()
+        k.name.to_uppercase()
     ))
     .map_or_else(
         |e| Err(e.to_string().into()),

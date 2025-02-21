@@ -1,17 +1,12 @@
 mod draw;
 
-use std::str::FromStr;
-
+use crate::{str_to_tk, traits::ToTokensExt};
 use draw::*;
 use gen_analyzer::value::{BuiltinColor, Hex, Value};
-// use gen_parser::{
-//     common::{hex_to_vec4, BuiltinColor, Hex},
-//     Value,
-// };
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::parse_str;
+use std::str::FromStr;
 
 /// Makepad Color
 /// 专门用语处理Makepad的颜色的结构体，需要借助BuiltinColor
@@ -42,33 +37,29 @@ impl TryFrom<&toml_edit::Value> for MakepadColor {
     type Error = Error;
 
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
-        value
-            .as_str()
-            .map_or_else(
-                || Err(Error::from("toml_edit::Item to MakepadColor")),
-                |s| {
-                    let color = BuiltinColor::from_str(s)?;
-                    Ok(MakepadColor {
-                        fn_name: None,
-                        color,
-                    })
-                },
-            )
+        value.as_str().map_or_else(
+            || Err(Error::from("toml_edit::Item to MakepadColor")),
+            |s| {
+                let color = BuiltinColor::from_str(s)?;
+                Ok(MakepadColor {
+                    fn_name: None,
+                    color,
+                })
+            },
+        )
     }
 }
 
-impl ToTokens for MakepadColor {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+impl ToTokensExt for MakepadColor {
+    fn to_token_stream(&self) -> Result<TokenStream, Error> {
+        let mut tokens = TokenStream::new();
         match &self.color {
-            BuiltinColor::Hex(hex) => tokens.extend(hex_to_vec4(hex)),
-            BuiltinColor::Rgb(rgb) => tokens.extend(hex_to_vec4(&Hex::from(rgb))),
-            BuiltinColor::Rgba(rgba) => tokens.extend(hex_to_vec4(&Hex::from(rgba))),
+            BuiltinColor::Hex(hex) => tokens.extend(str_to_tk!(&hex.to_vec4())?),
+            BuiltinColor::Rgb(rgb) => tokens.extend(str_to_tk!(&Hex::from(rgb).to_vec4())?),
+            BuiltinColor::Rgba(rgba) => tokens.extend(str_to_tk!(&Hex::from(rgba).to_vec4())?),
             BuiltinColor::LinearGradient(linear_gradient) => {
-                let tk = draw_linear_gradient(linear_gradient);
-                let fn_name = parse_str::<TokenStream>(
-                    self.fn_name.as_ref().unwrap_or(&String::from("pixel")),
-                )
-                .unwrap();
+                let tk = draw_linear_gradient(linear_gradient)?;
+                let fn_name = str_to_tk!(self.fn_name.as_ref().unwrap_or(&String::from("pixel")))?;
                 tokens.extend(quote! {
                     {
                         fn #fn_name(self) -> vec4{
@@ -78,11 +69,8 @@ impl ToTokens for MakepadColor {
                 });
             }
             BuiltinColor::RadialGradient(radial_gradient) => {
-                let tk = draw_radial_gradient(radial_gradient);
-                let fn_name = parse_str::<TokenStream>(
-                    self.fn_name.as_ref().unwrap_or(&String::from("pixel")),
-                )
-                .unwrap();
+                let tk = draw_radial_gradient(radial_gradient)?;
+                let fn_name = str_to_tk!(self.fn_name.as_ref().unwrap_or(&String::from("pixel")))?;
                 tokens.extend(quote! {
                     {
                         fn #fn_name(self) -> vec4{
@@ -100,5 +88,12 @@ impl ToTokens for MakepadColor {
                 });
             }
         }
+        Ok(tokens)
+    }
+}
+
+impl ToTokens for MakepadColor {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.extend(ToTokensExt::to_token_stream(self).unwrap());
     }
 }

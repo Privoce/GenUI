@@ -8,7 +8,7 @@ use crate::{
     },
     script::Impls,
 };
-use gen_parser::{For, IdentSplit};
+use gen_analyzer::value::{For, IdentSplit};
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -390,10 +390,10 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
             .skip(1)
             .fold(TokenStream::new(), |mut tk, i| {
                 match i.split {
-                    gen_parser::IdentSplit::None | gen_parser::IdentSplit::Dot => {
+                    gen_analyzer::value::IdentSplit::None | gen_analyzer::value::IdentSplit::Dot => {
                         tk.extend(i.to_token_stream());
                     }
-                    gen_parser::IdentSplit::Holder => {
+                    gen_analyzer::value::IdentSplit::Holder => {
                         // [index] -> get(index)
                         let index = parse_str::<TokenStream>(&i.name).unwrap();
                         tk.extend(quote! {
@@ -413,11 +413,11 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
 
     if let Some(last) = last {
         match last {
-            gen_parser::IdentSplit::None | gen_parser::IdentSplit::Dot => {
+            gen_analyzer::value::IdentSplit::None | gen_analyzer::value::IdentSplit::Dot => {
                 len_call.extend(quote! { .len() })
             }
 
-            gen_parser::IdentSplit::Holder => len_call.extend(quote! {
+            gen_analyzer::value::IdentSplit::Holder => len_call.extend(quote! {
                 .map_or(0, |v| v.len())
             }),
         }

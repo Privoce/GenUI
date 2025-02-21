@@ -3,15 +3,16 @@ use crate::{
     model::{widget::role::Role,  Widget, WidgetTemplate, WidgetType},
     visitor::{IdClass, StyleVisitor},
 };
-use gen_converter::{ConvertStyle, TemplateModel};
+
+use gen_analyzer::{Style, Template};
 use gen_utils::{common::Source, error::Error};
 use std::collections::HashMap;
 
 /// 处理template + style的情况
 pub fn template_style(
     source: Source,
-    template: Option<TemplateModel>,
-    style: Option<ConvertStyle>,
+    template: Option<Template>,
+    style: Option<Style>,
     is_entry: bool,
 ) -> Result<Widget, Error> {
     let template = if let Some(template) = template {
@@ -38,13 +39,13 @@ pub fn template_style(
 /// 如果含有id或class，我们需要从style中获取对应的样式合并到模板中
 /// 我不想将这个方法和single_template合并，因为这个方法的逻辑比较复杂，而single_template的逻辑比较简单，合并后会显得很乱并且会导致额外性能开销
 fn handle(
-    template: TemplateModel,
-    styles: Option<&ConvertStyle>,
+    template: Template,
+    styles: Option<&Style>,
     chain: &mut Vec<IdClass>,
 ) -> Result<WidgetTemplate, Error> {
     let is_static = template.is_static();
     let is_define = template.is_component();
-    let TemplateModel {
+    let Template {
         id,
         class,
         as_prop,

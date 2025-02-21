@@ -1,14 +1,15 @@
 mod r#impl;
 mod live_struct;
 
-use gen_mk_script_objs::makepad::{lifetime::LifeTime, ScriptBridger};
+// use gen_mk_script_objs::makepad::{lifetime::LifeTime, ScriptBridger};
 use gen_utils::error::{CompilerError, Error};
 pub use live_struct::*;
 pub use r#impl::*;
 
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use rssyin::visitor::chain::traits::ChainVisitor;
+use rssyin::bridger::ScriptBridger;
+// use rssyin::visitor::chain::traits::ChainVisitor;
 use syn::{parse_quote, Item, ItemEnum, Stmt};
 
 use crate::{
@@ -23,7 +24,15 @@ use crate::{
 
 /// Makepad中的Rust代码
 #[derive(Debug, Clone)]
-pub struct Script {
+pub enum Script {
+    /// rust代码, 直接使用syn::File，并按原本形式输出，用于表示与makepad无关的rust代码
+    Rs(syn::File),
+    /// 经过包装处理的rust，用于表示makepad中的rust代码，这些代码需要进行一些处理
+    WrapRs(WrapRs)    
+}
+
+#[derive(Debug, Clone)]
+pub struct WrapRs{
     /// ident of the struct
     pub ident: Option<TokenStream>,
     /// rust uses
@@ -39,6 +48,7 @@ pub struct Script {
     /// 是否为单个script(即非封装组件的脚本代码)
     is_single: bool,
 }
+
 
 impl Script {
     pub fn default(ident: TokenStream) -> Self {
@@ -281,25 +291,31 @@ impl ToTokens for Script {
     }
 }
 
-/// only use in single_script
-impl From<ScriptBridger> for Script {
-    fn from(value: ScriptBridger) -> Self {
-        let ScriptBridger {
-            imports,
-            events,
-            others,
-            ..
-        } = value;
+// only use in single_script
+// impl From<ScriptBridger> for Script {
+//     fn from(value: ScriptBridger) -> Self {
+//         let ScriptBridger {
+//             imports,
+//             events,
+//             others,
+//             ..
+//         } = value;
 
-        Script {
-            ident: None,
-            uses: imports,
-            live_struct: None,
-            events,
-            impls: None,
-            others,
-            is_single: true,
-            twb_poll: None,
-        }
+//         Script {
+//             ident: None,
+//             uses: imports,
+//             live_struct: None,
+//             events,
+//             impls: None,
+//             others,
+//             is_single: true,
+//             twb_poll: None,
+//         }
+//     }
+// }
+
+impl From<syn::File> for Script{
+    fn from(value: syn::File) -> Self {
+        Script::Rs(value)
     }
 }

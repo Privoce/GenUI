@@ -9,8 +9,7 @@ pub use handler::*;
 pub use template::*;
 pub use traits::*;
 
-use gen_converter::{ConvertStyle, Model, TemplateModel};
-use gen_parser::Script;
+use gen_analyzer::{Model, Script, Style, Template};
 use gen_utils::{common::Source, compiler::ToRs, error::Error};
 use quote::{quote, ToTokens};
 
@@ -107,17 +106,19 @@ impl TryFrom<(&mut Context, Model)> for Widget {
         // [handle commons] ----------------------------------------------------------------------------------
 
         let widget = match strategy {
-            gen_parser::Strategy::SingleStyle => (special, style, is_entry).try_into(),
-            gen_parser::Strategy::SingleTemplate => (special, template, is_entry).try_into(),
-            gen_parser::Strategy::SingleScript => (context, special, script, is_entry).try_into(),
-            gen_parser::Strategy::TemplateScript => {
+            gen_analyzer::Strategy::SingleStyle => (special, style, is_entry).try_into(),
+            gen_analyzer::Strategy::SingleTemplate => (special, template, is_entry).try_into(),
+            gen_analyzer::Strategy::SingleScript => (special, script, is_entry).try_into(),
+            gen_analyzer::Strategy::TemplateScript => {
                 (context, special, template, script, is_entry).try_into()
             }
-            gen_parser::Strategy::TemplateStyle => (special, template, style, is_entry).try_into(),
-            gen_parser::Strategy::All => {
+            gen_analyzer::Strategy::TemplateStyle => {
+                (special, template, style, is_entry).try_into()
+            }
+            gen_analyzer::Strategy::All => {
                 (context, special, template, script, style, is_entry).try_into()
             }
-            gen_parser::Strategy::None => (special, is_entry).try_into(), // means no strategy, just a empty file
+            gen_analyzer::Strategy::None => (special, is_entry).try_into(), // means no strategy, just a empty file
             _ => panic!("can not reach here"),
         }?;
 
@@ -144,64 +145,50 @@ impl TryFrom<(Source, bool)> for Widget {
 
 /// 解析单style模版
 /// 处理只有单个<style>标签的情况, 这种情况需要将style转为Makepad的Global Prop即可
-impl TryFrom<(Source, Option<ConvertStyle>, bool)> for Widget {
+impl TryFrom<(Source, Option<Style>, bool)> for Widget {
     type Error = Error;
 
-    fn try_from(value: (Source, Option<ConvertStyle>, bool)) -> Result<Self, Self::Error> {
+    fn try_from(value: (Source, Option<Style>, bool)) -> Result<Self, Self::Error> {
         handler::single_style(value.0, value.1, value.2)
     }
 }
 
 /// 解析单template模版
-impl TryFrom<(Source, Option<TemplateModel>, bool)> for Widget {
+impl TryFrom<(Source, Option<Template>, bool)> for Widget {
     type Error = Error;
 
-    fn try_from(value: (Source, Option<TemplateModel>, bool)) -> Result<Self, Self::Error> {
+    fn try_from(value: (Source, Option<Template>, bool)) -> Result<Self, Self::Error> {
         handler::single_template(value.0, value.1, value.2)
     }
 }
 
 /// 解析单script模版
 /// 处理只有单个<script>标签的情况,
-impl TryFrom<(&mut Context, Source, Option<Script>, bool)> for Widget {
+impl TryFrom<(Source, Option<Script>, bool)> for Widget {
     type Error = Error;
 
-    fn try_from(value: (&mut Context, Source, Option<Script>, bool)) -> Result<Self, Self::Error> {
-        handler::single_script(value.0, value.1, value.2, value.3)
+    fn try_from(value: (Source, Option<Script>, bool)) -> Result<Self, Self::Error> {
+        handler::single_script(value.0, value.1, value.2)
     }
 }
 
 /// 解析template + style模版
-impl TryFrom<(Source, Option<TemplateModel>, Option<ConvertStyle>, bool)> for Widget {
+impl TryFrom<(Source, Option<Template>, Option<Style>, bool)> for Widget {
     type Error = Error;
 
     fn try_from(
-        value: (Source, Option<TemplateModel>, Option<ConvertStyle>, bool),
+        value: (Source, Option<Template>, Option<Style>, bool),
     ) -> Result<Self, Self::Error> {
         handler::template_style(value.0, value.1, value.2, value.3)
     }
 }
 
 /// 解析template + script模版
-impl
-    TryFrom<(
-        &mut Context,
-        Source,
-        Option<TemplateModel>,
-        Option<Script>,
-        bool,
-    )> for Widget
-{
+impl TryFrom<(&mut Context, Source, Option<Template>, Option<Script>, bool)> for Widget {
     type Error = Error;
 
     fn try_from(
-        value: (
-            &mut Context,
-            Source,
-            Option<TemplateModel>,
-            Option<Script>,
-            bool,
-        ),
+        value: (&mut Context, Source, Option<Template>, Option<Script>, bool),
     ) -> Result<Self, Self::Error> {
         handler::template_script(value.0, value.1, value.2, value.3, value.4)
     }
@@ -212,9 +199,9 @@ impl
     TryFrom<(
         &mut Context,
         Source,
-        Option<TemplateModel>,
+        Option<Template>,
         Option<Script>,
-        Option<ConvertStyle>,
+        Option<Style>,
         bool,
     )> for Widget
 {
@@ -224,9 +211,9 @@ impl
         value: (
             &mut Context,
             Source,
-            Option<TemplateModel>,
+            Option<Template>,
             Option<Script>,
-            Option<ConvertStyle>,
+            Option<Style>,
             bool,
         ),
     ) -> Result<Self, Self::Error> {
@@ -298,13 +285,13 @@ mod test_widget {
 
     use std::path::PathBuf;
 
-    use gen_converter::Model;
+    use gen_analyzer::Model;
     use gen_utils::{
         common::{fs, Source},
         compiler::ToRs,
     };
     use quote::ToTokens;
-    use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
+    // use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
 
     use crate::{compiler::Context, model::SimpleAppMain};
 
@@ -312,7 +299,7 @@ mod test_widget {
     fn context() -> Context {
         Context {
             app_main: SimpleAppMain::default(),
-            sc_visitor_chain: VisitorChain::build(),
+            // sc_visitor_chain: VisitorChain::build(),
             define_widget_poll: Default::default(),
             plugins: None,
             dyn_processor: None,
@@ -330,7 +317,6 @@ mod test_widget {
 
         handle(source);
     }
-
 
     // /Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test/fors/views/home.gen
     #[test]
@@ -379,7 +365,6 @@ mod test_widget {
 
         handle(source);
     }
-
 
     // /Users/shengyifei/projects/gen_ui/made_with_GenUI/todo/others/t1/views/two_way.gen
     #[test]

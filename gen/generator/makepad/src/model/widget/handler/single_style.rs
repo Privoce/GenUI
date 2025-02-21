@@ -1,11 +1,11 @@
-use gen_converter::ConvertStyle;
+use gen_analyzer::Style;
 use gen_utils::{common::Source, error::Error};
 
 use crate::model::{widget::role::Role, Widget, WidgetTemplate, WidgetType};
 
 pub fn single_style(
     source: Source,
-    style: Option<ConvertStyle>,
+    style: Option<Style>,
     is_entry: bool,
 ) -> Result<Widget, Error> {
     let template = WidgetTemplate {

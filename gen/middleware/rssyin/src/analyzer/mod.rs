@@ -69,7 +69,7 @@ use crate::{
 ///     // 其他代码
 /// }
 /// ```
-struct ScriptAnalyzer;
+pub struct ScriptAnalyzer;
 
 impl ScriptAnalyzer {
     /// 对rust代码进行分析处理
@@ -345,7 +345,6 @@ mod test_analyzer {
         let res = super::ScriptAnalyzer::analyze(input).unwrap();
         dbg!(&res.to_token_stream().to_string());
     }
-
     #[test]
     fn test2() {
         let input = r#"

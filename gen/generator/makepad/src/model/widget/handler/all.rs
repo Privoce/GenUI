@@ -8,8 +8,8 @@ use crate::{
     script::handle_script,
     visitor::{IdClass, StyleVisitor},
 };
-use gen_converter::{ConvertStyle, TemplateModel};
-use gen_parser::{Bind, Script};
+
+use gen_analyzer::{value::Bind, Script, Style, Template};
 use gen_utils::{common::Source, error::Error};
 use std::collections::HashMap;
 
@@ -20,9 +20,9 @@ pub type TemplatePtrs = Vec<WidgetTemplate>;
 pub fn all(
     context: &mut Context,
     source: Source,
-    template: Option<TemplateModel>,
+    template: Option<Template>,
     script: Option<Script>,
-    style: Option<ConvertStyle>,
+    style: Option<Style>,
     is_entry: bool,
 ) -> Result<Widget, Error> {
     // [初始化一些必要的池] ----------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ pub fn all(
 }
 
 fn handle_template(
-    template: TemplateModel,
+    template: Template,
     styles: Option<&ConvertStyle>,
     template_ptrs: &mut TemplatePtrs,
     sc_poll: &mut ScriptPoll,
@@ -96,7 +96,7 @@ fn handle_template(
 ) -> Result<TemplateResult, Error> {
     let is_static = template.is_static();
     let is_define = template.is_component();
-    let TemplateModel {
+    let Template {
         id,
         class,
         as_prop,

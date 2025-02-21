@@ -1,29 +1,31 @@
-use gen_parser::common::{hex_to_vec4, Hex, LinearGradient, RadialGradient};
+use gen_analyzer::value::{Hex, LinearGradient, RadialGradient};
+use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::parse_str;
+use crate::str_to_tk;
 
 /// convert hex to pixel
 #[allow(dead_code)]
-pub fn hex_to_pixel(value: &Hex) -> TokenStream {
+pub fn hex_to_pixel(value: &Hex) -> Result<TokenStream, Error> {
     // convert hex str to vec4
-    let color = hex_to_vec4(value);
-    // let color = parse_str::<TokenStream>(value).unwrap();
-    quote! {
+    let color = str_to_tk!(&value.to_vec4())?;
+    Ok(quote! {
         fn pixel(self) -> vec4{
             return #color;
         }
-    }
+    })
 }
 
-pub fn draw_radial_gradient(value: &RadialGradient) -> TokenStream {
+pub fn draw_radial_gradient(value: &RadialGradient) -> Result<TokenStream, Error> {
     let RadialGradient { colors } = value;
 
     let mut draw_color_tk = TokenStream::new();
 
     for (index, (hex, percentage)) in colors.iter().enumerate() {
-        let color_ident = parse_str::<TokenStream>(&format!("color{}", index)).unwrap();
-        let percentage_ident = parse_str::<TokenStream>(&format!("stop{}", index)).unwrap();
+        let color_ident = str_to_tk!(&format!("color{}", index))?;
+        let percentage_ident = str_to_tk!(&format!("stop{}", index))?;
+        let hex = str_to_tk!(&hex.to_vec4())?;
+        let percentage = str_to_tk!(&percentage.to_token_str())?;
         draw_color_tk.extend(quote! {
             let #color_ident = #hex;
             let #percentage_ident = #percentage;
@@ -42,9 +44,9 @@ pub fn draw_radial_gradient(value: &RadialGradient) -> TokenStream {
         mix_colors.push(((ident1, ident2), (stop1, stop2)));
     }
 
-    let mix_colors_tk = mix_color_to_token(mix_colors);
+    let mix_colors_tk = mix_color_to_token(mix_colors)?;
 
-    quote! {
+    Ok(quote! {
         let center = vec2(0.5, 0.5);
         let distance = distance(self.pos, center);
         let factor = clamp(distance, 0.0, 1.0);
@@ -52,20 +54,22 @@ pub fn draw_radial_gradient(value: &RadialGradient) -> TokenStream {
         #draw_color_tk
 
         return #mix_colors_tk;
-    }
+    })
 }
 
 /// draw linear gradient use glsl code
 /// - value: &LinearGradient
 /// - fn_name: &str (function name)
-pub fn draw_linear_gradient(value: &LinearGradient) -> TokenStream {
+pub fn draw_linear_gradient(value: &LinearGradient) -> Result<TokenStream, Error> {
     let LinearGradient { angle, colors } = value;
-    let angle = parse_str::<TokenStream>(angle.to_string().as_str()).unwrap();
+    let angle = str_to_tk!(angle.to_string().as_str())?;
     let mut draw_color_tk = TokenStream::new();
 
     for (index, (hex, percentage)) in colors.iter().enumerate() {
-        let color_ident = parse_str::<TokenStream>(&format!("color{}", index)).unwrap();
-        let percentage_ident = parse_str::<TokenStream>(&format!("stop{}", index)).unwrap();
+        let color_ident = str_to_tk!(&format!("color{}", index))?;
+        let percentage_ident = str_to_tk!(&format!("stop{}", index))?;
+        let hex = str_to_tk!(&hex.to_vec4())?;
+        let percentage = str_to_tk!(&percentage.to_token_str())?;
         draw_color_tk.extend(quote! {
             let #color_ident = #hex;
             let #percentage_ident = #percentage;
@@ -84,9 +88,9 @@ pub fn draw_linear_gradient(value: &LinearGradient) -> TokenStream {
         mix_colors.push(((ident1, ident2), (stop1, stop2)));
     }
 
-    let mix_colors_tk = mix_color_to_token(mix_colors);
+    let mix_colors_tk = mix_color_to_token(mix_colors)?;
 
-    quote! {
+    Ok(quote! {
         let gradient_angle = #angle;
         let direction = vec2(cos(radians(gradient_angle)), sin(radians(gradient_angle)));
         let factor = dot(self.pos, direction);
@@ -94,39 +98,44 @@ pub fn draw_linear_gradient(value: &LinearGradient) -> TokenStream {
         #draw_color_tk
 
         return #mix_colors_tk;
-    }
+    })
 }
 
-pub fn mix_color_to_token(mix_colors: Vec<((String, String), (String, String))>) -> TokenStream {
-    fn nested_mix(codes: &Vec<((String, String), (String, String))>, index: usize) -> TokenStream {
+pub fn mix_color_to_token(
+    mix_colors: Vec<((String, String), (String, String))>,
+) -> Result<TokenStream, Error> {
+    fn nested_mix(
+        codes: &Vec<((String, String), (String, String))>,
+        index: usize,
+    ) -> Result<TokenStream, Error> {
         if index >= codes.len() - 1 {
             // 最后一个颜色段，不需要再嵌套
             let ((color, next_color), (stop, next_stop)) = &codes[index];
 
-            let color = parse_str::<TokenStream>(color).unwrap();
-            let next_color = parse_str::<TokenStream>(next_color).unwrap();
-            let stop = parse_str::<TokenStream>(stop).unwrap();
-            let next_stop = parse_str::<TokenStream>(next_stop).unwrap();
+            let color = str_to_tk!(color)?;
+            let next_color = str_to_tk!(next_color)?;
+            let stop = str_to_tk!(stop)?;
+            let next_stop = str_to_tk!(next_stop)?;
 
-            quote! {
+            Ok(quote! {
                 mix(#color, #next_color, smoothstep(#stop, #next_stop, factor))
-            }
+            })
         } else {
             // 递归生成嵌套的mix调用
             let ((color, next_color), (stop, next_stop)) = &codes[index];
-            let color = parse_str::<TokenStream>(color).unwrap();
-            let _next_color = parse_str::<TokenStream>(next_color).unwrap();
-            let stop = parse_str::<TokenStream>(stop).unwrap();
-            let next_stop = parse_str::<TokenStream>(next_stop).unwrap();
-            let next_mix = nested_mix(codes, index + 1);
+            let color = str_to_tk!(color)?;
+            let _next_color = str_to_tk!(next_color)?;
+            let stop = str_to_tk!(stop)?;
+            let next_stop = str_to_tk!(next_stop)?;
+            let next_mix = nested_mix(codes, index + 1)?;
 
-            quote! {
+            Ok(quote! {
                 mix(
                     #color,
                     #next_mix,
                     smoothstep(#stop, #next_stop, factor)
                 )
-            }
+            })
         }
     }
 

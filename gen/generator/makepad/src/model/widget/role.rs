@@ -1,5 +1,7 @@
-use gen_converter::Parent;
-use gen_parser::{For, PropsKey, Value};
+// use gen_converter::Parent;
+use gen_analyzer::{
+    value::{For, Value}, Parent, PropKey
+};
 use gen_utils::common::{IFSignal, Ulid};
 use std::collections::HashMap;
 
@@ -7,7 +9,7 @@ use std::collections::HashMap;
 pub enum Role {
     If {
         id: Ulid,
-        props: HashMap<PropsKey, Value>,
+        props: HashMap<PropKey, Value>,
         signal: IFSignal,
     },
     For {
@@ -35,7 +37,7 @@ impl Role {
     }
     pub fn is_nested_for(&self) -> bool {
         if let Role::For { parent, .. } = self {
-             parent.is_for()
+            parent.is_for()
         } else {
             false
         }

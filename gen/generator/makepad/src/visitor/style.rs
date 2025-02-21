@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 use gen_utils::{common::string::FixedString, error::Error};
 
 use crate::builtin::prop::err_from_to;
@@ -50,11 +50,11 @@ impl StyleVisitor {
     /// 然后根据chain进行正确的过滤, 因为从存储的样式中单纯靠c会找到`#c`,`.a-#c`,`.a-.b-#c`，但是我们需要的是`.a-#c`和`#c`
     /// ```
     pub fn visit(
-        styles: &HashMap<String, HashMap<PropsKey, Value>>,
+        styles: &HashMap<String, HashMap<PropKey, Value>>,
         id: Option<&String>,
         class: Option<&Value>,
         chain: &Vec<IdClass>,
-    ) -> Result<Vec<HashMap<PropsKey, Value>>, Error> {
+    ) -> Result<Vec<HashMap<PropKey, Value>>, Error> {
         let mut res = vec![];
         // [id] ------------------------------------------------------------------------------------
         if let Some(id) = id {

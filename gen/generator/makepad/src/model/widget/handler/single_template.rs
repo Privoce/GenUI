@@ -1,4 +1,4 @@
-use gen_converter::TemplateModel;
+use gen_analyzer::Template;
 use gen_utils::{common::Source, error::Error};
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
 /// 处理单个模板<template>节点
 pub fn single_template(
     source: Source,
-    template: Option<TemplateModel>,
+    template: Option<Template>,
     is_entry: bool,
 ) -> Result<Widget, Error> {
     let template = if let Some(template) = template {
@@ -32,13 +32,13 @@ pub fn single_template(
     Ok(widget)
 }
 
-fn handle(template: TemplateModel) -> Result<WidgetTemplate, Error> {
+fn handle(template: Template) -> Result<WidgetTemplate, Error> {
     // [检查并解析template] ---------------------------------------------------------------------------------
     // - 对于只有<template>节点的.gen文件, 不能带有动态脚本, 不能带有callbacks, 只能是静态组件
     // - 不能含有inherit属性首个标签不能是<component>
     let is_static = template.is_static();
     let is_define = template.is_component();
-    let TemplateModel {
+    let Template {
         id,
         as_prop,
         name,

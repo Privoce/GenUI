@@ -54,7 +54,7 @@ impl ToTokensExt for String {
                 color: hex,
             };
 
-            return Ok(quote::ToTokens::to_token_stream(&color));
+            return ToTokensExt::to_token_stream(&color);
         } else {
             return Ok(quote! {
                 #self
@@ -98,19 +98,20 @@ impl ToTokensExt for Enum {
 // ```
 impl ToTokensExt for Function {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
-        BuiltinColor::try_from(self)
-            .map(|color| {
-                quote::ToTokens::to_token_stream(&MakepadColor {
-                    fn_name: None,
-                    color,
-                })
-            })
-            .or_else(|_| {
+        BuiltinColor::try_from(self).map_or_else(
+            |_| {
                 LiveDependency::try_from(self).map_or_else(
                     |_| Err(format!("not support this function: {}", &self.name).into()),
                     |dep| Ok(quote::ToTokens::to_token_stream(&dep)),
                 )
-            })
+            },
+            |color| {
+                ToTokensExt::to_token_stream(&MakepadColor {
+                    fn_name: None,
+                    color,
+                })
+            },
+        )
     }
 }
 

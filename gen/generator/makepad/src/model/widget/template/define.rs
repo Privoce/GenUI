@@ -1,5 +1,5 @@
 use crate::{model::widget::role::Role, script::Script, token::ToLiveDesign};
-use gen_parser::Props;
+use gen_analyzer::Props;
 use gen_utils::{
     common::{camel_to_snake, snake_to_camel},
     error::{CompilerError, Error},
@@ -64,12 +64,12 @@ impl ToLiveDesign for DefineWidget {
     }
 }
 
-pub fn to_prop_map(prop: Props) -> Option<HashMap<String, String>> {
+pub fn to_prop_map(prop: Option<Props>) -> Option<HashMap<String, String>> {
     prop.map(|prop| {
         prop.iter()
             .filter_map(|(k, v)| {
                 if k.is_normal() {
-                    Some((k.name().to_string(), v.to_string()))
+                    Some((k.name.to_string(), v.to_string()))
                 } else {
                     None
                 }
@@ -78,10 +78,10 @@ pub fn to_prop_map(prop: Props) -> Option<HashMap<String, String>> {
     })
 }
 
-impl TryFrom<(String, Props, bool)> for DefineWidget {
+impl TryFrom<(String, Option<Props>, bool)> for DefineWidget {
     type Error = Error;
 
-    fn try_from(value: (String, Props, bool)) -> Result<Self, Self::Error> {
+    fn try_from(value: (String, Option<Props>, bool)) -> Result<Self, Self::Error> {
         let (name, prop, root) = value;
 
         let mut prop = to_prop_map(prop);
