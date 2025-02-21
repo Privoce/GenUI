@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use gen_parser::{Enum, EnumItem};
+use gen_analyzer::value::{Enum, EnumItem};
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
@@ -123,7 +123,7 @@ impl ToTokens for GOsType {
 #[cfg(test)]
 mod test_os {
 
-    use gen_parser::{Enum, EnumItem, Value};
+    use gen_analyzer::value::{Enum, EnumItem, Value};
     use quote::ToTokens;
 
     use crate::builtin::prop::GOsType;

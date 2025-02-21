@@ -11,7 +11,7 @@ use std::fmt::Debug;
 pub use base::*;
 pub use u_i_number::*;
 pub use float::*;
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{PropKey, value::Value};
 use gen_utils::error::{ConvertError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -60,23 +60,23 @@ where
     }
 }
 
-pub fn props_callback<F, R, E>(props: gen_parser::Props, f: F) -> Result<R, E>
+pub fn props_callback<F, R, E>(props: Option<gen_analyzer::Props>, f: F) -> Result<R, E>
 where
-    F: FnOnce(gen_parser::Props) -> Result<R, E>,
+    F: FnOnce(Option<gen_analyzer::Props>) -> Result<R, E>,
 {
     f(props)
 }
 
 
 // handle prop value for static -----------------------------------------------------------------------------------------------------
-pub fn handle_prop_value_static(k: &PropsKey, v: &Value) -> Result<TokenStream, Error> {
+pub fn handle_prop_value_static(k: &PropKey, v: &Value) -> Result<TokenStream, Error> {
     handle_builtin_prop_value_static(k, v).or_else(|_| handle_custom_prop_value_static(v))
 }
 
-fn handle_builtin_prop_value_static(k: &PropsKey, v: &Value) -> Result<TokenStream, Error> {
-    match k.name() {
+fn handle_builtin_prop_value_static(k: &PropKey, v: &Value) -> Result<TokenStream, Error> {
+    match k.name.as_str() {
         "theme" => Themes::try_from(v).and_then(|v| Ok(v.to_token_stream())),
-        _ => Err(ConvertError::UnSupport(k.name().to_string()).into()),
+        _ => Err(ConvertError::UnSupport(k.name.as_str().to_string()).into()),
     }
 }
 
@@ -86,7 +86,7 @@ fn handle_custom_prop_value_static(v: &Value) -> Result<TokenStream, Error> {
 }
 
 // handle prop value ----------------------------------------------------------------------------------------------------------------
-pub fn handle_prop_value(k: &PropsKey, v: &Value) -> Result<TokenStream, Error> {
+pub fn handle_prop_value(k: &PropKey, v: &Value) -> Result<TokenStream, Error> {
     // first do handle builtin prop value
     handle_builtin_prop_value(k, v).or_else(|_| {
         // if builtin prop value not support, do handle custom prop value
@@ -94,19 +94,19 @@ pub fn handle_prop_value(k: &PropsKey, v: &Value) -> Result<TokenStream, Error> 
     })
 }
 
-fn handle_builtin_prop_value(k: &PropsKey, v: &Value) -> Result<TokenStream, Error> {
-    match k.name() {
+fn handle_builtin_prop_value(k: &PropKey, v: &Value) -> Result<TokenStream, Error> {
+    match k.name.as_str() {
         "theme" => Themes::try_from(v).and_then(|v| {
             Ok(quote! {
                 theme: #v
             })
         }),
-        _ => Err(ConvertError::UnSupport(k.name().to_string()).into()),
+        _ => Err(ConvertError::UnSupport(k.name.as_str().to_string()).into()),
     }
 }
 
-fn handle_custom_prop_value(k: &PropsKey, v: &Value) -> Result<TokenStream, Error> {
-    let prop = k.name();
+fn handle_custom_prop_value(k: &PropKey, v: &Value) -> Result<TokenStream, Error> {
+    let prop = k.name.as_str();
     let value =
         parse_str::<TokenStream>(&v.to_string()).map_err(|e| Error::FromDynError(e.to_string()))?;
     Ok(quote! {

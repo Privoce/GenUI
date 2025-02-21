@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use gen_parser::{Function, Value};
+use gen_analyzer::value::{Function, Value};
 use gen_utils::error::Error;
 use quote::ToTokens;
 

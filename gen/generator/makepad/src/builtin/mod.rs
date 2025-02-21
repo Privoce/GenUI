@@ -78,10 +78,10 @@ impl BuiltinWidget {
 }
 
 /// from: (name, props, , is_root)
-impl TryFrom<(String, Props, bool)> for BuiltinWidget {
+impl TryFrom<(String, Option<Props>, bool)> for BuiltinWidget {
     type Error = Error;
 
-    fn try_from(value: (String, Props, bool)) -> Result<Self, Self::Error> {
+    fn try_from(value: (String, Option<Props>, bool)) -> Result<Self, Self::Error> {
         let (name, props, is_root) = value;
         if is_root {
             Self::is_inherits(&name).map_or_else(

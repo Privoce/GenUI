@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{value::Value, PropKey};
 use gen_utils::error::Error;
 
 use crate::{
@@ -57,11 +57,11 @@ impl TryFrom<(&str, &toml_edit::Value)> for Layout {
     }
 }
 
-impl TryFrom<&(PropsKey, Value)> for Layout {
+impl TryFrom<&(PropKey, Value)> for Layout {
     type Error = Error;
 
-    fn try_from(value: &(PropsKey, Value)) -> Result<Self, Self::Error> {
-        match value.0.name() {
+    fn try_from(value: &(PropKey, Value)) -> Result<Self, Self::Error> {
+        match value.0.name.as_str() {
             "scroll" => Ok(Layout::Scroll(DVec2::try_from(&value.1)?)),
             "clip_x" => Ok(Layout::ClipX(value.1.as_bool()?)),
             "clip_y" => Ok(Layout::ClipY(value.1.as_bool()?)),
@@ -72,7 +72,7 @@ impl TryFrom<&(PropsKey, Value)> for Layout {
             _ => {
                 return Err(err_from_to(
                     "GenUI Props",
-                    &format!("Makepad Layout, Invalid Prop: {}", value.0.name()),
+                    &format!("Makepad Layout, Invalid Prop: {}", &value.0.name),
                 )
                 .into());
             }

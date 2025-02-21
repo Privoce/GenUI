@@ -1,6 +1,6 @@
 use std::{num::ParseFloatError, str::FromStr};
 
-use gen_parser::{Struct, Value};
+use gen_analyzer::value::{Struct, Value};
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 
@@ -550,7 +550,7 @@ try_from_value_ref_struct! {
 
 #[cfg(test)]
 mod test_vec {
-    use gen_parser::Value;
+    use gen_analyzer::value::Value;
 
     use crate::builtin::prop::DVec2;
 

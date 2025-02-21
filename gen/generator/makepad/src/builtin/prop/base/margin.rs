@@ -1,6 +1,6 @@
 use std::{num::ParseFloatError, str::FromStr};
 
-use gen_parser::{Struct, Value};
+use gen_analyzer::value::{Struct, Value};
 use gen_utils::error::Error;
 
 use crate::{

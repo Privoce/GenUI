@@ -3,10 +3,11 @@ mod draw;
 use std::str::FromStr;
 
 use draw::*;
-use gen_parser::{
-    common::{hex_to_vec4, BuiltinColor, Hex},
-    Value,
-};
+use gen_analyzer::value::{BuiltinColor, Hex, Value};
+// use gen_parser::{
+//     common::{hex_to_vec4, BuiltinColor, Hex},
+//     Value,
+// };
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};

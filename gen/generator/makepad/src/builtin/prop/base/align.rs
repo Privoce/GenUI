@@ -2,7 +2,7 @@ use crate::{
     builtin::prop::{convert_str_to_vec, err_from_to},
     struct_float_to_tokens, try_from_value_ref_struct,
 };
-use gen_parser::{Struct, Value};
+use gen_analyzer::value::{Struct, Value};
 use gen_utils::error::Error;
 use std::{num::ParseFloatError, str::FromStr};
 

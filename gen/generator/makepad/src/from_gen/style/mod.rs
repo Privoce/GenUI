@@ -1,47 +1,48 @@
 //! 用于将GenUI的单<style>标签的`.gen`文件转化为Makepad的`.rs`文件
-//! 这里需要处理的是crate::src::builtin::prop::mod的[handle_prop_value_static]中的[handle_custom_prop_value_static]方法
+//! 这里需要处理的是crate::src::builtin::prop::mod的[str_to_tk!_prop_value_static]中的[str_to_tk!_custom_prop_value_static]方法
 //! 大部分可以识别prop的键的会在之前就处理掉，这里只处理非Builtin标准的prop的value
 //! 对于这类无法识别prop的键，一般都出现在开发者自定义的组件上
 
 use std::str::FromStr;
 
-use super::{utils::handle, MakepadColor};
+use super::MakepadColor;
 use crate::{
     builtin::prop::{err_from_to, LiveDependency},
+    str_to_tk,
     traits::ToTokensExt,
 };
-use gen_parser::{common::BuiltinColor, Enum, Function, Struct, Value};
+use gen_analyzer::value::{BuiltinColor, Enum, Function, Struct, Value};
 use gen_utils::common::format_float;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
 impl ToTokensExt for usize {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
-        handle(&self.to_string())
+        str_to_tk!(&self.to_string())
     }
 }
 
 impl ToTokensExt for isize {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
-        handle(&self.to_string())
+        str_to_tk!(&self.to_string())
     }
 }
 
 impl ToTokensExt for f32 {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
-        handle(format_float(*self as f64).as_str())
+        str_to_tk!(format_float(*self as f64).as_str())
     }
 }
 
 impl ToTokensExt for f64 {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
-        handle(format_float(*self).as_str())
+        str_to_tk!(format_float(*self).as_str())
     }
 }
 
 impl ToTokensExt for bool {
     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, gen_utils::error::Error> {
-        handle(self.to_string().as_str())
+        str_to_tk!(self.to_string().as_str())
     }
 }
 
@@ -69,11 +70,11 @@ impl ToTokensExt for Enum {
         if len == 0 {
             return Err(err_from_to("Enum", "TokenStream").into());
         } else if len == 1 {
-            handle(&field_chain.get(0).unwrap().to_string())
+            str_to_tk!(&field_chain.get(0).unwrap().to_string())
         } else {
             // get the last leaf
             let leaf = field_chain.last().unwrap();
-            handle(&leaf.to_string())
+            str_to_tk!(&leaf.to_string())
         }
     }
 }

@@ -36,7 +36,7 @@ pub enum Props {
 impl FromGenProps for Prop<Props> {
     type Output = Prop<Props>;
 
-    fn from_prop(prop: gen_parser::Props) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+    fn from_prop(prop: gen_analyzer::Props) -> Result<Option<Self::Output>, gen_utils::error::Error> {
         if let Some(props) = prop {
             let mut res = Prop::default();
             for (prop, value) in props {

@@ -57,7 +57,7 @@ impl TryFrom<&toml_edit::Value> for Themes {
 #[cfg(test)]
 mod test_theme {
 
-    use gen_parser::Value;
+    use gen_analyzer::value::Value;
     use quote::ToTokens;
 
     use crate::builtin::prop::Themes;

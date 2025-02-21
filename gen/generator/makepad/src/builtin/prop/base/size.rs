@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use gen_parser::{Enum, EnumItem, Value};
+use gen_analyzer::value::{Enum, EnumItem, Value};
 use gen_utils::{
     common::format_float,
     error::{ConvertError, Error},

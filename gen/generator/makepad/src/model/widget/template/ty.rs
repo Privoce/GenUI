@@ -1,6 +1,6 @@
 use crate::{builtin::BuiltinWidget, token::ToLiveDesign};
-use gen_converter::ConvertStyle;
-use gen_parser::Props;
+// use gen_converter::ConvertStyle;
+use gen_analyzer::{Props, Style};
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 
@@ -12,7 +12,7 @@ use super::DefineWidget;
 pub enum WidgetType {
     Builtin(BuiltinWidget),
     Define(DefineWidget),
-    Global(Option<ConvertStyle>),
+    Global(Option<Style>),
 }
 
 impl ToLiveDesign for WidgetType {
@@ -60,10 +60,10 @@ impl WidgetType {
     }
 }
 
-impl TryFrom<(String, Props, bool)> for WidgetType {
+impl TryFrom<(String, Option<Props>, bool)> for WidgetType {
     type Error = Error;
 
-    fn try_from(value: (String, Props, bool)) -> Result<Self, Self::Error> {
+    fn try_from(value: (String, Option<Props>, bool)) -> Result<Self, Self::Error> {
         match BuiltinWidget::try_from(value.clone()) {
             Ok(w) => {
                 return Ok(WidgetType::Builtin(w));

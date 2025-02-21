@@ -16,10 +16,10 @@ macro_rules! try_from_props {
     ($T:ty {
         $code: expr
     }) => {
-        impl TryFrom<gen_parser::Props> for $T {
+        impl TryFrom<Option<gen_analyzer::Props>> for $T {
             type Error = gen_utils::error::Error;
 
-            fn try_from(props: gen_parser::Props) -> Result<Self, Self::Error> {
+            fn try_from(props: Option<gen_analyzer::Props>) -> Result<Self, Self::Error> {
                 crate::builtin::prop::props_callback(props, $code)
             }
         }

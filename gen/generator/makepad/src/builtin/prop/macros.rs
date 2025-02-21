@@ -53,16 +53,16 @@ macro_rules! try_from_value_ref_struct {
 #[macro_export]
 macro_rules! try_from_enum_one_leaf {
     ($T: ty, $S: expr ,$($P: path = $I: expr),*) => {
-        impl TryFrom<&Vec<gen_parser::EnumItem>> for $T {
+        impl TryFrom<&Vec<gen_analyzer::value::EnumItem>> for $T {
             type Error = gen_utils::error::Error;
 
-            fn try_from(value: &Vec<gen_parser::EnumItem>) -> Result<Self, <Self as TryFrom<&gen_parser::EnumItem>>::Error> {
+            fn try_from(value: &Vec<gen_analyzer::value::EnumItem>) -> Result<Self, <Self as TryFrom<&gen_analyzer::value::EnumItem>>::Error> {
                 if value.len() == 1 {
                     return value.get(0).unwrap().try_into();
                 } else if value.len() == 2 {
                     let root = value.get(0).unwrap();
                     let leaf = value.get(1).unwrap();
-                    if let gen_parser::EnumItem::Root(root) = root {
+                    if let gen_analyzer::value::EnumItem::Root(root) = root {
                         if root == $S {
                             return leaf.try_into();
                         }
@@ -72,22 +72,22 @@ macro_rules! try_from_enum_one_leaf {
             }
         }
 
-        impl TryFrom<&gen_parser::EnumItem> for $T {
+        impl TryFrom<&gen_analyzer::value::EnumItem> for $T {
             type Error = gen_utils::error::Error;
 
-            fn try_from(value: &gen_parser::EnumItem) -> Result<Self, <Self as TryFrom<&gen_parser::EnumItem>>::Error> {
+            fn try_from(value: &gen_analyzer::value::EnumItem) -> Result<Self, <Self as TryFrom<&gen_analyzer::value::EnumItem>>::Error> {
                 match value {
-                    gen_parser::EnumItem::Leaf(s, _) => Ok(s.parse()?),
+                    gen_analyzer::value::EnumItem::Leaf(s, _) => Ok(s.parse()?),
                     _ => Err(crate::builtin::prop::err_from_to("EnumItem", $S).into()),
                 }
             }
         }
 
-        impl TryFrom<&gen_parser::Enum> for $T {
+        impl TryFrom<&gen_analyzer::value::Enum> for $T {
             type Error = gen_utils::error::Error;
 
-            fn try_from(value: &gen_parser::Enum) -> Result<Self, <Self as TryFrom<&gen_parser::Enum>>::Error> {
-                let gen_parser::Enum { field_chain } = value;
+            fn try_from(value: &gen_analyzer::value::Enum) -> Result<Self, <Self as TryFrom<&gen_analyzer::value::Enum>>::Error> {
+                let gen_analyzer::value::Enum { field_chain } = value;
                 field_chain.try_into()
             }
         }
@@ -170,7 +170,6 @@ macro_rules! props_to_tokens {
                 match self {
                     $(
                         $P(v) => {
-                            
                             if $Deref{
                                 tokens.extend(quote::ToTokens::to_token_stream(v));
                             }else{
@@ -212,7 +211,7 @@ macro_rules! from_gen_props{
         impl crate::builtin::prop::FromGenProps for Prop<$T> {
             type Output = Prop<$T>;
         
-            fn from_prop(prop: gen_parser::Props) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+            fn from_prop(prop: gen_analyzer::value::Props) -> Result<Option<Self::Output>, gen_utils::error::Error> {
                 if let Some(props) = prop {
                     let mut res = Prop::default();
                     for (prop, value) in props {

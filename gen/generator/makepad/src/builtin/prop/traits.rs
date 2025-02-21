@@ -1,4 +1,4 @@
-use gen_parser::Props;
+use gen_analyzer::Props;
 use gen_utils::error::Error;
 
 pub trait FromGenProps {

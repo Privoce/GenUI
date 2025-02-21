@@ -1,8 +1,8 @@
 use crate::{
     builtin::prop::handle_prop_value_static, traits::ToTokensExt,
 };
-use gen_converter::ConvertStyle;
-use gen_parser::PropsKey;
+// use gen_converter::ConvertStyle;
+// use gen_parser::PropsKey;
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;

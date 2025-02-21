@@ -1,4 +1,4 @@
-use gen_parser::{PropsKey, Value};
+use gen_analyzer::{value::Value, PropKey};
 use gen_utils::error::Error;
 use quote::quote;
 
@@ -18,10 +18,10 @@ impl quote::ToTokens for TextWalk {
     }
 }
 
-impl TryFrom<&(PropsKey, Value)> for TextWalk {
+impl TryFrom<&(PropKey, Value)> for TextWalk {
     type Error = Error;
 
-    fn try_from(value: &(PropsKey, Value)) -> Result<Self, Self::Error> {
+    fn try_from(value: &(PropKey, Value)) -> Result<Self, Self::Error> {
         Ok(TextWalk(Walk::try_from(value)?))
     }
 }
@@ -68,11 +68,11 @@ impl TryFrom<(&str, &toml_edit::Value)> for Walk {
     }
 }
 
-impl TryFrom<&(PropsKey, Value)> for Walk {
+impl TryFrom<&(PropKey, Value)> for Walk {
     type Error = Error;
 
-    fn try_from(value: &(PropsKey, Value)) -> Result<Self, Self::Error> {
-        match value.0.name() {
+    fn try_from(value: &(PropKey, Value)) -> Result<Self, Self::Error> {
+        match value.0.name.as_str() {
             "abs_pos" => Ok(Walk::AbsPos(DVec2::try_from(&value.1)?)),
             "margin" => Ok(Walk::Margin(Margin::try_from(&value.1)?)),
             "width" => Ok(Walk::Width(Size::try_from(&value.1)?)),
