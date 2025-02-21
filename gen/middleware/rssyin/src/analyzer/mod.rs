@@ -88,13 +88,20 @@ impl ScriptAnalyzer {
 
         for node in source_file.syntax().descendants() {
             // [count start index if bigger than node end index do continue] -----------------------------------
-            if start_index > node.text_range().end() {
+            if start_index >= node.text_range().end() {
                 continue;
             }
+
             // [if is space do continue] -----------------------------------------------------------------------
-            if node.kind() == ra_ap_syntax::SyntaxKind::WHITESPACE {
-                start_index = node.text_range().end();
-                continue;
+            match node.kind() {
+                ra_ap_syntax::SyntaxKind::WHITESPACE => {
+                    start_index = node.text_range().end();
+                    continue;
+                }
+                ra_ap_syntax::SyntaxKind::SOURCE_FILE => {
+                    continue;
+                }
+                _ => {}
             }
 
             // [import!] ----------------------------------------------------------------------------------------
@@ -103,7 +110,6 @@ impl ScriptAnalyzer {
                     .path()
                     .map(|path| "import".is_path_segment(&path))
                     .unwrap_or_default();
-
                 if is_import {
                     if let Some(tree) = macro_call.token_tree() {
                         import_macro.replace(Imports::from_str(&tree.to_string())?);
@@ -164,6 +170,7 @@ impl ScriptAnalyzer {
             }
             // [default impl or impl] ----------------------------------------------------------------------------
             if let Some(impl_block) = ast::Impl::cast(node.clone()) {
+                start_index = impl_block.syntax().text_range().end();
                 if let Some(prop_struct) = prop_struct.as_ref() {
                     let prop_ident = prop_struct.ident.to_string();
 
@@ -179,8 +186,6 @@ impl ScriptAnalyzer {
                                 parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
                                     .map_err(|e| Error::Parse(e))?,
                             );
-                            start_index = impl_block.syntax().text_range().end();
-                            continue;
                         }
                     } else {
                         // no trait
@@ -189,8 +194,6 @@ impl ScriptAnalyzer {
                                 parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
                                     .map_err(|e| Error::Parse(e))?,
                             );
-                            start_index = impl_block.syntax().text_range().end();
-                            continue;
                         } else {
                             // set into lazy
                             lazy.get_or_insert(Lazy::default()).impls.push(impl_block);
@@ -203,7 +206,16 @@ impl ScriptAnalyzer {
                         .default_impls
                         .push(impl_block);
                 }
+
+                continue;
             }
+
+            // [others] -----------------------------------------------------------------------------------------
+            // 由于ra_ap_syntax遍历node时会一层一层向里面遍历, 所以还是需要记录下start_index避免递归
+            others.extend(
+                parse_str::<TokenStream>(&node.text().to_string()).map_err(|e| Error::Parse(e))?,
+            );
+            start_index = node.text_range().end();
         }
 
         Ok(ScriptBridger {
@@ -282,7 +294,6 @@ impl Lazy {
     }
 }
 
-
 struct LazyAnalyzeResult {
     default_impl: Option<syn::ItemImpl>,
     impl_prop: Option<syn::ItemImpl>,
@@ -291,6 +302,8 @@ struct LazyAnalyzeResult {
 
 #[cfg(test)]
 mod test_analyzer {
+    use quote::ToTokens;
+
     #[test]
     fn test() {
         let input = r#"
@@ -309,7 +322,15 @@ mod test_analyzer {
             a: String
         }
 
-        
+        #[event]
+        pub enum AEvent{
+            Clicked,
+        }
+
+        fn other(){
+            print!("other");
+        }
+
         impl A{
             fn click_btn(&self){
                 print!("clicked");
@@ -319,10 +340,10 @@ mod test_analyzer {
                 print!("before create");
             }
         }
-        
         "#;
 
-        let _ = super::ScriptAnalyzer::analyze(input);
+        let res = super::ScriptAnalyzer::analyze(input).unwrap();
+        dbg!(&res.to_token_stream().to_string());
     }
 
     #[test]
@@ -341,37 +362,3 @@ mod test_analyzer {
         dbg!(&block);
     }
 }
-// impl Default for A{
-//     fn default(){
-//         A{a: "Hello".to_string()}
-//     }
-// }
-
-// impl A{
-//     fn click_btn(&self){
-//         print!("clicked");
-//     }
-//     #[before_create]
-//     fn before_create(&self){
-//         print!("before create");
-//     }
-// }
-
-// #[event]
-// pub enum AEvent{
-//     Clicked,
-// }
-
-// fn other(){
-//     print!("other");
-// }
-
-// #[prop]
-// struct A{
-//     a: String
-// }
-
-// #[event]
-// pub enum AEvent{
-//     Clicked,
-// }

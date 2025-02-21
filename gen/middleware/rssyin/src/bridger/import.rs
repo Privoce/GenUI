@@ -1,9 +1,21 @@
 use std::str::FromStr;
 
+use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::parse_str;
+
 use crate::error::Error;
 
 #[derive(Debug, Clone)]
 pub struct Imports(pub Vec<Import>);
+
+impl ToTokens for Imports {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        self.0.iter().for_each(|import| {
+            tokens.extend(import.to_token_stream());
+        });
+    }
+}
 
 impl FromStr for Imports {
     type Err = Error;
@@ -22,6 +34,15 @@ impl FromStr for Imports {
 
 #[derive(Debug, Clone)]
 pub struct Import(pub Vec<String>);
+
+impl ToTokens for Import {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        tokens.extend(parse_str::<TokenStream>(&format!(
+            "use {};",
+            self.0.join("::")
+        )));
+    }
+}
 
 impl FromStr for Import {
     type Err = Error;
