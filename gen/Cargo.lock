@@ -647,7 +647,6 @@ dependencies = [
 name = "rssyin"
 version = "0.1.0"
 dependencies = [
- "gen_mk_script_objs",
  "proc-macro2",
  "quote",
  "ra_ap_syntax 0.0.264",

@@ -68,7 +68,6 @@ impl ChainVisitor for VisitorChain {
                     }
                 }
                 syn::Stmt::Expr(..) => {
-                    //  目前来看没有什么需要GenUI rssyin处理的，只有一个async后续可能会支持网络的异步处理
                     self.bridge.push_other(&stmt);
                 },
                 syn::Stmt::Macro(stmt_macro) => {

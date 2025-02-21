@@ -83,7 +83,7 @@ impl ScriptAnalyzer {
         let mut event_enum = None;
         let mut default_impl = None;
         let mut impl_prop = None;
-        let mut others = TokenStream::new();
+        let mut others = vec![];
         let mut lazy: Option<Lazy> = None;
 
         for node in source_file.syntax().descendants() {
@@ -212,8 +212,8 @@ impl ScriptAnalyzer {
 
             // [others] -----------------------------------------------------------------------------------------
             // 由于ra_ap_syntax遍历node时会一层一层向里面遍历, 所以还是需要记录下start_index避免递归
-            others.extend(
-                parse_str::<TokenStream>(&node.text().to_string()).map_err(|e| Error::Parse(e))?,
+            others.push(
+                parse_str::<syn::Stmt>(&node.text().to_string()).map_err(|e| Error::Parse(e))?,
             );
             start_index = node.text_range().end();
         }
@@ -241,7 +241,7 @@ impl Lazy {
         let handle = |impls: &Vec<ast::Impl>,
                       prop_ident: &Option<String>,
                       target: &mut Option<ItemImpl>,
-                      others: &mut TokenStream|
+                      others: &mut Vec<syn::Stmt>|
          -> Result<(), Error> {
             for impl_block in impls {
                 if let Some(self_ty) = impl_block.self_ty() {
@@ -255,8 +255,8 @@ impl Lazy {
                                 .map_err(|e| Error::Parse(e))?,
                         );
                     } else {
-                        others.extend(
-                            parse_str::<TokenStream>(&impl_block.syntax().text().to_string())
+                        others.push(
+                            parse_str::<syn::Stmt>(&impl_block.syntax().text().to_string())
                                 .map_err(|e| Error::Parse(e))?,
                         );
                     }
@@ -267,7 +267,7 @@ impl Lazy {
 
         let mut impl_default_prop = None;
         let mut impl_prop = None;
-        let mut others = TokenStream::new();
+        let mut others = vec![];
 
         let Lazy {
             default_impls,
@@ -297,7 +297,7 @@ impl Lazy {
 struct LazyAnalyzeResult {
     default_impl: Option<syn::ItemImpl>,
     impl_prop: Option<syn::ItemImpl>,
-    others: TokenStream,
+    others: Vec<syn::Stmt>,
 }
 
 #[cfg(test)]

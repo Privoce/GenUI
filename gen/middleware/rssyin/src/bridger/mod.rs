@@ -1,11 +1,10 @@
 mod import;
 mod lifecycle;
 
-
 pub use import::{Import, Imports};
 use lifecycle::LifeCycle;
 use proc_macro2::TokenStream;
-use quote::ToTokens;
+use quote::{quote, ToTokens};
 
 #[derive(Debug)]
 pub struct ScriptBridger {
@@ -17,10 +16,10 @@ pub struct ScriptBridger {
     // lifecycles: LifeCycle,
     pub impl_prop: Option<syn::ItemImpl>,
     // 非追踪部分
-    pub others: TokenStream,
+    pub others: Vec<syn::Stmt>,
 }
 
-impl ToTokens for ScriptBridger{
+impl ToTokens for ScriptBridger {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         if let Some(imports) = &self.imports {
             imports.to_tokens(tokens);
@@ -37,6 +36,9 @@ impl ToTokens for ScriptBridger{
         if let Some(impl_prop) = &self.impl_prop {
             impl_prop.to_tokens(tokens);
         }
-        self.others.to_tokens(tokens);
+        let others = &self.others;
+        tokens.extend(quote! {
+            #(#others)*
+        });
     }
 }
