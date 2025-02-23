@@ -85,7 +85,7 @@ pub fn all(
 
 fn handle_template(
     template: Template,
-    styles: Option<&ConvertStyle>,
+    styles: Option<&Style>,
     template_ptrs: &mut TemplatePtrs,
     sc_poll: &mut ScriptPoll,
     prop_poll: &mut PropBinds,
@@ -104,12 +104,13 @@ fn handle_template(
         mut props,
         callbacks,
         inherits,
-        root,
         children,
         sugar_props,
         parent,
         ..
     } = template;
+    // 是否是根节点，只有根节点没有父节点
+    let root = parent.is_none();
     // [绑定变量处理] ----------------------------------------------------------------------------------------
     let mut binds = HashMap::new();
     if let Some(bind_props) = props.as_ref() {
@@ -118,7 +119,7 @@ fn handle_template(
                 let v = v.as_bind()?;
                 match &v {
                     Bind::Normal(_normal) => {
-                        binds.insert( v.to_string(), k.name().to_string());
+                        binds.insert( v.to_string(), k.name.to_string());
                     },
                     Bind::For(_) => panic!("for has been remove from bind props, if you see this error, please connect the author"),
                 }
@@ -220,7 +221,7 @@ fn handle_template(
         )?;
         let mut fn_callbacks: HashMap<String, CallbackFn> = HashMap::new();
         for (key, call_fn) in callbacks {
-            let callback = key.name().to_string();
+            let callback = key.name.to_string();
             let func = call_fn.as_fn()?;
             fn_callbacks.insert(func.name.to_string(), CallbackFn::new(func, callback));
         }

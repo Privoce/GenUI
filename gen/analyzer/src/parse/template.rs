@@ -233,7 +233,7 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 
 /// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-fn parse_tag<'a>(poll: Arc<RwLock<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
+fn parse_tag<'a>(poll: Arc<RwLock<Polls>>, mut root: bool) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
     move |input: &str| {
         // [parse comment if exist] ------------------------------------------------------------------------------------
         let (input, comments) = parse_comment(input)?;
@@ -251,11 +251,12 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a
         // trim input and check is start with `</tag_name>`
         match parse_end_tag(input, tag_name.to_string()) {
             Ok((input, _)) => {
+                root = false;
                 return Ok((input, template));
             }
             Err(_) => {
                 // has children, parse children
-                let (input, mut children) = many0(parse_tag(Arc::clone(&poll)))(input)?;
+                let (input, mut children) = many0(parse_tag(Arc::clone(&poll), root))(input)?;
 
                 let input = match parse_end_tag_common(input) {
                     Ok((remain, _)) => remain,
@@ -266,7 +267,7 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a
                     let (special, name) = template.as_parent();
                     children
                         .iter_mut()
-                        .for_each(|child| child.set_parent(special.to_string(), name.to_string()));
+                        .for_each(|child| child.set_parent(special.to_string(), name.to_string(), root));
 
                     template.children.replace(children);
                 }
@@ -286,8 +287,8 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>) -> impl FnMut(&'a str) -> IResult<&'a
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse(input: &str, poll: Arc<RwLock<Polls>>) -> Result<Template, Error> {
-    match parse_tag(poll)(input) {
+pub fn parse(input: &str, poll: Arc<RwLock<Polls>>, root: bool) -> Result<Template, Error> {
+    match parse_tag(poll, root)(input) {
         Ok((remain, template)) => {
             if remain.is_empty() {
                 return Ok(template);

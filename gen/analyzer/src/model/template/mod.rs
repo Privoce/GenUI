@@ -88,6 +88,8 @@ pub struct Template {
     pub children: Option<Vec<Template>>,
     /// 记录父组件的标识
     pub parent: Option<Parent>,
+    /// 是否为根组件
+    pub root: bool,
     /// 注释
     pub comments: Option<Vec<Comment>>,
 }
@@ -101,7 +103,7 @@ impl Template {
 
     /// 解析模版部分并返回模版后续进行静态分析的池
     pub fn parse(input: &str, poll: Arc<RwLock<Polls>>) -> Result<Self, Error> {
-        template::parse(input, poll)
+        template::parse(input, poll, true)
     }
 
     /// ## after parse
@@ -382,8 +384,8 @@ impl Template {
     //         }
     //     }
     // }
-    pub fn set_parent(&mut self, special: String, name: String) -> () {
-        let _ = self.parent.replace((special, name).into());
+    pub fn set_parent(&mut self, special: String, name: String, root: bool) -> () {
+        let _ = self.parent.replace((special, name, root).into());
     }
     pub fn as_parent(&self) -> (String, String) {
         (self.special.to_string(), self.name.to_string())
@@ -504,6 +506,7 @@ impl Default for Template {
             as_prop: None,
             sugar_props: SugarProps::default(),
             comments: None,
+            root: false,
         }
     }
 }
@@ -536,13 +539,15 @@ pub enum IfSign {
 pub struct Parent {
     pub id: String,
     pub name: String,
+    pub root: bool,
 }
 
-impl From<(String, String)> for Parent {
-    fn from(value: (String, String)) -> Self {
+impl From<(String, String, bool)> for Parent {
+    fn from(value: (String, String, bool)) -> Self {
         Self {
             id: value.0,
             name: value.1,
+            root: value.2,
         }
     }
 }
