@@ -4,12 +4,14 @@ pub mod role;
 mod template;
 mod traits;
 
+use std::sync::{Arc, RwLock};
+
 pub use abs::*;
 pub use handler::*;
 pub use template::*;
 pub use traits::*;
 
-use gen_analyzer::{Model, Script, Style, Template};
+use gen_analyzer::{Model, Polls, Script, Style, Template};
 use gen_utils::{common::Source, compiler::ToRs, error::Error};
 use quote::{quote, ToTokens};
 
@@ -100,6 +102,7 @@ impl TryFrom<(&mut Context, Model)> for Widget {
             style,
             is_entry,
             strategy,
+            polls,
             ..
         } = model;
 
@@ -110,13 +113,13 @@ impl TryFrom<(&mut Context, Model)> for Widget {
             gen_analyzer::Strategy::SingleTemplate => (special, template, is_entry).try_into(),
             gen_analyzer::Strategy::SingleScript => (special, script, is_entry).try_into(),
             gen_analyzer::Strategy::TemplateScript => {
-                (context, special, template, script, is_entry).try_into()
+                (context, special, template, script, is_entry, polls).try_into()
             }
             gen_analyzer::Strategy::TemplateStyle => {
                 (special, template, style, is_entry).try_into()
             }
             gen_analyzer::Strategy::All => {
-                (context, special, template, script, style, is_entry).try_into()
+                (context, special, template, script, style, is_entry, polls).try_into()
             }
             gen_analyzer::Strategy::None => (special, is_entry).try_into(), // means no strategy, just a empty file
             _ => panic!("can not reach here"),
@@ -184,13 +187,29 @@ impl TryFrom<(Source, Option<Template>, Option<Style>, bool)> for Widget {
 }
 
 /// 解析template + script模版
-impl TryFrom<(&mut Context, Source, Option<Template>, Option<Script>, bool)> for Widget {
+impl
+    TryFrom<(
+        &mut Context,
+        Source,
+        Option<Template>,
+        Option<Script>,
+        bool,
+        Arc<RwLock<Polls>>,
+    )> for Widget
+{
     type Error = Error;
 
     fn try_from(
-        value: (&mut Context, Source, Option<Template>, Option<Script>, bool),
+        value: (
+            &mut Context,
+            Source,
+            Option<Template>,
+            Option<Script>,
+            bool,
+            Arc<RwLock<Polls>>,
+        ),
     ) -> Result<Self, Self::Error> {
-        handler::template_script(value.0, value.1, value.2, value.3, value.4)
+        handler::template_script(value.0, value.1, value.2, value.3, value.4, value.5)
     }
 }
 

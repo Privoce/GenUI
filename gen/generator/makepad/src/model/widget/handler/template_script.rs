@@ -1,6 +1,9 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
-use gen_analyzer::{Script, Template, value::Bind};
+use gen_analyzer::{value::Bind, Polls, Script, Template};
 use gen_utils::{common::Source, error::Error};
 
 use crate::{
@@ -21,6 +24,7 @@ pub fn template_script(
     template: Option<Template>,
     script: Option<Script>,
     is_entry: bool,
+    polls: Arc<RwLock<Polls>>,
 ) -> Result<Widget, Error> {
     // [初始化一些必要的池] ----------------------------------------------------------------------------------
     let mut sc_poll: ScriptPoll = HashMap::new();
@@ -47,15 +51,27 @@ pub fn template_script(
     };
 
     // [处理script] ----------------------------------------------------------------------------------------
-    let script = handle_script(
-        script,
-        context,
-        template.as_ref(),
-        prop_poll,
-        callback_poll,
-        &template_ptrs,
-        sc_poll,
-    )?;
+    // let script = handle_script(
+    //     script,
+    //     context,
+    //     template.as_ref(),
+    //     prop_poll,
+    //     callback_poll,
+    //     &template_ptrs,
+    //     sc_poll,
+    // )?;
+
+    let script = if let Some(script) = script {
+        // template ident
+        let ident = template.as_ref().map_or_else(
+            || Err(Error::from("can not find root component identifier in template")),
+            |t| Ok(t.root_name()),
+        )?;
+        crate::script::Script::handle(script, context, polls, &template_ptrs, ident)
+    } else {
+        crate::script::Script::default()
+    }?;
+
     // [处理动态生成语法糖需要的代码] ----------------------------------------------------------------------
     let template_ptrs = if template_ptrs.is_empty() {
         None
@@ -66,7 +82,7 @@ pub fn template_script(
     let mut widget = Widget {
         source,
         template,
-        script,
+        script: Some(script),
         is_entry,
         has_plugin: context.plugins.is_some(),
         template_ptrs,
