@@ -10,7 +10,7 @@ use quote::{quote, ToTokens};
 use rssyin::{analyzer::ScriptAnalyzer, bridger::ScriptBridger};
 use syn::{ItemEnum, Stmt};
 
-use crate::{compiler::Context, model::TemplatePtrs, two_way_binding::TWBPollBuilder, visitor::InstanceLzVisitor};
+use crate::{compiler::Context, model::TemplatePtrs, two_way_binding::TWBPollBuilder, visitor::{InstanceLzVisitor, PropLzVisitor}};
 
 use super::{Impls, LiveComponent};
 
@@ -41,21 +41,19 @@ impl ScRs {
             prop,
             instance,
             event,
-            impl_prop,
+            mut impl_prop,
             others,
         } = ScriptAnalyzer::analyze(&code).map_err(|e| Error::from(e.to_string()))?;
         // [ident] -------------------------------------------------------------------------------------------
         let mut sc_rs = ScRs::default();
         sc_rs.ident = Some(ident);
         // [prop] --------------------------------------------------------------------------------------------
+        let mut impls = Impls::default();
         let mut prop = prop.expect("prop is required in component!");
-        // [处理组件实例初始化的代码] ----------------------------------------------------------------------------
-        if let Some(instance) = instance.as_ref(){
-            let mut visitor = InstanceLzVisitor::new(&prop);
-            let (output, tk) = visitor.visit(instance)?;
-        }else{
-            None
-        }
+        let binds = polls.read().unwrap().binds.as_ref();
+        PropLzVisitor::visit(&mut prop, template_ptrs, &mut impls, impl_prop.as_mut(), binds)?;
+
+
         
         // [live_struct] -------------------------------------------------------------------------------------
         

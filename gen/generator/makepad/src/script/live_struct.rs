@@ -7,6 +7,9 @@ use syn::{parse_quote, Field, Fields, ItemStruct};
 pub struct LiveComponent(pub ItemStruct);
 
 impl LiveComponent {
+    pub fn ident(&self) -> TokenStream {
+        self.0.ident.to_token_stream()
+    }
     pub fn default(ident: &TokenStream) -> Self{
         Self(parse_quote!{
             #[derive(Live, Widget)]

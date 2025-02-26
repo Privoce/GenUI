@@ -1,6 +1,8 @@
 mod fields;
 
 pub use fields::*;
+use gen_analyzer::Binds;
+use proc_macro2::TokenStream;
 use std::collections::HashMap;
 
 use crate::{
@@ -68,7 +70,7 @@ impl PropLzVisitor {
     /// - 在impls中添加LiveHook(after new from doc)的实现
     fn instance(prop: &mut ItemStruct, impls: &mut Impls) -> Result<LiveComponent, Error> {
         let ident = prop.ident.to_token_stream();
-        let mut live_struct = LiveComponent::default(&ident);
+        let mut live_component = LiveComponent::default(&ident);
         // [处理解构体] -----------------------------------------------------------------------------------------
         // - [为ident添加Deref作为新结构体名] ---------------------------------------------------------------------
         prop.ident = parse_quote!(str_to_tk!(&format!("{}Deref", ident.to_string()))?);
@@ -94,12 +96,35 @@ impl PropLzVisitor {
         let prop_deref_ident = prop.ident.to_token_stream();
         impls.traits().live_hook.push(
             quote! {
-                self.deref_prop = #ident::default();
+                self.deref_prop = #prop_deref_ident::default();
             },
             LiveHookType::AfterNewFromDoc,
         );
+        // [构建一个LiveComponent] -------------------------------------------------------------------------------
+        live_component.push_field(parse_quote! {
+            #[deref]
+            deref_prop: #prop_deref_ident,
+        });
 
-        Ok(live_struct)
+        Ok(live_component)
+    }
+
+    /// ## 处理双向绑定
+    /// - 生成get和set方法
+    /// - 生成双向绑定的代码
+    fn two_way_binding(
+        component_ident: TokenStream,
+        deref_prop: &ItemStruct,
+        impl_prop: Option<&mut syn::ItemImpl>,
+        binds: Option<&Binds>,
+    ) -> Result<(), Error> {
+        // [生成get和set方法] -----------------------------------------------------------------------------------
+        let mut twb_poll = HashMap::new();
+        for field in deref_prop.fields {
+            // - [根据binds生成相关双向绑定的getter setter] -------------------------------------------------------
+        }
+
+        Ok(())
     }
 
     /// ## params
@@ -109,16 +134,20 @@ impl PropLzVisitor {
     /// - impls: 组件的impl
     pub fn visit(
         prop: &mut ItemStruct,
-        binds: &PropBinds,
+        // binds: &PropBinds,
         template_ptrs: &TemplatePtrs,
         impls: &mut Impls,
+        impl_prop: Option<&mut syn::ItemImpl>,
+        binds: Option<&Binds>,
     ) -> Result<Option<TWBPollBuilder>, Error> {
         // [组件实例初始化] -------------------------------------------------------------------------------------
-        Self::instance(prop, impls);
-
+        let live_component = Self::instance(prop, impls)?;
         // [生成function相关的双向绑定代码] -----------------------------------------------------------------------
 
         // [生成get和set方法] -----------------------------------------------------------------------------------
+        let component_ident = live_component.ident();
+        Self::two_way_binding(component_ident, &prop, impl_prop, binds)?;
+
         let mut twb_poll = HashMap::new();
         let ident = prop.ident.to_token_stream();
         for field in prop.fields.iter() {
