@@ -4,9 +4,9 @@ use quote::ToTokens;
 use syn::{parse_quote, Field, Fields, ItemStruct};
 
 #[derive(Debug, Clone)]
-pub struct LiveStruct(pub ItemStruct);
+pub struct LiveComponent(pub ItemStruct);
 
-impl LiveStruct {
+impl LiveComponent {
     pub fn default(ident: &TokenStream) -> Self{
         Self(parse_quote!{
             #[derive(Live, Widget)]
@@ -33,14 +33,14 @@ impl LiveStruct {
     }
 }
 
-impl ToTokens for LiveStruct {
+impl ToTokens for LiveComponent {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         self.0.to_tokens(tokens);
     }
 }
 
-impl From<ItemStruct> for LiveStruct {
+impl From<ItemStruct> for LiveComponent {
     fn from(item: ItemStruct) -> Self {
-        LiveStruct(item)
+        LiveComponent(item)
     }
 }

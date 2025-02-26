@@ -1,14 +1,18 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    
+    sync::{Arc, RwLock},
+};
 
 use gen_analyzer::Polls;
-use gen_utils::error::Error;
+use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
+use rssyin::{analyzer::ScriptAnalyzer, bridger::ScriptBridger};
 use syn::{ItemEnum, Stmt};
 
-use crate::{compiler::Context, model::TemplatePtrs, two_way_binding::TWBPollBuilder};
+use crate::{compiler::Context, model::TemplatePtrs, two_way_binding::TWBPollBuilder, visitor::InstanceLzVisitor};
 
-use super::{Impls, LiveStruct};
+use super::{Impls, LiveComponent};
 
 #[derive(Debug, Clone, Default)]
 pub struct ScRs {
@@ -17,7 +21,7 @@ pub struct ScRs {
     /// rust uses
     pub uses: Option<TokenStream>,
     /// live struct
-    pub live_struct: Option<LiveStruct>,
+    pub live_struct: Option<LiveComponent>,
     /// events
     pub events: Option<Vec<ItemEnum>>,
     /// impls
@@ -27,32 +31,65 @@ pub struct ScRs {
 }
 
 impl ScRs {
-    pub fn handle(
-        bridger: gen_analyzer::Script,
+    fn handle( code: String,
+        ctx: &mut Context,
+        polls: Arc<RwLock<Polls>>,
+        template_ptrs: &TemplatePtrs,
+        ident: TokenStream,) -> Result<Self, Error> {
+        let ScriptBridger {
+            imports,
+            prop,
+            instance,
+            event,
+            impl_prop,
+            others,
+        } = ScriptAnalyzer::analyze(&code).map_err(|e| Error::from(e.to_string()))?;
+        // [ident] -------------------------------------------------------------------------------------------
+        let mut sc_rs = ScRs::default();
+        sc_rs.ident = Some(ident);
+        // [prop] --------------------------------------------------------------------------------------------
+        let mut prop = prop.expect("prop is required in component!");
+        // [处理组件实例初始化的代码] ----------------------------------------------------------------------------
+        if let Some(instance) = instance.as_ref(){
+            let mut visitor = InstanceLzVisitor::new(&prop);
+            let (output, tk) = visitor.visit(instance)?;
+        }else{
+            None
+        }
+        
+        // [live_struct] -------------------------------------------------------------------------------------
+        
+
+
+
+
+        Ok(sc_rs)
+    }
+    /// 处理并生成Makepad中的Rust代码
+    pub fn new(
+        sc: gen_analyzer::Script,
         ctx: &mut Context,
         polls: Arc<RwLock<Polls>>,
         template_ptrs: &TemplatePtrs,
         ident: TokenStream,
     ) -> Result<Self, Error> {
-        // [ident] -------------------------------------------------------------------------------------------
-        let sc_rs = ScRs::default();
-
+        match sc {
+            gen_analyzer::Script::Rs(rs) => Self::handle(rs, ctx, polls, template_ptrs, ident),
+            gen_analyzer::Script::Other { lang, code } => Err(CompilerError::runtime(
+                "Makepad Compiler - Script",
+                &format!("Unsupported script language: {}", lang),
+            )
+            .into()),
+        }
     }
-    pub fn default_sc(ident: TokenStream)-> Self{
-
-    }
-}
-
-impl Default for ScRs {
-    fn default() -> Self {
-        Self {
-            ident: Default::default(),
-            uses: Default::default(),
-            live_struct: Default::default(),
-            events: Default::default(),
-            impls: Default::default(),
-            twb_poll: Default::default(),
-            others: Default::default(),
+    /// 默认生成的Makepad中的Rust代码部分，只含有最基础页面结构, 用于没有任何动态交互的页面
+    pub fn default_sc(ident: TokenStream) -> Self {
+        let live_struct = Some(LiveComponent::default(&ident));
+        ScRs {
+            ident: Some(ident),
+            live_struct,
+            impls: Some(Impls::default()),
+            ..Default::default()
         }
     }
 }

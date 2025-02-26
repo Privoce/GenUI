@@ -13,7 +13,6 @@ use crate::{
         role::ForParent, widget::role::Role, AbsWidget, CallbackFn, CallbackWidget, PropWidget,
         Widget, WidgetTemplate, WidgetType,
     },
-    script::handle_script,
 };
 
 use super::{PropBinds, TemplatePtrs, TemplateResult};
@@ -64,13 +63,28 @@ pub fn template_script(
     let script = if let Some(script) = script {
         // template ident
         let ident = template.as_ref().map_or_else(
-            || Err(Error::from("can not find root component identifier in template")),
+            || {
+                Err(Error::from(
+                    "can not find root component identifier in template",
+                ))
+            },
             |t| Ok(t.root_name()),
         )?;
-        crate::script::Script::handle(script, context, polls, &template_ptrs, ident)
+
+        Some(crate::script::Script::handle(
+            script,
+            context,
+            polls,
+            &template_ptrs,
+            ident,
+        )?)
     } else {
-        crate::script::Script::default()
-    }?;
+        if let Some(ident) = template.as_ref().map(|t| t.root_name()) {
+            Some(crate::script::Script::default(ident))
+        } else {
+            None
+        }
+    };
 
     // [处理动态生成语法糖需要的代码] ----------------------------------------------------------------------
     let template_ptrs = if template_ptrs.is_empty() {
@@ -82,7 +96,7 @@ pub fn template_script(
     let mut widget = Widget {
         source,
         template,
-        script: Some(script),
+        script,
         is_entry,
         has_plugin: context.plugins.is_some(),
         template_ptrs,
@@ -125,7 +139,7 @@ fn handle(
                 let v = v.as_bind()?;
                 match &v {
                     Bind::Normal(_normal) => {
-                        binds.insert( v.ident(), k.name().to_string());
+                        binds.insert( v.ident(), k.name.to_string());
                     },
                     Bind::For(_) => panic!("for has been remove from bind props, if you see this error, please connect the author"),
                 }
@@ -226,7 +240,7 @@ fn handle(
         )?;
         let mut fn_callbacks: HashMap<String, CallbackFn> = HashMap::new();
         for (key, call_fn) in callbacks {
-            let callback = key.name().to_string();
+            let callback = key.name.to_string();
             let func = call_fn.as_fn()?;
             fn_callbacks.insert(func.name.to_string(), CallbackFn::new(func, callback));
         }

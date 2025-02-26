@@ -38,7 +38,7 @@ pub struct WrapRs{
     /// rust uses
     pub uses: Option<TokenStream>,
     /// live struct
-    pub live_struct: Option<LiveStruct>,
+    pub live_struct: Option<LiveComponent>,
     /// events
     pub events: Option<Vec<ItemEnum>>,
     /// impls
@@ -52,7 +52,7 @@ pub struct WrapRs{
 
 impl Script {
     pub fn default(ident: TokenStream) -> Self {
-        let live_struct = Some(LiveStruct::default(&ident));
+        let live_struct = Some(LiveComponent::default(&ident));
         Self {
             ident: Some(ident),
             uses: None,

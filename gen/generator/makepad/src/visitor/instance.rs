@@ -100,7 +100,7 @@ pub struct Input {
     /// 其中的`MyStruct`就是标识
     pub ident: String,
     /// 实例结构体的字段标识，例如: `#[prop] MyStruct { a : i32 , b : f32 , }`
-    /// 其中的`a , b`就是字段标识，但也可能是None
+    /// 其中的`a , b`就是字段标识，但也可能是None, 表示使用者并没有定义任何字段
     pub fields: Option<Vec<String>>,
 }
 

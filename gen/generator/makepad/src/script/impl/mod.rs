@@ -10,7 +10,7 @@ use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::parse_str;
 
-use crate::two_way_binding::TWBPollBuilder;
+use crate::{model::Traits, two_way_binding::TWBPollBuilder};
 
 #[derive(Default, Debug, Clone)]
 pub struct Impls{
@@ -20,6 +20,9 @@ pub struct Impls{
 }
 
 impl Impls {
+    pub fn traits(&mut self) -> &mut Traits {
+        &mut self.traits_impl.0
+    }
     pub fn to_token_stream(&self, ident: &TokenStream,twb_poll: Option<&TWBPollBuilder>) -> TokenStream {
         let ident_ref = parse_str::<TokenStream>(format!("{}Ref", ident.to_string()).as_str()).unwrap();
         let self_impl = self.self_impl.to_token_stream();

@@ -33,7 +33,7 @@ impl Script {
         template_ptrs: &TemplatePtrs,
         ident: TokenStream,
     ) -> Result<Self, Error> {
-        Ok(ScRs::handle(sc, ctx, polls, template_ptrs, ident)?.into())
+        Ok(ScRs::new(sc, ctx, polls, template_ptrs, ident)?.into())
     }
     pub fn default(ident: TokenStream) -> Self {
         ScRs::default_sc(ident).into()
