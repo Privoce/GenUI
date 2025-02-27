@@ -1,7 +1,7 @@
 mod fields;
 
 pub use fields::*;
-use gen_analyzer::Binds;
+use gen_analyzer::{Binds, PropComponent};
 use proc_macro2::TokenStream;
 use std::collections::HashMap;
 
@@ -9,15 +9,14 @@ use crate::{
     builtin::BuiltinWidget,
     model::{
         traits::{CRef, CallbackStmt, HandleEvent, ImplLiveHook, LiveHookType},
-        PropBinds, PropWidget, TemplatePtrs,
+        TemplatePtrs,
     },
     script::{Impls, LiveComponent},
-    str_to_tk,
     two_way_binding::{GetSet, TWBPollBuilder},
 };
 use gen_utils::error::{CompilerError, Error};
 use quote::{quote, ToTokens};
-use syn::{parse_quote, Attribute, Field, Fields, FieldsNamed, ItemStruct};
+use syn::{parse_quote, Attribute, Fields, ItemStruct};
 
 use super::SugarScript;
 
@@ -114,31 +113,52 @@ impl PropLzVisitor {
     /// - 生成双向绑定的代码
     fn two_way_binding(
         component_ident: TokenStream,
+        live_component: &mut LiveComponent,
         deref_prop: &ItemStruct,
-        impl_prop: Option<&mut syn::ItemImpl>,
         binds: &Binds,
         template_ptrs: &TemplatePtrs,
-        impls: &mut Impls
-    ) -> Result<(), Error> {
+        impls: &mut Impls,
+    ) -> Result<Option<TWBPollBuilder>, Error> {
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let mut twb_poll = HashMap::new();
-        
-        for field in deref_prop.fields {
+
+        for field in deref_prop.fields.iter() {
             // - [根据binds生成相关双向绑定的getter setter] -------------------------------------------------------
             let field_ident = field.ident.as_ref().unwrap().to_string();
             let field_ty = field.ty.to_token_stream().to_string();
             let _ = GetSet::create(&field_ident, &field_ty, &binds, template_ptrs, impls)?;
-            
+
             Self::handle_two_way_binding(
                 &mut twb_poll,
                 &binds,
                 &field_ident,
-                &ty,
+                &field_ty,
                 &mut impls.traits_impl.0.widget.handle_event,
             )?;
         }
-
-        Ok(())
+        impls
+            .self_ref_impl
+            .extend(GetSet::getter_setter(&component_ident));
+        // [双向绑定初始化相关的代码] ------------------------------------------------------------------------------
+        // 初始化添加到after_apply_from_doc中的初始化双向绑定池的代码
+        let twb_poll = TWBPollBuilder(twb_poll);
+        let _ = twb_poll.init_tk(component_ident).map(|tk| {
+            impls
+                .traits_impl
+                .0
+                .live_hook
+                .push(tk, LiveHookType::AfterApplyFromDoc);
+        });
+        // [处理sugar相关的代码] ---------------------------------------------------------------------------------
+        // - [通过tmeplate_ptrs给prop添加组件指针] ----------------------------------------------------------------
+        Self::handle_sugar(&mut live_component.0, template_ptrs, impls)?;
+        // [添加双向绑定池] --------------------------------------------------------------------------------------
+        if twb_poll.is_empty() {
+            Ok(None)
+        } else {
+            Self::append_twb_pool(&mut live_component.0)?;
+            Ok(Some(twb_poll))
+        }
     }
 
     /// ## params
@@ -148,63 +168,25 @@ impl PropLzVisitor {
     /// - impls: 组件的impl
     pub fn visit(
         prop: &mut ItemStruct,
-        // binds: &PropBinds,
         template_ptrs: &TemplatePtrs,
         impls: &mut Impls,
-        impl_prop: Option<&mut syn::ItemImpl>,
         binds: Option<&Binds>,
     ) -> Result<Option<TWBPollBuilder>, Error> {
         // [组件实例初始化] -------------------------------------------------------------------------------------
-        let live_component = Self::instance(prop, impls)?;
-        // [生成function相关的双向绑定代码] -----------------------------------------------------------------------
-
+        let mut live_component = Self::instance(prop, impls)?;
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let component_ident = live_component.ident();
         if let Some(binds) = binds {
-            Self::two_way_binding(component_ident, &prop, impl_prop, binds, template_ptrs, impls)?;
-        }
-
-        let mut twb_poll = HashMap::new();
-        let ident = prop.ident.to_token_stream();
-        for field in prop.fields.iter() {
-            let field_ident = field.ident.as_ref().unwrap().to_string();
-            let ty = field.ty.to_token_stream().to_string();
-
-            if field_ident == "deref_widget" {
-                continue;
-            }
-
-            let _ = GetSet::create_get_set(&field_ident, &ty, &binds, template_ptrs, impls)?;
-
-            // [根据binds生成相关双向绑定的代码] ------------------------------------------------------------------
-            Self::handle_two_way_binding(
-                &mut twb_poll,
-                &binds,
-                &field_ident,
-                &ty,
-                &mut impls.traits_impl.0.widget.handle_event,
-            )?;
-        }
-        impls.self_ref_impl.extend(GetSet::getter_setter(&ident));
-        // [双向绑定初始化相关的代码] ------------------------------------------------------------------------------
-        // 初始化添加到after_apply_from_doc中的初始化双向绑定池的代码
-        let twb_poll = TWBPollBuilder(twb_poll);
-        let _ = twb_poll.init_tk(prop.ident.to_token_stream()).map(|tk| {
-            impls
-                .traits_impl
-                .0
-                .live_hook
-                .push(tk, LiveHookType::AfterApplyFromDoc);
-        });
-        // [处理sugar相关的代码] ---------------------------------------------------------------------------------
-        // - [通过tmeplate_ptrs给prop添加组件指针] ----------------------------------------------------------------
-        Self::handle_sugar(prop, template_ptrs, impls)?;
-        // [添加双向绑定池] --------------------------------------------------------------------------------------
-        if twb_poll.is_empty() {
-            Ok(None)
+            Self::two_way_binding(
+                component_ident,
+                &mut live_component,
+                prop,
+                binds,
+                template_ptrs,
+                impls,
+            )
         } else {
-            Self::append_twb_pool(prop)?;
-            Ok(Some(twb_poll))
+            Ok(None)
         }
     }
 
@@ -213,7 +195,7 @@ impl PropLzVisitor {
     /// 但实际上用户并没有显示的添加checkbox的@clicked的回调函数，这个回调函数是由双向绑定池自动生成的，属于隐式回调
     fn handle_two_way_binding(
         twb_poll: &mut HashMap<String, String>,
-        binds: &PropBinds,
+        binds: &Binds,
         field: &str,
         ty: &str,
         handle_event: &mut HandleEvent,
@@ -221,17 +203,15 @@ impl PropLzVisitor {
         // 获取使用了字段的所有组件
         if let Some(widgets) = binds.get(field) {
             for widget in widgets {
-                let PropWidget {
-                    id, widget, prop, ..
-                } = widget;
+                let PropComponent { id, name, prop, .. } = widget;
                 // 添加到双向绑定池中
                 twb_poll.insert(field.to_string(), ty.to_string());
                 // 添加到handle_event中触发组件事件的代码
                 handle_event
                     .c_refs
-                    .insert(CRef::new(id.to_string(), widget.to_string()));
+                    .insert(CRef::new(id.to_string(), name.to_string()));
 
-                if let Some(event) = BuiltinWidget::twb_event(&widget, &prop) {
+                if let Some(event) = BuiltinWidget::twb_event(name, prop) {
                     handle_event.callbacks.insert(CallbackStmt::new(
                         id.to_string(),
                         field.to_string(),

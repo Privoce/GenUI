@@ -1,22 +1,28 @@
+use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::Stmt;
-
+use syn::{parse_quote, ImplItem, ItemImpl};
 
 /// Vec<ItemFn>
-#[derive(Default, Debug, Clone)]
-pub struct ImplSelf(pub Vec<Stmt>);
+#[derive(Debug, Clone)]
+pub struct ImplSelf(pub ItemImpl);
 
 impl ImplSelf {
-    pub fn extend(&mut self, stmts: Vec<Stmt>) {
-        self.0.extend(stmts);
+    pub fn new(ident: &TokenStream, self_impl: Option<ItemImpl>) -> Self {
+        Self(if let Some(self_impl) = self_impl {
+            self_impl
+        } else {
+            parse_quote! {
+                impl #ident {}
+            }
+        })
+    }
+    pub fn extend(&mut self, items: Vec<ImplItem>) {
+        self.0.items.extend(items);
     }
 }
 
-
 impl ToTokens for ImplSelf {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        for stmt in &self.0 {
-            stmt.to_tokens(tokens);
-        }
+        self.0.to_tokens(tokens);
     }
 }

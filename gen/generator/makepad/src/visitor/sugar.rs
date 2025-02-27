@@ -7,12 +7,13 @@ use crate::{
         WidgetTemplate,
     },
     script::Impls,
+    traits::ToTokensExt,
 };
 use gen_analyzer::value::{For, IdentSplit};
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_quote, parse_str, Field, Fields, ItemStruct, Stmt};
+use syn::{parse_quote, parse_str, Field, Fields, ImplItem, ItemStruct};
 
 /// for 语法糖处理器
 pub struct SugarScript;
@@ -65,7 +66,7 @@ impl SugarScript {
     fn for_script(
         widgets: &Vec<WidgetTemplate>,
         fields: HashMap<String, TokenStream>,
-    ) -> Vec<Stmt> {
+    ) -> Vec<ImplItem> {
         let mut res = vec![];
         for widget in widgets {
             // 首先确定这个ptr是否是嵌套的for, 如果不是直接生成, 如果father是for, 返回None, 等待father生成
@@ -368,7 +369,8 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
             .iter()
             .next()
             .unwrap()
-            .to_token_stream();
+            .to_token_stream()
+            .unwrap();
         let ident_str = ident.to_string();
         if let Some(index) = in_father_and_replace(&mut ident, &ident_str, f_creditial) {
             let index = parse_str::<TokenStream>(&index).unwrap();
@@ -390,7 +392,8 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
             .skip(1)
             .fold(TokenStream::new(), |mut tk, i| {
                 match i.split {
-                    gen_analyzer::value::IdentSplit::None | gen_analyzer::value::IdentSplit::Dot => {
+                    gen_analyzer::value::IdentSplit::None
+                    | gen_analyzer::value::IdentSplit::Dot => {
                         tk.extend(i.to_token_stream());
                     }
                     gen_analyzer::value::IdentSplit::Holder => {

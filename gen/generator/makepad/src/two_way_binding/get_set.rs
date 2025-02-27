@@ -2,7 +2,7 @@ use gen_analyzer::Binds;
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse_quote, parse_str, Stmt};
+use syn::{parse_quote, parse_str, ImplItem, Stmt};
 
 use crate::{
     builtin::BuiltinWidget, model::TemplatePtrs, script::Impls, traits::MakepadExtComponent,
@@ -124,7 +124,7 @@ impl GetSet {
         ]
     }
     /// 生成双向绑定的get方法
-    fn create_get_fn(field: &str, ty: &str) -> (Stmt, Stmt) {
+    fn create_get_fn(field: &str, ty: &str) -> (ImplItem, Stmt) {
         let fn_name = parse_str::<TokenStream>(&format!("get_{}", field)).unwrap();
         let field = parse_str::<TokenStream>(field).unwrap();
         let ty = parse_str::<TokenStream>(ty).unwrap();
@@ -142,7 +142,7 @@ impl GetSet {
         )
     }
     /// 生成双向绑定的set方法
-    fn create_set_fn(field: &str, ty: &str, bind_and_redraw: TokenStream) -> (Stmt, Stmt) {
+    fn create_set_fn(field: &str, ty: &str, bind_and_redraw: TokenStream) -> (ImplItem, Stmt) {
         let fn_set = parse_str::<TokenStream>(&format!("set_{}", field)).unwrap();
         let field = parse_str::<TokenStream>(field).unwrap();
         let ty = parse_str::<TokenStream>(ty).unwrap();

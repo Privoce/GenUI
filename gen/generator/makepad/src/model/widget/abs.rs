@@ -1,6 +1,6 @@
 use std::{collections::HashMap, hash::Hash};
 
-use gen_parser::{Function, Props};
+use gen_analyzer::{value::Function, Props};
 use gen_utils::common::{camel_to_snake, snake_to_camel};
 use proc_macro2::TokenStream;
 use syn::parse_str;
@@ -58,7 +58,7 @@ impl Hash for AbsWidget {
     }
 }
 impl AbsWidget {
-    pub fn new(name: &str, props: Props) -> Self {
+    pub fn new(name: &str, props: Option<Props>) -> Self {
         if let Ok(builtin) = BuiltinWidget::is_built_in(name) {
             AbsWidget::Builtin(builtin)
         } else {

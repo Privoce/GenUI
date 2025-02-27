@@ -1,7 +1,4 @@
-use std::{
-    
-    sync::{Arc, RwLock},
-};
+use std::sync::{Arc, RwLock};
 
 use gen_analyzer::Polls;
 use gen_utils::error::{CompilerError, Error};
@@ -10,7 +7,12 @@ use quote::{quote, ToTokens};
 use rssyin::{analyzer::ScriptAnalyzer, bridger::ScriptBridger};
 use syn::{ItemEnum, Stmt};
 
-use crate::{compiler::Context, model::TemplatePtrs, two_way_binding::TWBPollBuilder, visitor::{InstanceLzVisitor, PropLzVisitor}};
+use crate::{
+    compiler::Context,
+    model::TemplatePtrs,
+    two_way_binding::TWBPollBuilder,
+    visitor::{InstanceLzVisitor, PropLzVisitor},
+};
 
 use super::{Impls, LiveComponent};
 
@@ -31,36 +33,33 @@ pub struct ScRs {
 }
 
 impl ScRs {
-    fn handle( code: String,
+    fn handle(
+        code: String,
         ctx: &mut Context,
         polls: Arc<RwLock<Polls>>,
         template_ptrs: &TemplatePtrs,
-        ident: TokenStream,) -> Result<Self, Error> {
+        ident: TokenStream,
+    ) -> Result<Self, Error> {
         let ScriptBridger {
             imports,
             prop,
             instance,
             event,
-            mut impl_prop,
+            impl_prop,
             others,
         } = ScriptAnalyzer::analyze(&code).map_err(|e| Error::from(e.to_string()))?;
         // [ident] -------------------------------------------------------------------------------------------
         let mut sc_rs = ScRs::default();
+        let mut impls = Impls::default(&ident, impl_prop);
+
         sc_rs.ident = Some(ident);
         // [prop] --------------------------------------------------------------------------------------------
-        let mut impls = Impls::default();
         let mut prop = prop.expect("prop is required in component!");
         let polls = polls.read().unwrap();
-        PropLzVisitor::visit(&mut prop, template_ptrs, &mut impls, impl_prop.as_mut(), polls.binds.as_ref())?;
+        PropLzVisitor::visit(&mut prop, template_ptrs, &mut impls, polls.binds.as_ref())?;
 
-
-        
         // [live_struct] -------------------------------------------------------------------------------------
-        
-
-
-
-
+        sc_rs.impls = Some(impls);
         Ok(sc_rs)
     }
     /// 处理并生成Makepad中的Rust代码
