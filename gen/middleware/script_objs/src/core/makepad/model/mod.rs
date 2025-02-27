@@ -23,10 +23,10 @@ pub struct ScriptBridger {
     /// ```
     pub imports: Option<TokenStream>,
     /// 组件的属性
-    /// 使用`#[prop]`属性宏来实现
+    /// 使用`#[component]`属性宏来实现
     /// 例如：
     /// ```rust
-    /// #[prop]
+    /// #[component]
     /// pub struct AProp{
     ///    pub name: String,
     /// }
@@ -91,7 +91,7 @@ impl ScriptBridger {
         let prop = self
             .prop
             .as_mut()
-            .expect("prop is none, you should use #[prop] to sign a struct as prop");
+            .expect("prop is none, you should use #[component] to sign a struct as prop");
 
         match &mut prop.fields {
             Fields::Named(fields) => {
@@ -134,7 +134,7 @@ impl ScriptBridger {
         }
         Err(ImportError::MultiImportMacro.into())
     }
-    /// ## 相当于`#[prop]`属性宏的实现 See [impl_attr_prop]
+    /// ## 相当于`#[component]`属性宏的实现 See [impl_attr_prop]
     pub fn set_prop(&mut self, item: Option<ItemStruct>) -> SCResult<()> {
         if self.prop.is_none() {
             // 在设置之前，依据属性宏的实现来替换这个ItemStruct
@@ -142,8 +142,8 @@ impl ScriptBridger {
                 let name = &input_struct.ident;
                 let vis = &input_struct.vis;
                 let mut struct_attrs = input_struct.attrs;
-                // 首先先把`#[prop]`宏去除
-                struct_attrs.retain(|attr| !attr.path().is_ident("prop"));
+                // 首先先把`#[component]`宏去除
+                struct_attrs.retain(|attr| !attr.path().is_ident("component"));
                 let derives = parse_quote!(#[derive(Live, Widget)]);
                 struct_attrs.push(derives);
                 let mut field_tks = vec![quote! {

@@ -108,7 +108,7 @@ pub enum AttrMacroError {
 impl Display for AttrMacroError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AttrMacroError::MultiPropMacro => f.write_str("GenUI `#[prop]` can only be used once!"),
+            AttrMacroError::MultiPropMacro => f.write_str("GenUI `#[component]` can only be used once!"),
 
             AttrMacroError::LiveRustConflict => {
                 f.write_str("#[live] and #[rust] can not both exist in the same field!")

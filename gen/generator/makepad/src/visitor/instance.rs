@@ -96,10 +96,10 @@ impl InstanceLzVisitor {
 /// # InstanceLzVisitor input
 /// instance visitor的输入结构体，需要传入实例的定义
 pub struct Input {
-    /// 实例结构体的标识，例如: `#[prop] MyStruct{}`
+    /// 实例结构体的标识，例如: `#[component] MyStruct{}`
     /// 其中的`MyStruct`就是标识
     pub ident: String,
-    /// 实例结构体的字段标识，例如: `#[prop] MyStruct { a : i32 , b : f32 , }`
+    /// 实例结构体的字段标识，例如: `#[component] MyStruct { a : i32 , b : f32 , }`
     /// 其中的`a , b`就是字段标识，但也可能是None, 表示使用者并没有定义任何字段
     pub fields: Option<Vec<String>>,
 }

@@ -20,7 +20,7 @@ use crate::{
 /// 用于追踪脚本的分析过程，由于我们无法确定使用者是否按照顺序先定义属性再处理事件...，所以我们需要追踪整个过程
 /// 这样可以自由调节那些代码需要延迟到某些代码处理完之后再进行
 /// ## 需要进行的追踪
-/// 1. 使用`#[prop]`宏定义的组件属性，它是整个组件的实例化的基础
+/// 1. 使用`#[component]`宏定义的组件属性，它是整个组件的实例化的基础
 /// 2. 使用`Default` trait定义的组件属性的impl部分，它是组件属性的默认值
 /// 3. 使用`#[event]`宏定义的组件事件，它是组件的事件回调
 /// 4. 使用`impl`定义的组件事件的impl部分，它是当前组件内部子组件的事件回调的具体实现或当前组件提供到外部的方法
@@ -36,7 +36,7 @@ use crate::{
 /// ## 脚本示例
 /// ```
 /// // 使用prop宏构建了组件的属性
-/// #[prop]
+/// #[component]
 /// struct A{
 ///    a: String
 /// }
@@ -123,7 +123,7 @@ impl ScriptAnalyzer {
             if let Some(strt) = ast::Struct::cast(node.clone()) {
                 let is_prop = strt.attrs().any(|attr| {
                     attr.path()
-                        .map(|path| "prop".is_path_segment(&path))
+                        .map(|path| "component".is_path_segment(&path))
                         .unwrap_or_default()
                 });
 
@@ -200,8 +200,8 @@ impl ScriptAnalyzer {
                         }
                     }
                 } else {
-                    // 这个说明在检测到impl Default for xxx, 但是没有检测到#[prop] xxx无法确定impl的目标
-                    // 暂时把这部分代码放到lazy中, 等到检测到#[prop] xxx时再进行处理
+                    // 这个说明在检测到impl Default for xxx, 但是没有检测到#[component] xxx无法确定impl的目标
+                    // 暂时把这部分代码放到lazy中, 等到检测到#[component] xxx时再进行处理
                     lazy.get_or_insert(Lazy::default())
                         .default_impls
                         .push(impl_block);
@@ -317,7 +317,7 @@ mod test_analyzer {
             }
         }
 
-        #[prop]
+        #[component]
         struct A{
             a: String
         }

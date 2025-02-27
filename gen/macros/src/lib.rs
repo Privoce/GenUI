@@ -19,7 +19,7 @@ use prop::{impl_attr_prop, impl_proc_default_prop};
 /// > If you need to create a powerful UI, see [Component Macro(comming soon)]
 /// ## Example
 /// ```rust
-/// #[prop]
+/// #[component]
 /// pub struct AProp {
 ///    pub a: i32,
 /// }

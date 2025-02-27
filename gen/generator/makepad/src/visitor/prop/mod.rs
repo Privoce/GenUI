@@ -28,7 +28,7 @@ use super::SugarScript;
 /// ## 功能2: 组件实例初始化
 /// 使用者若用用了Default trait对prop struct进行了初始化，那么我们需要将Default trait中的代码转为组件修饰的代码
 /// ```
-/// #[prop]
+/// #[component]
 /// pub struct AProp{
 ///     name: String
 /// }
@@ -78,7 +78,7 @@ impl PropLzVisitor {
         let mut attrs = prop
             .attrs
             .iter()
-            .filter(|attr| attr.path().is_ident("prop"))
+            .filter(|attr| attr.path().is_ident("component"))
             .map(|attr| attr.clone())
             .collect::<Vec<Attribute>>();
 
@@ -117,18 +117,30 @@ impl PropLzVisitor {
         deref_prop: &ItemStruct,
         impl_prop: Option<&mut syn::ItemImpl>,
         binds: Option<&Binds>,
+        template_ptrs: &TemplatePtrs,
+        impls: &mut Impls
     ) -> Result<(), Error> {
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let mut twb_poll = HashMap::new();
         for field in deref_prop.fields {
             // - [根据binds生成相关双向绑定的getter setter] -------------------------------------------------------
+            let field_ident = field.ident.as_ref().unwrap().to_string();
+            let field_ty = field.ty.to_token_stream().to_string();
+            let _ = GetSet::create_get_set(&field_ident, &field_ty, &binds, template_ptrs, impls)?;
+            Self::handle_two_way_binding(
+                &mut twb_poll,
+                &binds,
+                &field_ident,
+                &ty,
+                &mut impls.traits_impl.0.widget.handle_event,
+            )?;
         }
 
         Ok(())
     }
 
     /// ## params
-    /// - prop: 使用#[prop]修饰的struct
+    /// - prop: 使用#[component]修饰的struct
     /// - binds: 组件和变量之间的绑定关系
     /// - template_ptrs: 组件指针
     /// - impls: 组件的impl
@@ -146,7 +158,7 @@ impl PropLzVisitor {
 
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let component_ident = live_component.ident();
-        Self::two_way_binding(component_ident, &prop, impl_prop, binds)?;
+        Self::two_way_binding(component_ident, &prop, impl_prop, binds, template_ptrs, impls)?;
 
         let mut twb_poll = HashMap::new();
         let ident = prop.ident.to_token_stream();

@@ -37,7 +37,7 @@ mod test_makepad {
 
         let input = r#"
         {
-            #[prop]
+            #[component]
             pub struct Hello3{
                 pub lb: String
             }
@@ -71,7 +71,7 @@ mod test_makepad {
             import! {
                 crate::views::my_button::*;
             }
-            #[prop]
+            #[component]
             struct MyStruct {
                 a: i32,
                 b: f32,
@@ -148,7 +148,7 @@ mod test_makepad {
             import! {
                 crate::views::my_button::*;
             }
-            #[prop]
+            #[component]
             struct MyStruct {
                 a: i32,
                 b: f32,
@@ -206,7 +206,7 @@ mod test_makepad {
     fn closure_with_prop() {
         let input = r#"
         {
-            #[prop]
+            #[component]
             struct MyStruct {
                 a: i32,
                 b: f32,
@@ -348,7 +348,7 @@ mod test_makepad {
 
         handle(input);
     }
-    // struct with #[prop] --------------------------------------------------------------
+    // struct with #[component] --------------------------------------------------------------
     #[test]
     fn prop_macro_struct() {
         let input = r#"
@@ -359,7 +359,7 @@ mod test_makepad {
                 crate::views::my_button::*;
             }
 
-            #[prop]
+            #[component]
             struct MyStruct {
                 a: i32,
                 b: f32,
@@ -473,7 +473,7 @@ mod test_makepad {
     fn back_to_rust(){
         let input = r#"
         {
-            #[prop]
+            #[component]
             pub struct AProp{
                 pub a: i32,
                 pub b: f32,

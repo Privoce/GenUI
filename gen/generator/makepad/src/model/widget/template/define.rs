@@ -27,7 +27,7 @@ impl DefineWidget {
     pub fn default_prop(&self) -> ItemStruct {
         let name = parse_str::<TokenStream>(&self.name).unwrap();
         parse_quote! {
-             #[prop] pub struct #name{}
+             #[component] pub struct #name{}
         }
     }
     pub fn default_script(&self) -> Script {

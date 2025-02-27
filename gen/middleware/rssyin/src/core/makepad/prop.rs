@@ -6,10 +6,10 @@ use crate::visitor::chain::{
 };
 
 /// # PropVisitor
-/// 专门用于访问带有#[prop]属性宏的结构体，只工作一次
+/// 专门用于访问带有#[component]属性宏的结构体，只工作一次
 /// ```rust
 /// <script>
-/// #[prop]
+/// #[component]
 /// pub struct AProp{
 ///     pub name: String,
 /// }
@@ -62,6 +62,6 @@ impl BasicVisitor for PropVisitor {
 
 impl PropVisitor {
     pub fn is_attr_macro(&self, item: &ItemStruct) -> bool {
-        item.attrs.iter().any(|attr| attr.path().is_ident("prop"))
+        item.attrs.iter().any(|attr| attr.path().is_ident("component"))
     }
 }
