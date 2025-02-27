@@ -116,17 +116,19 @@ impl PropLzVisitor {
         component_ident: TokenStream,
         deref_prop: &ItemStruct,
         impl_prop: Option<&mut syn::ItemImpl>,
-        binds: Option<&Binds>,
+        binds: &Binds,
         template_ptrs: &TemplatePtrs,
         impls: &mut Impls
     ) -> Result<(), Error> {
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let mut twb_poll = HashMap::new();
+        
         for field in deref_prop.fields {
             // - [根据binds生成相关双向绑定的getter setter] -------------------------------------------------------
             let field_ident = field.ident.as_ref().unwrap().to_string();
             let field_ty = field.ty.to_token_stream().to_string();
-            let _ = GetSet::create_get_set(&field_ident, &field_ty, &binds, template_ptrs, impls)?;
+            let _ = GetSet::create(&field_ident, &field_ty, &binds, template_ptrs, impls)?;
+            
             Self::handle_two_way_binding(
                 &mut twb_poll,
                 &binds,
@@ -158,7 +160,9 @@ impl PropLzVisitor {
 
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let component_ident = live_component.ident();
-        Self::two_way_binding(component_ident, &prop, impl_prop, binds, template_ptrs, impls)?;
+        if let Some(binds) = binds {
+            Self::two_way_binding(component_ident, &prop, impl_prop, binds, template_ptrs, impls)?;
+        }
 
         let mut twb_poll = HashMap::new();
         let ident = prop.ident.to_token_stream();

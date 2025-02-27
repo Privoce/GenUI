@@ -50,8 +50,8 @@ impl ScRs {
         // [prop] --------------------------------------------------------------------------------------------
         let mut impls = Impls::default();
         let mut prop = prop.expect("prop is required in component!");
-        let binds = polls.read().unwrap().binds.as_ref();
-        PropLzVisitor::visit(&mut prop, template_ptrs, &mut impls, impl_prop.as_mut(), binds)?;
+        let polls = polls.read().unwrap();
+        PropLzVisitor::visit(&mut prop, template_ptrs, &mut impls, impl_prop.as_mut(), polls.binds.as_ref())?;
 
 
         

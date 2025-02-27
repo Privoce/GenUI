@@ -1,12 +1,11 @@
+use gen_analyzer::Binds;
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, parse_str, Stmt};
 
 use crate::{
-    builtin::BuiltinWidget,
-    model::{PropBinds, TemplatePtrs},
-    script::Impls,
+    builtin::BuiltinWidget, model::TemplatePtrs, script::Impls, traits::MakepadExtComponent,
     visitor::sugar_for_fn_ident,
 };
 
@@ -32,22 +31,23 @@ impl GetSet {
     /// 生成组件双向绑定需要的get和set方法
     /// 这个方法一般由PropLzVisitor调用(通过传入的ItemStruct生成所有的get和set方法)
     /// ⚠️ set方法需要注意：需要添加组件对数据的绑定和重绘
-    pub fn create_get_set(
+    pub fn create(
         field: &str,
         ty: &str,
-        binds: &PropBinds,
+        binds: &Binds,
         // is_for: bool,
         ptrs: &TemplatePtrs,
         impls: &mut Impls,
     ) -> Result<(), Error> {
         let mut bind_and_redraw = if let Some(binds) = binds.get(field) {
             binds.iter().fold(TokenStream::new(), |mut tk, widget| {
-                let widget_name = parse_str::<TokenStream>(&widget.widget_name()).unwrap();
+                let widget_name = parse_str::<TokenStream>(&widget.name()).unwrap();
                 let widget_id = parse_str::<TokenStream>(&widget.id).unwrap();
                 let set_prop_fn =
                     parse_str::<TokenStream>(&format!("set_{}", &widget.prop)).unwrap();
-                let set_prop = if let Some((prop_widget, as_prop)) = widget.as_prop.as_ref() {
-                    let prop_widget = BuiltinWidget::builtin_name_or_snake(prop_widget);
+                let set_prop = if let Some(as_prop) = widget.as_prop.as_ref() {
+                    // attention: 可能出现bug(as_prop)
+                    let prop_widget = BuiltinWidget::builtin_name_or_snake(&widget.name());
                     let as_prop_widget =
                         parse_str::<TokenStream>(&format!("as_{}", prop_widget)).unwrap();
                     let as_prop = parse_str::<TokenStream>(as_prop).unwrap();
@@ -57,7 +57,6 @@ impl GetSet {
                             let slot_widget = c_ref.#as_prop.#as_prop_widget();
                             slot_widget.#set_prop_fn(cx, value.clone());
                         }
-
                     }
                 } else {
                     quote! {
