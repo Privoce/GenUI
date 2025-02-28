@@ -171,12 +171,12 @@ impl PropLzVisitor {
         template_ptrs: &TemplatePtrs,
         impls: &mut Impls,
         binds: Option<&Binds>,
-    ) -> Result<Option<TWBPollBuilder>, Error> {
+    ) -> Result<(Option<TWBPollBuilder>, LiveComponent), Error> {
         // [组件实例初始化] -------------------------------------------------------------------------------------
         let mut live_component = Self::instance(prop, impls)?;
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let component_ident = live_component.ident();
-        if let Some(binds) = binds {
+        let twb = if let Some(binds) = binds {
             Self::two_way_binding(
                 component_ident,
                 &mut live_component,
@@ -184,10 +184,11 @@ impl PropLzVisitor {
                 binds,
                 template_ptrs,
                 impls,
-            )
+            )?
         } else {
-            Ok(None)
-        }
+           None
+        };
+        Ok((twb, live_component))
     }
 
     /// 处理所有双向绑定用到的变量和组件之间的关系，生成添加到handle_event中触发组件事件的代码

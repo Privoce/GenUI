@@ -38,6 +38,12 @@ impl Script {
     pub fn default(ident: TokenStream) -> Self {
         ScRs::default_sc(ident).into()
     }
+    pub fn uses(&self) -> Option<TokenStream> {
+        match self {
+            Script::Rs(_) => None,
+            Script::ScRs(sc_rs) => sc_rs.uses.clone(),
+        }
+    }
 }
 
 impl From<ScRs> for Script {

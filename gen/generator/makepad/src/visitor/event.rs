@@ -1,39 +1,31 @@
 use gen_utils::{common::camel_to_snake, error::Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_quote, parse_str, Fields, Ident, ItemEnum, Stmt, Variant};
+use syn::{parse_quote, parse_str, Fields, Ident, ImplItem, ItemEnum, Stmt, Variant};
 
 use crate::script::Impls;
 
 /// 根据提供的事件生成对应外部调用方法, 例如`enum A { B, C , None }`生成:
-/// 
+///
 /// - (pub) fn b(&self, actions: &Actions) -> Option<()>{}
 /// - (pub) fn c(&self, actions: &Actions) -> Option<()>{}
-/// 
+///
 /// 以上两个方法到ref和self中进行调用
 pub struct EventLzVisitor;
 
 impl EventLzVisitor {
-    pub fn visit(events: &Vec<ItemEnum>, impls: &mut Impls) -> Result<(), Error> {
+    pub fn visit(event: ItemEnum, impls: &mut Impls) -> Result<(), Error> {
         let (mut self_fns, ref_self_fns) =
-            events
+            event
+                .variants
                 .iter()
-                .fold((Vec::new(), Vec::new()), |(mut fns, mut ref_fns), event| {
-                    let (f, ref_f) = event.variants.iter().fold(
-                        (Vec::new(), Vec::new()),
-                        |(mut fns, mut ref_fns), var| {
-                            if var.ident.to_token_stream().to_string() != "None" {
-                                let (self_fn, self_ref_fn) = Self::event_fn(&event.ident, var);
-                                fns.push(self_fn);
-                                ref_fns.push(self_ref_fn);
-                            }
+                .fold((Vec::new(), Vec::new()), |(mut fns, mut ref_fns), var| {
+                    if var.ident.to_token_stream().to_string() != "None" {
+                        let (self_fn, self_ref_fn) = Self::event_fn(&event.ident, var);
+                        fns.push(self_fn);
+                        ref_fns.push(self_ref_fn);
+                    }
 
-                            (fns, ref_fns)
-                        },
-                    );
-
-                    fns.extend(f);
-                    ref_fns.extend(ref_f);
                     (fns, ref_fns)
                 });
 
@@ -45,7 +37,7 @@ impl EventLzVisitor {
         Ok(())
     }
 
-    fn event_fn(ident: &Ident, var: &Variant) -> (Stmt, Stmt) {
+    fn event_fn(ident: &Ident, var: &Variant) -> (ImplItem, Stmt) {
         let fn_name = &var.ident;
         let snake_fn_name =
             parse_str::<TokenStream>(&camel_to_snake(&fn_name.to_string())).unwrap();
@@ -85,7 +77,7 @@ impl EventLzVisitor {
         (self_fn, self_ref_fn)
     }
 
-    fn default_callback_fn() -> Stmt {
+    fn default_callback_fn() -> ImplItem {
         parse_quote! {
             fn active_event<F>(&mut self, cx: &mut Cx, f: F) -> ()
             where

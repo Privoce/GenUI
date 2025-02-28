@@ -45,11 +45,7 @@ impl Widget {
         Ok(widget)
     }
     pub fn imports(&self) -> Option<proc_macro2::TokenStream> {
-        if let Some(sc) = self.script.as_ref() {
-            sc.uses.clone()
-        } else {
-            None
-        }
+        self.script.as_ref().and_then(|sc| sc.uses())
     }
     /// default script impl for easy define widget
     pub fn default_script(&mut self) -> () {
