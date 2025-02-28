@@ -8,10 +8,10 @@ use rssyin::{analyzer::ScriptAnalyzer, bridger::ScriptBridger};
 use syn::{parse_quote, ItemEnum, Stmt};
 
 use crate::{
-    compiler::Context,
+    compiler::{Context, WidgetPoll},
     model::TemplatePtrs,
     two_way_binding::TWBPollBuilder,
-    visitor::{EventLzVisitor, InstanceLzVisitor, PropLzVisitor},
+    visitor::{EventLzVisitor, FnLzVisitor, InstanceLzVisitor, PropLzVisitor},
 };
 
 use super::{Impls, LiveComponent};
@@ -37,6 +37,7 @@ impl ScRs {
         code: String,
         ctx: &mut Context,
         polls: Arc<RwLock<Polls>>,
+        widget_poll: &WidgetPoll,
         template_ptrs: &TemplatePtrs,
         ident: TokenStream,
     ) -> Result<Self, Error> {
@@ -45,7 +46,7 @@ impl ScRs {
             prop,
             mut instance,
             event,
-            impl_prop,
+            mut impl_prop,
             mut others,
         } = ScriptAnalyzer::analyze(&code).map_err(|e| Error::from(e.to_string()))?;
         // [datas] -------------------------------------------------------------------------------------------
@@ -73,11 +74,18 @@ impl ScRs {
         }
         // [处理fn-callback] ----------------------------------------------------------------------------------
         if let Some(mut impl_prop) = impl_prop {
+            // 消耗impl_prop，所有内部处理的方法都会被放到impls.self_impl中
+            FnLzVisitor::visit(
+                impl_prop,
+                &mut impls,
+                polls.binds.as_ref(),
+                polls.events.as_ref(),
+                widget_poll,
+                &ctx,
+            )?;
 
-
-
-            // set to impls
-            impls.self_impl = impls.self_impl.patch(impl_prop);
+            // // set to impls
+            // impls.self_impl = impls.self_impl.patch(impl_prop);
         }
 
         others.push(parse_quote!(#prop));
@@ -96,11 +104,12 @@ impl ScRs {
         sc: gen_analyzer::Script,
         ctx: &mut Context,
         polls: Arc<RwLock<Polls>>,
+        widget_poll: &WidgetPoll,
         template_ptrs: &TemplatePtrs,
         ident: TokenStream,
     ) -> Result<Self, Error> {
         match sc {
-            gen_analyzer::Script::Rs(rs) => Self::handle(rs, ctx, polls, template_ptrs, ident),
+            gen_analyzer::Script::Rs(rs) => Self::handle(rs, ctx, polls, widget_poll,template_ptrs, ident),
             gen_analyzer::Script::Other { lang, code } => Err(CompilerError::runtime(
                 "Makepad Compiler - Script",
                 &format!("Unsupported script language: {}", lang),

@@ -1,13 +1,20 @@
 use gen_analyzer::PropComponent;
 use gen_utils::{common::camel_to_snake, error::Error};
 use proc_macro2::TokenStream;
-use quote::ToTokens;
 
 use crate::{builtin::BuiltinWidget, str_to_tk};
 
 pub trait ToTokensExt {
     fn to_token_stream(&self) -> Result<TokenStream, Error>;
 }
+
+
+impl ToTokensExt for gen_analyzer::value::Ident {
+    fn to_token_stream(&self) -> Result<TokenStream, Error> {
+        str_to_tk!(&self.to_string())
+    }
+}
+
 
 pub trait MakepadExtComponent {
     fn name(&self) -> String;
@@ -25,8 +32,3 @@ impl MakepadExtComponent for PropComponent {
     }
 }
 
-impl ToTokensExt for gen_analyzer::value::Ident {
-    fn to_token_stream(&self) -> Result<TokenStream, Error> {
-        str_to_tk!(&self.to_string())
-    }
-}

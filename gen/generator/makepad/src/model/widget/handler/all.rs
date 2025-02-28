@@ -1,6 +1,6 @@
 use crate::{
     builtin::prop::err_from_to,
-    compiler::{Context, WidgetPoll as ScriptPoll},
+    compiler::{Context, WidgetPoll},
     model::{
         role::ForParent, widget::role::Role, AbsWidget, CallbackFn, CallbackWidget, PropWidget,
         Widget, WidgetTemplate, WidgetType,
@@ -27,7 +27,7 @@ pub fn all(
 ) -> Result<Widget, Error> {
     // [初始化一些必要的池] ----------------------------------------------------------------------------------
     // 用于存储脚本中可能会进行调用的Widget
-    let mut sc_poll: ScriptPoll = HashMap::new();
+    let mut sc_poll: WidgetPoll = HashMap::new();
     // 用于存储需要双向绑定的prop
     let mut prop_poll: PropBinds = HashMap::new();
     let mut callback_poll: Vec<CallbackWidget> = vec![];

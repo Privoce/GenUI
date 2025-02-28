@@ -34,6 +34,8 @@ impl Polls {
 
 /// key: bind ident , value: bind component
 pub type Binds = HashMap<String, Vec<PropComponent>>;
+/// 组件的事件池，用于存储组件的事件，一个事件可以被多个组件绑定
+/// 目前来看通过组件为单位而不是使用类似Binds的方式来存储事件是更好的选择
 pub type Events = Vec<EventComponent>;
 
 #[derive(Debug, Clone)]

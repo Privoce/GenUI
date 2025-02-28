@@ -8,7 +8,7 @@ use gen_utils::{common::Source, error::Error};
 
 use crate::{
     builtin::prop::err_from_to,
-    compiler::{Context, WidgetPoll as ScriptPoll},
+    compiler::{Context, WidgetPoll },
     model::{
         role::ForParent, widget::role::Role, AbsWidget, CallbackFn, CallbackWidget, PropWidget,
         Widget, WidgetTemplate, WidgetType,
@@ -26,7 +26,7 @@ pub fn template_script(
     polls: Arc<RwLock<Polls>>,
 ) -> Result<Widget, Error> {
     // [初始化一些必要的池] ----------------------------------------------------------------------------------
-    let mut sc_poll: ScriptPoll = HashMap::new();
+    let mut widget_poll: WidgetPoll = HashMap::new();
     let mut prop_poll: PropBinds = HashMap::new();
     let mut callback_poll: Vec<CallbackWidget> = vec![];
     let mut template_ptrs: TemplatePtrs = vec![];
@@ -35,7 +35,7 @@ pub fn template_script(
         if let TemplateResult::Widget(template) = handle(
             template,
             &mut template_ptrs,
-            &mut sc_poll,
+            &mut widget_poll,
             &mut prop_poll,
             &mut callback_poll,
             0,
@@ -75,6 +75,7 @@ pub fn template_script(
             script,
             context,
             polls,
+            &widget_poll,
             &template_ptrs,
             ident,
         )?)
@@ -110,7 +111,7 @@ pub fn template_script(
 fn handle(
     template: Template,
     template_ptrs: &mut TemplatePtrs,
-    sc_poll: &mut ScriptPoll,
+    widget_poll: &mut WidgetPoll,
     prop_poll: &mut PropBinds,
     callback_poll: &mut Vec<CallbackWidget>,
     index: usize,
@@ -188,8 +189,7 @@ fn handle(
     // [当id存在时，说明有可能会进行脚本处理或有绑定变量] ----------------------------------------------------------
     if let Some(id) = id.as_ref() {
         let widget = AbsWidget::new(&name, props.clone());
-        // sc_poll 进行insert
-        sc_poll.insert(id.to_string(), widget);
+        widget_poll.insert(id.to_string(), widget);
     }
     // [当使用了as_prop时，说明需要将当前组件作为属性传递给父组件] --------------------------------------------------
     // 如果当前组件使用了绑定变量，那么需要将绑定变量的值传递给父组件，并且当前组件不能调用自身的事件
@@ -263,7 +263,7 @@ fn handle(
             let w = handle(
                 child,
                 template_ptrs,
-                sc_poll,
+                widget_poll,
                 prop_poll,
                 callback_poll,
                 index,

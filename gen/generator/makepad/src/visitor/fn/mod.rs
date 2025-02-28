@@ -1,18 +1,19 @@
 use super::InstanceOutput;
 use crate::{
-    compiler::WidgetPoll,
+    compiler::{Context, WidgetPoll},
     model::{
-        traits::{CRef, CallbackStmt},
+        traits::{CRef, CallbackStmt, ImplLiveHook},
         CallbackWidget, PropBinds,
     },
     script::Impls,
 };
+use gen_analyzer::{Binds, CallbackFn, Events};
 use gen_dyn_run::DynProcessor;
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use std::collections::HashSet;
-use syn::{parse_quote, parse_str, FnArg};
+use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
 
 // mod input;
 // mod replacer;
@@ -26,12 +27,6 @@ use syn::{parse_quote, parse_str, FnArg};
 /// # Lazy fn(event) Visitor for Makepad
 /// handle convert fn to real makepad fn
 /// ```
-/// #[component]
-/// pub struct AComponent{
-///     count: i32
-///     // ...
-/// }
-/// 
 /// impl AComponent{
 ///     // normal callback fn for event
 ///     fn a_btn_clicked(&mut self){
@@ -55,8 +50,8 @@ use syn::{parse_quote, parse_str, FnArg};
 /// 1. 检查是否含有`#[allow(unused_variables)]`，如果没有则增加
 /// 2. 检查是否方法参数`impl EventParam`，如果有则需要根据静态分析的结果替换为对应的回调参数类型，如按钮的回调参数类型为`GButtonEventParam`
 /// 3. 在方法参数，FnArg中添加`cx: &mut Cx`
-/// 4. 在方法中检查是否含有`c_ref!()`宏，需要替换为makepad的组件引用（基于静态分析）
-/// 5. 在方法中检查是否含有编译器上下文注册的宏，需要对应替换为编译器提供的宏的转换代码（基于动态库构建）
+/// 4. 在方法中检查是否含有`c_ref!()`宏，需要替换为makepad的组件引用（基于静态分析，通用）
+/// 5. 在方法中检查是否含有编译器上下文注册的宏，需要对应替换为编译器提供的宏的转换代码（基于动态库构建，通用）
 /// 6. 将当前方法的调用设置到handle_event中
 /// ## 功能2: 忽略中间方法
 /// 对于中间方法，它不涉及到事件回调，基本只是一个普通方法，不需要改动
@@ -72,10 +67,124 @@ use syn::{parse_quote, parse_str, FnArg};
 /// 在Makepad中的特殊事件目前只有一个，网络请求接收事件，使用`#[http_response]`进行方法标记，表示这个方法是一个网络请求接收事件
 /// 而网络请求则是由插件提供的，插件代码是靠动态库构建的依赖上下文系统注入（see 功能1-5）
 #[derive(Debug)]
-pub struct FnLzVisitor {
+pub struct FnLzVisitor;
+impl FnLzVisitor {
+    pub fn visit(
+        mut self_impl: ItemImpl,
+        impls: &mut Impls,
+        binds: Option<&Binds>,
+        events: Option<&Events>,
+        widget_poll: &WidgetPoll,
+        ctx: &Context,
+    ) -> Result<(), Error> {
+        for impl_item in self_impl.items.iter_mut() {
+            // only care about fn
+            if let ImplItem::Fn(item_fn) = impl_item {
+                // [功能1 + 2: 转换普通的callback fn 若不在event中则忽略] ---------------------------------------
+                // if events is None, do not handle feature 1
+                if let Some(events) = events {
+                    Self::convert_callback(impls, item_fn, events, ctx)?;
+                }
+            }
+        }
 
+        Ok(())
+    }
+
+    fn convert_callback(
+        impls: &mut Impls,
+        item_fn: &mut ImplItemFn,
+        events: &Events,
+        ctx: &Context,
+    ) -> Result<Step, Error> {
+        // get fn name
+        let fn_name = item_fn.sig.ident.to_string();
+        // 标记是否需要处理事件，当可以在events中找到至少一次fn_name时，flag为true
+        let mut flag = false;
+        // check if fn is in event_fn
+        for callback_component in events.iter().filter_map(|event| {
+            event
+                .callbacks
+                .iter()
+                .find(|(callback_fn_name, callback_fn)| callback_fn_name == &fn_name)
+                .map(|(_, callback_fn)| CallbackComponent {
+                    id: &event.id,
+                    name: &event.name,
+                    callback_fn,
+                })
+        }) {
+            flag = true;
+            // now we find all callback fn targets
+            // [将当前方法的调用设置到handle_event中] --------------------------------------------------------------
+            Self::has_or_set_cref(
+                &callback_component,
+                &mut impls.traits().widget.handle_event.c_refs,
+            );
+            if let Some(mut callback_stmt) = Self::get_or_create_event(
+                &callback_component,
+                &mut impls.traits().widget.handle_event.callbacks,
+                &fn_name,
+            ) {
+                // 处理callback_stmt中的参数，这里需要判断是否有impl EventParam
+                for p in item_fn.sig.inputs.iter() {
+                    
+                }
+            }
+        }
+
+        if flag {
+            // [检查是否含有`#[allow(unused_variables)]`，如果没有则增加] ---------------------------------------
+            item_fn.attrs.push(parse_quote!(#[allow(unused_variables)]));
+        }
+    }
+
+    fn has_or_set_cref(widget: &CallbackComponent, c_refs: &mut HashSet<CRef>) -> () {
+        let c_ref = CRef {
+            id: widget.id.to_string(),
+            name: widget.name.to_string(),
+        };
+        if !c_refs.contains(&c_ref) {
+            c_refs.insert(c_ref);
+        }
+    }
+
+    fn get_or_create_event(
+        widget: &CallbackComponent,
+        callbacks: &mut HashSet<CallbackStmt>,
+        fn_name: &str,
+    ) -> Option<CallbackStmt> {
+        let callback = CallbackStmt::new(
+            widget.id.to_string(),
+            String::new(),
+            String::new(),
+            fn_name.to_string(),
+        );
+        if let Some(callback) = callbacks.take(&callback) {
+            Some(callback)
+        } else {
+            Some(callback)
+        }
+    }
 }
 
-impl FnLzVisitor {
-    
+struct CallbackComponent<'a> {
+    id: &'a str,
+    name: &'a str,
+    callback_fn: &'a CallbackFn,
+}
+
+enum Step {
+    /// 标识已经进行了回调的转换
+    ConvertCallback,
+    /// 标识被忽略，只有不需要被进行回调处理，生命周期处理，特殊事件的方法才会被忽略
+    Ignore,
+    /// 标识已经进行了生命周期的转换
+    ConvertLifecycle,
+    /// 标识已经进行了特殊事件的转换
+    ConvertSpecialEvent,
+    /// 标识处理下一个（一般用于并没有进行处理）
+    /// 例如但生命周期事件并不会被在回调方法部分中进行处理，就会返回Next
+    Next,
+    /// 标识处理结束
+    Finish,
 }
