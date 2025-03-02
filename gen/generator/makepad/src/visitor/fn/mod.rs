@@ -2,7 +2,7 @@
 use crate::{
     compiler::{Context, WidgetPoll},
     model::{
-        traits::{CRef, CallbackStmt, ImplLiveHook, LiveHookType},
+        traits::{CRef, CallbackStmt, ImplLiveHook, LiveHookType, WidgetMatchEventType},
         CallbackComponent, PropBinds,
     },
     script::Impls,
@@ -89,6 +89,7 @@ impl FnLzVisitor {
         widget_poll: &WidgetPoll,
         ctx: &Context,
     ) -> Result<(), Error> {
+        let mut special_events = vec![];
         for impl_item in self_impl.items.iter_mut() {
             // only care about fn
             let (res, impl_item) = if let ImplItem::Fn(item_fn) = impl_item {
@@ -147,58 +148,107 @@ impl FnLzVisitor {
                 }
                 ConvertResult::LifeCycle(life_cycle) => {
                     Self::set_life_cycle(life_cycle, impls, impl_item);
-                },
+                }
                 ConvertResult::SpecialEvent(special_event) => {
-                    Self::set_special_event(special_event, impls, impl_item);
-                },
+                    special_events.push((special_event, impl_item));
+                }
             }
         }
+
+        Self::set_special_event(impls, special_events)?;
 
         Ok(())
     }
 
-    fn set_special_event(special: SpecialEvent, impls: &mut Impls, item: ImplItem)->Result<(), Error>{
+    fn set_special_event(
+        impls: &mut Impls,
+        events: Vec<(SpecialEvent, ImplItem)>,
+    ) -> Result<(), Error> {
+        fn handle_http_response(
+            responses: Vec<ImplItemFn>,
+            impls: &mut Impls,
+        ) -> Result<(), Error> {
+            let mut tk = TokenStream::new();
+            let push_trait = responses.len() > 0;
+            for response in responses {
+                let live_match_id = response.sig.ident.clone();
 
-        if let ImplItem::Fn(item_fn) = item{
-            let block = item_fn.block.to_token_stream();
-            match special {
-                SpecialEvent::HttpResponse => {
+                tk.extend(quote! {
+                    live_id!(#live_match_id) => self.#live_match_id(cx, response),
+                });
 
+                impls.self_impl.push(ImplItem::Fn(response));
+            }
 
+            if push_trait {
+                let tk = quote! {
+                    match request_id {
+                        #tk
+                        _ => {}
+                    }
+                };
 
-                    impls.self_impl.push(ImplItem::Fn(item_fn));
-                },
+                impls
+                    .traits()
+                    .push_widget_match_event(tk, WidgetMatchEventType::HttpResponse);
             }
 
             Ok(())
-        }else{
-            Err(CompilerError::runtime("Makepad Compiler - Script", "special event must be a fn").into())
         }
 
+        let mut http_responses = vec![];
+        // [sort events] ---------------------------------------------------------------------------------------
+        for (special, item) in events {
+            if let ImplItem::Fn(item_fn) = item {
+                match special {
+                    SpecialEvent::HttpResponse => {
+                        http_responses.push(item_fn);
+                    }
+                }
+            } else {
+                return Err(CompilerError::runtime(
+                    "Makepad Compiler - Script",
+                    "special event must be a fn",
+                )
+                .into());
+            }
+        }
+
+        handle_http_response(http_responses, impls)?;
+
+        Ok(())
     }
 
-
-    fn set_life_cycle(life_cycle: LifeCycle, impls: &mut Impls, item: ImplItem) ->Result<(), Error>{
-        if let ImplItem::Fn(item_fn) = item{
+    fn set_life_cycle(
+        life_cycle: LifeCycle,
+        impls: &mut Impls,
+        item: ImplItem,
+    ) -> Result<(), Error> {
+        if let ImplItem::Fn(item_fn) = item {
             let block = item_fn.block.to_token_stream();
             match life_cycle {
-                LifeCycle::BeforeMount=> {
-                    impls.traits().live_hook.push(block, LiveHookType::AfterNewFromDoc);
+                LifeCycle::BeforeMount => {
+                    impls
+                        .traits()
+                        .live_hook
+                        .push(block, LiveHookType::AfterNewFromDoc);
                 }
                 LifeCycle::Mounted => {
-                    impls.traits().live_hook.push(block, LiveHookType::AfterApplyFromDoc);
+                    impls
+                        .traits()
+                        .live_hook
+                        .push(block, LiveHookType::AfterApplyFromDoc);
                 }
-                LifeCycle::BeforeUpdate => {
-                   
-                }
-                LifeCycle::Updated => {
-                    
-                }
+                LifeCycle::BeforeUpdate => {}
+                LifeCycle::Updated => {}
             }
 
             Ok(())
-        }else{
-            Err(CompilerError::runtime("Makepad Compiler - Script", "life_cycle must be a fn").into())
+        } else {
+            Err(
+                CompilerError::runtime("Makepad Compiler - Script", "life_cycle must be a fn")
+                    .into(),
+            )
         }
     }
 

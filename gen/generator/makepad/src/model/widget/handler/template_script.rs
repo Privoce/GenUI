@@ -27,8 +27,8 @@ pub fn template_script(
 ) -> Result<Widget, Error> {
     // [初始化一些必要的池] ----------------------------------------------------------------------------------
     let mut widget_poll: WidgetPoll = HashMap::new();
-    let mut prop_poll: PropBinds = HashMap::new();
-    let mut callback_poll: Vec<CallbackWidget> = vec![];
+    // let mut prop_poll: PropBinds = HashMap::new();
+    // let mut callback_poll: Vec<CallbackWidget> = vec![];
     let mut template_ptrs: TemplatePtrs = vec![];
     // [处理template] --------------------------------------------------------------------------------------
     let template = if let Some(template) = template {
@@ -36,8 +36,8 @@ pub fn template_script(
             template,
             &mut template_ptrs,
             &mut widget_poll,
-            &mut prop_poll,
-            &mut callback_poll,
+            // &mut prop_poll,
+            // &mut callback_poll,
             0,
             Role::Normal,
         )? {
@@ -112,8 +112,8 @@ fn handle(
     template: Template,
     template_ptrs: &mut TemplatePtrs,
     widget_poll: &mut WidgetPoll,
-    prop_poll: &mut PropBinds,
-    callback_poll: &mut Vec<CallbackWidget>,
+    // prop_poll: &mut PropBinds,
+    // callback_poll: &mut Vec<CallbackWidget>,
     index: usize,
     father_role: Role,
 ) -> Result<TemplateResult, Error> {
