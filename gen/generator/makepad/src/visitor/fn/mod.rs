@@ -2,7 +2,7 @@
 use crate::{
     compiler::{Context, WidgetPoll},
     model::{
-        traits::{CRef, CallbackStmt, ImplLiveHook},
+        traits::{CRef, CallbackStmt, ImplLiveHook, LiveHookType},
         CallbackComponent, PropBinds,
     },
     script::Impls,
@@ -14,18 +14,20 @@ use gen_dyn_run::DynProcessor;
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
+use special_event::{SpecialEvent, SpecialEventVisitor};
 use std::collections::HashSet;
 use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
 
 // mod input;
 mod replacer;
+mod special_event;
 // mod traits;
 // mod utils;
 
 // pub use input::Input;
 pub use replacer::*;
 
-use super::LifeCycleLzVisitor;
+use super::{LifeCycle, LifeCycleLzVisitor};
 // pub use traits::FnVisitorImpl;
 // pub use utils::*;
 
@@ -62,7 +64,7 @@ const SPECIAL_EVENT: [&str; 1] = ["http_response"];
 /// ## 功能2: 忽略中间方法
 /// 对于中间方法，它不涉及到事件回调，基本只是一个普通方法，不需要改动
 /// ## 功能3: 生命周期钩子
-/// 生命周期是GenUI中的一个重要概念，它是一个特殊的方法，用于在组件的生命周期中执行一些操作，如`before_create`，`after_create`等
+/// 生命周期是GenUI中的一个重要概念，它是一个特殊的方法，用于在组件的生命周期中执行一些操作，如`before_mount`，`mounted`等
 /// 这些操作在Makepad中也是非常重要的，因此我们需要将这些方法转为Makepad中的生命周期钩子
 /// 目前提供的生命周期钩子有：
 /// 1. `#[before_mount]` -> `fn after_new_from_doc(&mut self, cx: &mut Cx)` 表示组件结构已经创建，但还未应用到文档中 （makepad提供）
@@ -89,12 +91,14 @@ impl FnLzVisitor {
     ) -> Result<(), Error> {
         for impl_item in self_impl.items.iter_mut() {
             // only care about fn
-            if let ImplItem::Fn(item_fn) = impl_item {
+            let (res, impl_item) = if let ImplItem::Fn(item_fn) = impl_item {
                 // [功能1: 转换普通的callback fn] --------------------------------------------------------------
                 // if events is None, do not handle feature 1
-                if let Some(events) = events {
+                let res = if let Some(events) = events {
                     Self::convert_callback(impls, item_fn, events, ctx, widget_poll)?;
+                    ConvertResult::SelfImpl
                 } else {
+                    let mut res = ConvertResult::Ignore;
                     // [功能3: 生命周期钩子] -------------------------------------------------------------------
                     if let Some(lifecycle) = item_fn
                         .attrs
@@ -102,23 +106,28 @@ impl FnLzVisitor {
                         .find(|attr| LIFECYCLE.iter().any(|l| attr.path().is_ident(l)))
                         .map(|attr| attr.path().get_ident().unwrap().to_string())
                     {
-                        LifeCycleLzVisitor::visit(item_fn, lifecycle)?;
+                        let lifecycle = LifeCycleLzVisitor::visit(item_fn, lifecycle)?;
+                        res = ConvertResult::LifeCycle(lifecycle);
                     }
 
-                    // [功能4: 特殊事件钩子] -------------------------------------------------------------------
-                    if let Some(special_event) = item_fn
-                        .attrs
-                        .iter()
-                        .find(|attr| SPECIAL_EVENT.iter().any(|l| attr.path().is_ident(l)))
-                        .map(|attr| attr.path().get_ident().unwrap().to_string())
-                    {
-                        // todo!()
+                    // 只有结果依然是ignore才能进行其他功能处理
+                    if matches!(res, ConvertResult::Ignore) {
+                        // [功能4: 特殊事件钩子] -------------------------------------------------------------------
+                        if let Some(special_event) = item_fn
+                            .attrs
+                            .iter()
+                            .find(|attr| SPECIAL_EVENT.iter().any(|l| attr.path().is_ident(l)))
+                            .map(|attr| attr.path().get_ident().unwrap().to_string())
+                        {
+                            let special = SpecialEventVisitor::visit(item_fn, special_event)?;
+                            res = ConvertResult::SpecialEvent(special);
+                        }
                     }
-                }
 
+                    res
+                };
                 // [通用转化] --------------------------------------------------------------------------------
                 let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
-
                 visit_builtin(
                     item_fn,
                     fields,
@@ -127,12 +136,70 @@ impl FnLzVisitor {
                     ctx.dyn_processor.as_ref(),
                 )
                 .map_err(|e| CompilerError::runtime("Makepad Compiler - Script", &e.to_string()))?;
-            }
+                (res, impl_item.clone())
+            } else {
+                (ConvertResult::Ignore, impl_item.clone())
+            };
             // [将impl_item添加到impls.self_impl中] ---------------------------------------------------------
-            impls.self_impl.push(impl_item.clone());
+            match res {
+                ConvertResult::SelfImpl | ConvertResult::Ignore => {
+                    impls.self_impl.push(impl_item);
+                }
+                ConvertResult::LifeCycle(life_cycle) => {
+                    Self::set_life_cycle(life_cycle, impls, impl_item);
+                },
+                ConvertResult::SpecialEvent(special_event) => {
+                    Self::set_special_event(special_event, impls, impl_item);
+                },
+            }
         }
 
         Ok(())
+    }
+
+    fn set_special_event(special: SpecialEvent, impls: &mut Impls, item: ImplItem)->Result<(), Error>{
+
+        if let ImplItem::Fn(item_fn) = item{
+            let block = item_fn.block.to_token_stream();
+            match special {
+                SpecialEvent::HttpResponse => {
+
+
+
+                    impls.self_impl.push(ImplItem::Fn(item_fn));
+                },
+            }
+
+            Ok(())
+        }else{
+            Err(CompilerError::runtime("Makepad Compiler - Script", "special event must be a fn").into())
+        }
+
+    }
+
+
+    fn set_life_cycle(life_cycle: LifeCycle, impls: &mut Impls, item: ImplItem) ->Result<(), Error>{
+        if let ImplItem::Fn(item_fn) = item{
+            let block = item_fn.block.to_token_stream();
+            match life_cycle {
+                LifeCycle::BeforeMount=> {
+                    impls.traits().live_hook.push(block, LiveHookType::AfterNewFromDoc);
+                }
+                LifeCycle::Mounted => {
+                    impls.traits().live_hook.push(block, LiveHookType::AfterApplyFromDoc);
+                }
+                LifeCycle::BeforeUpdate => {
+                   
+                }
+                LifeCycle::Updated => {
+                    
+                }
+            }
+
+            Ok(())
+        }else{
+            Err(CompilerError::runtime("Makepad Compiler - Script", "life_cycle must be a fn").into())
+        }
     }
 
     fn convert_callback(
@@ -246,20 +313,9 @@ impl FnLzVisitor {
     }
 }
 
-enum Step {
-    /// 开始处理，但没有进行任何处理
-    Begin,
-    /// 标识已经进行了回调的转换, 完成后需要进行通用转换
-    ConvertCallback,
-    /// 标识被忽略，只有不需要被进行回调处理，生命周期处理，特殊事件的方法才会被忽略
+enum ConvertResult {
+    SelfImpl,
+    LifeCycle(LifeCycle),
+    SpecialEvent(SpecialEvent),
     Ignore,
-    /// 标识已经进行了生命周期的转换
-    ConvertLifecycle,
-    /// 标识已经进行了特殊事件的转换
-    ConvertSpecialEvent,
-    /// 标识处理下一个（一般用于并没有进行处理）
-    /// 例如但生命周期事件并不会被在回调方法部分中进行处理，就会返回Next
-    Next,
-    /// 标识处理结束
-    Finish,
 }
