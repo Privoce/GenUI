@@ -12,9 +12,9 @@ mod style;
 mod sugar;
 
 pub use event::*;
-pub use instance::{Input as InstanceInput, InstanceLzVisitor, Output as InstanceOutput};
+pub use instance::InstanceLzVisitor;
 pub use lifetime::*;
 pub use prop::PropLzVisitor;
-pub use r#fn::{FnLzVisitor, FnVisitorImpl, Input as FnInput};
+pub use r#fn::FnLzVisitor;
 pub use style::{IdClass, StyleVisitor};
 pub use sugar::*;

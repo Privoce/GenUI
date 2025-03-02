@@ -1,8 +1,9 @@
 use std::{collections::HashSet, hash::Hash};
+use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_str, Stmt};
-use crate::{builtin::BuiltinWidget,  two_way_binding::TWBPollBuilder};
+use syn::{parse_quote, parse_str, Stmt};
+use crate::{builtin::BuiltinWidget, model::CallbackComponent, str_to_tk, two_way_binding::TWBPollBuilder};
 
 /// 对于Widget来说
 /// draw_walk是必须实现的
@@ -221,6 +222,30 @@ impl CallbackStmt {
             fns: vec![],
         }
     }
+    pub fn fn_call_from_callback(&mut self, widget: &CallbackComponent) -> Result<(), Error>{
+        let fn_name = str_to_tk!(&widget.callback_fn.func.name)?;
+        let mut params = vec![];
+        // [add param call] -------------------------------------------------------------------------------------------
+        if self.param.is_some(){
+            params.push(quote! {param});
+        }
+        // [add params from callback function] ------------------------------------------------------------------------
+        if let Some(params_str) = widget.callback_fn.func.params_str() {
+            params.push(str_to_tk!(&params_str)?);
+        }
+        // [add cx, widget_id as widget_ref] --------------------------------------------------------------------------
+        let widget_id = str_to_tk!(widget.id)?;
+        params.extend(vec![
+            quote! {cx},
+            // quote! {&#widget_id} // 暂时不添加类型引用
+        ]);
+        // [set back to self.fns] -------------------------------------------------------------------------------------
+        self.fns.push(parse_quote!{
+            self.#fn_name(#(#params),*);
+        });
+        Ok(())
+    }
+
     pub fn to_token_stream(&self, twb_poll: Option<&TWBPollBuilder>) -> TokenStream {
         let id = parse_str::<TokenStream>(&self.id).unwrap();
         let param = if self.param.is_some() {

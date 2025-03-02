@@ -1,6 +1,6 @@
 use std::{collections::HashMap, hash::Hash};
 
-use gen_analyzer::{value::Function, Props};
+use gen_analyzer::{value::Function, CallbackFn, Props};
 use gen_utils::common::{camel_to_snake, snake_to_camel};
 use proc_macro2::TokenStream;
 use syn::parse_str;
@@ -110,82 +110,112 @@ fn snake_name(name: &str) -> String {
         |builtin| builtin.snake_name().to_string(),
     )
 }
-
-/// 处理带有Callbacks的Widget
-#[derive(Debug, Clone)]
-pub struct CallbackWidget {
-    pub id: String,
-    pub name: String,
-    /// key: callback name, value: callback function
-    /// example: `@hover_in="lb_hover_in()"`
-    /// => key: lb_hover_in, value: {name: "hover_in", func: Function(xxx)}
-    pub callbacks: HashMap<String, CallbackFn>,
+pub struct CallbackComponent<'a> {
+    pub id: &'a str,
+    pub name: &'a str,
+    pub callback_fn: &'a CallbackFn,
 }
 
-impl CallbackWidget {
-    pub fn id_tk(&self) -> TokenStream {
-        parse_str::<TokenStream>(&self.id).unwrap()
-    }
-    pub fn widget_ref(&self) -> String {
-        BuiltinWidget::is_built_in(&self.name).map_or_else(
-            |_| format!("{}Ref", snake_to_camel(self.name.as_str())),
-            |builtin| format!("{}Ref", builtin.name()),
-        )
-    }
-    pub fn widget_ref_tk(&self) -> TokenStream {
-        parse_str::<TokenStream>(&self.widget_ref()).unwrap()
-    }
-    pub fn name(&self) -> String {
-        snake_name(&self.name)
-    }
-    /// make sure event is valid if call this function
-    pub fn get_event_tk(&self, event: &str) -> TokenStream {
-        parse_str::<TokenStream>(
-            &self
-                .get(event)
-                .expect("CallbackWidget::get_event_tk: event is not valid")
-                .event(),
-        )
-        .unwrap()
-    }
-    pub fn get(&self, key: &str) -> Option<&CallbackFn> {
-        self.callbacks.get(key)
-    }
-    pub fn has(&self, key: &str) -> bool {
-        self.callbacks.contains_key(key)
-    }
-    pub fn event_ty(&self, widget_poll: &WidgetPoll, target_fn: &str) -> Option<String> {
-        let func = self.callbacks.get(target_fn).unwrap().name.to_string();
-        if let Ok(builtin) = BuiltinWidget::is_built_in(&self.name) {
-            builtin
+impl CallbackComponent<'_> {
+    /// 通过id从widget_poll中获取真实widget，并根据callback_fn的信息获取真实的参数类型
+    pub fn callback_ty(&self, widget_poll: &WidgetPoll) -> Option<String> {
+        // [获取真实widget] ---------------------------------------------------------------------------------------
+        let widget = widget_poll.get(self.id)?;
+        // [获取真实参数类型] ---------------------------------------------------------------------------------------
+        match widget {
+            crate::model::AbsWidget::Builtin(builtin_widget_type) => builtin_widget_type
                 .event_ty_map()
-                .map(|map| map.get(&func).cloned())
-                .flatten()
-        } else {
-            // define widget
-            if let AbsWidget::Define { events, .. } = widget_poll.get(self.id.as_str()).unwrap() {
-                events
-                    .as_ref()
-                    .and_then(|events| events.get(&func).cloned())
-            } else {
-                None
-            }
+                .and_then(|map| map.get(&self.callback_fn.event).cloned()),
+            crate::model::AbsWidget::Define {
+                name,
+                props,
+                events,
+            } => events
+                .as_ref()
+                .and_then(|event| event.get(&self.callback_fn.event).cloned()),
         }
+        None
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct CallbackFn {
-    pub func: Function,
-    /// event name
-    pub name: String,
-}
 
-impl CallbackFn {
-    pub fn new(func: Function, name: String) -> Self {
-        CallbackFn { func, name }
-    }
-    pub fn event(&self) -> String {
-        self.name.to_string()
-    }
-}
+// /// 处理带有Callbacks的Widget
+// #[derive(Debug, Clone)]
+// pub struct CallbackWidget {
+//     pub id: String,
+//     pub name: String,
+//     /// key: callback name, value: callback function
+//     /// example: `@hover_in="lb_hover_in()"`
+//     /// => key: lb_hover_in, value: {name: "hover_in", func: Function(xxx)}
+//     pub callbacks: HashMap<String, CallbackFn>,
+// }
+
+// impl CallbackWidget {
+//     pub fn id_tk(&self) -> TokenStream {
+//         parse_str::<TokenStream>(&self.id).unwrap()
+//     }
+//     pub fn widget_ref(&self) -> String {
+//         BuiltinWidget::is_built_in(&self.name).map_or_else(
+//             |_| format!("{}Ref", snake_to_camel(self.name.as_str())),
+//             |builtin| format!("{}Ref", builtin.name()),
+//         )
+//     }
+//     pub fn widget_ref_tk(&self) -> TokenStream {
+//         parse_str::<TokenStream>(&self.widget_ref()).unwrap()
+//     }
+//     pub fn name(&self) -> String {
+//         snake_name(&self.name)
+//     }
+//     /// make sure event is valid if call this function
+//     pub fn get_event_tk(&self, event: &str) -> TokenStream {
+//         parse_str::<TokenStream>(
+//             &self
+//                 .get(event)
+//                 .expect("CallbackWidget::get_event_tk: event is not valid")
+//                 .event(),
+//         )
+//         .unwrap()
+//     }
+//     pub fn get(&self, key: &str) -> Option<&CallbackFn> {
+//         self.callbacks.get(key)
+//     }
+//     pub fn has(&self, key: &str) -> bool {
+//         self.callbacks.contains_key(key)
+//     }
+//     pub fn event_ty(&self, widget_poll: &WidgetPoll, target_fn: &str) -> Option<String> {
+//         let func = self.callbacks.get(target_fn).unwrap().name.to_string();
+//         if let Ok(builtin) = BuiltinWidget::is_built_in(&self.name) {
+//             builtin
+//                 .event_ty_map()
+//                 .map(|map| map.get(&func).cloned())
+//                 .flatten()
+//         } else {
+//             // define widget
+//             if let AbsWidget::Define { events, .. } = widget_poll.get(self.id.as_str()).unwrap() {
+//                 events
+//                     .as_ref()
+//                     .and_then(|events| events.get(&func).cloned())
+//             } else {
+//                 None
+//             }
+//         }
+//     }
+// }
+
+// #[derive(Debug, Clone)]
+// pub struct CallbackFn {
+//     pub func: Function,
+//     /// event name
+//     pub name: String,
+// }
+
+// impl CallbackFn {
+//     pub fn new(func: Function, name: String) -> Self {
+//         CallbackFn { func, name }
+//     }
+//     pub fn event(&self) -> String {
+//         self.name.to_string()
+//     }
+// }
+
+

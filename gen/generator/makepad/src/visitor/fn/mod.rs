@@ -1,11 +1,12 @@
-use super::InstanceOutput;
+// use super::InstanceOutput;
 use crate::{
     compiler::{Context, WidgetPoll},
     model::{
         traits::{CRef, CallbackStmt, ImplLiveHook},
-        CallbackWidget, PropBinds,
+        CallbackComponent, PropBinds,
     },
     script::Impls,
+    str_to_tk,
 };
 use gen_analyzer::{Binds, CallbackFn, Events};
 use gen_dyn_run::DynProcessor;
@@ -24,6 +25,10 @@ use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
 // pub use replacer::*;
 // pub use traits::FnVisitorImpl;
 // pub use utils::*;
+
+const LIFECYCLE: [&str; 4] = ["before_create", "after_create", "before_update", "updated"];
+const SPECIAL_EVENT: [&str; 1] = ["http_response"];
+
 /// # Lazy fn(event) Visitor for Makepad
 /// handle convert fn to real makepad fn
 /// ```
@@ -50,9 +55,7 @@ use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
 /// 1. 检查是否含有`#[allow(unused_variables)]`，如果没有则增加
 /// 2. 检查是否方法参数`impl EventParam`，如果有则需要根据静态分析的结果替换为对应的回调参数类型，如按钮的回调参数类型为`GButtonEventParam`
 /// 3. 在方法参数，FnArg中添加`cx: &mut Cx`
-/// 4. 在方法中检查是否含有`c_ref!()`宏，需要替换为makepad的组件引用（基于静态分析，通用）
-/// 5. 在方法中检查是否含有编译器上下文注册的宏，需要对应替换为编译器提供的宏的转换代码（基于动态库构建，通用）
-/// 6. 将当前方法的调用设置到handle_event中
+/// 4. 将当前方法的调用设置到handle_event中
 /// ## 功能2: 忽略中间方法
 /// 对于中间方法，它不涉及到事件回调，基本只是一个普通方法，不需要改动
 /// ## 功能3: 生命周期钩子
@@ -66,6 +69,9 @@ use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
 /// ## 功能4: 特殊事件钩子
 /// 在Makepad中的特殊事件目前只有一个，网络请求接收事件，使用`#[http_response]`进行方法标记，表示这个方法是一个网络请求接收事件
 /// 而网络请求则是由插件提供的，插件代码是靠动态库构建的依赖上下文系统注入（see 功能1-5）
+/// ## 功能5: 通用转换
+/// 1. 在方法中检查是否含有`c_ref!()`宏，需要替换为makepad的组件引用（基于静态分析，通用）
+/// 2. 在方法中检查是否含有编译器上下文注册的宏，需要对应替换为编译器提供的宏的转换代码（基于动态库构建，通用）
 #[derive(Debug)]
 pub struct FnLzVisitor;
 impl FnLzVisitor {
@@ -80,11 +86,13 @@ impl FnLzVisitor {
         for impl_item in self_impl.items.iter_mut() {
             // only care about fn
             if let ImplItem::Fn(item_fn) = impl_item {
+                let mut step = Step::Begin;
                 // [功能1 + 2: 转换普通的callback fn 若不在event中则忽略] ---------------------------------------
                 // if events is None, do not handle feature 1
                 if let Some(events) = events {
-                    Self::convert_callback(impls, item_fn, events, ctx)?;
+                    step = Self::convert_callback(impls, item_fn, events, ctx, widget_poll)?;
                 }
+                
             }
         }
 
@@ -96,6 +104,7 @@ impl FnLzVisitor {
         item_fn: &mut ImplItemFn,
         events: &Events,
         ctx: &Context,
+        widget_poll: &WidgetPoll,
     ) -> Result<Step, Error> {
         // get fn name
         let fn_name = item_fn.sig.ident.to_string();
@@ -126,15 +135,50 @@ impl FnLzVisitor {
                 &fn_name,
             ) {
                 // 处理callback_stmt中的参数，这里需要判断是否有impl EventParam
-                for p in item_fn.sig.inputs.iter() {
-                    
+                for p in item_fn.sig.inputs.iter_mut() {
+                    if let FnArg::Typed(ty) = p {
+                        if let syn::Type::ImplTrait(impl_trait) = &*ty.ty {
+                            if let syn::TypeParamBound::Trait(trait_bound) = &impl_trait.bounds[0] {
+                                if trait_bound.path.is_ident("EventParam") {
+                                    // 获取真实的参数返回值的类型
+                                    let callback_ty =
+                                        callback_component.callback_ty(widget_poll).ok_or(
+                                            Error::Compiler(CompilerError::runtime(
+                                                "Makepad Compiler - Script",
+                                                "can not find target param type",
+                                            )),
+                                        )?;
+                                    let callback_ty = str_to_tk!(&callback_ty)?;
+                                    ty.ty = parse_quote!(#callback_ty);
+                                    // 给callback_stmt添加参数
+                                    callback_stmt.param.replace(callback_ty);
+                                }
+                            }
+                        }
+                    }
                 }
+                // [为callback_stmt添加对应的方法调用] --------------------------------------------------------------
+                callback_stmt.fn_call_from_callback(&callback_component)?;
+                // [将callback_stmt设置回] ------------------------------------------------------------------------
+                impls
+                    .traits()
+                    .widget
+                    .handle_event
+                    .callbacks
+                    .insert(callback_stmt);
             }
         }
 
         if flag {
-            // [检查是否含有`#[allow(unused_variables)]`，如果没有则增加] ---------------------------------------
+            // [检查是否含有`#[allow(unused_variables)]`，如果没有则增加] -----------------------------------------
             item_fn.attrs.push(parse_quote!(#[allow(unused_variables)]));
+            // [添加参数cx: &mut Cx] ---------------------------------------------------------------------------
+            item_fn.sig.inputs.push(parse_quote!(cx: &mut Cx));
+            // 暂时不添加类型引用 --------------------------------------------------------------------------------
+            // ❗️[添加类型引用] ---------------------------------------------------------------------------------
+            Ok(Step::ConvertCallback)
+        } else {
+            Ok(Step::Next)
         }
     }
 
@@ -167,14 +211,10 @@ impl FnLzVisitor {
     }
 }
 
-struct CallbackComponent<'a> {
-    id: &'a str,
-    name: &'a str,
-    callback_fn: &'a CallbackFn,
-}
-
 enum Step {
-    /// 标识已经进行了回调的转换
+    /// 开始处理，但没有进行任何处理
+    Begin,
+    /// 标识已经进行了回调的转换, 完成后需要进行通用转换
     ConvertCallback,
     /// 标识被忽略，只有不需要被进行回调处理，生命周期处理，特殊事件的方法才会被忽略
     Ignore,
