@@ -97,7 +97,12 @@ pub struct PropWidget {
 
 impl PropWidget {
     pub fn new(id: String, widget: String, prop: String) -> Self {
-        Self { id, widget, prop, as_prop: None }
+        Self {
+            id,
+            widget,
+            prop,
+            as_prop: None,
+        }
     }
     pub fn widget_name(&self) -> String {
         snake_name(&self.widget)
@@ -134,10 +139,8 @@ impl CallbackComponent<'_> {
                 .as_ref()
                 .and_then(|event| event.get(&self.callback_fn.event).cloned()),
         }
-        None
     }
 }
-
 
 // /// 处理带有Callbacks的Widget
 // #[derive(Debug, Clone)]
@@ -217,5 +220,3 @@ impl CallbackComponent<'_> {
 //         self.name.to_string()
 //     }
 // }
-
-

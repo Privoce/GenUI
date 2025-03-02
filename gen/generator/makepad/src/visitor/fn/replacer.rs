@@ -1,3 +1,4 @@
+use gen_analyzer::Binds;
 use gen_dyn_run::DynProcessor;
 use gen_plugin::MacroContext;
 use gen_utils::error::{CompilerError, Error};
@@ -7,7 +8,7 @@ use ra_ap_syntax::{
     AstNode, Edition, SourceFile, TextRange,
 };
 use std::collections::HashMap;
-use syn::{parse_str, ItemFn};
+use syn::{parse_str, ImplItemFn, ItemFn};
 
 use crate::{compiler::WidgetPoll, model::PropBinds};
 
@@ -16,16 +17,16 @@ use crate::{compiler::WidgetPoll, model::PropBinds};
 #[derive(Debug)]
 struct BindingReplacer {
     replacements: HashMap<TextRange, String>,
-    prop_name: String,
+    // prop_name: String,
     fields: Vec<String>,
 }
 
 impl BindingReplacer {
-    fn new(prop_name: &str, fields: &Vec<String>) -> Self {
+    fn new(fields: Vec<String>) -> Self {
         Self {
             replacements: HashMap::new(),
-            prop_name: prop_name.to_string(),
-            fields: fields.clone(),
+            // prop_name: prop_name.to_string(),
+            fields,
         }
     }
 
@@ -55,11 +56,10 @@ impl BindingReplacer {
 }
 
 pub fn visit_builtin(
-    input: &mut ItemFn,
-    prop: &str,
-    fields: &Vec<String>,
+    input: &mut ImplItemFn,
+    fields: Vec<String>,
     widgets: &WidgetPoll,
-    prop_binds: &PropBinds,
+    prop_binds: Option<&Binds>,
     processor: Option<&DynProcessor>,
 ) -> Result<(), Error> {
     let input_str = input.to_token_stream().to_string();
@@ -69,7 +69,7 @@ pub fn visit_builtin(
     // 记录需要检查并调用get|set的组件，当使用者调用c_ref!时需要将组件id记录到这里，然后在get|set访问时进行替换
     let mut addition_widgets = HashMap::new();
 
-    let mut replacer = BindingReplacer::new(prop, fields);
+    let mut replacer = BindingReplacer::new(fields.clone());
     // [visit_two_way_binding] -------------------------------------------------------------------------------
     // 遍历语法树
     for node in syntax.syntax().descendants() {
@@ -173,7 +173,7 @@ pub fn visit_builtin(
                     .and_then(|first| addition_widgets.get_key_value(&first.text().to_string()));
 
                 // 检查是否是目标属性访问
-                if receiver_text == prop || from_widget.is_some() {
+                if receiver_text == "self" || from_widget.is_some() {
                     if let Some(name_ref) = method_call.name_ref() {
                         let method_name = name_ref.syntax().text().to_string();
                         let field_name = method_name
@@ -205,23 +205,26 @@ pub fn visit_builtin(
                                     )?;
                                     // 通过field_name获取父组件中绑定的字段名
                                     // 没有找到的话可能是因为并没有采取双向绑定的方式，而是c_ref的直接内部访问，这里就不需要处理
-                                    let _ = prop_binds
-                                        .iter()
-                                        .find(|(_, v)| {
-                                            v.iter().any(|widget| {
-                                                &widget.id == widget_id && widget.prop == field_name
+                                    if let Some(prop_binds) = prop_binds {
+                                        let _ = prop_binds
+                                            .iter()
+                                            .find(|(_, v)| {
+                                                v.iter().any(|widget| {
+                                                    &widget.id == widget_id
+                                                        && widget.prop == field_name
+                                                })
                                             })
-                                        })
-                                        .map(|(bind_field, _)| {
-                                            new_call.push_str(
-                                                format!(
-                                                    "self.{} = {}.clone();",
-                                                    bind_field,
-                                                    remove_holder(&param)
-                                                )
-                                                .as_str(),
-                                            );
-                                        });
+                                            .map(|(bind_field, _)| {
+                                                new_call.push_str(
+                                                    format!(
+                                                        "self.{} = {}.clone();",
+                                                        bind_field,
+                                                        remove_holder(&param)
+                                                    )
+                                                    .as_str(),
+                                                );
+                                            });
+                                    }
                                 }
 
                                 // 对于setter，需要添加cx参数
@@ -262,8 +265,8 @@ pub fn visit_builtin(
     // 应用所有替换
     let modified_code = replacer.apply_replacements(&input_str);
 
-    // 解析回ItemFn
-    match parse_str::<ItemFn>(&modified_code) {
+    // 解析回ImplItemFn
+    match parse_str::<ImplItemFn>(&modified_code) {
         Ok(new_fn) => {
             *input = new_fn;
             Ok(())

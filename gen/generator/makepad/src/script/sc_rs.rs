@@ -78,6 +78,7 @@ impl ScRs {
             FnLzVisitor::visit(
                 impl_prop,
                 &mut impls,
+                twb.as_ref(),
                 polls.binds.as_ref(),
                 polls.events.as_ref(),
                 widget_poll,

@@ -7,6 +7,7 @@ use crate::{
     },
     script::Impls,
     str_to_tk,
+    two_way_binding::TWBPollBuilder,
 };
 use gen_analyzer::{Binds, CallbackFn, Events};
 use gen_dyn_run::DynProcessor;
@@ -17,16 +18,18 @@ use std::collections::HashSet;
 use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
 
 // mod input;
-// mod replacer;
+mod replacer;
 // mod traits;
 // mod utils;
 
 // pub use input::Input;
-// pub use replacer::*;
+pub use replacer::*;
+
+use super::LifeCycleLzVisitor;
 // pub use traits::FnVisitorImpl;
 // pub use utils::*;
 
-const LIFECYCLE: [&str; 4] = ["before_create", "after_create", "before_update", "updated"];
+const LIFECYCLE: [&str; 4] = ["before_mount", "mounted", "before_update", "updated"];
 const SPECIAL_EVENT: [&str; 1] = ["http_response"];
 
 /// # Lazy fn(event) Visitor for Makepad
@@ -39,7 +42,7 @@ const SPECIAL_EVENT: [&str; 1] = ["http_response"];
 ///        self.set_count(1);
 ///     }
 ///     // lifecycle hook
-///     #[before_create]
+///     #[before_mount]
 ///     fn do_before_create(&mut self){
 ///         println!("do before create");
 ///     }
@@ -78,6 +81,7 @@ impl FnLzVisitor {
     pub fn visit(
         mut self_impl: ItemImpl,
         impls: &mut Impls,
+        twb_poll: Option<&TWBPollBuilder>,
         binds: Option<&Binds>,
         events: Option<&Events>,
         widget_poll: &WidgetPoll,
@@ -86,14 +90,46 @@ impl FnLzVisitor {
         for impl_item in self_impl.items.iter_mut() {
             // only care about fn
             if let ImplItem::Fn(item_fn) = impl_item {
-                let mut step = Step::Begin;
-                // [功能1 + 2: 转换普通的callback fn 若不在event中则忽略] ---------------------------------------
+                // [功能1: 转换普通的callback fn] --------------------------------------------------------------
                 // if events is None, do not handle feature 1
                 if let Some(events) = events {
-                    step = Self::convert_callback(impls, item_fn, events, ctx, widget_poll)?;
+                    Self::convert_callback(impls, item_fn, events, ctx, widget_poll)?;
+                } else {
+                    // [功能3: 生命周期钩子] -------------------------------------------------------------------
+                    if let Some(lifecycle) = item_fn
+                        .attrs
+                        .iter()
+                        .find(|attr| LIFECYCLE.iter().any(|l| attr.path().is_ident(l)))
+                        .map(|attr| attr.path().get_ident().unwrap().to_string())
+                    {
+                        LifeCycleLzVisitor::visit(item_fn, lifecycle)?;
+                    }
+
+                    // [功能4: 特殊事件钩子] -------------------------------------------------------------------
+                    if let Some(special_event) = item_fn
+                        .attrs
+                        .iter()
+                        .find(|attr| SPECIAL_EVENT.iter().any(|l| attr.path().is_ident(l)))
+                        .map(|attr| attr.path().get_ident().unwrap().to_string())
+                    {
+                        // todo!()
+                    }
                 }
-                
+
+                // [通用转化] --------------------------------------------------------------------------------
+                let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
+
+                visit_builtin(
+                    item_fn,
+                    fields,
+                    widget_poll,
+                    binds,
+                    ctx.dyn_processor.as_ref(),
+                )
+                .map_err(|e| CompilerError::runtime("Makepad Compiler - Script", &e.to_string()))?;
             }
+            // [将impl_item添加到impls.self_impl中] ---------------------------------------------------------
+            impls.self_impl.push(impl_item.clone());
         }
 
         Ok(())
@@ -105,7 +141,7 @@ impl FnLzVisitor {
         events: &Events,
         ctx: &Context,
         widget_poll: &WidgetPoll,
-    ) -> Result<Step, Error> {
+    ) -> Result<(), Error> {
         // get fn name
         let fn_name = item_fn.sig.ident.to_string();
         // 标记是否需要处理事件，当可以在events中找到至少一次fn_name时，flag为true
@@ -115,7 +151,7 @@ impl FnLzVisitor {
             event
                 .callbacks
                 .iter()
-                .find(|(callback_fn_name, callback_fn)| callback_fn_name == &fn_name)
+                .find(|(callback_fn_name, _callback_fn)| *callback_fn_name == &fn_name)
                 .map(|(_, callback_fn)| CallbackComponent {
                     id: &event.id,
                     name: &event.name,
@@ -148,8 +184,8 @@ impl FnLzVisitor {
                                                 "can not find target param type",
                                             )),
                                         )?;
-                                    let callback_ty = str_to_tk!(&callback_ty)?;
-                                    ty.ty = parse_quote!(#callback_ty);
+                                    let callback_ty_tk = str_to_tk!(&callback_ty)?;
+                                    ty.ty = parse_quote!(#callback_ty_tk);
                                     // 给callback_stmt添加参数
                                     callback_stmt.param.replace(callback_ty);
                                 }
@@ -176,10 +212,9 @@ impl FnLzVisitor {
             item_fn.sig.inputs.push(parse_quote!(cx: &mut Cx));
             // 暂时不添加类型引用 --------------------------------------------------------------------------------
             // ❗️[添加类型引用] ---------------------------------------------------------------------------------
-            Ok(Step::ConvertCallback)
-        } else {
-            Ok(Step::Next)
         }
+
+        Ok(())
     }
 
     fn has_or_set_cref(widget: &CallbackComponent, c_refs: &mut HashSet<CRef>) -> () {

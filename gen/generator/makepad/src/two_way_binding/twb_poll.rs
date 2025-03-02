@@ -58,6 +58,9 @@ impl TWBPollBuilder {
             None
         }
     }
+    pub fn fields(&self) -> Vec<String> {
+        self.0.keys().cloned().collect()
+    }
 }
 
 impl ToTokens for TWBPollBuilder {
