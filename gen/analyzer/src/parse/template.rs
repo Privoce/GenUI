@@ -233,12 +233,14 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 
 /// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-fn parse_tag<'a>(poll: Arc<RwLock<Polls>>, mut root: bool) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
+fn parse_tag<'a>(poll: Arc<RwLock<Polls>>,mut root: bool) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
     move |input: &str| {
         // [parse comment if exist] ------------------------------------------------------------------------------------
         let (input, comments) = parse_comment(input)?;
         // [parse tag start] -------------------------------------------------------------------------------------------
         let (input, mut template) = parse_tag_start(input)?;
+        template.root = root;
+        root = false;
         template
             .after_parse(Arc::clone(&poll))
             .map_err(|_| nom_err!(input, ErrorKind::Fail))?;
@@ -251,7 +253,6 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>, mut root: bool) -> impl FnMut(&'a str
         // trim input and check is start with `</tag_name>`
         match parse_end_tag(input, tag_name.to_string()) {
             Ok((input, _)) => {
-                root = false;
                 return Ok((input, template));
             }
             Err(_) => {
@@ -267,7 +268,7 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>, mut root: bool) -> impl FnMut(&'a str
                     let (special, name) = template.as_parent();
                     children
                         .iter_mut()
-                        .for_each(|child| child.set_parent(special.to_string(), name.to_string(), root));
+                        .for_each(|child| child.set_parent(special.to_string(), name.to_string(), template.root));
 
                     template.children.replace(children);
                 }

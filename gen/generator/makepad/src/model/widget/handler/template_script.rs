@@ -10,7 +10,7 @@ use crate::{
     builtin::prop::err_from_to,
     compiler::{Context, WidgetPoll },
     model::{
-        role::ForParent, widget::role::Role, AbsWidget, CallbackFn, CallbackWidget, PropWidget,
+        role::ForParent, widget::role::Role, AbsWidget,  PropWidget,
         Widget, WidgetTemplate, WidgetType,
     },
 };
@@ -212,10 +212,10 @@ fn handle(
         );
 
         if let Some(prop) = prop {
-            prop_poll
-                .entry(bind.clone())
-                .or_insert_with(Vec::new)
-                .push(prop);
+            // prop_poll
+            //     .entry(bind.clone())
+            //     .or_insert_with(Vec::new)
+            //     .push(prop);
         }
     });
     // [处理callbacks] --------------------------------------------------------------------------------------
@@ -238,17 +238,17 @@ fn handle(
             },
             |id| Ok(id.to_string()),
         )?;
-        let mut fn_callbacks: HashMap<String, CallbackFn> = HashMap::new();
-        for (key, call_fn) in callbacks {
-            let callback = key.name.to_string();
-            let func = call_fn.as_fn()?;
-            fn_callbacks.insert(func.name.to_string(), CallbackFn::new(func, callback));
-        }
-        callback_poll.push(CallbackWidget {
-            id,
-            name: name.to_string(),
-            callbacks: fn_callbacks,
-        });
+        // let mut fn_callbacks: HashMap<String, CallbackFn> = HashMap::new();
+        // for (key, call_fn) in callbacks {
+        //     let callback = key.name.to_string();
+        //     let func = call_fn.as_fn()?;
+        //     fn_callbacks.insert(func.name.to_string(), CallbackFn::new(func, callback));
+        // }
+        // callback_poll.push(CallbackWidget {
+        //     id,
+        //     name: name.to_string(),
+        //     callbacks: fn_callbacks,
+        // });
     }
     // [处理节点, 属性, 子组件] ------------------------------------------------------------------------------
     let ty = if !is_define {
@@ -264,8 +264,8 @@ fn handle(
                 child,
                 template_ptrs,
                 widget_poll,
-                prop_poll,
-                callback_poll,
+                // prop_poll,
+                // callback_poll,
                 index,
                 role.clone(),
             )?;

@@ -12,6 +12,7 @@ use crate::{
         TemplatePtrs,
     },
     script::{Impls, LiveComponent},
+    str_to_tk,
     two_way_binding::{GetSet, TWBPollBuilder},
 };
 use gen_utils::error::{CompilerError, Error};
@@ -40,20 +41,22 @@ use super::SugarScript;
 /// pub struct AProp{
 ///     #[deref]
 ///     pub deref_widget: GView,
-///     #[deref]
-///     deref_prop: APropDeref,
+///     #[live]
+///     name: String
+/// }
+///
+/// impl Default for APropDeref{
+///     fn default() -> Self{Self{name: "John".to_string()}}
 /// }
 ///
 /// impl LiveHook for AProp{
 ///     fn after_new_from_doc(&mut self, _cx:&mut Cx) {
-///         self.deref_prop = APropDeref::default();
+///         self.deref_prop = AProp::default();
 ///     }
 /// }
 /// // --------------------------------------------｜
-/// #[derive(Live, LiveHook, LiveRegister)]        ｜
-/// #[live_ignore]                                 ｜
-/// pub struct APropDeref{                  属性结构体会被生成
-///     #[live]                               这是个解构体
+///                                                ｜
+/// pub struct APropDeref{                  属性结构体会被生成这个解构体
 ///    pub name: String                            ｜
 /// }                                              ｜
 /// // --------------------------------------------｜
@@ -72,38 +75,43 @@ impl PropLzVisitor {
         let mut live_component = LiveComponent::default(&ident);
         // [处理解构体] -----------------------------------------------------------------------------------------
         // - [为ident添加Deref作为新结构体名] ---------------------------------------------------------------------
-        prop.ident = parse_quote!(str_to_tk!(&format!("{}Deref", ident.to_string()))?);
-        // - [去除prop宏并添加makepad宏] -------------------------------------------------------------------------
-        let mut attrs = prop
+        let ident_tk = str_to_tk!(&format!("{}Deref", ident.to_string()))?;
+        prop.ident = parse_quote!(#ident_tk);
+        // - [去除prop宏] ---------------------------------------------------------------------------------------
+        let attrs = prop
             .attrs
             .iter()
-            .filter(|attr| attr.path().is_ident("component"))
+            .filter(|attr| !attr.path().is_ident("component"))
             .map(|attr| attr.clone())
             .collect::<Vec<Attribute>>();
 
-        attrs.extend(vec![
-            parse_quote!(#[live_ignore]),
-            parse_quote!( #[derive(Live, LiveHook, LiveRegister)]),
-        ]);
-        // - [遍历fields并添加live或rust宏] ----------------------------------------------------------------------
-        if let syn::Fields::Named(fields) = &mut prop.fields {
-            for field in &mut fields.named {
+        prop.attrs = attrs;
+
+        // [构建一个LiveComponent] -------------------------------------------------------------------------------
+        if !prop.fields.is_empty() {
+            // [添加Default] -------------------------------------------------------------------------------------
+            let deref_ident = prop.ident.to_token_stream();
+            impls.traits().live_hook.push(
+                quote! {
+                    let deref_prop = #deref_ident::default();
+                },
+                LiveHookType::AfterNewFromDoc,
+            );
+
+            for field in prop.fields.clone().iter_mut() {
+                // - [遍历fields并添加live或rust宏] ----------------------------------------------------------------------
                 handle_field_attrs(field)?;
+                live_component.push_field(field.clone())?;
+                // [在impls中添加LiveHook(after new from doc)的实现] -----------------------------------------------------
+                let field_name = field.ident.as_ref().unwrap();
+                impls.traits().live_hook.push(
+                    quote! {
+                        self.#field_name = deref_prop.#field_name;
+                    },
+                    LiveHookType::AfterNewFromDoc,
+                );
             }
         }
-        // [在impls中添加LiveHook(after new from doc)的实现] -----------------------------------------------------
-        let prop_deref_ident = prop.ident.to_token_stream();
-        impls.traits().live_hook.push(
-            quote! {
-                self.deref_prop = #prop_deref_ident::default();
-            },
-            LiveHookType::AfterNewFromDoc,
-        );
-        // [构建一个LiveComponent] -------------------------------------------------------------------------------
-        live_component.push_field(parse_quote! {
-            #[deref]
-            deref_prop: #prop_deref_ident,
-        });
 
         Ok(live_component)
     }
@@ -186,7 +194,7 @@ impl PropLzVisitor {
                 impls,
             )?
         } else {
-           None
+            None
         };
         Ok((twb, live_component))
     }

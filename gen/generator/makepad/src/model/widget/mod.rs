@@ -50,9 +50,12 @@ impl Widget {
     /// default script impl for easy define widget
     pub fn default_script(&mut self) -> () {
         if let Some(sc) = self.script.as_ref() {
-            if sc.live_struct.is_some() {
-                return;
+            if let crate::script::Script::ScRs(sc) = sc{
+               if sc.live_component.is_some(){
+                    return;
+                }
             }
+
         }
 
         if let Some(template) = self.template.as_ref() {
@@ -218,6 +221,7 @@ impl
         Option<Script>,
         Option<Style>,
         bool,
+        Arc<RwLock<Polls>>,
     )> for Widget
 {
     type Error = Error;
@@ -230,9 +234,10 @@ impl
             Option<Script>,
             Option<Style>,
             bool,
+            Arc<RwLock<Polls>>,
         ),
     ) -> Result<Self, Self::Error> {
-        handler::all(value.0, value.1, value.2, value.3, value.4, value.5)
+        handler::all(value.0, value.1, value.2, value.3, value.4, value.5, value.6)
     }
 }
 
@@ -460,10 +465,11 @@ mod test_widget {
 
     #[test]
     fn template_script() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello/components/template_sc.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/GenUI/examples/ract/test1",
-            "hello/views/hello3.gen",
-            "src_gen_0/src/views/hello3.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick",
+            "hello/components/template_sc.gen",
+            "src_gen_0/src/components/template_sc.rs",
         );
 
         handle(source);
@@ -471,10 +477,11 @@ mod test_widget {
 
     #[test]
     fn template_style() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello/components/template_style.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/GenUI/examples/ract/test1",
-            "hello/views/hello4.gen",
-            "src_gen_0/src/views/hello4.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick",
+            "hello/components/template_style.gen",
+            "src_gen_0/src/components/template_style.rs",
         );
 
         handle(source);
@@ -482,26 +489,23 @@ mod test_widget {
 
     #[test]
     fn single_script() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello/components/single_sc.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/GenUI/examples/ract/test1",
-            "hello/views/mod.gen",
-            "src_gen_0/src/views/mod.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick",
+            "hello/components/single_sc.gen",
+            "src_gen_0/src/components/single_sc.rs",
         );
 
-        let model = Model::new(source, false).unwrap();
-        let mut context = context();
-
-        let w = Widget::try_from((&mut context, model)).unwrap();
-
-        println!("{}", w.script.unwrap().to_token_stream().to_string());
+        handle(source);
     }
 
     #[test]
     fn define_template() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello/components/define_component.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/GenUI/examples/ract/test1",
-            "hello/views/hello2.gen",
-            "src_gen_0/src/views/hello2.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick",
+            "hello/components/define_component.gen",
+            "src_gen_0/src/components/define_component.rs",
         );
 
         handle(source);
@@ -520,10 +524,11 @@ mod test_widget {
     // }
     #[test]
     fn single_template() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello/components/easy.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/GenUI/examples/ract/test1",
-            "hello/views/hello1.gen",
-            "src_gen_0/src/views/hello1.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick",
+            "hello/components/easy.gen",
+            "src_gen_0/src/components/easy.rs",
         );
 
         handle(source);
