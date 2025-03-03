@@ -234,7 +234,7 @@ impl CallbackStmt {
             params.push(str_to_tk!(&params_str)?);
         }
         // [add cx, widget_id as widget_ref] --------------------------------------------------------------------------
-        let widget_id = str_to_tk!(widget.id)?;
+        // let widget_id = str_to_tk!(widget.id)?;
         params.extend(vec![
             quote! {cx},
             // quote! {&#widget_id} // 暂时不添加类型引用

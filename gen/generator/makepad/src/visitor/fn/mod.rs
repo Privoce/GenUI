@@ -147,7 +147,7 @@ impl FnLzVisitor {
                     impls.self_impl.push(impl_item);
                 }
                 ConvertResult::LifeCycle(life_cycle) => {
-                    Self::set_life_cycle(life_cycle, impls, impl_item);
+                    Self::set_life_cycle(life_cycle, impls, impl_item)?;
                 }
                 ConvertResult::SpecialEvent(special_event) => {
                     special_events.push((special_event, impl_item));
@@ -285,7 +285,6 @@ impl FnLzVisitor {
             if let Some(mut callback_stmt) = Self::get_or_create_event(
                 &callback_component,
                 &mut impls.traits().widget.handle_event.callbacks,
-                &fn_name,
             ) {
                 // 处理callback_stmt中的参数，这里需要判断是否有impl EventParam
                 for p in item_fn.sig.inputs.iter_mut() {
@@ -347,14 +346,10 @@ impl FnLzVisitor {
     fn get_or_create_event(
         widget: &CallbackComponent,
         callbacks: &mut HashSet<CallbackStmt>,
-        fn_name: &str,
     ) -> Option<CallbackStmt> {
-        let callback = CallbackStmt::new(
-            widget.id.to_string(),
-            String::new(),
-            String::new(),
-            fn_name.to_string(),
-        );
+        let fn_name = widget.callback_fn.event.to_string();
+        let callback =
+            CallbackStmt::new(widget.id.to_string(), String::new(), String::new(), fn_name);
         if let Some(callback) = callbacks.take(&callback) {
             Some(callback)
         } else {
