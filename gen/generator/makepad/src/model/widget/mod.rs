@@ -444,10 +444,11 @@ mod test_widget {
 
     #[test]
     fn root_script() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quick/hello/views/root.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/GenUI/examples/ract/test1",
-            "hello/views/root3.gen",
-            "src_gen_0/src/views/root3.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quick",
+            "hello/views/root.gen",
+            "src_gen_0/src/views/root.rs",
         );
 
         handle(source);

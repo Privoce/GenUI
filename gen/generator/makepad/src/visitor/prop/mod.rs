@@ -103,10 +103,11 @@ impl PropLzVisitor {
                 handle_field_attrs(field)?;
                 live_component.push_field(field.clone())?;
                 // [在impls中添加LiveHook(after new from doc)的实现] -----------------------------------------------------
-                let field_name = field.ident.as_ref().unwrap();
+                let field_name = str_to_tk!(&field.ident.as_ref().unwrap().to_string())?;
+                let set_field_fn = str_to_tk!(&format!("set_{}", field_name))?;
                 impls.traits().live_hook.push(
                     quote! {
-                        self.#field_name = deref_prop.#field_name;
+                        self.#set_field_fn(deref_prop.#field_name);
                     },
                     LiveHookType::AfterNewFromDoc,
                 );
