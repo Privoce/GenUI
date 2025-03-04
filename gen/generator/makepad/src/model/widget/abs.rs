@@ -129,11 +129,7 @@ impl CallbackComponent<'_> {
             crate::model::AbsWidget::Builtin(builtin_widget_type) => builtin_widget_type
                 .event_ty_map()
                 .and_then(|map| map.get(&self.callback_fn.event).cloned()),
-            crate::model::AbsWidget::Define {
-                name,
-                props,
-                events,
-            } => events
+            crate::model::AbsWidget::Define { events, .. } => events
                 .as_ref()
                 .and_then(|event| event.get(&self.callback_fn.event).cloned()),
         }

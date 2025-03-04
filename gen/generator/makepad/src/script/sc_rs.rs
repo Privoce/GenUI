@@ -9,7 +9,7 @@ use syn::{parse_quote, ItemEnum, Stmt};
 
 use crate::{
     compiler::{Context, WidgetPoll},
-    model::TemplatePtrs,
+    model::{TemplatePtrs, WidgetTemplate, WidgetType},
     two_way_binding::TWBPollBuilder,
     visitor::{EventLzVisitor, FnLzVisitor, InstanceLzVisitor, PropLzVisitor},
 };
@@ -39,8 +39,17 @@ impl ScRs {
         polls: Arc<RwLock<Polls>>,
         widget_poll: &WidgetPoll,
         template_ptrs: &TemplatePtrs,
-        ident: TokenStream,
+        template: Option<&WidgetTemplate>,
     ) -> Result<Self, Error> {
+        let template = template.map_or_else(
+            || {
+                Err(Error::from(
+                    "can not find root component identifier in template",
+                ))
+            },
+            |t| Ok(t),
+        )?;
+        let ident = template.root_name();
         let ScriptBridger {
             imports,
             prop,
@@ -74,10 +83,21 @@ impl ScRs {
         } else {
             (None, None)
         };
-
         // [events] ------------------------------------------------------------------------------------------
         if let Some(mut event) = event {
-            let _ = EventLzVisitor::visit(&mut event, &mut impls)?;
+            let events = EventLzVisitor::visit(&mut event, &mut impls)?;
+            if let WidgetType::Define(define_widget) = &template.ty{
+                let snake_name = define_widget.snake_name();
+                let name = define_widget.root_name().to_string();
+                ctx.push_widget(
+                    snake_name,
+                    crate::model::AbsWidget::Define {
+                        name,
+                        props: twb.as_ref().map(|build| build.0.clone()),
+                        events,
+                    },
+                );
+            }
             others.push(parse_quote!(#event));
         }
         // [处理fn-callback] ----------------------------------------------------------------------------------
@@ -114,11 +134,11 @@ impl ScRs {
         polls: Arc<RwLock<Polls>>,
         widget_poll: &WidgetPoll,
         template_ptrs: &TemplatePtrs,
-        ident: TokenStream,
+        template: Option<&WidgetTemplate>,
     ) -> Result<Self, Error> {
         match sc {
             gen_analyzer::Script::Rs(rs) => {
-                Self::handle(rs, ctx, polls, widget_poll, template_ptrs, ident)
+                Self::handle(rs, ctx, polls, widget_poll, template_ptrs, template)
             }
             gen_analyzer::Script::Other { lang, .. } => Err(CompilerError::runtime(
                 "Makepad Compiler - Script",

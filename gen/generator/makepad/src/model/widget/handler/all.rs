@@ -51,23 +51,13 @@ pub fn all(
     };
     // [处理script] ----------------------------------------------------------------------------------------
     let script = if let Some(script) = script {
-        // template ident
-        let ident = template.as_ref().map_or_else(
-            || {
-                Err(Error::from(
-                    "can not find root component identifier in template",
-                ))
-            },
-            |t| Ok(t.root_name()),
-        )?;
-
         Some(crate::script::Script::handle(
             script,
             context,
             polls,
             &widget_poll,
             &template_ptrs,
-            ident,
+            template.as_ref(),
         )?)
     } else {
         if let Some(ident) = template.as_ref().map(|t| t.root_name()) {

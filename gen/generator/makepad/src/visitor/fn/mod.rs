@@ -3,20 +3,20 @@ use crate::{
     compiler::{Context, WidgetPoll},
     model::{
         traits::{CRef, CallbackStmt, ImplLiveHook, LiveHookType, WidgetMatchEventType},
-        CallbackComponent, PropBinds,
+        CallbackComponent,
     },
     script::Impls,
     str_to_tk,
     two_way_binding::TWBPollBuilder,
 };
-use gen_analyzer::{Binds, CallbackFn, Events};
-use gen_dyn_run::DynProcessor;
+use gen_analyzer::{Binds, Events};
+
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use special_event::{SpecialEvent, SpecialEventVisitor};
 use std::collections::HashSet;
-use syn::{parse_quote, parse_str, FnArg, ImplItem, ImplItemFn, ItemImpl};
+use syn::{parse_quote, FnArg, ImplItem, ImplItemFn, ItemImpl};
 
 // mod input;
 mod replacer;
@@ -256,7 +256,7 @@ impl FnLzVisitor {
         impls: &mut Impls,
         item_fn: &mut ImplItemFn,
         events: &Events,
-        ctx: &Context,
+        _ctx: &Context,
         widget_poll: &WidgetPoll,
     ) -> Result<(), Error> {
         // get fn name

@@ -14,7 +14,7 @@ pub use sc_rs::ScRs;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 
-use crate::{compiler::{Context, WidgetPoll}, model::TemplatePtrs};
+use crate::{compiler::{Context, WidgetPoll}, model::{TemplatePtrs, WidgetTemplate}};
 
 /// Makepad中的Rust代码
 #[derive(Debug, Clone)]
@@ -32,9 +32,9 @@ impl Script {
         polls: Arc<RwLock<Polls>>,
         widget_poll: &WidgetPoll,
         template_ptrs: &TemplatePtrs,
-        ident: TokenStream,
+        template: Option<&WidgetTemplate>
     ) -> Result<Self, Error> {
-        Ok(ScRs::new(sc, ctx, polls, widget_poll, template_ptrs, ident)?.into())
+        Ok(ScRs::new(sc, ctx, polls, widget_poll, template_ptrs, template)?.into())
     }
     pub fn default(ident: TokenStream) -> Self {
         ScRs::default_sc(ident).into()

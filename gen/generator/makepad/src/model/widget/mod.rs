@@ -325,6 +325,16 @@ mod test_widget {
             lib_content: None,
         }
     }
+    #[test]
+    fn call_define(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart/hello/views/home.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart",
+            "hello/views/home.gen",
+            "src_gen_0/src/views/home.rs",
+        );
+        handle(source);
+    }
 
     #[test]
     fn nested_for() {

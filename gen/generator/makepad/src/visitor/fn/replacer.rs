@@ -87,7 +87,19 @@ pub fn visit_builtin(
                                 let id = inner_tt(tt);
                                 // 记录id
                                 let _ = let_stmt.pat().map(|pat| {
-                                    addition_widgets.insert(pat.to_string(), id.to_string());
+                                    if let Some(ident_pat) =
+                                        ast::IdentPat::cast(pat.syntax().clone())
+                                    {
+                                        addition_widgets.insert(
+                                            ident_pat
+                                                .syntax()
+                                                .last_token()
+                                                .unwrap()
+                                                .text()
+                                                .to_string(),
+                                            id.to_string(),
+                                        );
+                                    }
                                 });
 
                                 let widget = widgets.get(&id).map_or_else(

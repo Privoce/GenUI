@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use gen_utils::{common::camel_to_snake, error::Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -14,29 +16,42 @@ use crate::script::Impls;
 pub struct EventLzVisitor;
 
 impl EventLzVisitor {
-    pub fn visit(event: &mut ItemEnum, impls: &mut Impls) -> Result<(), Error> {
+    /// 处理事件枚举
+    /// 返回：HashMap<事件名，事件类型> （可以从事件枚举的定义中得到）
+    pub fn visit(
+        event: &mut ItemEnum,
+        impls: &mut Impls,
+    ) -> Result<Option<HashMap<String, String>>, Error> {
         Self::handle_event_enum(event);
 
-        let (mut self_fns, ref_self_fns) =
-            event
-                .variants
-                .iter()
-                .fold((Vec::new(), Vec::new()), |(mut fns, mut ref_fns), var| {
-                    if var.ident.to_token_stream().to_string() != "None" {
-                        let (self_fn, self_ref_fn) = Self::event_fn(&event.ident, var);
-                        fns.push(self_fn);
-                        ref_fns.push(self_ref_fn);
-                    }
+        let (mut self_fns, ref_self_fns, events) = event.variants.iter().fold(
+            (Vec::new(), Vec::new(), HashMap::new()),
+            |(mut fns, mut ref_fns, mut events), var| {
+                if var.ident.to_token_stream().to_string() != "None" {
+                    let (self_fn, self_ref_fn) = Self::event_fn(&event.ident, var);
+                    fns.push(self_fn);
+                    ref_fns.push(self_ref_fn);
 
-                    (fns, ref_fns)
-                });
+                    events.insert(
+                        var.ident.to_string(),
+                        var.fields.to_token_stream().to_string(),
+                    );
+                }
+
+                (fns, ref_fns, events)
+            },
+        );
 
         self_fns.push(Self::default_callback_fn());
 
         impls.self_impl.extend(self_fns);
         impls.self_ref_impl.extend(ref_self_fns);
 
-        Ok(())
+        if events.is_empty() {
+            return Ok(None);
+        } else {
+            Ok(Some(events))
+        }
     }
 
     /// 处理事件枚举

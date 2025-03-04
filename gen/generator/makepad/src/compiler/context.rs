@@ -6,7 +6,8 @@ use gen_plugin::Token as PluginToken;
 
 use crate::model::{AbsWidget, SimpleAppMain};
 
-/// Key: WidgetID, Value: AbsWidget
+/// in other: Key: WidgetID, Value: AbsWidget
+/// in ctx(define widget poll): Key: WidgetName, Value: AbsWidget
 pub type WidgetPoll = HashMap<String, AbsWidget>;
 
 pub struct Context {
@@ -41,6 +42,12 @@ impl Default for Context {
             dyn_processor: None,
             lib_content: None,
         }
+    }
+}
+
+impl Context {
+    pub fn push_widget(&mut self, key: String, value: AbsWidget) {
+        self.define_widget_poll.insert(key, value);
     }
 }
 
