@@ -70,7 +70,11 @@ impl PropLzVisitor {
     /// - 最终将生成一个LiveComponent(组件结构体)
     /// - 将传入的prop改造为属性解构体
     /// - 在impls中添加LiveHook(after new from doc)的实现
-    fn instance(prop: &mut ItemStruct, impls: &mut Impls) -> Result<LiveComponent, Error> {
+    fn instance(
+        prop: &mut ItemStruct,
+        impls: &mut Impls,
+        binds: Option<&Binds>,
+    ) -> Result<LiveComponent, Error> {
         let ident = prop.ident.to_token_stream();
         let mut live_component = LiveComponent::default(&ident);
         // [处理解构体] -----------------------------------------------------------------------------------------
@@ -103,14 +107,28 @@ impl PropLzVisitor {
                 handle_field_attrs(field)?;
                 live_component.push_field(field.clone())?;
                 // [在impls中添加LiveHook(after new from doc)的实现] -----------------------------------------------------
-                let field_name = str_to_tk!(&field.ident.as_ref().unwrap().to_string())?;
-                let set_field_fn = str_to_tk!(&format!("set_{}", field_name))?;
-                impls.traits().live_hook.push(
-                    quote! {
-                        self.#set_field_fn(cx, deref_prop.#field_name);
-                    },
-                    LiveHookType::AfterNewFromDoc,
-                );
+                let mut tk = TokenStream::new();
+                if let Some(binds) = binds {
+                    let field_name = field.ident.as_ref().unwrap().to_string();
+                    // 需要判断当前这个field是否在模版里进行了绑定，只有绑定的才能生产set方法，否则是正常赋值
+                    if binds.contains_key(&field_name) {
+                        let field_name = str_to_tk!(&field_name)?;
+                        let set_field_fn = str_to_tk!(&format!("set_{}", field_name))?;
+                        tk.extend(quote! {
+                            self.#set_field_fn(cx, deref_prop.#field_name);
+                        });
+                    }
+                } else {
+                    let field_name = field.ident.as_ref().unwrap().to_string();
+                    let field_name = str_to_tk!(&field_name)?;
+                    tk.extend(quote! {
+                        self.#field_name = deref_prop.#field_name;
+                    });
+                };
+                impls
+                    .traits()
+                    .live_hook
+                    .push(tk, LiveHookType::AfterNewFromDoc);
             }
         }
 
@@ -182,7 +200,7 @@ impl PropLzVisitor {
         binds: Option<&Binds>,
     ) -> Result<(Option<TWBPollBuilder>, LiveComponent), Error> {
         // [组件实例初始化] -------------------------------------------------------------------------------------
-        let mut live_component = Self::instance(prop, impls)?;
+        let mut live_component = Self::instance(prop, impls, binds)?;
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let component_ident = live_component.ident();
         let twb = if let Some(binds) = binds {

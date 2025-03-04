@@ -1,7 +1,7 @@
 use crate::components::hello::*;
 use gen_components::*;
 use makepad_widgets::*;
-live_design! { use link :: widgets :: * ; use link :: gen_components :: * ; use link :: shaders :: * ; use crate :: components :: hello ::*; pub Home = { { Home } } { flow : Down , spacing : 16.0 , height : Fit , align : { x : 0.5 , y : 0.5 , } , padding : 12.0 , header = < Hello > { } my_btn = < GButton > { theme : Error , slot : < GLabel > { font_size : 12.0 , text : "Click Me!" , } } } }
+live_design! { use link :: widgets :: * ; use link :: gen_components :: * ; use link :: shaders :: * ; use crate :: components :: hello ::*; pub Home = { { Home } } { flow : Down , padding : 12.0 , align : { x : 0.5 , y : 0.5 , } , spacing : 16.0 , height : Fit , header = < Hello > { } my_btn = < GButton > { theme : Error , slot : < GLabel > { font_size : 12.0 , text : "Click Me!" , } } } }
 #[derive(Live, Widget)]
 pub struct Home {
     #[deref]
@@ -44,7 +44,7 @@ impl LiveHook for Home {
     }
     fn after_new_from_doc(&mut self, cx: &mut Cx) {
         let deref_prop = HomeDeref::default();
-        self.set_num(cx, deref_prop.num);
+        self.num = deref_prop.num;
     }
 }
 impl Default for HomeDeref {
