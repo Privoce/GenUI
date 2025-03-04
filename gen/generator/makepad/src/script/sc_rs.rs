@@ -86,7 +86,7 @@ impl ScRs {
         // [events] ------------------------------------------------------------------------------------------
         if let Some(mut event) = event {
             let events = EventLzVisitor::visit(&mut event, &mut impls)?;
-            if let WidgetType::Define(define_widget) = &template.ty{
+            if let WidgetType::Define(define_widget) = &template.ty {
                 let snake_name = define_widget.snake_name();
                 let name = define_widget.root_name().to_string();
                 ctx.push_widget(
@@ -116,7 +116,6 @@ impl ScRs {
             // // set to impls
             // impls.self_impl = impls.self_impl.patch(impl_prop);
         }
-
         let _ = imports.map(|imports| {
             sc_rs.uses = Some(imports.to_token_stream());
         });
@@ -157,6 +156,17 @@ impl ScRs {
             impls,
             ..Default::default()
         }
+    }
+
+    /// 合并两个ScRs
+    /// 只合并: uses, others
+    pub fn patch(&mut self, patcher: &ScRs) -> () {
+        patcher.uses.as_ref().map(|uses| {
+            self.uses.get_or_insert_default().extend(uses.clone());
+        });
+        patcher.others.as_ref().map(|others| {
+            self.others.get_or_insert_default().extend(others.clone());
+        });
     }
 }
 

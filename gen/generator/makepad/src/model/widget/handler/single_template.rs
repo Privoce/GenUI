@@ -27,7 +27,7 @@ pub fn single_template(
         template_ptrs: None,
     };
     // 执行前需要执行default_script
-    let _ = widget.default_script();
+    let _ = widget.patch_or_default_script()?;
 
     Ok(widget)
 }

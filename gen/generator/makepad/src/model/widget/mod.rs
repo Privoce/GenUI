@@ -11,13 +11,13 @@ pub use handler::*;
 pub use template::*;
 pub use traits::*;
 
-use gen_analyzer::{Model, Polls, Script, Style, Template};
-use gen_utils::{common::Source, compiler::ToRs, error::Error};
-use quote::{quote, ToTokens};
 use crate::{
     compiler::Context,
     token::{import_default_all, import_draw_shader, use_crate_all, use_default_all},
 };
+use gen_analyzer::{Model, Polls, Script, Style, Template};
+use gen_utils::{common::Source, compiler::ToRs, error::Error};
+use quote::{quote, ToTokens};
 
 #[derive(Debug, Clone)]
 pub struct Widget {
@@ -47,20 +47,25 @@ impl Widget {
         self.script.as_ref().and_then(|sc| sc.uses())
     }
     /// default script impl for easy define widget
-    pub fn default_script(&mut self) -> () {
-        if let Some(sc) = self.script.as_ref() {
-            if let crate::script::Script::ScRs(sc) = sc{
-               if sc.live_component.is_some(){
-                    return;
-                }
-            }
-
-        }
-
+    pub fn patch_or_default_script(&mut self) -> Result<(), Error> {
+        // 确保有template
         if let Some(template) = self.template.as_ref() {
-            self.script =
-                template.is_define_root_and(|define_widget| define_widget.default_script());
+            if let Some(crate::script::Script::ScRs(patch_sc)) = self.script.as_ref() {
+                if patch_sc.live_component.is_some() {
+                    return Ok(());
+                }
+                // 说明没有进行具体的定义，但有一些其他的代码，需要patch
+                self.script = template
+                    .is_define_root_and(|define_widget| {
+                        let mut script = define_widget.default_script();
+                        script.patch(patch_sc)?;
+                        Ok::<crate::script::Script, Error>(script)
+                    })
+                    .transpose()?;
+            }
         }
+
+        Ok(())
     }
     pub fn uses_token_stream(&self) -> proc_macro2::TokenStream {
         let mut tk = use_default_all();
@@ -236,7 +241,9 @@ impl
             Arc<RwLock<Polls>>,
         ),
     ) -> Result<Self, Self::Error> {
-        handler::all(value.0, value.1, value.2, value.3, value.4, value.5, value.6)
+        handler::all(
+            value.0, value.1, value.2, value.3, value.4, value.5, value.6,
+        )
     }
 }
 
@@ -325,8 +332,20 @@ mod test_widget {
             lib_content: None,
         }
     }
+
     #[test]
-    fn call_define(){
+    fn root() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart/hello/views/root.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart",
+            "hello/views/root.gen",
+            "src_gen_0/src/views/root.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
+    fn call_define() {
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart/hello/views/home.gen
         let source = Source::new(
             "/Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart",
