@@ -46,7 +46,7 @@ impl ScRs {
             prop,
             mut instance,
             event,
-            mut impl_prop,
+            impl_prop,
             mut others,
         } = ScriptAnalyzer::analyze(&code).map_err(|e| Error::from(e.to_string()))?;
         // [datas] -------------------------------------------------------------------------------------------
@@ -76,11 +76,12 @@ impl ScRs {
         };
 
         // [events] ------------------------------------------------------------------------------------------
-        if let Some(event) = event {
-            let _ = EventLzVisitor::visit(event, &mut impls)?;
+        if let Some(mut event) = event {
+            let _ = EventLzVisitor::visit(&mut event, &mut impls)?;
+            others.push(parse_quote!(#event));
         }
         // [处理fn-callback] ----------------------------------------------------------------------------------
-        if let Some(mut impl_prop) = impl_prop {
+        if let Some(impl_prop) = impl_prop {
             // 消耗impl_prop，所有内部处理的方法都会被放到impls.self_impl中
             FnLzVisitor::visit(
                 impl_prop,

@@ -4,7 +4,7 @@ use gen_utils::error::Error;
 
 use crate::value::{Function, Value};
 
-use super::PropKey;
+use super::{Parent, PropKey};
 
 /// # Polls
 /// 对每个模型中组件的绑定属性和事件属性进行池化，用于进行静态分析
@@ -48,6 +48,8 @@ pub struct PropComponent {
     pub prop: String,
     /// 如果组件被设置成as_prop, 这里会有值
     pub as_prop: Option<String>,
+    /// 标识父组件的引用
+    pub father_ref: Option<Parent>,
 }
 
 // ------------------------------------ Event -----------------------------------------------------------------

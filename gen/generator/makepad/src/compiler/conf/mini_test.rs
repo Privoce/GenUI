@@ -15,7 +15,7 @@ impl Header {
         self.btn_name.clone()
     }
     fn set_btn_name(&mut self, cx: &mut Cx, value: String) -> () {
-        if let Some(mut c_ref) = self.glabel(id!(slot)).borrow_mut() {
+        if let Some(mut c_ref) = self.button(id!(header_btn)).borrow_mut() {
             let slot_widget = c_ref.slot.as_glabel();
             slot_widget.set_text(cx, value.clone());
         }
@@ -90,8 +90,8 @@ impl Widget for Header {
     #[allow(unused_variables)]
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let actions = cx.capture_actions(|cx| self.deref_widget.handle_event(cx, event, scope));
-        let header_btn = self.gbutton(id!(header_btn));
         let slot = self.glabel(id!(slot));
+        let header_btn = self.gbutton(id!(header_btn));
         if let Some(_) = header_btn.clicked(&actions) {
             self.click_h_btn(cx);
         }
@@ -134,4 +134,9 @@ impl Default for HeaderDeref {
 }
 pub struct HeaderDeref {
     btn_name: String,
+}
+#[derive(Debug, Clone, DefaultNone)]
+pub enum HeaderEvent {
+    ClickHeader,
+    None,
 }

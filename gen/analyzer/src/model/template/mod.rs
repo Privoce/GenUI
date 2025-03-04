@@ -5,7 +5,7 @@ pub use prop::*;
 use std::{
     collections::HashMap,
     str::FromStr,
-    sync::{Arc, RwLock, RwLockWriteGuard},
+    sync::{Arc, RwLock},
 };
 
 // use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
@@ -109,24 +109,43 @@ impl Template {
     /// ## after parse
     /// 在 template::parse(input) 内部调用在，在所有属性被分析完成后调用这个方法
     /// See: `push_prop()`
-    pub fn after_parse(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
+    pub fn after_prop_parse(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
         // [获取Tag被设置的属性作为Template传入的属性]------------------------------------------
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
         // 在进行属性处理的时候同时获取出池化属性
         if let Some(props) = self.props.take() {
-            // get write lock
-            let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
-
             for (k, v) in props {
-                self.push_prop(&mut poll, k, v)?;
+                self.push_prop(k, v)?;
             }
-
             // [set events] ----------------------------------------------------------------
             // 由于事件的存储是直接存储所有事件在EvenComponent中所以在外面一次性处理
             if let Some(callbacks) = self.callbacks.as_ref() {
+                // get write lock
+                let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
                 poll.insert_event(self.as_event_component(callbacks)?);
             }
         }
+        Ok(())
+    }
+    pub fn after_all(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
+        if let Some(binds) = self.binds.as_ref() {
+            let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
+            // 延迟处理binds
+            for (key, value) in binds {
+                let (name, id) = self.get_name_and_id()?;
+                poll.insert_prop(
+                    &value.as_bind()?.ident(),
+                    PropComponent {
+                        id,
+                        name,
+                        prop: key.name.to_string(),
+                        as_prop: self.as_prop.clone(),
+                        father_ref: self.parent.clone(),
+                    },
+                );
+            }
+        }
+
         Ok(())
     }
 
@@ -134,39 +153,31 @@ impl Template {
     pub fn is_static(&self) -> bool {
         self.callbacks.is_none() && self.binds.is_none()
     }
-
-    pub fn push_prop(
-        &mut self,
-        poll: &mut RwLockWriteGuard<Polls>,
-        key: PropKey,
-        value: Value,
-    ) -> Result<(), Error> {
-        fn insert_prop(props: &mut Option<Props>, key: PropKey, value: Value) -> () {
-            match props {
-                Some(props) => {
-                    let _ = props.insert(key, value);
-                }
-                None => {
-                    let mut item = HashMap::new();
-                    item.insert(key, value);
-                    props.replace(item);
-                }
+    fn insert_prop(props: &mut Option<Props>, key: PropKey, value: Value) -> () {
+        match props {
+            Some(props) => {
+                let _ = props.insert(key, value);
+            }
+            None => {
+                let mut item = HashMap::new();
+                item.insert(key, value);
+                props.replace(item);
             }
         }
-
-        fn insert_event(callbacks: &mut Option<Callbacks>, key: PropKey, value: Value) -> () {
-            match callbacks {
-                Some(callbacks) => {
-                    let _ = callbacks.insert(key, value);
-                }
-                None => {
-                    let mut item = HashMap::new();
-                    item.insert(key, value);
-                    callbacks.replace(item);
-                }
+    }
+    fn insert_event(callbacks: &mut Option<Callbacks>, key: PropKey, value: Value) -> () {
+        match callbacks {
+            Some(callbacks) => {
+                let _ = callbacks.insert(key, value);
+            }
+            None => {
+                let mut item = HashMap::new();
+                item.insert(key, value);
+                callbacks.replace(item);
             }
         }
-
+    }
+    pub fn push_prop(&mut self, key: PropKey, value: Value) -> Result<(), Error> {
         // [if is special props]---------------------------------------------------------------------------
         if let Ok(prop) = BuiltinProps::from_str(&key.name) {
             match prop {
@@ -246,18 +257,13 @@ impl Template {
             // [other props]---------------------------------------------------------------------------
             match key.ty {
                 PropKeyType::Normal => {
-                    insert_prop(&mut self.props, key, value);
+                    Self::insert_prop(&mut self.props, key, value);
                 }
                 PropKeyType::Bind => {
-                    poll.insert_prop(
-                        &value.as_bind()?.ident(),
-                        self.as_prop_component(&key.name)?,
-                    );
-
-                    insert_prop(&mut self.binds, key, value);
+                    Self::insert_prop(&mut self.binds, key, value);
                 }
                 PropKeyType::Function => {
-                    insert_event(&mut self.callbacks, key, value);
+                    Self::insert_event(&mut self.callbacks, key, value);
                 }
             }
         }
@@ -265,192 +271,18 @@ impl Template {
         Ok(())
     }
 
-    // pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
-    //     match self.props.as_ref() {
-    //         Some(props) => Some(props.iter().filter(|(k, _)| k.is_normal()).collect()),
-    //         None => None,
-    //     }
-    // }
-    // pub fn get_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
-    //     match self.props.as_ref() {
-    //         Some(props) => Some(props.iter().filter(|(k, _)| k.is_bind()).collect()),
-    //         None => None,
-    //     }
-    // }
-    // /// get all bind props from the template model and children
-    // pub fn get_all_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
-    //     let mut bind_props = HashMap::new();
-    //     if let Some(items) = self.get_bind_props() {
-    //         bind_props.extend(items);
-    //     }
-
-    //     // get all bind props from children
-    //     if let Some(children) = self.get_children() {
-    //         for child in children {
-    //             if let Some(items) = child.get_all_bind_props() {
-    //                 bind_props.extend(items);
-    //             }
-    //         }
-    //     }
-
-    //     if bind_props.is_empty() {
-    //         None
-    //     } else {
-    //         Some(bind_props)
-    //     }
-    // }
-    // pub fn get_callbacks(&self) -> Option<&Callbacks> {
-    //     self.callbacks.as_ref()
-    // }
-    // pub fn set_callbacks(&mut self, callbacks: Callbacks) -> () {
-    //     let _ = self.callbacks.replace(callbacks);
-    // }
-    // pub fn push_callbacks(&mut self, k: PropsKey, v: Value) -> () {
-    //     match self.callbacks.as_mut() {
-    //         Some(callbacks) => {
-    //             let _ = callbacks.insert(k, v);
-    //         }
-
-    //         None => {
-    //             self.callbacks = Some(
-    //                 vec![(k, v)]
-    //                     .into_iter()
-    //                     .collect::<HashMap<PropsKey, Value>>(),
-    //             )
-    //         }
-    //     }
-    // }
-    // pub fn has_callbacks(&self) -> bool {
-    //     self.callbacks.is_some()
-    // }
-    // pub fn set_callbacks_from_props(&mut self) -> bool {
-    //     let tmp_props = self.props.clone();
-    //     match self.props.as_mut() {
-    //         Some(props) => {
-    //             // 所有callbacks都是Value::Function的并且也直接在PropKey上的ty是Function
-    //             tmp_props.unwrap().iter().for_each(|(k, _)| {
-    //                 if PropertyKeyType::Function.eq(k.ty()) {
-    //                     match props.remove_entry(k) {
-    //                         Some((k, v)) => match self.callbacks.as_mut() {
-    //                             Some(callbacks) => {
-    //                                 let _ = callbacks.insert(k, v);
-    //                             }
-
-    //                             None => {
-    //                                 self.callbacks = Some(
-    //                                     vec![(k, v)]
-    //                                         .into_iter()
-    //                                         .collect::<HashMap<PropsKey, Value>>(),
-    //                                 )
-    //                             }
-    //                         },
-    //                         None => (),
-    //                     }
-    //                 }
-    //             });
-
-    //             self.has_callbacks()
-    //         }
-    //         None => false,
-    //     }
-    // }
-
     pub fn is_component(&self) -> bool {
         self.name.eq("component")
     }
-    // pub fn set_inherits(&mut self, inherits: &str) -> () {
-    //     let _ = self.inherits.replace(inherits.to_string());
-    // }
-    // pub fn is_root(&self) -> bool {
-    //     self.root
-    // }
-    // pub fn set_root(&mut self, root: bool) -> () {
-    //     self.root = root;
-    // }
-    // pub fn get_children(&self) -> Option<&Vec<Template>> {
-    //     self.children.as_ref()
-    // }
-    // pub fn set_children(&mut self, children: Vec<Template>) -> () {
-    //     let _ = self.children.replace(children);
-    // }
-    // pub fn has_children(&self) -> bool {
-    //     self.children.is_some()
-    // }
-    // pub fn push_child(&mut self, child: Template) -> () {
-    //     match &mut self.children {
-    //         Some(children) => children.push(child),
-    //         None => {
-    //             let _ = self.children.replace(vec![child]);
-    //         }
-    //     }
-    // }
-    pub fn set_parent(&mut self, special: String, name: String, root: bool) -> () {
-        let _ = self.parent.replace((special, name, root).into());
+
+    pub fn set_parent(&mut self, id: String, name: String, root: bool) -> () {
+        let _ = self.parent.replace((id, name, root).into());
     }
     pub fn as_parent(&self) -> (String, String) {
-        (self.special.to_string(), self.name.to_string())
+        let id = self.id.as_ref().unwrap_or(&self.special).to_string();
+
+        (id, self.name.to_string())
     }
-    // pub fn convert(ast: &ASTNodes, is_root: bool) -> Result<Self, Error> {
-    //     match ast {
-    //         ASTNodes::Tag(tag) => convert_template(&*tag, is_root),
-    //         _ => Err(ParseError::template("template model must be a tag").into()),
-    //     }
-    // }
-
-    // /// this function is used to get all props from the template model
-    // /// and return a tuple of two PropTree
-    // /// (bind_tree, fn_tree)
-    // pub fn get_props_tree(&self) -> (PropTree, PropTree) {
-    //     fn append(node: &Template) -> (PropTree, PropTree) {
-    //         let mut bind_tree = Vec::new();
-    //         let mut fn_tree = Vec::new();
-    //         if node.get_name().ne("component") {
-    //             // let id = node.get_id().expect(format!("bind prop need id: {}", node.get_name()).as_str()).to_string();
-    //             if let Some(id) = node.id.as_ref() {
-    //                 let name = node.get_name().to_string();
-
-    //                 let _ = node.get_bind_props().map(|props| {
-    //                     if !props.is_empty() {
-    //                         bind_tree.push((
-    //                             (name.clone(), id.to_string()),
-    //                             Some(
-    //                                 props
-    //                                     .into_iter()
-    //                                     .map(|(k, v)| (k.clone(), v.clone()))
-    //                                     .collect(),
-    //                             ),
-    //                         ));
-    //                     }
-    //                 });
-    //                 match node.get_callbacks().clone() {
-    //                     Some(callbacks) => {
-    //                         fn_tree.push((
-    //                             (name, id.to_string()),
-    //                             Some(callbacks.clone().into_iter().collect()),
-    //                         ));
-    //                     }
-    //                     None => (),
-    //                 }
-    //             }
-    //         }
-
-    //         match node.get_children() {
-    //             Some(children) => {
-    //                 for child in children {
-    //                     let (binds, fns) = append(child);
-    //                     bind_tree.extend(binds);
-    //                     fn_tree.extend(fns);
-    //                 }
-    //             }
-    //             None => (),
-    //         }
-    //         (bind_tree, fn_tree)
-    //     }
-
-    //     // 从根节点开始遍历
-    //     // 获取每个节点的props以及采集节点名称
-    //     append(self)
-    // }
 
     fn get_name_and_id(&self) -> Result<(String, String), Error> {
         // [name] -------------------------------------------------------------------------------------------------------
@@ -478,6 +310,7 @@ impl Template {
             name,
             prop: prop.to_string(),
             as_prop: self.as_prop.clone(),
+            father_ref: self.parent.clone(),
         })
     }
 

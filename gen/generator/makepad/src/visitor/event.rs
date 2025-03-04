@@ -14,7 +14,9 @@ use crate::script::Impls;
 pub struct EventLzVisitor;
 
 impl EventLzVisitor {
-    pub fn visit(event: ItemEnum, impls: &mut Impls) -> Result<(), Error> {
+    pub fn visit(event: &mut ItemEnum, impls: &mut Impls) -> Result<(), Error> {
+        Self::handle_event_enum(event);
+
         let (mut self_fns, ref_self_fns) =
             event
                 .variants
@@ -35,6 +37,18 @@ impl EventLzVisitor {
         impls.self_ref_impl.extend(ref_self_fns);
 
         Ok(())
+    }
+
+    /// 处理事件枚举
+    fn handle_event_enum(item_enum: &mut ItemEnum) -> () {
+        // [remove #[event] attr] --------------------------------------------------------------------------------
+        item_enum
+            .attrs
+            .retain(|attr| !attr.path().is_ident("event"));
+        // [add #[derive(DefaultNone)] attr] ----------------------------------------------------------------------
+        item_enum.attrs.push(parse_quote!(#[derive(DefaultNone)]));
+        // [add None as variant] ---------------------------------------------------------------------------------
+        item_enum.variants.push(parse_quote! {None});
     }
 
     fn event_fn(ident: &Ident, var: &Variant) -> (ImplItem, Stmt) {

@@ -244,7 +244,7 @@ fn parse_tag<'a>(
         let (input, mut template) = parse_tag_start(input)?;
         template.root = root;
         root = false;
-        template.after_parse(Arc::clone(&poll)).map_err(|e| {
+        template.after_prop_parse(Arc::clone(&poll)).map_err(|e| {
             eprintln!("parse_tag error: {:?}", e);
             nom_err!(input, ErrorKind::Fail)
         })?;
@@ -255,9 +255,10 @@ fn parse_tag<'a>(
         // is tag, nest parse tag
         let tag_name = template.name.to_string();
         // trim input and check is start with `</tag_name>`
-        match parse_end_tag(input, tag_name.to_string()) {
+        let input = match parse_end_tag(input, tag_name.to_string()) {
             Ok((input, _)) => {
-                return Ok((input, template));
+                // return Ok((input, template));
+                input
             }
             Err(_) => {
                 // has children, parse children
@@ -270,9 +271,13 @@ fn parse_tag<'a>(
 
                 if !children.is_empty() {
                     let (special, name) = template.as_parent();
-                    children.iter_mut().for_each(|child| {
-                        child.set_parent(special.to_string(), name.to_string(), template.root)
-                    });
+                    for child in children.iter_mut() {
+                        child.set_parent(special.to_string(), name.to_string(), template.root);
+                        child.after_all(Arc::clone(&poll)).map_err(|e| {
+                            eprintln!("parse_tag error: {:?}", e);
+                            nom_err!(input, ErrorKind::Fail)
+                        })?;
+                    }
 
                     template.children.replace(children);
                 }
@@ -281,11 +286,22 @@ fn parse_tag<'a>(
                 if preceded(char('<'), parse_tag_name)(input).is_ok()
                     && parse_end_tag_common(input).is_err()
                 {
-                    return Ok((input, template));
+                    // return Ok((input, template));
+                    input
+                } else {
+                    input
                 }
-                return Ok((input, template));
+                // return Ok((input, template));
             }
-        }
+        };
+
+        // template
+        //     .after_all(Arc::clone(&poll), lazy_binds)
+        //     .map_err(|e| {
+        //         eprintln!("parse_tag error: {:?}", e);
+        //         nom_err!(input, ErrorKind::Fail)
+        //     })?;
+        return Ok((input, template));
     }
 }
 

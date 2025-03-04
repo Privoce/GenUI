@@ -5,8 +5,8 @@ use quote::quote;
 use syn::{parse_quote, parse_str, ImplItem, Stmt};
 
 use crate::{
-    builtin::BuiltinWidget, model::TemplatePtrs, script::Impls, traits::MakepadExtComponent,
-    visitor::sugar_for_fn_ident,
+    builtin::BuiltinWidget, model::TemplatePtrs, script::Impls, str_to_tk,
+    traits::MakepadExtComponent, visitor::sugar_for_fn_ident,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -39,14 +39,19 @@ impl GetSet {
         ptrs: &TemplatePtrs,
         impls: &mut Impls,
     ) -> Result<(), Error> {
-        let mut bind_and_redraw = if let Some(binds) = binds.get(field) {
-            binds.iter().fold(TokenStream::new(), |mut tk, widget| {
-                let widget_name = parse_str::<TokenStream>(&widget.name()).unwrap();
-                let widget_id = parse_str::<TokenStream>(&widget.id).unwrap();
+        let mut bind_and_redraw = TokenStream::new();
+        if let Some(binds) = binds.get(field) {
+            for widget in binds {
                 let set_prop_fn =
                     parse_str::<TokenStream>(&format!("set_{}", &widget.prop)).unwrap();
                 let set_prop = if let Some(as_prop) = widget.as_prop.as_ref() {
-                    // attention: 可能出现bug(as_prop)
+                    let (widget_name, widget_id) =
+                        if let Some(father_ref) = widget.father_ref.as_ref() {
+                            (str_to_tk!(&father_ref.name)?, str_to_tk!(&father_ref.id)?)
+                        } else {
+                            return Err(Error::from("as_prop widget must have father_ref!"));
+                        };
+
                     let prop_widget = BuiltinWidget::builtin_name_or_snake(&widget.name());
                     let as_prop_widget =
                         parse_str::<TokenStream>(&format!("as_{}", prop_widget)).unwrap();
@@ -59,19 +64,17 @@ impl GetSet {
                         }
                     }
                 } else {
+                    let widget_name = parse_str::<TokenStream>(&widget.name()).unwrap();
+                    let widget_id = parse_str::<TokenStream>(&widget.id).unwrap();
                     quote! {
                         let widget = self.#widget_name(id!(#widget_id));
                         widget.#set_prop_fn(cx, value.clone());
                     }
                 };
 
-                tk.extend(set_prop);
-                tk
-            })
-        } else {
-            // 有可能是这个变量并没有绑定到组件上, 但其实也需要生成get和set方法，只是没有绑定部分的代码
-            TokenStream::new()
-        };
+                bind_and_redraw.extend(set_prop);
+            }
+        }
 
         // let field_tk = parse_str::<TokenStream>(field).unwrap();
         let sugar_for_ident = sugar_for_fn_ident(field);
