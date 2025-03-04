@@ -128,8 +128,8 @@ impl Template {
         Ok(())
     }
     pub fn after_all(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
+        let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
         if let Some(binds) = self.binds.as_ref() {
-            let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
             // 延迟处理binds
             for (key, value) in binds {
                 let (name, id) = self.get_name_and_id()?;
@@ -144,6 +144,20 @@ impl Template {
                     },
                 );
             }
+        }
+        // sugar中的for也是binds的一种
+        if let Some(for_sign) = self.sugar_props.for_sign.as_ref() {
+            let (name, id) = self.get_name_and_id()?;
+            poll.insert_prop(
+                &for_sign.as_bind()?.ident(),
+                PropComponent {
+                    id,
+                    name,
+                    prop: "for".to_string(),
+                    as_prop: self.as_prop.clone(),
+                    father_ref: self.parent.clone(),
+                },
+            );
         }
 
         Ok(())

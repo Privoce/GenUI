@@ -30,7 +30,7 @@ impl Bind {
     pub fn ident(&self) -> String {
         match self {
             Bind::Normal(n) => n[0].to_string(),
-            Bind::For(f) => f.iter_ident[0].to_string(),
+            Bind::For(f) => f.ident(),
         }
     }
     pub fn is(&self, s: &str) -> bool {

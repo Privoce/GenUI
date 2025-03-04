@@ -345,6 +345,17 @@ mod test_widget {
     }
 
     #[test]
+    fn fors(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test/fors/components/hello.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test",
+            "fors/components/hello.gen",
+            "src_gen_0/src/components/hello.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn call_define() {
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart/hello/views/home.gen
         let source = Source::new(
@@ -565,6 +576,7 @@ mod test_widget {
 
     fn handle(source: Source) {
         let model = Model::new(source, true).unwrap();
+        // dbg!(model);
         let mut context = context();
         let w = Widget::try_from((&mut context, model)).unwrap();
         // dbg!(&w.template);

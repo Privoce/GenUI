@@ -188,85 +188,88 @@ pub fn visit_builtin(
                 if receiver_text == "self" || from_widget.is_some() {
                     if let Some(name_ref) = method_call.name_ref() {
                         let method_name = name_ref.syntax().text().to_string();
-                        let field_name = method_name
-                            .trim_start_matches("get_")
-                            .trim_start_matches("set_")
-                            .to_string();
+                        if method_name.starts_with("get_") || method_name.starts_with("set_") {
+                            let field_name = method_name
+                                .trim_start_matches("get_")
+                                .trim_start_matches("set_")
+                                .to_string();
 
-                        // 检查字段是否在目标列表中
-                        if fields.contains(&field_name) || from_widget.is_some() {
-                            let prefix = if let Some((w, _)) = from_widget {
-                                w.to_string()
-                            } else {
-                                "self".to_string()
-                            };
+                            // 检查字段是否在目标列表中
+                            dbg!(&fields, &field_name);
+                            if fields.contains(&field_name) || from_widget.is_some(){
+                                let prefix = if let Some((w, _)) = from_widget {
+                                    w.to_string()
+                                } else {
+                                    "self".to_string()
+                                };
 
-                            let is_setter = method_name.starts_with("set_");
-                            // 获取完整的方法调用范围
-                            let full_range = method_call.syntax().text_range();
+                                let is_setter = method_name.starts_with("set_");
+                                // 获取完整的方法调用范围
+                                let full_range = method_call.syntax().text_range();
 
-                            // 构建新的调用表达式
-                            let new_expr = if is_setter {
-                                let mut new_call = String::new();
-                                // 如果from_widget则需要反向绑定到父组件中完成双向绑定
-                                if let Some((_, widget_id)) = from_widget {
-                                    // 获取function中的参数
-                                    let param = method_call.arg_list().map_or_else(
-                                        || Err(Error::from("set prop need a param!")),
-                                        |arg_list| Ok(arg_list.syntax().text().to_string()),
-                                    )?;
-                                    // 通过field_name获取父组件中绑定的字段名
-                                    // 没有找到的话可能是因为并没有采取双向绑定的方式，而是c_ref的直接内部访问，这里就不需要处理
-                                    if let Some(prop_binds) = prop_binds {
-                                        let _ = prop_binds
-                                            .iter()
-                                            .find(|(_, v)| {
-                                                v.iter().any(|widget| {
-                                                    &widget.id == widget_id
-                                                        && widget.prop == field_name
+                                // 构建新的调用表达式
+                                let new_expr = if is_setter {
+                                    let mut new_call = String::new();
+                                    // 如果from_widget则需要反向绑定到父组件中完成双向绑定
+                                    if let Some((_, widget_id)) = from_widget {
+                                        // 获取function中的参数
+                                        let param = method_call.arg_list().map_or_else(
+                                            || Err(Error::from("set prop need a param!")),
+                                            |arg_list| Ok(arg_list.syntax().text().to_string()),
+                                        )?;
+                                        // 通过field_name获取父组件中绑定的字段名
+                                        // 没有找到的话可能是因为并没有采取双向绑定的方式，而是c_ref的直接内部访问，这里就不需要处理
+                                        if let Some(prop_binds) = prop_binds {
+                                            let _ = prop_binds
+                                                .iter()
+                                                .find(|(_, v)| {
+                                                    v.iter().any(|widget| {
+                                                        &widget.id == widget_id
+                                                            && widget.prop == field_name
+                                                    })
                                                 })
-                                            })
-                                            .map(|(bind_field, _)| {
-                                                new_call.push_str(
-                                                    format!(
-                                                        "self.{} = {}.clone();",
-                                                        bind_field,
-                                                        remove_holder(&param)
-                                                    )
-                                                    .as_str(),
-                                                );
-                                            });
-                                    }
-                                }
-
-                                // 对于setter，需要添加cx参数
-                                new_call.push_str(&format!("{}.", prefix));
-                                new_call.push_str(&method_name);
-
-                                // 检查是否已经有cx参数
-                                if let Some(arg_list) = method_call.arg_list() {
-                                    let args = arg_list.syntax().text().to_string();
-                                    if !args.contains("cx") {
-                                        // 在参数列表开始位置插入cx
-                                        let mut args = args.to_string();
-                                        if args == "()" {
-                                            args = "(cx)".to_string();
-                                        } else {
-                                            args.insert_str(1, "cx, ");
+                                                .map(|(bind_field, _)| {
+                                                    new_call.push_str(
+                                                        format!(
+                                                            "self.{} = {}.clone();",
+                                                            bind_field,
+                                                            remove_holder(&param)
+                                                        )
+                                                        .as_str(),
+                                                    );
+                                                });
                                         }
-                                        new_call.push_str(&args);
-                                    } else {
-                                        new_call.push_str(&args);
                                     }
-                                }
 
-                                new_call
-                            } else {
-                                // 对于getter，直接替换接收者
-                                format!("{}.{}()", prefix, method_name)
-                            };
+                                    // 对于setter，需要添加cx参数
+                                    new_call.push_str(&format!("{}.", prefix));
+                                    new_call.push_str(&method_name);
 
-                            replacer.add_replacement(full_range, new_expr);
+                                    // 检查是否已经有cx参数
+                                    if let Some(arg_list) = method_call.arg_list() {
+                                        let args = arg_list.syntax().text().to_string();
+                                        if !args.contains("cx") {
+                                            // 在参数列表开始位置插入cx
+                                            let mut args = args.to_string();
+                                            if args == "()" {
+                                                args = "(cx)".to_string();
+                                            } else {
+                                                args.insert_str(1, "cx, ");
+                                            }
+                                            new_call.push_str(&args);
+                                        } else {
+                                            new_call.push_str(&args);
+                                        }
+                                    }
+
+                                    new_call
+                                } else {
+                                    // 对于getter，直接替换接收者
+                                    format!("{}.{}()", prefix, method_name)
+                                };
+
+                                replacer.add_replacement(full_range, new_expr);
+                            }
                         }
                     }
                 }
