@@ -192,16 +192,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gen_mk_script_objs"
-version = "0.1.0"
-dependencies = [
- "gen_utils",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "gen_plugin"
 version = "0.1.0"
 dependencies = [

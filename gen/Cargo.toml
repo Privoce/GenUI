@@ -9,7 +9,7 @@ members = [
     "middleware/rssyin",
     # "components",
     # "middleware"
-    "middleware/script_objs",
+    # "middleware/script_objs",
     "middleware/plugins/macro",
     "tests",
     "middleware/plugins/plugin",

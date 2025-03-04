@@ -329,8 +329,8 @@ mod test_widget {
     #[test]
     fn nested_for() {
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test/fors",
-            "components/easy.gen",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test",
+            "fors/components/easy.gen",
             "src_gen_0/src/components/easy.rs",
         );
 

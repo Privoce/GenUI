@@ -2,7 +2,6 @@ mod import;
 mod lifecycle;
 
 pub use import::{Import, Imports};
-use lifecycle::LifeCycle;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 
@@ -13,7 +12,6 @@ pub struct ScriptBridger {
     /// default impl
     pub instance: Option<syn::ItemImpl>,
     pub event: Option<syn::ItemEnum>,
-    // lifecycles: LifeCycle,
     pub impl_prop: Option<syn::ItemImpl>,
     // 非追踪部分
     pub others: Vec<syn::Stmt>,
