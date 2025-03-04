@@ -169,7 +169,6 @@ impl Model {
         let template = template.flatten();
         let style = style.flatten();
         let script = script.flatten();
-
         match (template, style, script) {
             (Some(t), Some(s), Some(sc)) => {
                 self.strategy = Strategy::All;
@@ -177,13 +176,13 @@ impl Model {
                 let (style_sender, style_receiver) = mpsc::channel();
                 let poll = Arc::clone(&self.polls);
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = Template::parse(&t, poll)?;
+                    let res = Template::parse(&t, poll);
                     template_sender.send(res).expect("send template error");
                     Ok(())
                 });
 
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = crate::parse::style::parse(&s)?;
+                    let res = crate::parse::style::parse(&s);
                     style_sender.send(res).expect("send style error");
                     Ok(())
                 });
@@ -191,11 +190,19 @@ impl Model {
                 // wait for parse result
                 match (template_receiver.recv(), style_receiver.recv()) {
                     (Ok(template), Ok(style)) => {
-                        self.template.replace(template);
-                        self.style.replace(style);
+                        self.template.replace(template?);
+                        self.style.replace(style?);
                         self.script.replace(sc.into());
                     }
-                    _ => return Err(ParseError::template("Failed to receive parse results").into()),
+                    (Ok(_), Err(e)) => {
+                        return Err(Error::from(format!("receive style error: {}", e)));
+                    }
+                    (Err(e), Ok(_)) => {
+                        return Err(Error::from(format!("receive template error: {}", e)));
+                    }
+                    (Err(e_t), Err(e_s)) => {
+                        return Err(Error::from(format!("receive template and style error:\ntemplate error: {}\nstyle error: {}", e_t, e_s)));
+                    }
                 }
             }
             (Some(t), Some(s), None) => {
@@ -203,11 +210,18 @@ impl Model {
                 let poll = Arc::clone(&self.polls);
                 let (sender, receiver) = mpsc::channel();
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = Template::parse(&t, poll)?;
+                    let res = Template::parse(&t, poll);
                     sender.send(res).expect("send template error");
                     Ok(())
                 });
-                let _ = receiver.recv().map(|t| self.template.replace(t));
+                let _ = receiver.recv().map_or_else(
+                    |e| Err(Error::from(format!("receive template error: {}", e))),
+                    |t| {
+                        self.template.replace(t?);
+                        Ok(())
+                    },
+                )?;
+
                 self.style.replace(crate::parse::style::parse(&s)?);
             }
             (Some(t), None, Some(sc)) => {
@@ -215,11 +229,17 @@ impl Model {
                 let poll = Arc::clone(&self.polls);
                 let (sender, receiver) = mpsc::channel();
                 let _ = thread::spawn(move || -> Result<(), Error> {
-                    let res = Template::parse(&t, poll)?;
+                    let res = Template::parse(&t, poll);
                     sender.send(res).expect("send template error");
                     Ok(())
                 });
-                let _ = receiver.recv().map(|t| self.template.replace(t));
+                let _ = receiver.recv().map_or_else(
+                    |e| Err(Error::from(format!("receive template error: {}", e))),
+                    |t| {
+                        self.template.replace(t?);
+                        Ok(())
+                    },
+                )?;
                 self.script.replace(sc.into());
             }
             (Some(t), None, None) => {

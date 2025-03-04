@@ -233,7 +233,10 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 
 /// ## parse tag ✅ 🆗 Result<(&'a str, Template), nom::Err<nom::error::Error<&'a str>>>
 #[allow(dead_code)]
-fn parse_tag<'a>(poll: Arc<RwLock<Polls>>,mut root: bool) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
+fn parse_tag<'a>(
+    poll: Arc<RwLock<Polls>>,
+    mut root: bool,
+) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
     move |input: &str| {
         // [parse comment if exist] ------------------------------------------------------------------------------------
         let (input, comments) = parse_comment(input)?;
@@ -241,9 +244,10 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>,mut root: bool) -> impl FnMut(&'a str)
         let (input, mut template) = parse_tag_start(input)?;
         template.root = root;
         root = false;
-        template
-            .after_parse(Arc::clone(&poll))
-            .map_err(|_| nom_err!(input, ErrorKind::Fail))?;
+        template.after_parse(Arc::clone(&poll)).map_err(|e| {
+            eprintln!("parse_tag error: {:?}", e);
+            nom_err!(input, ErrorKind::Fail)
+        })?;
         if !comments.is_empty() {
             template.comments.replace(comments);
         }
@@ -266,9 +270,9 @@ fn parse_tag<'a>(poll: Arc<RwLock<Polls>>,mut root: bool) -> impl FnMut(&'a str)
 
                 if !children.is_empty() {
                     let (special, name) = template.as_parent();
-                    children
-                        .iter_mut()
-                        .for_each(|child| child.set_parent(special.to_string(), name.to_string(), template.root));
+                    children.iter_mut().for_each(|child| {
+                        child.set_parent(special.to_string(), name.to_string(), template.root)
+                    });
 
                     template.children.replace(children);
                 }

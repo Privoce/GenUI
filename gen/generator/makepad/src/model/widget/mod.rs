@@ -366,8 +366,8 @@ mod test_widget {
     #[test]
     fn c_ref2() {
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test/c_ref",
-            "components/header.gen",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test",
+            "c_ref/components/header.gen",
             "src_gen_0/src/components/header.rs",
         );
 
@@ -378,8 +378,8 @@ mod test_widget {
     #[test]
     fn c_ref() {
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test/c_ref",
-            "views/hello.gen",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test",
+            "c_ref/views/hello.gen",
             "src_gen_0/src/views/hello.rs",
         );
 

@@ -456,11 +456,16 @@ impl Template {
         // [name] -------------------------------------------------------------------------------------------------------
         let name = self.name.to_string();
         // [id (needed or err)] -----------------------------------------------------------------------------------------
-        let id = self.id.as_ref()
-        .map_or_else(
+        let id = if let Some(as_prop) = self.as_prop.as_ref() {
+            as_prop.to_string()
+        } else {
+            self.id
+            .as_ref()
+            .map_or_else(
             || Err(err_from_to!("Template" => format!("PropComponent, can not find id in template please check: {}", &name))),
             |id| Ok(id.to_string())
-        )?;
+            )?
+        };
         Ok((name, id))
     }
 
