@@ -14,7 +14,6 @@ pub use traits::*;
 use gen_analyzer::{Model, Polls, Script, Style, Template};
 use gen_utils::{common::Source, compiler::ToRs, error::Error};
 use quote::{quote, ToTokens};
-
 use crate::{
     compiler::Context,
     token::{import_default_all, import_draw_shader, use_crate_all, use_default_all},

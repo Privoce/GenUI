@@ -7,13 +7,14 @@ use crate::{
         WidgetTemplate,
     },
     script::Impls,
+    str_to_tk,
     traits::ToTokensExt,
 };
 use gen_analyzer::value::{For, IdentSplit};
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_quote, parse_str, Field, Fields, ImplItem, ItemStruct};
+use syn::{parse_quote, Field, Fields, ImplItem, ItemStruct};
 
 /// for 语法糖处理器
 pub struct SugarScript;
@@ -85,7 +86,6 @@ impl SugarScript {
                         &fields,
                         true,
                     );
-
                     res.push(parse_quote! {
                         fn #sugar_fn(&mut self, cx: &mut Cx, value: &#value_ty) -> (){
                             #expr
@@ -133,11 +133,10 @@ impl SugarScript {
                 };
 
             // [as_widget] -------------------------------------------------------------------------------------
-            let as_widget = parse_str::<TokenStream>(&format!(
+            let as_widget = str_to_tk!(&format!(
                 "as_{}",
                 BuiltinWidget::builtin_name_or_snake(name)
-            ))
-            .unwrap();
+            ))?;
             // [about parent] ----------------------------------------------------------------------------------
             let f_creditial = parent.creditial.as_ref();
             let is_role_for = parent.is_for();
@@ -153,9 +152,8 @@ impl SugarScript {
             let father = if is_role_for {
                 quote! {widget_target}
             } else {
-                let widget =
-                    parse_str::<TokenStream>(&BuiltinWidget::builtin_name_or_snake(name)).unwrap();
-                let id = parse_str::<TokenStream>(id).unwrap();
+                let widget = str_to_tk!(&BuiltinWidget::builtin_name_or_snake(name))?;
+                let id = str_to_tk!(id)?;
                 quote! {
                     self.#widget(id!(#id))
                 }
@@ -188,16 +186,16 @@ impl SugarScript {
                     quote! {value},
                 )
             } else {
-                (None, parse_str::<TokenStream>(&loop_ident).unwrap())
+                (None, str_to_tk!(&loop_ident)?)
             };
             // [for loop expr] ---------------------------------------------------------------------------------
-            let enumerate = parse_str::<TokenStream>(&creditial.fmt_enumerate()).unwrap();
-            let index = parse_str::<TokenStream>(&creditial.fmt_index()).unwrap();
-            let item_clone = creditial.fmt_item_clone_tk();
+            let enumerate = str_to_tk!(&creditial.fmt_enumerate())?;
+            let index = str_to_tk!(&creditial.fmt_index())?;
+            let item_clone = str_to_tk!(&creditial.fmt_item_clone_tk())?;
             // 根据props生成对应需要设置的方法
             let mut set_props = props.iter().fold(TokenStream::new(), |mut tk, (k, v)| {
-                let set_fn = parse_str::<TokenStream>(&format!("set_{}", v)).unwrap();
-                let v = parse_str::<TokenStream>(k).unwrap();
+                let set_fn = str_to_tk!(&format!("set_{}", v)).unwrap();
+                let v = str_to_tk!(k).unwrap();
                 tk.extend(quote! {
                     widget_target.#set_fn(cx, #v);
                 });
@@ -274,11 +272,11 @@ impl SugarScript {
 }
 
 pub fn ptr_ident(index: usize) -> TokenStream {
-    parse_str::<TokenStream>(format!("item_ptr{}", index).as_str()).unwrap()
+    str_to_tk!(format!("item_ptr{}", index).as_str()).unwrap()
 }
 
 pub fn sugar_for_fn_ident(ident: &str) -> TokenStream {
-    parse_str::<TokenStream>(format!("sugar_for_{}", ident).as_str()).unwrap()
+    str_to_tk!(format!("sugar_for_{}", ident).as_str()).unwrap()
 }
 
 pub fn ptr_ident_field(ident: &TokenStream) -> Field {
@@ -298,13 +296,12 @@ fn get_children_sugar_binds(children: &Vec<WidgetTemplate>, father_for: &For) ->
                 // 比较特殊，需要找v中是否包含father_for的index或item
                 if father_for.is_use_index(&k) || father_for.is_use_item(&k) {
                     let name = child.ty.snake_name();
-                    let widget = parse_str::<TokenStream>(&name).unwrap();
-                    let widget_id = parse_str::<TokenStream>(
-                        &child.id.as_ref().unwrap_or(&format!("{}{}", &name, i)),
-                    )
-                    .unwrap();
-                    let set_fn = parse_str::<TokenStream>(&format!("set_{}", v)).unwrap();
-                    let value = parse_str::<TokenStream>(&k).unwrap();
+                    let widget = str_to_tk!(&name).unwrap();
+                    let widget_id =
+                        str_to_tk!(&child.id.as_ref().unwrap_or(&format!("{}{}", &name, i)))
+                            .unwrap();
+                    let set_fn = str_to_tk!(&format!("set_{}", v)).unwrap();
+                    let value = str_to_tk!(&k).unwrap();
                     tokens.extend(quote! {
                         widget_target.#widget(id!(#widget_id)).#set_fn(cx, #value);
                     });
@@ -325,7 +322,7 @@ pub fn visit_for_args(role: &Role, tk: &mut Vec<TokenStream>, calls: &mut Vec<To
     } = role
     {
         let suffix = creditial.iter_ident_as_fn();
-        let len_ident = parse_str::<TokenStream>(&format!("len_{}", suffix)).unwrap();
+        let len_ident = str_to_tk!(&format!("len_{}", suffix)).unwrap();
         tk.push(quote! {
             #len_ident: usize
         });
@@ -346,7 +343,7 @@ fn in_father_and_replace(
     if let Some(father) = father {
         if father.is_use_index(ident) || father.is_use_item(ident) {
             let prefix = father.fmt_iter_ident();
-            *tk = parse_str::<TokenStream>(&prefix).unwrap();
+            *tk = str_to_tk!(&prefix).unwrap();
             return Some(father.fmt_index());
         }
     }
@@ -359,8 +356,8 @@ fn in_father_and_replace(
 /// - `let len_ident = self.iter_ident.get(index).len();`
 /// - `let len_ident = self.iter_ident.map_or(0, |v| v.len());`
 fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, TokenStream) {
-    let suffix = parse_str::<TokenStream>(&creditial.iter_ident_as_fn()).unwrap();
-    let len_ident = parse_str::<TokenStream>(&format!("len_{}", suffix)).unwrap();
+    let suffix = str_to_tk!(&creditial.iter_ident_as_fn()).unwrap();
+    let len_ident = str_to_tk!(&format!("len_{}", suffix)).unwrap();
     let iter_len = creditial.iter_ident.len();
     let mut last = None;
     let mut len_call = if iter_len == 1 {
@@ -373,7 +370,7 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
             .unwrap();
         let ident_str = ident.to_string();
         if let Some(index) = in_father_and_replace(&mut ident, &ident_str, f_creditial) {
-            let index = parse_str::<TokenStream>(&index).unwrap();
+            let index = str_to_tk!(&index).unwrap();
             last = Some(IdentSplit::Holder);
             quote! {
                 #ident.get(#index)
@@ -385,7 +382,7 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
         }
     } else if iter_len > 1 {
         let first = creditial.iter_ident.first().unwrap().name.to_string();
-        let mut ident = parse_str::<TokenStream>(&first).unwrap();
+        let mut ident = str_to_tk!(&first).unwrap();
         let suffix = creditial
             .iter_ident
             .iter()
@@ -398,7 +395,7 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
                     }
                     gen_analyzer::value::IdentSplit::Holder => {
                         // [index] -> get(index)
-                        let index = parse_str::<TokenStream>(&i.name).unwrap();
+                        let index = str_to_tk!(&i.name).unwrap();
                         tk.extend(quote! {
                             .get(#index)
                         });

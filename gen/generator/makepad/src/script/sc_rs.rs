@@ -142,7 +142,6 @@ impl ScRs {
 
 impl ToTokens for ScRs {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let uses = self.uses.as_ref();
         let struct_ident = self.ident.as_ref().unwrap();
         let live_component = self.live_component.to_token_stream();
         let impls = self
@@ -155,7 +154,6 @@ impl ToTokens for ScRs {
             }
         });
         tokens.extend(quote! {
-            #uses
             #live_component
             #events
             #impls
