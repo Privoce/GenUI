@@ -342,8 +342,8 @@ mod test_widget {
     #[test]
     fn for_test() {
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test/fors",
-            "views/home.gen",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test",
+            "fors/views/home.gen",
             "src_gen_0/src/views/home.rs",
         );
 

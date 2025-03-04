@@ -45,12 +45,14 @@ impl GetSet {
                 let set_prop_fn =
                     parse_str::<TokenStream>(&format!("set_{}", &widget.prop)).unwrap();
                 let set_prop = if let Some(as_prop) = widget.as_prop.as_ref() {
-                    let (widget_name, widget_id) =
-                        if let Some(father_ref) = widget.father_ref.as_ref() {
-                            (str_to_tk!(&father_ref.name)?, str_to_tk!(&father_ref.id)?)
-                        } else {
-                            return Err(Error::from("as_prop widget must have father_ref!"));
-                        };
+                    let (widget_name, widget_id) = if let Some(father_ref) =
+                        widget.father_ref.as_ref()
+                    {
+                        let father_name = BuiltinWidget::builtin_name_or_snake(&father_ref.name);
+                        (str_to_tk!(&father_name)?, str_to_tk!(&father_ref.id)?)
+                    } else {
+                        return Err(Error::from("as_prop widget must have father_ref!"));
+                    };
 
                     let prop_widget = BuiltinWidget::builtin_name_or_snake(&widget.name());
                     let as_prop_widget =

@@ -1,7 +1,7 @@
+mod poll;
 mod script;
 mod strategy;
-// mod style;
-mod poll;
+mod style;
 mod template;
 
 use nom::{
@@ -13,7 +13,6 @@ use nom::{
 pub use poll::*;
 pub use script::*;
 use std::{
-    collections::HashMap,
     sync::{
         mpsc::{self},
         Arc, RwLock,
@@ -21,26 +20,13 @@ use std::{
     thread,
 };
 pub use strategy::*;
-
-use crate::value::Value;
-
-// use self::style::handle_styles;
-// use gen_parser::{ParseResult, ParseTarget, Script, Strategy};
+pub use style::*;
 use gen_utils::{
     common::{fs, Source},
     error::{Error, ParseError},
     parser::trim,
 };
-
 pub use template::*;
-
-/// ### Style Value
-pub type StyleVal = HashMap<PropKey, Value>;
-/// ## Style
-/// in gen-ui no difference between style and props,
-/// so we use the same struct to represent them
-/// `<id|class, HashMap<prop, value>>`
-pub type Style = HashMap<String, StyleVal>;
 
 /// # GenUI文件模型
 /// 用于表示一个.gen文件，这个文件会被解析为一个模型

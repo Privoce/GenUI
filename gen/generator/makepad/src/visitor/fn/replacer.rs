@@ -8,9 +8,9 @@ use ra_ap_syntax::{
     AstNode, Edition, SourceFile, TextRange,
 };
 use std::collections::HashMap;
-use syn::{parse_str, ImplItemFn, ItemFn};
+use syn::{parse_str, ImplItemFn};
 
-use crate::{compiler::WidgetPoll, model::PropBinds};
+use crate::compiler::WidgetPoll;
 
 /// 访问双向绑定访问器结构体
 #[allow(unused)]

@@ -2,16 +2,17 @@ use crate::{
     builtin::prop::err_from_to,
     compiler::{Context, WidgetPoll},
     model::{
-        role::ForParent, widget::role::Role, AbsWidget,  PropWidget,
-        Widget, WidgetTemplate, WidgetType,
+        role::ForParent, widget::role::Role, AbsWidget, PropWidget, Widget, WidgetTemplate,
+        WidgetType,
     },
-
-    visitor::{IdClass, StyleVisitor},
 };
 
-use gen_analyzer::{value::Bind, Polls, Script, Style, Template};
+use gen_analyzer::{value::Bind, IdClass, Polls, Script, Style, StyleVisitor, Template};
 use gen_utils::{common::Source, error::Error};
-use std::{collections::HashMap, sync::{Arc, RwLock}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
 pub type PropBinds = HashMap<String, Vec<PropWidget>>;
 /// 模版指针存储池
@@ -29,9 +30,6 @@ pub fn all(
     // [初始化一些必要的池] ----------------------------------------------------------------------------------
     // 用于存储脚本中可能会进行调用的Widget
     let mut widget_poll: WidgetPoll = HashMap::new();
-    // 用于存储需要双向绑定的prop
-    // let mut prop_poll: PropBinds = HashMap::new();
-    // let mut callback_poll: Vec<CallbackWidget> = vec![];
     let mut template_ptrs: TemplatePtrs = vec![];
     // [处理template] --------------------------------------------------------------------------------------
     let template = if let Some(template) = template {
@@ -40,8 +38,6 @@ pub fn all(
             style.as_ref(),
             &mut template_ptrs,
             &mut widget_poll,
-            // &mut prop_poll,
-            // &mut callback_poll,
             &mut vec![],
             0,
             Role::Normal,
@@ -54,15 +50,6 @@ pub fn all(
         None
     };
     // [处理script] ----------------------------------------------------------------------------------------
-    // let script = handle_script(
-    //     script,
-    //     context,
-    //     template.as_ref(),
-    //     prop_poll,
-    //     callback_poll,
-    //     &template_ptrs,
-    //     widget_poll,
-    // )?;
     let script = if let Some(script) = script {
         // template ident
         let ident = template.as_ref().map_or_else(
@@ -90,7 +77,6 @@ pub fn all(
         }
     };
 
-
     // [处理动态生成语法糖需要的代码] ----------------------------------------------------------------------
     let template_ptrs = if template_ptrs.is_empty() {
         None
@@ -117,8 +103,6 @@ fn handle_template(
     styles: Option<&Style>,
     template_ptrs: &mut TemplatePtrs,
     widget_poll: &mut WidgetPoll,
-    // prop_poll: &mut PropBinds,
-    // callback_poll: &mut Vec<CallbackWidget>,
     chain: &mut Vec<IdClass>,
     index: usize,
     father_role: Role,
@@ -133,29 +117,20 @@ fn handle_template(
         mut props,
         callbacks,
         inherits,
+        root,
         children,
         sugar_props,
         parent,
+        binds,
         ..
     } = template;
-    // 是否是根节点，只有根节点没有父节点
-    let root = parent.is_none();
     // [绑定变量处理] ----------------------------------------------------------------------------------------
-    let mut binds = HashMap::new();
-    if let Some(bind_props) = props.as_ref() {
-        for (k, v) in bind_props {
-            if k.is_bind() {
-                let v = v.as_bind()?;
-                match &v {
-                    Bind::Normal(_normal) => {
-                        binds.insert( v.to_string(), k.name.to_string());
-                    },
-                    Bind::For(_) => panic!("for has been remove from bind props, if you see this error, please connect the author"),
-                }
-            }
+    let mut bind_props = HashMap::new();
+    if let Some(binds) = binds.as_ref() {
+        for (k, v) in binds {
+            bind_props.insert(v.as_bind()?.ident(), k.name.to_string());
         }
     }
-
     // [处理语法糖] -----------------------------------------------------------------------------------------
     // [for] ------------------------------------------------------------------------------------------
     let mut role = sugar_props.for_sign.map_or_else(
@@ -169,7 +144,7 @@ fn handle_template(
                         parent,
                         creditial: bind,
                         origin_pos: index,
-                        props: binds.clone(),
+                        props: bind_props.clone(),
                         children: vec![],
                         id: id.to_string(),
                         name: name.to_string(),
@@ -197,40 +172,11 @@ fn handle_template(
     // [当id存在时，说明有可能会进行脚本处理或有绑定变量] ----------------------------------------------------------
     if let Some(id) = id.as_ref() {
         let widget = AbsWidget::new(&name, props.clone());
-        // widget_poll 进行insert
         widget_poll.insert(id.to_string(), widget);
     }
-    // [当使用了as_prop时，说明需要将当前组件作为属性传递给父组件] --------------------------------------------------
-    // 如果当前组件使用了绑定变量，那么需要将绑定变量的值传递给父组件，并且当前组件不能调用自身的事件
-    binds.iter().for_each(|(bind, prop)| {
-        let prop = as_prop.as_ref().map_or_else(
-            || {
-                id.as_ref()
-                    .map(|id| PropWidget::new(id.to_string(), name.to_string(), prop.to_string()))
-            },
-            |as_prop| {
-                let parent = parent.as_ref().unwrap();
-                let mut prop_widget = PropWidget::new(
-                    parent.id.to_string(),
-                    parent.name.to_string(),
-                    prop.to_string(),
-                );
-                prop_widget.as_prop = Some((name.to_string(), as_prop.to_string()));
-                Some(prop_widget)
-            },
-        );
-
-        if let Some(prop) = prop {
-            // prop_poll
-            //     .entry(bind.clone())
-            //     .or_insert_with(Vec::new)
-            //     .push(prop);
-        }
-    });
-
     // [处理callbacks] --------------------------------------------------------------------------------------
-    // 当需要处理callbacks时，我们需要使用LazyVisitor来进行处理, 这里只需要通过相关信息生成Visitor即可
-    if let Some(callbacks) = callbacks {
+    // 如果当前组件使用了as_prop，那么需要将绑定变量的值传递给父组件，并且当前组件不能调用自身的事件
+    if callbacks.is_some() {
         if as_prop.is_some() {
             return Err(err_from_to(
                 "GenUI Component",
@@ -239,26 +185,12 @@ fn handle_template(
             .into());
         }
         // 当组件有callback时，组件必须要有id，否则抛出异常
-        let id = id.as_ref().map_or_else(
-            || {
-                Err(Error::from(err_from_to(
-                    "GenUI Component",
-                    "Makepad Widget, callback widget need id!",
-                )))
-            },
-            |id| Ok(id.to_string()),
-        )?;
-        // let mut fn_callbacks: HashMap<String, CallbackFn> = HashMap::new();
-        // for (key, call_fn) in callbacks {
-        //     let callback = key.name.to_string();
-        //     let func = call_fn.as_fn()?;
-        //     fn_callbacks.insert(func.name.to_string(), CallbackFn::new(func, callback));
-        // }
-        // callback_poll.push(CallbackWidget {
-        //     id,
-        //     name: name.to_string(),
-        //     callbacks: fn_callbacks,
-        // });
+        if id.is_none() {
+            return Err(Error::from(err_from_to(
+                "GenUI Component",
+                "Makepad Widget, callback widget need id!",
+            )));
+        }
     }
     // [处理节点, 属性, 子组件] ------------------------------------------------------------------------------
     if let Some(styles) = styles.as_ref() {
@@ -294,8 +226,6 @@ fn handle_template(
                 styles,
                 template_ptrs,
                 widget_poll,
-                // prop_poll,
-                // callback_poll,
                 chain,
                 index,
                 role.clone(),
@@ -318,7 +248,11 @@ fn handle_template(
         None
     };
 
-    let binds = if binds.is_empty() { None } else { Some(binds) };
+    let binds = if bind_props.is_empty() {
+        None
+    } else {
+        Some(bind_props)
+    };
 
     let widget = WidgetTemplate {
         id,

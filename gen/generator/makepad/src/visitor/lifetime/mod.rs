@@ -1,22 +1,5 @@
-// pub mod input;
-
-use gen_dyn_run::DynProcessor;
-
-use gen_utils::error::{CompilerError, Error};
-// use input::Input;
-use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
-
-use syn::{parse_quote, FnArg, ImplItemFn, ItemFn, Signature, Stmt, Type};
-
-use crate::{
-    compiler::WidgetPoll,
-    model::{
-        traits::{ImplLiveHook, LiveHookType, WidgetMatchEventType},
-        PropBinds,
-    },
-    script::Impls,
-};
+use gen_utils::error::Error;
+use syn::ImplItemFn;
 
 /// # 表示生命周期的访问者
 /// 声明周期需要处理的的代码类似于fn-callback中的代码

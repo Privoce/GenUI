@@ -8,7 +8,6 @@ mod r#fn;
 mod instance;
 mod lifetime;
 mod prop;
-mod style;
 mod sugar;
 
 pub use event::*;
@@ -16,5 +15,4 @@ pub use instance::InstanceLzVisitor;
 pub use lifetime::*;
 pub use prop::PropLzVisitor;
 pub use r#fn::FnLzVisitor;
-pub use style::{IdClass, StyleVisitor};
 pub use sugar::*;

@@ -1,10 +1,9 @@
 use crate::{
     builtin::prop::err_from_to,
-    model::{widget::role::Role,  Widget, WidgetTemplate, WidgetType},
-    visitor::{IdClass, StyleVisitor},
+    model::{widget::role::Role, Widget, WidgetTemplate, WidgetType},
 };
 
-use gen_analyzer::{Style, Template};
+use gen_analyzer::{IdClass, Style, StyleVisitor, Template};
 use gen_utils::{common::Source, error::Error};
 use std::collections::HashMap;
 
@@ -88,7 +87,7 @@ fn handle(
             }
         }
     }
- 
+
     let ty = if !is_define {
         WidgetType::try_from((name, props, root))?
     } else {

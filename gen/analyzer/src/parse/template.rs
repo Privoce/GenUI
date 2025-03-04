@@ -256,10 +256,7 @@ fn parse_tag<'a>(
         let tag_name = template.name.to_string();
         // trim input and check is start with `</tag_name>`
         let input = match parse_end_tag(input, tag_name.to_string()) {
-            Ok((input, _)) => {
-                // return Ok((input, template));
-                input
-            }
+            Ok((input, _)) => input,
             Err(_) => {
                 // has children, parse children
                 let (input, mut children) = many0(parse_tag(Arc::clone(&poll), root))(input)?;
@@ -286,21 +283,13 @@ fn parse_tag<'a>(
                 if preceded(char('<'), parse_tag_name)(input).is_ok()
                     && parse_end_tag_common(input).is_err()
                 {
-                    // return Ok((input, template));
                     input
                 } else {
                     input
                 }
-                // return Ok((input, template));
             }
         };
 
-        // template
-        //     .after_all(Arc::clone(&poll), lazy_binds)
-        //     .map_err(|e| {
-        //         eprintln!("parse_tag error: {:?}", e);
-        //         nom_err!(input, ErrorKind::Fail)
-        //     })?;
         return Ok((input, template));
     }
 }

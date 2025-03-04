@@ -1,9 +1,7 @@
 use std::{collections::HashMap, hash::Hash};
 
-use gen_analyzer::{value::Function, CallbackFn, Props};
-use gen_utils::common::{camel_to_snake, snake_to_camel};
-use proc_macro2::TokenStream;
-use syn::parse_str;
+use gen_analyzer::{CallbackFn, Props};
+use gen_utils::common::camel_to_snake;
 
 use crate::{
     builtin::{BuiltinWidget, BuiltinWidgetType},

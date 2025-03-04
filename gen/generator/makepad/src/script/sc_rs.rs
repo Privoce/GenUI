@@ -71,7 +71,7 @@ impl ScRs {
             }
             others.push(parse_quote!(#prop));
             (twb, Some(live_component))
-        }else{
+        } else {
             (None, None)
         };
 
@@ -97,7 +97,6 @@ impl ScRs {
             // impls.self_impl = impls.self_impl.patch(impl_prop);
         }
 
-        
         let _ = imports.map(|imports| {
             sc_rs.uses = Some(imports.to_token_stream());
         });
@@ -118,8 +117,10 @@ impl ScRs {
         ident: TokenStream,
     ) -> Result<Self, Error> {
         match sc {
-            gen_analyzer::Script::Rs(rs) => Self::handle(rs, ctx, polls, widget_poll,template_ptrs, ident),
-            gen_analyzer::Script::Other { lang, code } => Err(CompilerError::runtime(
+            gen_analyzer::Script::Rs(rs) => {
+                Self::handle(rs, ctx, polls, widget_poll, template_ptrs, ident)
+            }
+            gen_analyzer::Script::Other { lang, .. } => Err(CompilerError::runtime(
                 "Makepad Compiler - Script",
                 &format!("Unsupported script language: {}", lang),
             )
