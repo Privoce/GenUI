@@ -153,7 +153,7 @@ impl Template {
                 PropComponent {
                     id,
                     name,
-                    prop: "for".to_string(),
+                    prop: crate::value::For::SUGAR_SIGN.to_string(),
                     as_prop: self.as_prop.clone(),
                     father_ref: self.parent.clone(),
                 },

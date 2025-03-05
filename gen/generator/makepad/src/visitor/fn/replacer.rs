@@ -195,7 +195,6 @@ pub fn visit_builtin(
                                 .to_string();
 
                             // 检查字段是否在目标列表中
-                            dbg!(&fields, &field_name);
                             if fields.contains(&field_name) || from_widget.is_some(){
                                 let prefix = if let Some((w, _)) = from_widget {
                                     w.to_string()

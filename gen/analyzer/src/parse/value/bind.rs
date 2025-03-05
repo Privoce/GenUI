@@ -108,6 +108,7 @@ pub struct For {
 }
 
 impl For {
+    pub const SUGAR_SIGN: &'static str = "for_sugar_sign";
     pub fn ident(&self) -> String {
         self.iter_ident
             .first()

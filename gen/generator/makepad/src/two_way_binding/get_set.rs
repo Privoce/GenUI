@@ -1,4 +1,4 @@
-use gen_analyzer::Binds;
+use gen_analyzer::{value::For, Binds};
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -42,6 +42,11 @@ impl GetSet {
         let mut bind_and_redraw = TokenStream::new();
         if let Some(binds) = binds.get(field) {
             for widget in binds {
+                // 如果是sugar_sign则跳过
+                if widget.prop == For::SUGAR_SIGN {
+                    continue;
+                }
+
                 let set_prop_fn =
                     parse_str::<TokenStream>(&format!("set_{}", &widget.prop)).unwrap();
                 let set_prop = if let Some(as_prop) = widget.as_prop.as_ref() {
