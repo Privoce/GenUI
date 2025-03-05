@@ -17,7 +17,6 @@ use crate::compiler::WidgetPoll;
 #[derive(Debug)]
 struct BindingReplacer {
     replacements: HashMap<TextRange, String>,
-    // prop_name: String,
     fields: Vec<String>,
 }
 
@@ -25,7 +24,6 @@ impl BindingReplacer {
     fn new(fields: Vec<String>) -> Self {
         Self {
             replacements: HashMap::new(),
-            // prop_name: prop_name.to_string(),
             fields,
         }
     }
@@ -306,37 +304,3 @@ fn remove_holder(input: &str) -> &str {
         input
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use syn::parse_quote;
-
-//     #[test]
-//     fn test_visit_two_way_binding() {
-//         let mut input: ItemFn = parse_quote! {
-//             fn test_function(prop: &mut Props) {
-//                 prop.get_name();
-//                 prop.set_age(cx, 25);
-//                 prop.set_address(42);
-//             }
-//         };
-
-//         let fields = vec!["name".to_string(), "age".to_string(), "address".to_string()];
-
-//         visit_two_way_binding(&mut input, "prop", &fields).unwrap();
-
-//         let expected: ItemFn = parse_quote! {
-//             fn test_function(prop: &mut Props) {
-//                 self.get_name();
-//                 self.set_age(cx, 25);
-//                 self.set_address(cx, 42);
-//             }
-//         };
-
-//         assert_eq!(
-//             input.to_token_stream().to_string(),
-//             expected.to_token_stream().to_string()
-//         );
-//     }
-// }

@@ -6,13 +6,13 @@
 mod event;
 mod r#fn;
 mod instance;
-mod lifetime;
+mod lifecycle;
 mod prop;
 mod sugar;
 
 pub use event::*;
 pub use instance::InstanceLzVisitor;
-pub use lifetime::*;
+pub use lifecycle::*;
 pub use prop::PropLzVisitor;
 pub use r#fn::FnLzVisitor;
 pub use sugar::*;
