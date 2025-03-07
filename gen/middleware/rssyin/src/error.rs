@@ -103,6 +103,7 @@ pub enum AttrMacroError {
     NotEventMacro,
     LifeCycleConflict(String),
     NoLifeCycleMacro,
+    PropMacroBool,
 }
 
 impl Display for AttrMacroError {
@@ -122,6 +123,9 @@ impl Display for AttrMacroError {
             }
             AttrMacroError::MultiInstanceMacro => {
                 f.write_str("GenUI `default_prop!` can only be used once!")
+            }
+            AttrMacroError::PropMacroBool => {
+                f.write_str("GenUI prop macro must be bool value, #[prop(true)] or #[prop(false)]")
             }
         }
     }

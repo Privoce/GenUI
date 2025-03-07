@@ -340,6 +340,7 @@ fn get_children_sugar_binds(children: &Vec<WidgetTemplate>, father: Father) -> T
                     let widget_id = child.id.clone().unwrap_or(format!("{}{}", &name, i));
                     let widget_id_tk = str_to_tk!(&widget_id).unwrap();
                     let set_fn = str_to_tk!(&format!("set_{}", v)).unwrap();
+                    
                     let value = str_to_tk!(&k).unwrap();
 
                     tokens.extend(quote! {

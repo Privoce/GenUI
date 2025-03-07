@@ -3,7 +3,8 @@ mod fields;
 pub use fields::*;
 use gen_analyzer::{Binds, PropComponent};
 use proc_macro2::TokenStream;
-use std::collections::HashMap;
+use rssyin::bridger::PropItem;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     builtin::BuiltinWidget,
@@ -17,7 +18,7 @@ use crate::{
 };
 use gen_utils::error::{CompilerError, Error};
 use quote::{quote, ToTokens};
-use syn::{parse_quote, Attribute, Fields, ItemStruct};
+use syn::{parse_quote, Attribute, Fields, ItemStruct, Stmt};
 
 use super::SugarScript;
 
@@ -189,25 +190,32 @@ impl PropLzVisitor {
     }
 
     /// ## params
-    /// - prop: 使用#[component]修饰的struct
+    /// - component: 使用#[component]修饰的struct
+    /// - props: 使用#[prop(bool)]修饰的struct或enum
     /// - binds: 组件和变量之间的绑定关系
     /// - template_ptrs: 组件指针
     /// - impls: 组件的impl
     pub fn visit(
-        prop: &mut ItemStruct,
+        component: &mut ItemStruct,
+        props: Option<&mut Vec<PropItem>>,
         template_ptrs: &TemplatePtrs,
         impls: &mut Impls,
         binds: Option<&Binds>,
+        others: &mut Vec<Stmt>,
     ) -> Result<(Option<TWBPollBuilder>, LiveComponent), Error> {
+        // [处理props] ------------------------------------------------------------------------------------------
+        if let Some(props) = props {
+            Self::props(props, others)?;
+        }
         // [组件实例初始化] -------------------------------------------------------------------------------------
-        let mut live_component = Self::instance(prop, impls, binds)?;
+        let mut live_component = Self::instance(component, impls, binds)?;
         // [生成get和set方法] -----------------------------------------------------------------------------------
         let component_ident = live_component.ident();
         let twb = if let Some(binds) = binds {
             Self::two_way_binding(
                 component_ident,
                 &mut live_component,
-                prop,
+                component,
                 binds,
                 template_ptrs,
                 impls,
@@ -215,7 +223,116 @@ impl PropLzVisitor {
         } else {
             None
         };
+
         Ok((twb, live_component))
+    }
+
+    /// 处理props
+    /// 这些props是使用#[prop]修饰的struct或enum，我们需要
+    fn props(props: &mut Vec<PropItem>, others: &mut Vec<Stmt>) -> Result<(), Error> {
+        // let mut prop_in_component = PropInComponent {
+        //     rust: HashSet::new(),
+        //     live: HashSet::new(),
+        // };
+
+        for prop_item in props.iter_mut() {
+            match prop_item {
+                PropItem::Struct(prop) => {
+                    // [去除prop宏] -----------------------------------------------------------------------------------
+                    prop.attrs.retain(|attr| !attr.path().is_ident("prop"));
+                    // [遍历每一个字段并增加#[live]宏] ----------------------------------------------------------------
+                    for field in prop.fields.iter_mut() {
+                        handle_field_attrs(field)?;
+                    }
+                    // [添加makepad需要的live宏] -----------------------------------------------------------------------
+                    prop.attrs.push(parse_quote! {
+                        #[derive(Live, LiveHook, LiveRegister)]
+                    });
+                    prop.attrs.push(parse_quote! {
+                        #[live_ignore]
+                    });
+                    // [添加到others中] --------------------------------------------------------------------------------
+                    others.push(parse_quote! {
+                        #prop
+                    });
+                }
+                PropItem::Enum(prop) => {
+                    // [去除prop宏] -----------------------------------------------------------------------------------
+                    prop.attrs.retain(|attr| !attr.path().is_ident("prop"));
+                    // [查找enum上是否使用了#[derive(Default)]来实现Default trait] -----------------------------------
+                    // 如果使用了需要去除Default trait
+                    let mut has_default_trait = false;
+                    let mut derives = prop.attrs.iter().fold(Vec::new(), |mut derives, attr| {
+                        if attr.path().is_ident("derive") {
+                            let _ = attr.parse_nested_meta(|meta| {
+                                if !meta.path.is_ident("Default") {
+                                    derives.push(meta.path.to_token_stream());
+                                } else {
+                                    has_default_trait = true;
+                                }
+                                Ok(())
+                            });
+                        }
+                        derives
+                    });
+                    prop.attrs.retain(|attr| !attr.path().is_ident("derive"));
+                    // [添加makepad需要的live宏] -----------------------------------------------------------------------
+                    derives.extend(vec![
+                        quote! {Live},
+                        quote! {LiveHook},
+                        quote! {LiveRegister},
+                    ]);
+                    prop.attrs.push(parse_quote! {
+                        #[derive(#(#derives),*)]
+                    });
+                    prop.attrs.push(parse_quote! {
+                        #[live_ignore]
+                    });
+                    // [查找字段上使用使用了#[default]来设置默认字段]-------------------------------------------------------
+                    // 如果使用了需要把#[default]改为#[pick], 并生成一个impl Default for 的代码
+                    if has_default_trait {
+                        let mut pure = false;
+                        for var in prop.variants.iter_mut() {
+                            // 表示枚举含有字段例如: Name(String), 这样的需要添加`#[live(Default::default())]` (非纯枚举)
+                            if !var.fields.is_empty() {
+                                var.attrs.push(parse_quote! {
+                                    #[live(Default::default())]
+                                });
+                            } else {
+                                // 纯枚举
+                                if var.attrs.iter().any(|attr| attr.path().is_ident("default")) {
+                                    var.attrs.retain(|attr| !attr.path().is_ident("default"));
+                                    var.attrs.push(parse_quote! {
+                                        #[pick]
+                                    });
+                                    let enum_ident = prop.ident.to_token_stream();
+                                    let var_ident = var.ident.to_token_stream();
+                                    // 控制只生成一次impl Default, 为了以防用户写多个#[default]这不符合rust的语法
+                                    if !pure {
+                                        others.push(parse_quote! {
+                                            impl Default for #enum_ident{
+                                                fn default() -> Self{
+                                                    Self::#var_ident
+                                                }
+                                            }
+                                        });
+                                    }
+                                    pure = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // [添加到others中] --------------------------------------------------------------------------------
+                    others.push(parse_quote! {
+                        #prop
+                    });
+                }
+            }
+        }
+
+        Ok(())
+        // Ok(prop_in_component)
     }
 
     /// 处理所有双向绑定用到的变量和组件之间的关系，生成添加到handle_event中触发组件事件的代码
@@ -276,5 +393,53 @@ impl PropLzVisitor {
                 .into())
             }
         }
+    }
+}
+
+#[allow(unused)]
+#[derive(Debug)]
+struct PropInComponent {
+    rust: HashSet<String>,
+    live: HashSet<String>,
+}
+
+#[cfg(test)]
+mod tt {
+    use quote::ToTokens;
+    use syn::parse_quote;
+
+    #[test]
+    fn t1() {
+        let code = r#"
+        #[prop]
+        #[derive(Default, Debug)]
+        pub enum AProp{
+            #[default]
+            Name
+        }
+        "#;
+
+        let mut prop = syn::parse_str::<syn::ItemEnum>(code).unwrap();
+        prop.attrs.retain(|attr| !attr.path().is_ident("prop"));
+        // [查找enum上是否使用了#[derive(Default)]来实现Default trait] -----------------------------------
+        // 如果使用了需要去除Default trait
+        let derives = prop.attrs.iter().fold(Vec::new(), |mut derives, attr| {
+            if attr.path().is_ident("derive") {
+                let _ = attr.parse_nested_meta(|meta| {
+                    if !meta.path.is_ident("Default") {
+                        derives.push(meta.path.to_token_stream());
+                    }
+                    Ok(())
+                });
+            }
+            derives
+        });
+        prop.attrs.retain(|attr| !attr.path().is_ident("derive"));
+        prop.attrs.push(parse_quote! {
+            #[derive(#(#derives),*)]
+        });
+
+        // [查找字段上使用使用了#[default]来设置默认字段]-------------------------------------------------------
+        dbg!(prop);
     }
 }

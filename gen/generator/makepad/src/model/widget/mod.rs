@@ -334,6 +334,17 @@ mod test_widget {
     }
 
     #[test]
+    fn setting(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/setting_page/start/views/home.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/setting_page",
+            "start/views/home.gen",
+            "src_gen_0/src/views/home.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn root() {
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/quickstart/hello/views/root.gen
         let source = Source::new(

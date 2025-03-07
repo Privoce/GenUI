@@ -29,8 +29,9 @@ pub enum Bind {
 impl Bind {
     pub fn ident(&self) -> String {
         match self {
-            Bind::Normal(n) => n[0].to_string(),
+            Bind::Normal(n) => Ident::fmt_idents(n),
             Bind::For(f) => f.ident(),
+            // Bind::For(f) => f.fmt_item(),
         }
     }
     pub fn is(&self, s: &str) -> bool {
@@ -485,6 +486,9 @@ impl Ident {
         }
 
         alt((dot, holder, ident))(s)
+    }
+    pub fn fmt_idents(idents: &Vec<Ident>) -> String{
+        idents.iter().map(|i| i.to_string()).collect::<String>()
     }
 }
 

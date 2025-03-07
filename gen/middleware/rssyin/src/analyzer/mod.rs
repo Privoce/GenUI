@@ -12,8 +12,8 @@ use syn::{parse_str, ItemEnum, ItemImpl, ItemStruct};
 use utils::*;
 
 use crate::{
-    bridger::{Imports, ScriptBridger},
-    error::Error,
+    bridger::{Imports, PropItem, ScriptBridger},
+    error::{AttrMacroError, Error},
 };
 
 /// # 脚本分析追踪器
@@ -79,10 +79,11 @@ impl ScriptAnalyzer {
         let mut start_index = TextSize::new(0);
         // let end_index = source_file.syntax().text_range().end();
         let mut import_macro = None;
-        let mut prop_struct = None;
+        let mut component_struct = None;
+        let mut props = None;
         let mut event_enum = None;
         let mut default_impl = None;
-        let mut impl_prop = None;
+        let mut impl_component = None;
         let mut others = vec![];
         let mut lazy: Option<Lazy> = None;
 
@@ -121,58 +122,103 @@ impl ScriptAnalyzer {
             }
             // [prop macro] -------------------------------------------------------------------------------------
             if let Some(strt) = ast::Struct::cast(node.clone()) {
-                let is_prop = strt.attrs().any(|attr| {
-                    attr.path()
-                        .map(|path| "component".is_path_segment(&path))
-                        .unwrap_or_default()
-                });
+                let macro_struct = strt
+                    .attrs()
+                    .find_map(|attr| {
+                        attr.path().and_then(|path| {
+                            if "component".is_path_segment(&path) {
+                                Some(AttrMacroStruct::Component)
+                            } else if "prop".is_path_segment(&path) {
+                                Some(AttrMacroStruct::Prop)
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                    .unwrap_or(AttrMacroStruct::None);
 
-                if is_prop {
-                    let item_struct = parse_str::<ItemStruct>(&strt.syntax().text().to_string())
-                        .map_err(|e| Error::Parse(e))?;
-                    let prop_ident = item_struct.ident.to_string();
-                    prop_struct.replace(item_struct);
-                    start_index = strt.syntax().text_range().end();
-                    // [if lazy exists do analyze] --------------------------------------------------------------
-                    if let Some(lazy) = lazy.as_mut() {
-                        lazy.prop_ident.replace(prop_ident);
-                        let lazy_res = lazy.analyze()?;
-                        // [set default impl if exists] ---------------------------------------------------------
-                        lazy_res.default_impl.map(|item_impl| {
-                            default_impl.replace(item_impl);
-                        });
-                        // [set impl prop if exists] ------------------------------------------------------------
-                        lazy_res.impl_prop.map(|item_impl| {
-                            impl_prop.replace(item_impl);
-                        });
-                        // [extend others] ----------------------------------------------------------------------
-                        others.extend(lazy_res.others);
+                match macro_struct {
+                    AttrMacroStruct::Prop => {
+                        let prop_struct = PropItem::Struct(
+                            parse_str::<ItemStruct>(&strt.syntax().text().to_string())
+                                .map_err(|e| Error::Parse(e))?,
+                        );
+
+                        props.get_or_insert_with(|| vec![]).push(prop_struct);
+                        start_index = strt.syntax().text_range().end();
+                        continue;
                     }
-                    continue;
+                    AttrMacroStruct::Component => {
+                        let item_struct =
+                            parse_str::<ItemStruct>(&strt.syntax().text().to_string())
+                                .map_err(|e| Error::Parse(e))?;
+                        let prop_ident = item_struct.ident.to_string();
+                        component_struct.replace(item_struct);
+                        start_index = strt.syntax().text_range().end();
+                        // [if lazy exists do analyze] --------------------------------------------------------------
+                        if let Some(lazy) = lazy.as_mut() {
+                            lazy.prop_ident.replace(prop_ident);
+                            let lazy_res = lazy.analyze()?;
+                            // [set default impl if exists] ---------------------------------------------------------
+                            lazy_res.default_impl.map(|item_impl| {
+                                default_impl.replace(item_impl);
+                            });
+                            // [set impl prop if exists] ------------------------------------------------------------
+                            lazy_res.impl_component.map(|item_impl| {
+                                impl_component.replace(item_impl);
+                            });
+                            // [extend others] ----------------------------------------------------------------------
+                            others.extend(lazy_res.others);
+                        }
+                        continue;
+                    }
+                    AttrMacroStruct::None => {}
                 }
             }
             // [event macro] ------------------------------------------------------------------------------------
             if let Some(enm) = ast::Enum::cast(node.clone()) {
-                let is_event = enm.attrs().any(|attr| {
-                    attr.path()
-                        .map(|path| "event".is_path_segment(&path))
-                        .unwrap_or_default()
-                });
+                let macro_enum = enm
+                    .attrs()
+                    .find_map(|attr| {
+                        attr.path().and_then(|path| {
+                            if "event".is_path_segment(&path) {
+                                Some(AttrMacroEnum::Event)
+                            } else if "prop".is_path_segment(&path) {
+                                Some(AttrMacroEnum::Prop)
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                    .unwrap_or(AttrMacroEnum::None);
 
-                if is_event {
-                    event_enum.replace(
-                        parse_str::<ItemEnum>(&enm.syntax().text().to_string())
-                            .map_err(|e| Error::Parse(e))?,
-                    );
-                    start_index = enm.syntax().text_range().end();
-                    continue;
+                match macro_enum {
+                    AttrMacroEnum::Event => {
+                        event_enum.replace(
+                            parse_str::<ItemEnum>(&enm.syntax().text().to_string())
+                                .map_err(|e| Error::Parse(e))?,
+                        );
+                        start_index = enm.syntax().text_range().end();
+                        continue;
+                    }
+                    AttrMacroEnum::Prop => {
+                        let prop_enum = PropItem::Enum(
+                            parse_str::<ItemEnum>(&enm.syntax().text().to_string())
+                                .map_err(|e| Error::Parse(e))?,
+                        );
+
+                        props.get_or_insert_with(|| vec![]).push(prop_enum);
+                        start_index = enm.syntax().text_range().end();
+                        continue;
+                    }
+                    AttrMacroEnum::None => {}
                 }
             }
             // [default impl or impl] ----------------------------------------------------------------------------
             if let Some(impl_block) = ast::Impl::cast(node.clone()) {
                 start_index = impl_block.syntax().text_range().end();
-                if let Some(prop_struct) = prop_struct.as_ref() {
-                    let prop_ident = prop_struct.ident.to_string();
+                if let Some(component_struct) = component_struct.as_ref() {
+                    let prop_ident = component_struct.ident.to_string();
 
                     // if prop ident == impl_block self ty
                     let is_prop_impl = impl_block
@@ -186,17 +232,31 @@ impl ScriptAnalyzer {
                                 parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
                                     .map_err(|e| Error::Parse(e))?,
                             );
+                        } else {
+                            // 能够确定impl的目标，直接放到others中
+                            others.push(
+                                parse_str::<syn::Stmt>(&impl_block.syntax().text().to_string())
+                                    .map_err(|e| Error::Parse(e))?,
+                            );
+                            start_index = impl_block.syntax().text_range().end();
+                            continue;
                         }
                     } else {
                         // no trait
                         if is_prop_impl {
-                            impl_prop.replace(
+                            impl_component.replace(
                                 parse_str::<ItemImpl>(&impl_block.syntax().text().to_string())
                                     .map_err(|e| Error::Parse(e))?,
                             );
                         } else {
-                            // set into lazy
-                            lazy.get_or_insert(Lazy::default()).impls.push(impl_block);
+                            // // set into lazy
+                            // lazy.get_or_insert(Lazy::default()).impls.push(impl_block);
+                            others.push(
+                                parse_str::<syn::Stmt>(&impl_block.syntax().text().to_string())
+                                    .map_err(|e| Error::Parse(e))?,
+                            );
+                            start_index = impl_block.syntax().text_range().end();
+                            continue;
                         }
                     }
                 } else {
@@ -220,10 +280,11 @@ impl ScriptAnalyzer {
 
         Ok(ScriptBridger {
             imports: import_macro,
-            prop: prop_struct,
+            component: component_struct,
             instance: default_impl,
             event: event_enum,
-            impl_prop,
+            impl_component,
+            props,
             others,
         })
     }
@@ -266,7 +327,7 @@ impl Lazy {
         };
 
         let mut impl_default_prop = None;
-        let mut impl_prop = None;
+        let mut impl_component = None;
         let mut others = vec![];
 
         let Lazy {
@@ -284,11 +345,11 @@ impl Lazy {
             &mut others,
         )?;
         // [impls] -------------------------------------------------------------------------------------------
-        handle(impls, prop_ident, &mut impl_prop, &mut others)?;
+        handle(impls, prop_ident, &mut impl_component, &mut others)?;
 
         Ok(LazyAnalyzeResult {
             default_impl: impl_default_prop,
-            impl_prop,
+            impl_component,
             others,
         })
     }
@@ -296,8 +357,33 @@ impl Lazy {
 
 struct LazyAnalyzeResult {
     default_impl: Option<syn::ItemImpl>,
-    impl_prop: Option<syn::ItemImpl>,
+    impl_component: Option<syn::ItemImpl>,
     others: Vec<syn::Stmt>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+enum AttrMacroStruct {
+    Prop,
+    Component,
+    #[default]
+    None,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+enum AttrMacroEnum {
+    Event,
+    Prop,
+    #[default]
+    None,
+}
+
+fn trim_attr_holder(tk: String) -> Vec<String> {
+    // remove '(' and ')'
+    let tk = tk.trim_matches(|c| c == '(' || c == ')');
+    tk.split(',')
+        .filter(|s| !s.is_empty())
+        .map(|s| s.trim().to_string())
+        .collect()
 }
 
 #[cfg(test)]

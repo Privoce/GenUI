@@ -52,33 +52,34 @@ impl ScRs {
         let ident = template.root_name();
         let ScriptBridger {
             imports,
-            prop,
+            component,
+            mut props,
             mut instance,
             event,
-            impl_prop,
+            impl_component,
             mut others,
         } = ScriptAnalyzer::analyze(&code).map_err(|e| Error::from(e.to_string()))?;
         // [datas] -------------------------------------------------------------------------------------------
         let mut sc_rs = ScRs::default();
-        // 在这里暂时不把impl_prop作为构建的一部分，有助于减少后续对impl_prop内ImplItem的遍历个数
+        // 在这里暂时不把impl_component作为构建的一部分，有助于减少后续对impl_component内ImplItem的遍历个数
         let mut impls = Impls::default(&ident, None);
-        // [prop, two-way-binding, live_component] -----------------------------------------------------------
-        // let mut prop = prop.expect("prop is required in component!");
+        // [component, two-way-binding, live_component] -----------------------------------------------------------
+        // let mut component = component.expect("component is required in component!");
         let polls = polls.read().unwrap();
-        let (twb, live_component) = if let Some(mut prop) = prop {
+        let (twb, live_component) = if let Some(mut component) = component {
             let (twb, live_component) =
-                PropLzVisitor::visit(&mut prop, template_ptrs, &mut impls, polls.binds.as_ref())?;
+                PropLzVisitor::visit(&mut component,props.as_mut() ,template_ptrs, &mut impls, polls.binds.as_ref(), &mut others)?;
             // - [twb token stream for other_stmts] --------------------------------------------------------------
             if let Some(twb) = twb.as_ref() {
                 others.push(parse_quote!(#twb));
             }
             // [instance for default() in others] ----------------------------------------------------------------
-            // here we need to replace the Default trait ident for prop struct
+            // here we need to replace the Default trait ident for component struct
             if let Some(instance) = instance.as_mut() {
-                let deref_prop_ident = prop.ident.to_token_stream();
+                let deref_prop_ident = component.ident.to_token_stream();
                 InstanceLzVisitor::visit(instance, deref_prop_ident, &mut others);
             }
-            others.push(parse_quote!(#prop));
+            others.push(parse_quote!(#component));
             (twb, Some(live_component))
         } else {
             (None, None)
@@ -101,10 +102,10 @@ impl ScRs {
             others.push(parse_quote!(#event));
         }
         // [处理fn-callback] ----------------------------------------------------------------------------------
-        if let Some(impl_prop) = impl_prop {
-            // 消耗impl_prop，所有内部处理的方法都会被放到impls.self_impl中
+        if let Some(impl_component) = impl_component {
+            // 消耗impl_component，所有内部处理的方法都会被放到impls.self_impl中
             FnLzVisitor::visit(
-                impl_prop,
+                impl_component,
                 &mut impls,
                 twb.as_ref(),
                 polls.binds.as_ref(),
@@ -114,7 +115,7 @@ impl ScRs {
             )?;
 
             // // set to impls
-            // impls.self_impl = impls.self_impl.patch(impl_prop);
+            // impls.self_impl = impls.self_impl.patch(impl_component);
         }
         let _ = imports.map(|imports| {
             sc_rs.uses = Some(imports.to_token_stream());

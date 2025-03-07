@@ -1,5 +1,5 @@
 use gen_utils::error::{CompilerError, Error};
-use quote::ToTokens;
+// use quote::ToTokens;
 use syn::{parse_quote, Field};
 
 /// 当前可用使用#[live]的类型, 其他类型使用#[rust]
@@ -56,17 +56,21 @@ pub fn handle_field_attrs(field: &mut Field) -> Result<(), Error> {
     }
 
     // check is in LIVE_TYPES
-    let ty_str = field.ty.to_token_stream().to_string();
+    // let ty_str = field.ty.to_token_stream().to_string();
     // do not use contains, because such as Vec can use #[live], and Vec<i32> can use #[live] too
-    let is_live = LIVE_TYPES.iter().any(|&live| ty_str.contains(live));
-    field.attrs.push(if is_live {
-        parse_quote! {
-            #[live]
-        }
-    } else {
-        parse_quote! {
-            #[rust]
-        }
+    // let is_live = LIVE_TYPES.iter().any(|&live| ty_str.contains(live));
+    // field.attrs.push(if is_live {
+    //     parse_quote! {
+    //         #[live]
+    //     }
+    // } else {
+    //     parse_quote! {
+    //         #[rust]
+    //     }
+    // });
+    // 目前版本设置为全部为#[live]
+    field.attrs.push(parse_quote! {
+        #[live]
     });
 
     Ok(())
