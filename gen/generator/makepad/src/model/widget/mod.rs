@@ -367,6 +367,17 @@ mod test_widget {
     }
 
     #[test]
+    fn nested_wrapper_for(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test/fors/views/nested.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test",
+            "fors/views/nested.gen",
+            "src_gen_0/src/views/nested.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn nested_for() {
         let source = Source::new(
             "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test",

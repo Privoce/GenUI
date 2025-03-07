@@ -203,7 +203,7 @@ impl SugarScript {
             });
             // 获取子组件中涉及到的绑定并生成TokenStream 代码
             if let Some(children) = widget_children {
-                set_props.extend(get_children_sugar_binds(children, &creditial));
+                set_props.extend(get_children_sugar_binds(children, Father::new(&creditial)));
             }
 
             // [nested] ----------------------------------------------------------------------------------------
@@ -287,26 +287,83 @@ pub fn ptr_ident_field(ident: &TokenStream) -> Field {
 }
 
 /// 通过father for来获取子组件中涉及到的绑定并生成TokenStream 代码
-fn get_children_sugar_binds(children: &Vec<WidgetTemplate>, father_for: &For) -> TokenStream {
+/// father: 父组件的ident(id), 用于区分不同的父组件, 如果是None, 就生成`widget_target`
+/// grand_ident: 父组件的父组件的ident
+fn get_children_sugar_binds(children: &Vec<WidgetTemplate>, father: Father) -> TokenStream {
+    fn nested_if_child(
+        children: &Vec<WidgetTemplate>,
+        father_creditial: &For,
+        father_ident: &str,
+        ident: &str,
+        widget_ty: &str,
+    ) -> TokenStream {
+        // 递归子组件 (还有bug， 不能简单extand，因为层级加深了，代码部分需要区分层级)
+
+        get_children_sugar_binds(
+            children,
+            Father::full_args(father_creditial, father_ident, ident, &widget_ty),
+        )
+    }
+
     let mut tokens = TokenStream::new();
     for child in children {
         // 遍历binds过滤出使用了father for的index或item
         if let Some(binds) = child.binds.as_ref() {
+            let Father {
+                creditial,
+                father_ident,
+                ident,
+                widget_ty,
+                has,
+            } = father;
+            // if has child, called_self is: `let #father_ident = #grand_ident.#widget(id!(#widget_id));`
+            let (widget_target, called_father) = if has {
+                let ident = str_to_tk!(ident).unwrap();
+                let father_ident = str_to_tk!(father_ident).unwrap();
+                let widget_ty = str_to_tk!(widget_ty).unwrap();
+
+                (
+                    ident.clone(),
+                    Some(quote! {
+                        let #ident = #father_ident.#widget_ty(id!(#ident));
+                    }),
+                )
+            } else {
+                (quote! {widget_target}, None)
+            };
+
             binds.iter().enumerate().for_each(|(i, (k, v))| {
                 // 比较特殊，需要找v中是否包含father_for的index或item
-                if father_for.is_use_index(&k) || father_for.is_use_item(&k) {
+                if creditial.is_use_index(&k) || creditial.is_use_item(&k) {
                     let name = child.ty.snake_name();
                     let widget = str_to_tk!(&name).unwrap();
-                    let widget_id =
-                        str_to_tk!(&child.id.as_ref().unwrap_or(&format!("{}{}", &name, i)))
-                            .unwrap();
+                    let widget_id = child.id.clone().unwrap_or(format!("{}{}", &name, i));
+                    let widget_id_tk = str_to_tk!(&widget_id).unwrap();
                     let set_fn = str_to_tk!(&format!("set_{}", v)).unwrap();
                     let value = str_to_tk!(&k).unwrap();
+
                     tokens.extend(quote! {
-                        widget_target.#widget(id!(#widget_id)).#set_fn(cx, #value);
+                        #called_father
+                        #widget_target.#widget(id!(#widget_id_tk)).#set_fn(cx, #value);
                     });
+                    // 递归子组件 (还有bug， 不能简单extand，因为层级加深了，代码部分需要区分层级)
+                    if let Some(children) = child.children.as_ref() {
+                        tokens.extend(nested_if_child(
+                            children, creditial, ident, &widget_id, &name,
+                        ));
+                    }
                 }
             })
+        } else {
+            if let Some(children) = child.children.as_ref() {
+                tokens.extend(nested_if_child(
+                    children,
+                    father.creditial,
+                    father.ident,
+                    child.id.as_ref().unwrap(),
+                    &child.ty.snake_name(),
+                ));
+            }
         }
     }
 
@@ -424,4 +481,42 @@ fn single_iter_len(creditial: &For, f_creditial: Option<&For>) -> (TokenStream, 
     }
 
     (len_ident, len_call)
+}
+
+struct Father<'a> {
+    pub creditial: &'a For,
+    /// father's father ident, default is `widget_target`
+    pub father_ident: &'a str,
+    /// ident, which is the component's id
+    pub ident: &'a str,
+    /// widget_ty
+    pub widget_ty: &'a str,
+    /// flag for generate code
+    pub has: bool,
+}
+
+impl<'a> Father<'a> {
+    fn new(creditial: &'a For) -> Self {
+        Self {
+            creditial,
+            father_ident: "widget_target",
+            ident: "widget_target",
+            widget_ty: "",
+            has: false,
+        }
+    }
+    fn full_args(
+        creditial: &'a For,
+        father_ident: &'a str,
+        ident: &'a str,
+        widget_ty: &'a str,
+    ) -> Self {
+        Self {
+            creditial,
+            father_ident,
+            ident,
+            widget_ty,
+            has: true,
+        }
+    }
 }
