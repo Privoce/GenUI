@@ -57,7 +57,7 @@ fn is_response_param(sig: &Signature) -> bool {
         return false;
     }
 
-    if let FnArg::Typed(arg_ty) = &sig.inputs[2] {
+    if let FnArg::Typed(arg_ty) = &sig.inputs[1] {
         if let Type::Reference(ty_ref) = &*arg_ty.ty {
             return ty_ref.mutability.is_none()
                 && ty_ref.elem.to_token_stream().to_string() == "HttpResponse";

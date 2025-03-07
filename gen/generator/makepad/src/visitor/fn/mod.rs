@@ -95,11 +95,12 @@ impl FnLzVisitor {
             let (res, impl_item) = if let ImplItem::Fn(item_fn) = impl_item {
                 // [功能1: 转换普通的callback fn] --------------------------------------------------------------
                 // if events is None, do not handle feature 1
-                let res = if let Some(events) = events {
-                    Self::convert_callback(impls, item_fn, events, ctx, widget_poll)?;
-                    ConvertResult::SelfImpl
+                let mut res = if let Some(events) = events {
+                    Self::convert_callback(impls, item_fn, events, ctx, widget_poll)?
                 } else {
-                    let mut res = ConvertResult::Ignore;
+                    ConvertResult::Ignore
+                };
+                if let ConvertResult::Ignore = res {
                     // [功能3: 生命周期钩子] -------------------------------------------------------------------
                     if let Some(lifecycle) = item_fn
                         .attrs
@@ -124,9 +125,8 @@ impl FnLzVisitor {
                             res = ConvertResult::SpecialEvent(special);
                         }
                     }
+                }
 
-                    res
-                };
                 // [通用转化] --------------------------------------------------------------------------------
                 let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
                 visit_builtin(
@@ -258,7 +258,7 @@ impl FnLzVisitor {
         events: &Events,
         _ctx: &Context,
         widget_poll: &WidgetPoll,
-    ) -> Result<(), Error> {
+    ) -> Result<ConvertResult, Error> {
         // get fn name
         let fn_name = item_fn.sig.ident.to_string();
         // 标记是否需要处理事件，当可以在events中找到至少一次fn_name时，flag为true
@@ -328,9 +328,10 @@ impl FnLzVisitor {
             item_fn.sig.inputs.push(parse_quote!(cx: &mut Cx));
             // 暂时不添加类型引用 --------------------------------------------------------------------------------
             // ❗️[添加类型引用] ---------------------------------------------------------------------------------
+            Ok(ConvertResult::SelfImpl)
+        } else {
+            Ok(ConvertResult::Ignore)
         }
-
-        Ok(())
     }
 
     fn has_or_set_cref(widget: &CallbackComponent, c_refs: &mut HashSet<CRef>) -> () {
@@ -363,4 +364,15 @@ enum ConvertResult {
     LifeCycle(LifeCycle),
     SpecialEvent(SpecialEvent),
     Ignore,
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn try_find() {
+        let a = vec!["a", "b", "c"];
+        let target = vec!["a", "c", "d"];
+        let res = a.iter().find(|x| target.iter().any(|y| *x == y));
+        println!("{:?}", res);
+    }
 }

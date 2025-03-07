@@ -5,6 +5,7 @@ use syn::{parse_quote, Field};
 /// 当前可用使用#[live]的类型, 其他类型使用#[rust]
 /// 之后考虑扩展为只要是字段类型标注了#[live_prop]，就相当于该类型必须要实现Default trait并在组件中可用使用#[live]
 /// 改目标可以通过构建一个gen_macro crate来进行实现
+#[allow(unused)]
 pub const LIVE_TYPES: [&str; 32] = [
     "i32",
     "i64",

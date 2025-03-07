@@ -26,13 +26,20 @@ impl LifeCycleLzVisitor {
         Ok(life_cycle)
     }
     /// # 处理before_mount生命周期
-    /// 目前不需要做任何处理
-    fn before_mount(_item_fn: &mut ImplItemFn) -> Result<(), Error> {
+    fn before_mount(item_fn: &mut ImplItemFn) -> Result<(), Error> {
+        // [去除#[before_mount]宏] --------------------------------------------------
+        item_fn
+            .attrs
+            .retain(|attr| !attr.path().is_ident("before_mount"));
         Ok(())
     }
     /// # 处理mounted生命周期
-    /// 目前不需要做任何处理
-    fn mounted(_item_fn: &mut ImplItemFn) -> Result<(), Error> {
+    fn mounted(item_fn: &mut ImplItemFn) -> Result<(), Error> {
+        // [去除#[mounted]宏] --------------------------------------------------
+        item_fn
+            .attrs
+            .retain(|attr| !attr.path().is_ident("mounted"));
+
         Ok(())
     }
 
