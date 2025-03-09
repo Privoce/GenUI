@@ -6,8 +6,7 @@ use gen_utils::{
 
 pub use ty::{BuiltinWidgetType, InheritWidgetType};
 use widget::{
-    Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup, Root,
-    ScrollBars, Svg, View, Window,
+    Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup, Root, ScrollBars, Svg, Tag, View, Window
 };
 
 use crate::{from_builtin_widget, token::ToLiveDesign};
@@ -40,6 +39,7 @@ pub enum BuiltinWidget {
     Checkbox(Checkbox),
     CheckboxGroup(CheckboxGroup),
     Input(Input),
+    Tag(Tag),
 }
 
 impl BuiltinWidget {
@@ -129,6 +129,7 @@ impl TryFrom<(String, Option<Props>, bool)> for BuiltinWidget {
                 BuiltinWidgetType::ScrollBars => {
                     ScrollBars::try_from(props).and_then(|x| Ok(x.into()))
                 }
+                BuiltinWidgetType::Tag => Tag::try_from(props).and_then(|x| Ok(x.into())),
             })
         }
     }
@@ -152,6 +153,7 @@ impl ToLiveDesign for BuiltinWidget {
             BuiltinWidget::CheckboxGroup(checkbox_group) => checkbox_group.name(),
             BuiltinWidget::Input(input) => input.name(),
             BuiltinWidget::ScrollBars(scroll_bars) => scroll_bars.name(),
+            BuiltinWidget::Tag(tag) => tag.name(),
         }
     }
 
@@ -172,6 +174,7 @@ impl ToLiveDesign for BuiltinWidget {
             BuiltinWidget::CheckboxGroup(checkbox_group) => checkbox_group.props(),
             BuiltinWidget::Input(input) => input.props(),
             BuiltinWidget::ScrollBars(scroll_bars) => scroll_bars.props(),
+            BuiltinWidget::Tag(tag) => tag.props(),
         }
     }
 }
@@ -191,5 +194,6 @@ from_builtin_widget! {
     Checkbox => BuiltinWidget::Checkbox,
     CheckboxGroup => BuiltinWidget::CheckboxGroup,
     Input => BuiltinWidget::Input,
-    ScrollBars => BuiltinWidget::ScrollBars
+    ScrollBars => BuiltinWidget::ScrollBars,
+    Tag => BuiltinWidget::Tag
 }

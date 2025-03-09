@@ -2,7 +2,7 @@ use gen_analyzer::{value::Value, PropKey};
 use gen_utils::err_from_to;
 
 use crate::{
-    builtin::prop::{ImageFit, Layout, LiveDependency, MouseCursor, Prop, Walk, F32, F64},
+    builtin::prop::{ImageFit, Layout, MouseCursor, Prop, Src, Walk, F32, F64},
     from_gen_props, props_to_tokens,
 };
 
@@ -41,7 +41,7 @@ impl TryFrom<(PropKey, Value)> for Props {
             "min_height" => Ok(Props::MinHeight(value.1.as_isize()? as i64)),
             "rotation" => Ok(Props::Rotation(value.1.as_f32()?.into())),
             "event_key" => Ok(Props::EventKey(value.1.as_bool()?)),
-            "src" => Ok(Props::Src(LiveDependency::try_from(&value.1)?)),
+            "src" => Ok(Props::Src(Src::try_from(&value.1)?)),
             _ => {
                 if let Ok(prop) = Walk::try_from(&value) {
                     return Ok(Props::Walk(prop));

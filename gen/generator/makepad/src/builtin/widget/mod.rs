@@ -10,3 +10,4 @@ pub use nav::*;
 pub use utils::*;
 pub use traits::*;
 pub use form::*;
+pub use data::*;

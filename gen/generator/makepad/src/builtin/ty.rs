@@ -6,7 +6,7 @@ use crate::two_way_binding::TwoWayBindImpl;
 
 use super::{
     widget::{
-        Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup, Root, Svg, View, WidgetImpl
+        Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup, Root, Svg, Tag, View, WidgetImpl
     },
     BuiltinWidget,
 };
@@ -32,6 +32,8 @@ pub enum BuiltinWidgetType {
     Checkbox,
     CheckboxGroup,
     Input,
+    // data
+    Tag
 }
 
 impl BuiltinWidgetType {
@@ -52,6 +54,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::RadioGroup => "GRadioGroup",
             BuiltinWidgetType::CheckboxGroup => "GCheckboxGroup",
             BuiltinWidgetType::ScrollBars => "GScrollBars",
+            BuiltinWidgetType::Tag => "GTag",
         }
     }
     pub fn snake_name(&self) -> &str {
@@ -71,6 +74,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::RadioGroup => "gradio_group",
             BuiltinWidgetType::CheckboxGroup => "gcheckbox_group",
             BuiltinWidgetType::ScrollBars => "gscroll_bars",
+            BuiltinWidgetType::Tag => "gtag",
         }
     }
     pub fn event_ty_map(&self) -> Option<HashMap<String, String>> {
@@ -90,6 +94,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::RadioGroup => RadioGroup::event_ty_map(),
             BuiltinWidgetType::CheckboxGroup => CheckboxGroup::event_ty_map(),
             BuiltinWidgetType::ScrollBars => None,
+            BuiltinWidgetType::Tag => Tag::event_ty_map(),
         }
     }
     pub fn twb_event(&self, prop: &str) -> Option<String> {
@@ -109,6 +114,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::RadioGroup => RadioGroup::twb_event(prop),
             BuiltinWidgetType::CheckboxGroup => CheckboxGroup::twb_event(prop),
             BuiltinWidgetType::ScrollBars => None,
+            BuiltinWidgetType::Tag => Tag::twb_event(prop),
         }
     }
 }
@@ -131,6 +137,7 @@ impl From<&BuiltinWidget> for BuiltinWidgetType {
             BuiltinWidget::RadioGroup(_) => BuiltinWidgetType::RadioGroup,
             BuiltinWidget::CheckboxGroup(_) => BuiltinWidgetType::CheckboxGroup,
             BuiltinWidget::ScrollBars(_) => BuiltinWidgetType::ScrollBars,
+            BuiltinWidget::Tag(_) => BuiltinWidgetType::Tag,
         }
     }
 }
@@ -155,6 +162,7 @@ impl FromStr for BuiltinWidgetType {
             "checkbox" => Ok(BuiltinWidgetType::Checkbox),
             "checkbox_group" => Ok(BuiltinWidgetType::CheckboxGroup),
             "input" => Ok(BuiltinWidgetType::Input),
+            "tag" => Ok(BuiltinWidgetType::Tag),
             _ => Err(ConvertError::FromTo {
                 from: s.to_string(),
                 to: "GenUI Builtin Component".to_string(),
