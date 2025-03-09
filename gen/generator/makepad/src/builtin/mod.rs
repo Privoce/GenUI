@@ -6,7 +6,8 @@ use gen_utils::{
 
 pub use ty::{BuiltinWidgetType, InheritWidgetType};
 use widget::{
-    Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup, Root, ScrollBars, Svg, Tag, Toggle, View, Window
+    Button, Checkbox, CheckboxGroup, Collapse, Divider, Image, Input, Label, Link, Loading, Radio,
+    RadioGroup, Root, ScrollBars, Svg, Tag, Toggle, View, Window,
 };
 
 use crate::{from_builtin_widget, token::ToLiveDesign};
@@ -42,6 +43,8 @@ pub enum BuiltinWidget {
     Toggle(Toggle),
     // data
     Tag(Tag),
+    Collapse(Collapse),
+    Loading(Loading),
 }
 
 impl BuiltinWidget {
@@ -133,6 +136,8 @@ impl TryFrom<(String, Option<Props>, bool)> for BuiltinWidget {
                 }
                 BuiltinWidgetType::Tag => Tag::try_from(props).and_then(|x| Ok(x.into())),
                 BuiltinWidgetType::Toggle => Toggle::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::Collapse => Collapse::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::Loading => Loading::try_from(props).and_then(|x| Ok(x.into())),
             })
         }
     }
@@ -158,6 +163,8 @@ impl ToLiveDesign for BuiltinWidget {
             BuiltinWidget::ScrollBars(scroll_bars) => scroll_bars.name(),
             BuiltinWidget::Tag(tag) => tag.name(),
             BuiltinWidget::Toggle(toggle) => toggle.name(),
+            BuiltinWidget::Collapse(collapse) => collapse.name(),
+            BuiltinWidget::Loading(loading) => loading.name(),
         }
     }
 
@@ -180,6 +187,8 @@ impl ToLiveDesign for BuiltinWidget {
             BuiltinWidget::ScrollBars(scroll_bars) => scroll_bars.props(),
             BuiltinWidget::Tag(tag) => tag.props(),
             BuiltinWidget::Toggle(toggle) => toggle.props(),
+            BuiltinWidget::Collapse(collapse) => collapse.props(),
+            BuiltinWidget::Loading(loading) => loading.props(),
         }
     }
 }
@@ -201,5 +210,7 @@ from_builtin_widget! {
     Input => BuiltinWidget::Input,
     ScrollBars => BuiltinWidget::ScrollBars,
     Tag => BuiltinWidget::Tag,
-    Toggle => BuiltinWidget::Toggle
+    Toggle => BuiltinWidget::Toggle,
+    Collapse => BuiltinWidget::Collapse,
+    Loading => BuiltinWidget::Loading
 }

@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{value::Value, PropKey};
-use gen_utils::{
-    common::string::FixedString, err_from_to, error::{ConvertError, Error}
-};
+use gen_utils::{common::string::FixedString, err_from_to, error::Error};
 
 /// ### Style Value
 pub type StyleVal = HashMap<PropKey, Value>;
@@ -211,4 +209,3 @@ pub fn class_value_to_string(class: &Value) -> Result<Vec<String>, Error> {
         _ => Err(err_from_to!("Value" => "String")),
     }
 }
-

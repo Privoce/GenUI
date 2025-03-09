@@ -127,5 +127,7 @@ try_from_value_ref_enum! {
     ImageFit, "ImageFit",
     LinkType, "LinkType",
     GChooseType, "GChooseType",
-    GToggleType, "GToggleType"
+    GToggleType, "GToggleType",
+    GLoadingType, "GLoadingType",
+    Position4, "Position4"
 }

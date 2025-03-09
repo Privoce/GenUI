@@ -17,11 +17,12 @@ mod vec;
 mod walk;
 mod choose;
 mod src;
+mod loading;
 
 pub use align::Align;
 pub use cursor::MouseCursor;
 pub use dep::LiveDependency;
-pub use direction::Direction;
+pub use direction::*;
 pub use event_order::EventOrder;
 pub use flow::Flow;
 pub use image::ImageFit;
@@ -37,3 +38,4 @@ pub use vec::*;
 pub use walk::{Walk, TextWalk};
 pub use choose::*;
 pub use src::Src;
+pub use loading::*;

@@ -6,8 +6,8 @@ use crate::two_way_binding::TwoWayBindImpl;
 
 use super::{
     widget::{
-        Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup,
-        Root, Svg, Tag, Toggle, View, WidgetImpl,
+        Button, Checkbox, CheckboxGroup, Collapse, Divider, Image, Input, Label, Link, Loading,
+        Radio, RadioGroup, Root, Svg, Tag, Toggle, View, WidgetImpl,
     },
     BuiltinWidget,
 };
@@ -36,6 +36,8 @@ pub enum BuiltinWidgetType {
     Toggle,
     // data
     Tag,
+    Collapse,
+    Loading,
 }
 
 impl BuiltinWidgetType {
@@ -58,6 +60,8 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::ScrollBars => "GScrollBars",
             BuiltinWidgetType::Tag => "GTag",
             BuiltinWidgetType::Toggle => "GToggle",
+            BuiltinWidgetType::Collapse => "GCollapse",
+            BuiltinWidgetType::Loading => "GLoading",
         }
     }
     pub fn snake_name(&self) -> &str {
@@ -79,6 +83,8 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::ScrollBars => "gscroll_bars",
             BuiltinWidgetType::Tag => "gtag",
             BuiltinWidgetType::Toggle => "gtoggle",
+            BuiltinWidgetType::Collapse => "gcollapse",
+            BuiltinWidgetType::Loading => "gloading",
         }
     }
     pub fn event_ty_map(&self) -> Option<HashMap<String, String>> {
@@ -100,6 +106,8 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::ScrollBars => None,
             BuiltinWidgetType::Tag => Tag::event_ty_map(),
             BuiltinWidgetType::Toggle => Toggle::event_ty_map(),
+            BuiltinWidgetType::Collapse => Collapse::event_ty_map(),
+            BuiltinWidgetType::Loading => Loading::event_ty_map(),
         }
     }
     pub fn twb_event(&self, prop: &str) -> Option<String> {
@@ -121,6 +129,8 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::ScrollBars => None,
             BuiltinWidgetType::Tag => Tag::twb_event(prop),
             BuiltinWidgetType::Toggle => Toggle::twb_event(prop),
+            BuiltinWidgetType::Collapse => Collapse::twb_event(prop),
+            BuiltinWidgetType::Loading => Loading::twb_event(prop),
         }
     }
 }
@@ -145,6 +155,8 @@ impl From<&BuiltinWidget> for BuiltinWidgetType {
             BuiltinWidget::ScrollBars(_) => BuiltinWidgetType::ScrollBars,
             BuiltinWidget::Tag(_) => BuiltinWidgetType::Tag,
             BuiltinWidget::Toggle(_) => BuiltinWidgetType::Toggle,
+            BuiltinWidget::Collapse(_) => BuiltinWidgetType::Collapse,
+            BuiltinWidget::Loading(_) => BuiltinWidgetType::Loading,
         }
     }
 }
@@ -171,6 +183,8 @@ impl FromStr for BuiltinWidgetType {
             "input" => Ok(BuiltinWidgetType::Input),
             "toggle" => Ok(BuiltinWidgetType::Toggle),
             "tag" => Ok(BuiltinWidgetType::Tag),
+            "collapse" => Ok(BuiltinWidgetType::Collapse),
+            "loading" => Ok(BuiltinWidgetType::Loading),
             _ => Err(ConvertError::FromTo {
                 from: s.to_string(),
                 to: "GenUI Builtin Component".to_string(),
