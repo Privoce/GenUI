@@ -25,7 +25,7 @@ impl TryFrom<(PropKey, Value)> for Props {
                 } else {
                     return Err(err_from_to!(
                         "GenUI Props" => &format!("Makepad GRadioGroup Prop, Invalid Prop: {}", name)
-                    ));
+                    ).to_runtime("Makepad Compiler"));
                 }
             }
         }

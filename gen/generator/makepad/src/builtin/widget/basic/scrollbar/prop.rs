@@ -20,7 +20,7 @@ impl TryFrom<(PropKey, Value)> for Props {
             "scroll_y" => Ok(Props::ShowScrollY(value.1.as_bool()?)),
             _ => Err(err_from_to!(
                 "GenUI Props" => &format!("Makepad GScrollBars Prop, Invalid Prop: {}", value.0.name)
-            )),
+            ).to_runtime("Makepad Compiler")),
         }
     }
 }

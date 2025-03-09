@@ -12,7 +12,7 @@ macro_rules! err_from_to {
 }
 
 #[macro_export]
-macro_rules!  err_from{
+macro_rules! err_from {
     ($E: expr) => {
         gen_utils::error::Error::from($E)
     };

@@ -120,7 +120,7 @@ impl TryFrom<(PropKey, Value)> for Props {
                 } else {
                     return Err(err_from_to!(
                         "GenUI Props" => &format!("Makepad GCheckbox Prop, Invalid Prop: {}", value.0.name)
-                    ));
+                    ).to_runtime("Makepad Compiler"));
                 }
             }
         }

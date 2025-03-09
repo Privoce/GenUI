@@ -1,9 +1,10 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
 use gen_utils::err_from_to;
 
 use crate::{
     builtin::prop::{FromGenProps, Layout, MouseCursor, Prop, Themes, Vec2, Walk, F32},
-    from_gen::MakepadColor, props_to_tokens,
+    from_gen::MakepadColor,
+    props_to_tokens,
 };
 
 // ------------ wait to implement ------------------------------------
@@ -37,7 +38,9 @@ pub enum Props {
 impl FromGenProps for Prop<Props> {
     type Output = Prop<Props>;
 
-    fn from_prop(prop: Option<gen_analyzer::Props>) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+    fn from_prop(
+        prop: Option<gen_analyzer::Props>,
+    ) -> Result<Option<Self::Output>, gen_utils::error::Error> {
         if let Some(props) = prop {
             let mut res = Prop::default();
             for (prop, value) in props {
@@ -85,13 +88,13 @@ impl TryFrom<(PropKey, Value)> for Props {
                 .map_err(|_| {
                     err_from_to!(
                         "GenUI Props" => &format!("Makepad GButton Prop, Invalid Prop: {}", &value.0.name)
-                    )
+                    ).to_runtime("Makepad Compiler")
                 }),
         }
     }
 }
 
-props_to_tokens!{
+props_to_tokens! {
     Props,
     Props::Theme => theme, false,
     Props::BackgroundColor => background_color, false,

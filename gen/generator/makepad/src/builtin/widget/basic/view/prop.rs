@@ -128,7 +128,7 @@ impl TryFrom<(&str, &toml_edit::Value)> for Props {
                 } else {
                     return Err(err_from_to!(
                         "GenUI Props" => &format!("Makepad GView Prop, Invalid Prop: {}", value.0)
-                    ));
+                    ).to_runtime("Makepad Compiler"));
                 }
             }
         }

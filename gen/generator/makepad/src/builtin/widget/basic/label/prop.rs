@@ -71,7 +71,7 @@ impl TryFrom<(PropKey, Value)> for Props {
             "grab_key_focus" => Ok(Props::GrabKeyFocus(value.1.as_bool()?)),
             _ => Err(err_from_to!(
                 "GenUI Props" => &format!("Makepad GLabel Prop, Invalid Prop: {}", &value.0.name)
-            )),
+            ).to_runtime("Makepad Compiler")),
         }
     }
 }

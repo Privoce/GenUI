@@ -51,7 +51,7 @@ impl TryFrom<(PropKey, Value)> for Props {
                 } else {
                     return Err(err_from_to!(
                         "GenUI Props" => &format!("Makepad Window Prop, Invalid Prop: {}", name)
-                    ));
+                    ).to_runtime("Makepad Compiler"));
                 }
             }
         }

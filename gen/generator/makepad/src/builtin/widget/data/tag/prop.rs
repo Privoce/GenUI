@@ -3,7 +3,8 @@ use gen_utils::{err_from_to, error::Error};
 
 use crate::{
     builtin::prop::{
-        Align, DVec2, Flow, Layout, LiveDependency, Margin, MouseCursor, Padding, Prop, Size, TextWalk, Themes, Vec2, Walk, F32, F64
+        Align, DVec2, Flow, Layout, LiveDependency, Margin, MouseCursor, Padding, Prop, Size,
+        TextWalk, Themes, Vec2, Walk, F32, F64,
     },
     from_gen::MakepadColor,
     from_gen_props, props_to_tokens,
@@ -128,10 +129,14 @@ impl TryFrom<(PropKey, Value)> for Props {
             "icon_width" => Ok(Props::IconWalk(Walk::Width(Size::try_from(&value.1)?))),
             "icon_margin" => Ok(Props::IconWalk(Walk::Margin(Margin::try_from(&value.1)?))),
             "icon_abs_pos" => Ok(Props::IconWalk(Walk::AbsPos(DVec2::try_from(&value.1)?))),
-            "icon_scroll" => Ok(Props::IconLayout(Layout::Scroll(DVec2::try_from(&value.1)?))),
+            "icon_scroll" => Ok(Props::IconLayout(Layout::Scroll(DVec2::try_from(
+                &value.1,
+            )?))),
             "icon_clip_x" => Ok(Props::IconLayout(Layout::ClipX(value.1.as_bool()?))),
             "icon_clip_y" => Ok(Props::IconLayout(Layout::ClipY(value.1.as_bool()?))),
-            "icon_padding" => Ok(Props::IconLayout(Layout::Padding(Padding::try_from(&value.1)?))),
+            "icon_padding" => Ok(Props::IconLayout(Layout::Padding(Padding::try_from(
+                &value.1,
+            )?))),
             "icon_align" => Ok(Props::IconLayout(Layout::Align(Align::try_from(&value.1)?))),
             "icon_flow" => Ok(Props::IconLayout(Layout::Flow(Flow::try_from(&value.1)?))),
             "icon_spacing" => Ok(Props::IconLayout(Layout::Spacing(value.1.as_f64()?.into()))),
@@ -144,7 +149,7 @@ impl TryFrom<(PropKey, Value)> for Props {
                     return Ok(Props::Layout(layout));
                 } else {
                     return Err(
-                        err_from_to!("GenUI Props" => &format!("Makepad GTag Prop, Invalid Prop: {}", &value.0.name)),
+                        err_from_to!("GenUI Props" => &format!("Makepad GTag Prop, Invalid Prop: {}", &value.0.name)).to_runtime("Makepad Compiler"),
                     );
                 }
             }

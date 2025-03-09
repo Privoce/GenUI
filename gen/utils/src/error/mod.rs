@@ -1,10 +1,10 @@
 mod convert;
 mod env;
+mod macros;
 mod parse;
 mod strategy;
 mod style;
 mod tag;
-mod macros;
 
 pub use convert::*;
 pub use env::EnvError;
@@ -33,6 +33,42 @@ impl Error {
         match self {
             Error::Compiler(CompilerError::Runtime { .. }) => true,
             _ => false,
+        }
+    }
+    pub fn to_runtime(self, target: &str) -> Self {
+        let target = target.to_string();
+        match self {
+            Error::Parse(parse_error) => {
+                let msg = parse_error.to_string();
+                Self::Compiler(CompilerError::Runtime { target, msg })
+            }
+            Error::Convert(convert_error) => {
+                let msg = convert_error.to_string();
+                Self::Compiler(CompilerError::Runtime { target, msg })
+            }
+            Error::FromDynError(msg) => {
+                let msg = msg.to_string();
+                Self::Compiler(CompilerError::Runtime { target, msg })
+            }
+            Error::Env(env_error) => {
+                let msg = env_error.to_string();
+                Self::Compiler(CompilerError::Runtime { target, msg })
+            }
+            Error::Compiler(compiler_error) => match compiler_error {
+                CompilerError::EnvCheck { .. } => Self::Compiler(CompilerError::Runtime {
+                    target,
+                    msg: compiler_error.to_string(),
+                }),
+                CompilerError::Runtime { .. } => Self::Compiler(compiler_error),
+                CompilerError::Conf(_) => {
+                    let msg = compiler_error.to_string();
+                    Self::Compiler(CompilerError::Runtime { target, msg })
+                }
+            },
+            Error::Fs(fs_error) => {
+                let msg = fs_error.to_string();
+                Self::Compiler(CompilerError::Runtime { target, msg })
+            }
         }
     }
 }
