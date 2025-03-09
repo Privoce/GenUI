@@ -160,7 +160,7 @@ dependencies = [
 name = "gen_analyzer"
 version = "0.1.0"
 dependencies = [
- "gen_utils",
+ "gen_utils 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom",
  "serde_json",
 ]
@@ -169,7 +169,7 @@ dependencies = [
 name = "gen_dyn_run"
 version = "0.1.0"
 dependencies = [
- "gen_utils",
+ "gen_utils 0.1.1",
  "libloading",
 ]
 
@@ -195,7 +195,7 @@ dependencies = [
 name = "gen_plugin"
 version = "0.1.0"
 dependencies = [
- "gen_utils",
+ "gen_utils 0.1.1",
  "proc-macro2",
  "quote",
  "syn",
@@ -209,6 +209,22 @@ version = "0.1.0"
 [[package]]
 name = "gen_utils"
 version = "0.1.1"
+dependencies = [
+ "chrono",
+ "nom",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "toml_edit",
+ "ulid",
+ "walkdir",
+]
+
+[[package]]
+name = "gen_utils"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48aaf411ec3e4ae02679ba3f3ac9d8461ea8e3ebfe08f54599b970bfe509c281"
 dependencies = [
  "chrono",
  "nom",
@@ -349,7 +365,7 @@ dependencies = [
  "gen_analyzer",
  "gen_dyn_run",
  "gen_plugin",
- "gen_utils",
+ "gen_utils 0.1.1",
  "lazy_static",
  "proc-macro2",
  "quote",
@@ -670,7 +686,7 @@ name = "tests"
 version = "0.1.0"
 dependencies = [
  "gen_analyzer",
- "gen_utils",
+ "gen_utils 0.1.1",
  "quote",
  "rssyin",
  "syn",
