@@ -2,7 +2,7 @@
   - [x] for
   - [ ] if_else_if_else
 - [ ] Integrate all Builtin Components
-- [ ] Optimize static compilation
+- [x] Optimize static compilation
 - [ ] Powerful Scss like `<style>`
 - [ ] Self-Close component tag
 - [ ] Powerful Bind

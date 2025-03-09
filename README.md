@@ -26,7 +26,10 @@
 **GenUI is an innovative SFP front-end framework developed in the Rust language, was originally inspired by Vue3 and Makepad. Intended to help users write front-end projects using Rust more efficiently.**
 
 > [!IMPORTANT] 
-> The current work branch is `main`
+>
+> The stable branch is `main`
+> 
+> The current work branch is `dev_${version}`
 
 ## How to learn
 
@@ -52,13 +55,14 @@ If you have any questions or need further assistance, please feel free to consul
   - [x] component definition
   - [x] event definition
   - [x] network (http)
+  - [x] lifecycle
 - [x] Integrate Basic GenUI Builtin Components
 - [x] Ract Cli support
 - [ ] Built-in syntax sugar
   - [x] for
   - [ ] if_else_if_else
-- [ ] Integrate all Builtin Components
-- [ ] Optimize static compilation
+- [ ] Integrate all Builtin Components (40%)
+- [x] Optimize static compilation
 - [ ] Powerful Scss like `<style>`
 - [ ] Self-Close component tag
 - [ ] Powerful Bind

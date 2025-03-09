@@ -1,7 +1,0 @@
-Cargo.toml
-src/main.rs
-.gitignore
-Cargo.lock
-target
-.gen_cache
-.gen_ignore
