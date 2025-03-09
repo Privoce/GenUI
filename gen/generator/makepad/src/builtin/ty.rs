@@ -6,7 +6,7 @@ use crate::two_way_binding::TwoWayBindImpl;
 
 use super::{
     widget::{
-        Button, Checkbox, CheckboxGroup, Collapse, Divider, DropDown, Image, Input, Label, Link, Loading, Popup, Radio, RadioGroup, Root, Svg, Tag, Toggle, View, WidgetImpl
+        Button, Checkbox, CheckboxGroup, Collapse, Divider, DropDown, Image, Input, Label, Link, Loading, Popup, PopupContainer, Radio, RadioGroup, Root, Svg, Tag, Toggle, View, WidgetImpl
     },
     BuiltinWidget,
 };
@@ -40,6 +40,7 @@ pub enum BuiltinWidgetType {
     // feedback
     DropDown,
     Popup,
+    PopupContainer,
     Drawer,
     Dialog,
     ToolTip
@@ -69,6 +70,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Loading => "GLoading",
             BuiltinWidgetType::DropDown => "GDropDown",
             BuiltinWidgetType::Popup => "GPopup",
+            BuiltinWidgetType::PopupContainer => "GPopupContainer",
             BuiltinWidgetType::Drawer => "GDrawer",
             BuiltinWidgetType::Dialog => "GDialog",
             BuiltinWidgetType::ToolTip => "GToolTip",
@@ -97,6 +99,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Loading => "gloading",
             BuiltinWidgetType::DropDown => "gdrop_down",
             BuiltinWidgetType::Popup => "gpopup",
+            BuiltinWidgetType::PopupContainer => "gpopup_container",
             BuiltinWidgetType::Drawer => "gpopup",
             BuiltinWidgetType::Dialog => "gpopup",
             BuiltinWidgetType::ToolTip => "gpopup",
@@ -126,6 +129,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Loading => Loading::event_ty_map(),
             BuiltinWidgetType::DropDown => DropDown::event_ty_map(),
             BuiltinWidgetType::Popup => None,
+            BuiltinWidgetType::PopupContainer => None,
             BuiltinWidgetType::Drawer => None,
             BuiltinWidgetType::Dialog => None,
             BuiltinWidgetType::ToolTip => None,
@@ -154,6 +158,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Loading => Loading::twb_event(prop),
             BuiltinWidgetType::DropDown => DropDown::twb_event(prop),
             BuiltinWidgetType::Popup => Popup::twb_event(prop),
+            BuiltinWidgetType::PopupContainer => PopupContainer::twb_event(prop),
             BuiltinWidgetType::Drawer => Popup::twb_event(prop),
             BuiltinWidgetType::Dialog => Popup::twb_event(prop),
             BuiltinWidgetType::ToolTip => Popup::twb_event(prop),
@@ -185,6 +190,7 @@ impl From<&BuiltinWidget> for BuiltinWidgetType {
             BuiltinWidget::Loading(_) => BuiltinWidgetType::Loading,
             BuiltinWidget::DropDown(_) => BuiltinWidgetType::DropDown,
             BuiltinWidget::Popup(_) => BuiltinWidgetType::Popup,
+            BuiltinWidget::PopupContainer(_) => BuiltinWidgetType::PopupContainer,
             BuiltinWidget::Drawer(_) => BuiltinWidgetType::Drawer,
             BuiltinWidget::Dialog(_) => BuiltinWidgetType::Dialog,
             BuiltinWidget::ToolTip(_) => BuiltinWidgetType::ToolTip,
@@ -218,6 +224,7 @@ impl FromStr for BuiltinWidgetType {
             "loading" => Ok(BuiltinWidgetType::Loading),
             "drop_down" => Ok(BuiltinWidgetType::DropDown),
             "popup" => Ok(BuiltinWidgetType::Popup),
+            "popup_container" => Ok(BuiltinWidgetType::PopupContainer),
             "drawer" => Ok(BuiltinWidgetType::Drawer),
             "dialog" => Ok(BuiltinWidgetType::Dialog),
             "tool_tip" => Ok(BuiltinWidgetType::ToolTip),
