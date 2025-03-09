@@ -1,9 +1,9 @@
-use gen_analyzer::{PropKey, value::Value};
-use gen_utils::error::Error;
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::{err_from_to, error::Error};
 
 use crate::{
     builtin::prop::{
-        err_from_to, value_bool, EventOrder, FromGenProps, Layout, MouseCursor, Prop, Themes, Vec2,
+        value_bool, EventOrder, FromGenProps, Layout, MouseCursor, Prop, Themes, Vec2,
         ViewOptimize, Walk, F32, F64,
     },
     from_gen::MakepadColor,
@@ -121,17 +121,14 @@ impl TryFrom<(&str, &toml_edit::Value)> for Props {
             "event_key" => Ok(Props::EventKey(value_bool(value.1)?)),
             "block_child_events" => Ok(Props::BlockChildEvents(value_bool(value.1)?)),
             _ => {
-                
                 if let Ok(prop) = Walk::try_from(value) {
                     return Ok(Props::Walk(prop));
                 } else if let Ok(prop) = Layout::try_from(value) {
                     return Ok(Props::Layout(prop));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad GView Prop, Invalid Prop: {}", value.0),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad GView Prop, Invalid Prop: {}", value.0)
+                    ));
                 }
             }
         }
@@ -141,7 +138,9 @@ impl TryFrom<(&str, &toml_edit::Value)> for Props {
 impl FromGenProps for Prop<Props> {
     type Output = Prop<Props>;
 
-    fn from_prop(prop: Option<gen_analyzer::Props>) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+    fn from_prop(
+        prop: Option<gen_analyzer::Props>,
+    ) -> Result<Option<Self::Output>, gen_utils::error::Error> {
         if let Some(props) = prop {
             let mut res = Prop::default();
             for (prop, value) in props {
@@ -202,11 +201,9 @@ impl TryFrom<(PropKey, Value)> for Props {
                 } else if let Ok(prop) = Layout::try_from(&value) {
                     return Ok(Props::Layout(prop));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad GView Prop, Invalid Prop: {}", &value.0.name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad GView Prop, Invalid Prop: {}", &value.0.name)
+                    ));
                 }
             }
         }

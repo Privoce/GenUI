@@ -1,10 +1,7 @@
 use gen_analyzer::Template;
-use gen_utils::{common::Source, error::Error};
+use gen_utils::{common::Source, err_from_to, error::Error};
 
-use crate::{
-    builtin::prop::err_from_to,
-    model::{widget::role::Role, Widget, WidgetTemplate, WidgetType},
-};
+use crate::model::{widget::role::Role, Widget, WidgetTemplate, WidgetType};
 
 /// 处理单个模板<template>节点
 pub fn single_template(
@@ -51,19 +48,15 @@ fn handle(template: Template) -> Result<WidgetTemplate, Error> {
     } = template;
     // [处理callbacks] ------------------------------------------------------------------------------------
     if callbacks.is_some() {
-        return Err(err_from_to(
-            "GenUI Component",
-            "Makepad Widget, Static Widget has no callbacks",
-        )
-        .into());
+        return Err(err_from_to!(
+            "GenUI Component" => "Makepad Widget, Static Widget has no callbacks"
+        ));
     }
     // [处理inherits] --------------------------------------------------------------------------------------
     if inherits.is_some() {
-        return Err(err_from_to(
-            "GenUI Component",
-            "Makepad Widget, Static Widget has no inherits",
-        )
-        .into());
+        return Err(err_from_to!(
+            "GenUI Component" =>  "Makepad Widget, Static Widget has no inherits"
+        ));
     }
     // [处理节点, 属性, 子组件] ------------------------------------------------------------------------------
     let ty = if !is_define {

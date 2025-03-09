@@ -1,9 +1,8 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
 use crate::{
-    builtin::prop::{
-        err_from_to, Layout, LiveDependency, MouseCursor, Prop, Themes, Walk, F32, F64,
-    },
+    builtin::prop::{Layout, LiveDependency, MouseCursor, Prop, Themes, Walk, F32, F64},
     from_gen::MakepadColor,
     from_gen_props, props_to_tokens,
 };
@@ -62,11 +61,9 @@ impl TryFrom<(PropKey, Value)> for Props {
                 } else if let Ok(prop) = Layout::try_from(&value) {
                     return Ok(Props::Layout(prop));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad Image Prop, Invalid Prop: {}", name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad Image Prop, Invalid Prop: {}", name)
+                    ));
                 }
             }
         }

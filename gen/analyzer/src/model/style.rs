@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use crate::{value::Value, PropKey};
 use gen_utils::{
-    common::string::FixedString,
-    error::{ConvertError, Error},
+    common::string::FixedString, err_from_to, error::{ConvertError, Error}
 };
 
 /// ### Style Value
@@ -200,7 +199,7 @@ pub fn class_value_to_string(class: &Value) -> Result<Vec<String>, Error> {
                             .unwrap(),
                     );
                 } else {
-                    return Err(err_from_to("Value", "String").into());
+                    return Err(err_from_to!("Value" => "String"));
                 }
             }
             Ok(leaf_vec)
@@ -209,13 +208,7 @@ pub fn class_value_to_string(class: &Value) -> Result<Vec<String>, Error> {
             .leaf()
             .map(|leaf| format!(".{}", leaf.to_string()))
             .unwrap()]),
-        _ => Err(err_from_to("Value", "String").into()),
+        _ => Err(err_from_to!("Value" => "String")),
     }
 }
 
-pub fn err_from_to(from: &str, to: &str) -> ConvertError {
-    ConvertError::FromTo {
-        from: from.to_string(),
-        to: to.to_string(),
-    }
-}

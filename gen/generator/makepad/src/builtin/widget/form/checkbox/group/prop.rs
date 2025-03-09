@@ -1,9 +1,7 @@
 use crate::builtin::prop::{Prop, VecValue, I32};
-use crate::{
-    builtin::{prop::err_from_to, widget::ViewProps},
-    from_gen_props, props_to_tokens,
-};
-use gen_analyzer::{PropKey, value::Value};
+use crate::{builtin::widget::ViewProps, from_gen_props, props_to_tokens};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
 #[derive(Debug, Clone)]
 pub enum Props {
@@ -25,11 +23,9 @@ impl TryFrom<(PropKey, Value)> for Props {
                 if let Ok(p) = ViewProps::try_from(value) {
                     return Ok(Props::DerefWidget(p));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad GRadioGroup Prop, Invalid Prop: {}", name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad GRadioGroup Prop, Invalid Prop: {}", name)
+                    ));
                 }
             }
         }

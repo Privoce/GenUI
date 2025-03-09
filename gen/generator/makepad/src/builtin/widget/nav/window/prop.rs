@@ -1,10 +1,10 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 use gen_utils::error::Error;
 use toml_edit::Item;
 
 use crate::builtin::prop::{
-    err_from_to, value_bool, DVec2, Flow, GOsType, Layout, Prop, Size, Walk,
-    WindowSize,
+    value_bool, DVec2, Flow, GOsType, Layout, Prop, Size, Walk, WindowSize,
 };
 use crate::builtin::widget::basic::ViewProps;
 use crate::{from_gen_props, props_to_tokens};
@@ -49,11 +49,9 @@ impl TryFrom<(PropKey, Value)> for Props {
                 if let Ok(p) = ViewProps::try_from(value) {
                     return Ok(Props::DerefWidget(p));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad Window Prop, Invalid Prop: {}", name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad Window Prop, Invalid Prop: {}", name)
+                    ));
                 }
             }
         }
@@ -115,7 +113,7 @@ impl TryFrom<&Item> for Prop<Props> {
                         if let Ok(p) = ViewProps::try_from((key, value)) {
                             let _ = res.push(Props::DerefWidget(p));
                         } else {
-                            return Err(err_from_to("toml::Item", "WindowProps").into());
+                            return Err(err_from_to!("toml::Item" => "WindowProps"));
                         }
                     }
                 }
@@ -123,7 +121,7 @@ impl TryFrom<&Item> for Prop<Props> {
             return Ok(res);
         }
 
-        Err(err_from_to("toml::Item", "WindowProps").into())
+        Err(err_from_to!("toml::Item" => "WindowProps"))
     }
 }
 

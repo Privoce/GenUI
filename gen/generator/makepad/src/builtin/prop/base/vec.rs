@@ -1,13 +1,12 @@
 use std::{num::ParseFloatError, str::FromStr};
 
 use gen_analyzer::value::{Struct, Value};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 use proc_macro2::TokenStream;
 
 use crate::{
-    builtin::prop::{err_from_to, utils::convert_str_to_vec},
-    struct_float_dvec_to_tokens, struct_float_to_tokens, try_from_f64_vec,
-    try_from_value_ref_struct,
+    builtin::prop::utils::convert_str_to_vec, struct_float_dvec_to_tokens, struct_float_to_tokens,
+    try_from_f64_vec, try_from_value_ref_struct,
 };
 
 #[derive(Debug, Clone)]
@@ -31,7 +30,7 @@ where
 
             Ok(VecValue(values))
         } else {
-            return Err(err_from_to("GenUI Value", "VecValue<T>").into());
+            return Err(err_from_to!("GenUI Value" => "VecValue<T>"));
         }
     }
 }
@@ -74,7 +73,7 @@ impl TryFrom<&toml_edit::Value> for DVec2 {
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         let table = value
             .as_inline_table()
-            .ok_or_else(|| err_from_to("toml_edit::Value", "DVec2"))?;
+            .ok_or_else(|| err_from_to!("toml_edit::Value" => "DVec2"))?;
         let x = table
             .get("x")
             .and_then(|v| v.as_float())
@@ -99,9 +98,7 @@ impl TryFrom<&Struct> for DVec2 {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 2 {
-                return Err(
-                    err_from_to("Struct", "DVec2, params number incorrect need [1, 2]").into(),
-                );
+                return Err(err_from_to!("Struct"=> "DVec2, params number incorrect need [1, 2]"));
             }
             let mut x = None;
             let mut y = None;
@@ -119,7 +116,7 @@ impl TryFrom<&Struct> for DVec2 {
                 y: y.unwrap_or_default(),
             });
         }
-        Err(err_from_to("Struct", "DVec2").into())
+        Err(err_from_to!("Struct"=> "DVec2"))
     }
 }
 
@@ -136,7 +133,7 @@ impl TryFrom<Vec<f64>> for DVec2 {
                 x: value[0],
                 y: value[1],
             }),
-            _ => Err(err_from_to("str", "DVec2, params number incorrect need 1 or 2").into()),
+            _ => Err(err_from_to!("str" => "DVec2, params number incorrect need 1 or 2")),
         }
     }
 }
@@ -161,9 +158,7 @@ impl TryFrom<&Struct> for DVec3 {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 3 {
-                return Err(
-                    err_from_to("Struct", "DVec3, params number incorrect need [1, 3]").into(),
-                );
+                return Err(err_from_to!("Struct" => "DVec3, params number incorrect need [1, 3]"));
             }
 
             let mut x = None;
@@ -186,7 +181,7 @@ impl TryFrom<&Struct> for DVec3 {
             });
         }
 
-        Err(err_from_to("Struct", "DVec3").into())
+        Err(err_from_to!("Struct" => "DVec3"))
     }
 }
 
@@ -205,7 +200,7 @@ impl TryFrom<Vec<f64>> for DVec3 {
                 y: value[1],
                 z: value[2],
             }),
-            _ => Err(err_from_to("str", "DVec3, params number incorrect need 1 or 3").into()),
+            _ => Err(err_from_to!("str" => "DVec3, params number incorrect need 1 or 3")),
         }
     }
 }
@@ -231,9 +226,7 @@ impl TryFrom<&Struct> for DVec4 {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 4 {
-                return Err(
-                    err_from_to("Struct", "DVec4, params number incorrect need [1, 4]").into(),
-                );
+                return Err(err_from_to!("Struct" => "DVec4, params number incorrect need [1, 4]"));
             }
 
             let mut x = None;
@@ -259,7 +252,7 @@ impl TryFrom<&Struct> for DVec4 {
             });
         }
 
-        Err(err_from_to("Struct", "DVec4").into())
+        Err(err_from_to!("Struct" => "DVec4"))
     }
 }
 
@@ -280,7 +273,7 @@ impl TryFrom<Vec<f64>> for DVec4 {
                 z: value[2],
                 w: value[3],
             }),
-            _ => Err(err_from_to("str", "DVec4, params number incorrect need 1 or 4").into()),
+            _ => Err(err_from_to!("str" => "DVec4, params number incorrect need 1 or 4")),
         }
     }
 }
@@ -306,7 +299,7 @@ impl TryFrom<&toml_edit::Value> for Vec2 {
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         let table = value
             .as_inline_table()
-            .ok_or_else(|| err_from_to("toml_edit::Item", "Vec2"))?;
+            .ok_or_else(|| err_from_to!("toml_edit::Item" => "Vec2"))?;
 
         let x = table
             .get("x")
@@ -332,9 +325,7 @@ impl TryFrom<&Struct> for Vec2 {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 2 {
-                return Err(
-                    err_from_to("Struct", "Vec2, params number incorrect need [1, 2]").into(),
-                );
+                return Err(err_from_to!("Struct" => "Vec2, params number incorrect need [1, 2]"));
             }
             let mut x = None;
             let mut y = None;
@@ -352,7 +343,7 @@ impl TryFrom<&Struct> for Vec2 {
                 y: y.unwrap_or_default(),
             });
         }
-        Err(err_from_to("Struct", "Vec2").into())
+        Err(err_from_to!("Struct" => "Vec2"))
     }
 }
 
@@ -369,7 +360,7 @@ impl TryFrom<Vec<f32>> for Vec2 {
                 x: value[0],
                 y: value[1],
             }),
-            _ => Err(err_from_to("str", "Vec2, params number incorrect need 1 or 2").into()),
+            _ => Err(err_from_to!("str" => "Vec2, params number incorrect need 1 or 2")),
         }
     }
 }
@@ -396,7 +387,7 @@ impl TryFrom<Vec<f32>> for Vec3 {
                 y: value[1],
                 z: value[2],
             }),
-            _ => Err(err_from_to("str", "Vec3, params number incorrect need 1 or 3").into()),
+            _ => Err(err_from_to!("str" => "Vec3, params number incorrect need 1 or 3")),
         }
     }
 }
@@ -414,9 +405,7 @@ impl TryFrom<&Struct> for Vec3 {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 3 {
-                return Err(
-                    err_from_to("Struct", "Vec3, params number incorrect need [1, 3]").into(),
-                );
+                return Err(err_from_to!("Struct" => "Vec3, params number incorrect need [1, 3]"));
             }
 
             let mut x = None;
@@ -439,7 +428,7 @@ impl TryFrom<&Struct> for Vec3 {
             });
         }
 
-        Err(err_from_to("Struct", "Vec3").into())
+        Err(err_from_to!("Struct" => "Vec3"))
     }
 }
 
@@ -468,7 +457,7 @@ impl TryFrom<Vec<f32>> for Vec4 {
                 z: value[2],
                 w: value[3],
             }),
-            _ => Err(err_from_to("str", "Vec4, params number incorrect need 1 or 4").into()),
+            _ => Err(err_from_to!("str" => "Vec4, params number incorrect need 1 or 4")),
         }
     }
 }
@@ -486,9 +475,7 @@ impl TryFrom<&Struct> for Vec4 {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 4 {
-                return Err(
-                    err_from_to("Struct", "Vec4, params number incorrect need [1, 4]").into(),
-                );
+                return Err(err_from_to!("Struct" => "Vec4, params number incorrect need [1, 4]"));
             }
 
             let mut x = None;
@@ -514,7 +501,7 @@ impl TryFrom<&Struct> for Vec4 {
             });
         }
 
-        Err(err_from_to("Struct", "Vec4").into())
+        Err(err_from_to!("Struct" => "Vec4"))
     }
 }
 

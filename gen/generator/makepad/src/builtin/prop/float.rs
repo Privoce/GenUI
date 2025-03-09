@@ -1,10 +1,8 @@
-use gen_utils::{common::format_float, error::Error};
+use gen_utils::{common::format_float, err_from_to, error::Error};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse_str;
 use toml_edit::Formatted;
-
-use super::err_from_to;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct F64(pub f64);
@@ -61,7 +59,7 @@ impl TryFrom<&toml_edit::Value> for F64 {
 
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         value.as_float().map_or_else(
-            || Err(Error::from(err_from_to("toml_edit::Item", "F64"))),
+            || Err(Error::from(err_from_to!("toml_edit::Item" => "F64"))),
             |v| Ok(F64(v)),
         )
     }
@@ -72,7 +70,7 @@ impl TryFrom<&toml_edit::Value> for F32 {
 
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         value.as_float().map_or_else(
-            || Err(Error::from(err_from_to("toml_edit::Item", "F32"))),
+            || Err(Error::from(err_from_to!("toml_edit::Item" => "F32"))),
             |v| Ok(F32(v as f32)),
         )
     }

@@ -1,7 +1,8 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
 use crate::{
-    builtin::prop::{err_from_to, ImageFit, Layout, LiveDependency, MouseCursor, Prop, Walk, F32, F64},
+    builtin::prop::{ImageFit, Layout, LiveDependency, MouseCursor, Prop, Walk, F32, F64},
     from_gen_props, props_to_tokens,
 };
 
@@ -13,7 +14,7 @@ pub enum Props {
     Cursor(MouseCursor),
     Scale(F64),
     Fit(ImageFit),
-    Src(LiveDependency),
+    Src(Src),
     MinWidth(i64),
     MinHeight(i64),
     Rotation(F32),
@@ -47,11 +48,9 @@ impl TryFrom<(PropKey, Value)> for Props {
                 } else if let Ok(prop) = Layout::try_from(&value) {
                     return Ok(Props::Layout(prop));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad Image Prop, Invalid Prop: {}", name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad Image Prop, Invalid Prop: {}", name)
+                    ));
                 }
             }
         }

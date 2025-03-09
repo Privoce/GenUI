@@ -16,6 +16,7 @@ mod text_wrap;
 mod vec;
 mod walk;
 mod choose;
+mod src;
 
 pub use align::Align;
 pub use cursor::MouseCursor;
@@ -35,3 +36,4 @@ pub use text_wrap::TextWrap;
 pub use vec::*;
 pub use walk::{Walk, TextWalk};
 pub use choose::*;
+pub use src::Src;

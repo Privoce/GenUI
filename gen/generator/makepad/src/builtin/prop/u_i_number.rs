@@ -1,9 +1,7 @@
 use gen_analyzer::value::Value;
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 use quote::ToTokens;
 use syn::parse_str;
-
-use super::err_from_to;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct I32(pub i32);
@@ -21,7 +19,7 @@ impl TryFrom<&Value> for I32 {
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
         match value {
             Value::ISize(v) => Ok((*v).into()),
-            _ => Err(err_from_to("Value", "I32").into()),
+            _ => Err(err_from_to!("Value" => "I32")),
         }
     }
 }

@@ -6,13 +6,9 @@
 use std::str::FromStr;
 
 use super::MakepadColor;
-use crate::{
-    builtin::prop::{err_from_to, LiveDependency},
-    str_to_tk,
-    traits::ToTokensExt,
-};
+use crate::{builtin::prop::LiveDependency, str_to_tk, traits::ToTokensExt};
 use gen_analyzer::value::{BuiltinColor, Enum, Function, Struct, Value};
-use gen_utils::common::format_float;
+use gen_utils::{common::format_float, err_from_to};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
@@ -68,7 +64,7 @@ impl ToTokensExt for Enum {
         let Enum { field_chain } = self;
         let len = field_chain.len();
         if len == 0 {
-            return Err(err_from_to("Enum", "TokenStream").into());
+            return Err(err_from_to!("Enum" => "TokenStream"));
         } else if len == 1 {
             str_to_tk!(&field_chain.get(0).unwrap().to_string())
         } else {

@@ -17,6 +17,7 @@ use gen_utils::{
         git_download_plugin_from_github, read_to_doc, RustDependence, Source,
     },
     compiler::{CompilerImpl, ToRs, UnderlayerConfImpl},
+    err_from_to,
     error::{ConvertError, Error},
 };
 use proc_macro2::TokenStream;
@@ -24,10 +25,7 @@ use toml_edit::{value, Item};
 use tree::ModelTree;
 use walkdir::WalkDir;
 
-use crate::{
-    builtin::prop::err_from_to,
-    model::{create_lib_rs, create_main_rs, AppMain, Widget},
-};
+use crate::model::{create_lib_rs, create_main_rs, AppMain, Widget};
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -62,7 +60,7 @@ impl Compiler {
         let dependencies = read_to_doc(source_cargo.as_path())?
             .get("dependencies")
             .map_or_else(
-                || Err(Error::from(err_from_to("Cargo.toml", "toml[dependencies]"))),
+                || Err(err_from_to!("Cargo.toml" => "toml[dependencies]")),
                 |deps| RustDependence::from_item(deps),
             )?;
 
@@ -100,7 +98,7 @@ impl Compiler {
                 Some(lib_str)
             },
         );
-        
+
         fs::write(
             lib_rs_path.as_path(),
             &create_lib_rs(
@@ -216,7 +214,7 @@ impl CompilerImpl for Compiler {
         let cargo_toml = read_to_doc(cargo_path.as_path())?;
 
         let target_deps = cargo_toml.get("dependencies").map_or_else(
-            || Err(Error::from(err_from_to("Cargo.toml", "toml[dependencies]"))),
+            || Err(err_from_to!("Cargo.toml" => "toml[dependencies]")),
             |deps| RustDependence::from_item(deps),
         )?;
 

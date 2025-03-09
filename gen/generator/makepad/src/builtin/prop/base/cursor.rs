@@ -1,7 +1,8 @@
-use gen_utils::error::Error;
+
+use gen_utils::{err_from_to, error::Error};
 use toml_edit::Formatted;
 
-use crate::{builtin::prop::err_from_to, try_from_enum_one_leaf};
+use crate::try_from_enum_one_leaf;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum MouseCursor {
@@ -66,7 +67,7 @@ impl TryFrom<&toml_edit::Value> for MouseCursor {
 
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         value.as_str().map_or_else(
-            || Err(Error::from(err_from_to("toml_edit::Item", "MouseCursor"))),
+            || Err(err_from_to!("toml_edit::Item" => "MouseCursor")),
             |s| s.parse(),
         )
     }

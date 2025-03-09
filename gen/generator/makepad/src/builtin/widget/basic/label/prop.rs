@@ -1,9 +1,9 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
 use crate::{
     builtin::prop::{
-        err_from_to, Align, LiveDependency, Margin, MouseCursor, Padding, Prop, Size, TextWrap,
-        Themes, F64,
+        Align, LiveDependency, Margin, MouseCursor, Padding, Prop, Size, TextWrap, Themes, F64,
     },
     from_gen::MakepadColor,
     from_gen_props, props_to_tokens,
@@ -69,11 +69,9 @@ impl TryFrom<(PropKey, Value)> for Props {
             "animation_key" => Ok(Props::AnimationKey(value.1.as_bool()?)),
             "event_key" => Ok(Props::EventKey(value.1.as_bool()?)),
             "grab_key_focus" => Ok(Props::GrabKeyFocus(value.1.as_bool()?)),
-            _ => Err(err_from_to(
-                "GenUI Props",
-                &format!("Makepad GLabel Prop, Invalid Prop: {}", &value.0.name),
-            )
-            .into()),
+            _ => Err(err_from_to!(
+                "GenUI Props" => &format!("Makepad GLabel Prop, Invalid Prop: {}", &value.0.name)
+            )),
         }
     }
 }

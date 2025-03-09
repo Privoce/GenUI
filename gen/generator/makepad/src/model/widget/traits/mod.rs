@@ -1,12 +1,9 @@
 use crate::{
     model::traits::{LiveHookTrait, WidgetMatchEventTrait, WidgetMatchEventType, WidgetTrait},
     two_way_binding::TWBPollBuilder,
-    visitor::{InstanceLzVisitor, },
 };
-use gen_utils::error::Error;
+
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{ItemStruct, Local};
 
 #[derive(Debug, Clone)]
 pub struct Traits {

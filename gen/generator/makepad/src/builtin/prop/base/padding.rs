@@ -1,12 +1,9 @@
 use std::{num::ParseFloatError, str::FromStr};
 
 use gen_analyzer::value::{Struct, Value};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 
-use crate::{
-    builtin::prop::{convert_str_to_vec, err_from_to},
-    struct_float_to_tokens, try_from_value_ref_struct,
-};
+use crate::{builtin::prop::convert_str_to_vec, struct_float_to_tokens, try_from_value_ref_struct};
 
 /// Convert padding to Makepad Padding
 /// ## single
@@ -29,7 +26,7 @@ pub struct Padding {
 impl From<&Padding> for toml_edit::Value {
     fn from(value: &Padding) -> Self {
         let mut table = toml_edit::InlineTable::new();
-        
+
         table.insert("left", value.left.into());
         table.insert("top", value.top.into());
         table.insert("right", value.right.into());
@@ -97,11 +94,9 @@ impl TryFrom<Vec<f64>> for Padding {
                 right: value[1],
                 bottom: value[2],
             }),
-            _ => Err(err_from_to(
-                "Vec<f64>",
-                "Makepad Padding, params number incorrect need 1 | 2 | 4",
-            )
-            .into()),
+            _ => Err(err_from_to!(
+                "Vec<f64>" => "Makepad Padding, params number incorrect need 1 | 2 | 4"
+            )),
         }
     }
 }
@@ -119,9 +114,7 @@ impl TryFrom<&Struct> for Padding {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 4 {
-                return Err(
-                    err_from_to("Struct", "Vec4, params number incorrect need [1, 4]").into(),
-                );
+                return Err(err_from_to!("Struct" => "Vec4, params number incorrect need [1, 4]"));
             }
 
             let mut l = None;
@@ -147,7 +140,7 @@ impl TryFrom<&Struct> for Padding {
             });
         }
 
-        Err(err_from_to("Struct", "Padding").into())
+        Err(err_from_to!("Struct" => "Padding"))
     }
 }
 

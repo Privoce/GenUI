@@ -1,9 +1,6 @@
-use gen_utils::error::Error;
-use toml_edit::Formatted;
-
 use crate::try_from_enum_one_leaf;
-
-use super::err_from_to;
+use gen_utils::{err_from_to, error::Error};
+use toml_edit::Formatted;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Themes {
@@ -48,7 +45,7 @@ impl TryFrom<&toml_edit::Value> for Themes {
         value: &toml_edit::Value,
     ) -> Result<Self, <Self as TryFrom<&toml_edit::Value>>::Error> {
         value.as_str().map_or_else(
-            || Err(Error::from(err_from_to("toml_edit::Item", "Themes"))),
+            || Err(err_from_to!("toml_edit::Item" => "Themes")),
             |s| s.parse(),
         )
     }

@@ -1,8 +1,10 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
 use crate::{
     builtin::prop::{
-        err_from_to, DVec2, Layout, LinkType, LiveDependency, Margin, MouseCursor, Prop, Size, TextWalk, Themes, Walk, F32, F64
+        DVec2, Layout, LinkType, LiveDependency, Margin, MouseCursor, Prop, Size, TextWalk, Themes,
+        Walk, F32, F64,
     },
     from_gen::MakepadColor,
     from_gen_props, props_to_tokens,
@@ -88,21 +90,27 @@ impl TryFrom<(PropKey, Value)> for Props {
             "animation_key" => Ok(Props::AnimationKey(value.1.as_bool()?)),
             "event_key" => Ok(Props::EventKey(value.1.as_bool()?)),
             "grab_key_focus" => Ok(Props::GrabKeyFocus(value.1.as_bool()?)),
-            "text_height" => Ok(Props::TextWalk(Walk::Height(Size::try_from(&value.1)?).into())),
-            "text_width" => Ok(Props::TextWalk(Walk::Width(Size::try_from(&value.1)?).into())),
-            "text_margin" => Ok(Props::TextWalk(Walk::Margin(Margin::try_from(&value.1)?).into())),
-            "text_abs_pos" => Ok(Props::TextWalk(Walk::AbsPos(DVec2::try_from(&value.1)?).into())),
+            "text_height" => Ok(Props::TextWalk(
+                Walk::Height(Size::try_from(&value.1)?).into(),
+            )),
+            "text_width" => Ok(Props::TextWalk(
+                Walk::Width(Size::try_from(&value.1)?).into(),
+            )),
+            "text_margin" => Ok(Props::TextWalk(
+                Walk::Margin(Margin::try_from(&value.1)?).into(),
+            )),
+            "text_abs_pos" => Ok(Props::TextWalk(
+                Walk::AbsPos(DVec2::try_from(&value.1)?).into(),
+            )),
             _ => {
                 if let Ok(prop) = Walk::try_from(&value) {
                     return Ok(Props::Walk(prop));
                 } else if let Ok(prop) = Layout::try_from(&value) {
                     return Ok(Props::Layout(prop));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad GView Prop, Invalid Prop: {}", value.0.name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad GView Prop, Invalid Prop: {}", value.0.name)
+                    ));
                 }
             }
         }

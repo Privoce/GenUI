@@ -1,10 +1,8 @@
 use std::fmt::Display;
 
 use gen_analyzer::value::{Function, Value};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 use quote::ToTokens;
-
-use crate::builtin::prop::err_from_to;
 
 #[derive(Debug, Clone)]
 pub struct LiveDependency(String);
@@ -24,11 +22,9 @@ impl TryFrom<&Function> for LiveDependency {
             }
         }
 
-        return Err(err_from_to(
-            "Function",
-            "LiveDependency, dep fn need one param (Into<pathbuf>)",
-        )
-        .into());
+        return Err(err_from_to!(
+            "Function" => "LiveDependency, dep fn need one param (Into<pathbuf>)"
+        ));
     }
 }
 
@@ -39,7 +35,7 @@ impl TryFrom<&Value> for LiveDependency {
         if let Value::Function(f) = value {
             return f.try_into();
         } else {
-            return Err(err_from_to("Value", "LiveDependency").into());
+            return Err(err_from_to!("Value" => "LiveDependency"));
         }
     }
 }

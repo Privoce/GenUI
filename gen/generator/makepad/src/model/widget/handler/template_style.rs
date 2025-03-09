@@ -1,10 +1,7 @@
-use crate::{
-    builtin::prop::err_from_to,
-    model::{widget::role::Role, Widget, WidgetTemplate, WidgetType},
-};
+use crate::model::{widget::role::Role, Widget, WidgetTemplate, WidgetType};
 
 use gen_analyzer::{IdClass, Style, StyleVisitor, Template};
-use gen_utils::{common::Source, error::Error};
+use gen_utils::{common::Source, err_from_to, error::Error};
 use std::collections::HashMap;
 
 /// 处理template + style的情况
@@ -58,19 +55,15 @@ fn handle(
     } = template;
     // [处理callbacks] ------------------------------------------------------------------------------------
     if callbacks.is_some() {
-        return Err(err_from_to(
-            "GenUI Component",
-            "Makepad Widget, Static Widget has no callbacks",
-        )
-        .into());
+        return Err(err_from_to!(
+            "GenUI Component" => "Makepad Widget, Static Widget has no callbacks"
+        ));
     }
     // [处理inherits] --------------------------------------------------------------------------------------
     if inherits.is_some() {
-        return Err(err_from_to(
-            "GenUI Component",
-            "Makepad Widget, Static Widget has no inherits",
-        )
-        .into());
+        return Err(err_from_to!(
+            "GenUI Component" => "Makepad Widget, Static Widget has no inherits"
+        ));
     }
     // [处理节点, 属性, 子组件] ------------------------------------------------------------------------------
     if let Some(styles) = styles.as_ref() {

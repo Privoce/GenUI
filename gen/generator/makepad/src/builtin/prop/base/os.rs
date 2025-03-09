@@ -1,13 +1,10 @@
-use std::str::FromStr;
-
 use gen_analyzer::value::{Enum, EnumItem};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
+use std::str::FromStr;
 use syn::parse_str;
 use toml_edit::Formatted;
-
-use crate::builtin::prop::err_from_to;
 
 const WINDOWS: &str = "Windows";
 const MAC: &str = "Mac";
@@ -41,7 +38,7 @@ impl TryFrom<&toml_edit::Value> for GOsType {
 
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         value.as_str().map_or_else(
-            || Err(Error::from(err_from_to("toml_edit::Value", "GOsType"))),
+            || Err(err_from_to!("toml_edit::Value" => "GOsType")),
             |s| s.parse(),
         )
     }
@@ -68,7 +65,7 @@ impl TryFrom<&Enum> for GOsType {
         let Enum { field_chain } = value;
         let e_len = field_chain.len();
         if e_len > 2 || e_len == 0 {
-            return Err(err_from_to("Enum", "GOsType").into());
+            return Err(err_from_to!("Enum" => "GOsType"));
         } else if e_len == 1 {
             field_chain.get(0).unwrap().try_into()
         } else {
@@ -84,7 +81,7 @@ impl TryFrom<&EnumItem> for GOsType {
     fn try_from(value: &EnumItem) -> Result<Self, <Self as TryFrom<&EnumItem>>::Error> {
         match value {
             EnumItem::Leaf(s, _) => Ok(GOsType::from_str(s)?),
-            _ => Err(err_from_to("EnumItem", "GOsType").into()),
+            _ => Err(err_from_to!("EnumItem" => "GOsType")),
         }
     }
 }
@@ -104,7 +101,7 @@ impl TryFrom<&Vec<EnumItem>> for GOsType {
                 }
             }
         }
-        Err(err_from_to("EnumItem", "GOsType").into())
+        Err(err_from_to!("EnumItem" => "GOsType"))
     }
 }
 

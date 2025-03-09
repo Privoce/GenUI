@@ -4,10 +4,9 @@ use std::{
 };
 
 use gen_analyzer::{value::Bind, Polls, Script, Template};
-use gen_utils::{common::Source, error::Error};
+use gen_utils::{common::Source, err_from_to, error::Error};
 
 use crate::{
-    builtin::prop::err_from_to,
     compiler::{Context, WidgetPoll},
     model::{role::ForParent, widget::role::Role, AbsWidget, Widget, WidgetTemplate, WidgetType},
 };
@@ -50,7 +49,7 @@ pub fn template_script(
             polls,
             &widget_poll,
             &template_ptrs,
-            template.as_ref()
+            template.as_ref(),
         )?)
     } else {
         if let Some(ident) = template.as_ref().map(|t| t.root_name()) {
@@ -129,10 +128,9 @@ fn handle(
                         name: name.to_string(),
                     })
                 } else {
-                    Err(Error::from(err_from_to(
-                        "GenUI Component",
-                        "Makepad Widget, for widget need id!",
-                    )))
+                    Err(err_from_to!(
+                        "GenUI Component" => "Makepad Widget, for widget need id!"
+                    ))
                 }
             } else {
                 Ok(Role::default())
@@ -142,11 +140,9 @@ fn handle(
     let is_role_virtual = role.is_virtual();
     // [处理inherits] --------------------------------------------------------------------------------------
     if inherits.is_some() {
-        return Err(err_from_to(
-            "GenUI Component",
-            "Makepad Widget, Static Widget has no inherits",
-        )
-        .into());
+        return Err(err_from_to!(
+            "GenUI Component" => "Makepad Widget, Static Widget has no inherits"
+        ));
     }
     // [当id存在时，说明有可能会进行脚本处理或有绑定变量] ----------------------------------------------------------
     if let Some(id) = id.as_ref() {
@@ -157,18 +153,15 @@ fn handle(
     // 如果当前组件使用了as_prop，那么需要将绑定变量的值传递给父组件，并且当前组件不能调用自身的事件
     if callbacks.is_some() {
         if as_prop.is_some() {
-            return Err(err_from_to(
-                "GenUI Component",
-                "Makepad Widget, as_prop widget can't have callback!",
-            )
-            .into());
+            return Err(err_from_to!(
+                "GenUI Component" => "Makepad Widget, as_prop widget can't have callback!"
+            ));
         }
         // 当组件有callback时，组件必须要有id，否则抛出异常
         if id.is_none() {
-            return Err(Error::from(err_from_to(
-                "GenUI Component",
-                "Makepad Widget, callback widget need id!",
-            )));
+            return Err(err_from_to!(
+                "GenUI Component" => "Makepad Widget, callback widget need id!"
+            ));
         }
     }
     // [处理节点, 属性, 子组件] ------------------------------------------------------------------------------

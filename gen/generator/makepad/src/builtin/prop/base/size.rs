@@ -1,15 +1,12 @@
-use std::str::FromStr;
-
+use super::DVec2;
 use gen_analyzer::value::{Enum, EnumItem, Value};
 use gen_utils::{
     common::format_float,
+    err_from_to,
     error::{ConvertError, Error},
 };
 use quote::ToTokens;
-
-use crate::builtin::prop::err_from_to;
-
-use super::DVec2;
+use std::str::FromStr;
 
 #[derive(Debug, Clone)]
 pub struct WindowSize {
@@ -52,7 +49,7 @@ impl TryFrom<&toml_edit::Value> for WindowSize {
     fn try_from(value: &toml_edit::Value) -> Result<Self, Self::Error> {
         let size = value
             .as_inline_table()
-            .ok_or_else(|| err_from_to("toml_edit::Value", "WindowSize"))?;
+            .ok_or_else(|| err_from_to!("toml_edit::Value" => "WindowSize"))?;
 
         let inner_size = size.get("inner_size").map_or_else(
             || DVec2 {
@@ -102,7 +99,7 @@ impl TryFrom<&toml_edit::Value> for Size {
         } else if let Some(value) = value.as_float() {
             Ok(Size::Fixed(value))
         } else {
-            Err(err_from_to("toml_edit::Item", "Size").into())
+            Err(err_from_to!("toml_edit::Item" => "Size"))
         }
     }
 }
@@ -148,7 +145,7 @@ impl TryFrom<&Vec<EnumItem>> for Size {
                 }
             }
         }
-        Err(err_from_to("EnumItem", "Size").into())
+        Err(err_from_to!("EnumItem" => "Size"))
     }
 }
 
@@ -163,7 +160,7 @@ impl TryFrom<&EnumItem> for Size {
                 return leaf.parse();
             }
         }
-        Err(err_from_to("EnumItem", "Size").into())
+        Err(err_from_to!("EnumItem" => "Size"))
     }
 }
 

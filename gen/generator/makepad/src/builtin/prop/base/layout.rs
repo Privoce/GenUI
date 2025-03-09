@@ -1,8 +1,8 @@
 use gen_analyzer::{value::Value, PropKey};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 
 use crate::{
-    builtin::prop::{err_from_to, value_bool, F64},
+    builtin::prop::{value_bool, F64},
     props_to_tokens,
 };
 
@@ -47,11 +47,9 @@ impl TryFrom<(&str, &toml_edit::Value)> for Layout {
             "flow" => Ok(Layout::Flow(Flow::try_from(val)?)),
             "spacing" => Ok(Layout::Spacing(val.try_into()?)),
             _ => {
-                return Err(err_from_to(
-                    "GenUI Props",
-                    &format!("Makepad Layout, Invalid Prop: {}", key),
-                )
-                .into());
+                return Err(err_from_to!(
+                    "GenUI Props" => &format!("Makepad Layout, Invalid Prop: {}", key)
+                ));
             }
         }
     }
@@ -70,11 +68,10 @@ impl TryFrom<&(PropKey, Value)> for Layout {
             "flow" => Ok(Layout::Flow(Flow::try_from(&value.1)?)),
             "spacing" => Ok(Layout::Spacing(value.1.as_f64()?.into())),
             _ => {
-                return Err(err_from_to(
-                    "GenUI Props",
-                    &format!("Makepad Layout, Invalid Prop: {}", &value.0.name),
-                )
-                .into());
+                return Err(err_from_to!(
+                    "GenUI Props" => &format!("Makepad Layout, Invalid Prop: {}", &value.0.name)
+
+                ));
             }
         }
     }

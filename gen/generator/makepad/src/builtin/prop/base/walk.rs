@@ -1,8 +1,8 @@
 use gen_analyzer::{value::Value, PropKey};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 use quote::quote;
 
-use crate::{builtin::prop::err_from_to, props_to_tokens};
+use crate::props_to_tokens;
 
 use super::{DVec2, Margin, Size};
 
@@ -62,7 +62,7 @@ impl TryFrom<(&str, &toml_edit::Value)> for Walk {
             "width" => Ok(Walk::Width(Size::try_from(val)?)),
             "height" => Ok(Walk::Height(Size::try_from(val)?)),
             _ => {
-                return Err(err_from_to("GenUI Props", "Makepad Walk, Invalid Prop").into());
+                return Err(err_from_to!("GenUI Props" => "Makepad Walk, Invalid Prop"));
             }
         }
     }
@@ -78,7 +78,7 @@ impl TryFrom<&(PropKey, Value)> for Walk {
             "width" => Ok(Walk::Width(Size::try_from(&value.1)?)),
             "height" => Ok(Walk::Height(Size::try_from(&value.1)?)),
             _ => {
-                return Err(err_from_to("GenUI Props", "Makepad Walk, Invalid Prop").into());
+                return Err(err_from_to!("GenUI Props" => "Makepad Walk, Invalid Prop"));
             }
         }
     }

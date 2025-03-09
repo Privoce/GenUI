@@ -11,7 +11,7 @@ macro_rules! try_from_value_ref_enum {
                     } else if let Value::String(s) = value {
                         return s.parse();
                     } else {
-                        return Err(err_from_to("Value", $TStr).into());
+                        return Err(gen_utils::err_from_to!("Value" => $TStr));
                     }
                 }
             }
@@ -34,7 +34,7 @@ macro_rules! try_from_value_ref_struct {
                     } else if let Value::Double(d) = value{
                         return (*d).try_into();
                     } else {
-                        return Err(err_from_to("Value", $TStr).into());
+                        return Err(gen_utils::err_from_to!("Value" => $TStr));
                     }
                 }
             }
@@ -68,7 +68,7 @@ macro_rules! try_from_enum_one_leaf {
                         }
                     }
                 }
-                Err(crate::builtin::prop::err_from_to("EnumItem", $S).into())
+                Err(gen_utils::err_from_to!("EnumItem" => $S))
             }
         }
 
@@ -78,7 +78,7 @@ macro_rules! try_from_enum_one_leaf {
             fn try_from(value: &gen_analyzer::value::EnumItem) -> Result<Self, <Self as TryFrom<&gen_analyzer::value::EnumItem>>::Error> {
                 match value {
                     gen_analyzer::value::EnumItem::Leaf(s, _) => Ok(s.parse()?),
-                    _ => Err(crate::builtin::prop::err_from_to("EnumItem", $S).into()),
+                    _ => Err(gen_utils::err_from_to!("EnumItem" => $S)),
                 }
             }
         }
@@ -98,7 +98,7 @@ macro_rules! try_from_enum_one_leaf {
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s {
                     $($I => Ok($P),)*
-                    _ => Err(crate::builtin::prop::err_from_to("Value", "EventOrder").into()),
+                    _ => Err(gen_utils::err_from_to!("Value" => "EventOrder")),
                 }
             }
         }
@@ -192,7 +192,7 @@ macro_rules! try_from_f64_vec {
         $(
             impl TryFrom<f64> for $T {
                 type Error = Error;
-    
+
                 fn try_from(value: f64) -> Result<Self, Self::Error> {
                     Ok(Self {
                         $(
@@ -206,12 +206,14 @@ macro_rules! try_from_f64_vec {
 }
 
 #[macro_export]
-macro_rules! from_gen_props{
+macro_rules! from_gen_props {
     ($T: ty) => {
         impl crate::builtin::prop::FromGenProps for Prop<$T> {
             type Output = Prop<$T>;
-        
-            fn from_prop(prop: Option<gen_analyzer::Props>) -> Result<Option<Self::Output>, gen_utils::error::Error> {
+
+            fn from_prop(
+                prop: Option<gen_analyzer::Props>,
+            ) -> Result<Option<Self::Output>, gen_utils::error::Error> {
                 if let Some(props) = prop {
                     let mut res = Prop::default();
                     for (prop, value) in props {

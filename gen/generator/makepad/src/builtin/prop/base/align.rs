@@ -1,9 +1,6 @@
-use crate::{
-    builtin::prop::{convert_str_to_vec, err_from_to},
-    struct_float_to_tokens, try_from_value_ref_struct,
-};
+use crate::{builtin::prop::convert_str_to_vec, struct_float_to_tokens, try_from_value_ref_struct};
 use gen_analyzer::value::{Struct, Value};
-use gen_utils::error::Error;
+use gen_utils::{err_from_to, error::Error};
 use std::{num::ParseFloatError, str::FromStr};
 
 #[derive(Debug, Clone, Default)]
@@ -54,11 +51,9 @@ impl TryFrom<Vec<f64>> for Align {
                 x: value[0],
                 y: value[1],
             }),
-            _ => Err(err_from_to(
-                "Vec<f64>",
-                "Makepad Align, params number incorrect need 1 or 2",
-            )
-            .into()),
+            _ => Err(err_from_to!(
+                "Vec<f64>" => "Makepad Align, params number incorrect need 1 or 2"
+            )),
         }
     }
 }
@@ -76,9 +71,7 @@ impl TryFrom<&Struct> for Align {
         if *is_anonymous {
             let len = fields.len();
             if len == 0 || len > 4 {
-                return Err(
-                    err_from_to("Struct", "Vec4, params number incorrect need [1, 2]").into(),
-                );
+                return Err(err_from_to!("Struct" => "Vec4, params number incorrect need [1, 2]"));
             }
 
             let mut x = None;
@@ -98,7 +91,7 @@ impl TryFrom<&Struct> for Align {
             });
         }
 
-        Err(err_from_to("Struct", "Align").into())
+        Err(err_from_to!("Struct" => "Align"))
     }
 }
 

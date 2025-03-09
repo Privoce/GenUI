@@ -1,8 +1,9 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
 use crate::{
     builtin::{
-        prop::{err_from_to, Direction, Prop, F32},
+        prop::{Direction, Prop, F32},
         widget::ViewProps,
     },
     from_gen_props, props_to_tokens,
@@ -30,11 +31,9 @@ impl TryFrom<(PropKey, Value)> for Props {
                 if let Ok(p) = ViewProps::try_from(value) {
                     return Ok(Props::DerefWidget(p));
                 } else {
-                    return Err(err_from_to(
-                        "GenUI Props",
-                        &format!("Makepad Divider Prop, Invalid Prop: {}", name),
-                    )
-                    .into());
+                    return Err(err_from_to!(
+                        "GenUI Props" => &format!("Makepad Divider Prop, Invalid Prop: {}", name)
+                    ));
                 }
             }
         }

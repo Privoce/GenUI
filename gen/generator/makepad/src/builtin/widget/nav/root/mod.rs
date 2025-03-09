@@ -2,11 +2,12 @@ mod conf;
 
 pub use conf::RootConf;
 
+use gen_utils::err_from_to;
 use proc_macro2::TokenStream;
 use syn::parse_str;
 
 use crate::{
-    builtin::prop::err_from_to, token::ToLiveDesign, try_from_props,
+    token::ToLiveDesign, try_from_props,
     two_way_binding::TwoWayBindImpl,
 };
 
@@ -17,7 +18,7 @@ try_from_props! {
     Root {
         |props| {
             if props.is_some() {
-                return Err(err_from_to("GenUI Props", "Makepad Root Prop, Root has no props").into());
+                return Err(err_from_to!("GenUI Props" => "Makepad Root Prop, Root has no props"));
             }
             Ok(Self)
         }

@@ -1,9 +1,7 @@
-use gen_analyzer::{PropKey, value::Value};
+use gen_analyzer::{value::Value, PropKey};
+use gen_utils::err_from_to;
 
-use crate::{
-    builtin::prop::{err_from_to, Prop},
-    from_gen_props, props_to_tokens,
-};
+use crate::{builtin::prop::Prop, from_gen_props, props_to_tokens};
 
 #[derive(Debug, Clone)]
 pub enum Props {
@@ -20,11 +18,9 @@ impl TryFrom<(PropKey, Value)> for Props {
         match value.0.name.as_str() {
             "scroll_x" => Ok(Props::ShowScrollX(value.1.as_bool()?)),
             "scroll_y" => Ok(Props::ShowScrollY(value.1.as_bool()?)),
-            _ => Err(err_from_to(
-                "GenUI Props",
-                &format!("Makepad GScrollBars Prop, Invalid Prop: {}", value.0.name),
-            )
-            .into()),
+            _ => Err(err_from_to!(
+                "GenUI Props" => &format!("Makepad GScrollBars Prop, Invalid Prop: {}", value.0.name)
+            )),
         }
     }
 }
