@@ -16,6 +16,7 @@ pub enum LifeCycle {
 }
 
 impl LifeCycle {
+    #[allow(unused)]
     pub fn push(&mut self, item: &ItemFn) -> SCResult<()>{
         match self {
             LifeCycle::AppMain(app) => app.push(item),

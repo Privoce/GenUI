@@ -104,6 +104,7 @@ impl TryFrom<(&Ident, &ItemFn)> for AppLifeCycle {
 }
 
 impl AppLifeCycle {
+    #[allow(unused)]
     pub fn push(&mut self, item: &ItemFn) -> SCResult<()> {
         if item.attrs.is_empty() {
             return Err(AttrMacroError::NoLifeCycleMacro.into());

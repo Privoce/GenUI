@@ -2,6 +2,11 @@
 name = "gen_analyzer"
 version = "0.1.0"
 edition = "2021"
+authors = ["Will SHENG<syf20020816@outlook.com>"]
+description = "syntax analyzer for genui"
+license = "MIT"
+repsitory = "https://github.com/Privoce/GenUI"
+keywords = ["genui", "analyzer", "syntax", "parser"]
 
 [features]
 default = ["makepad", "base"]

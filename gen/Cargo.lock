@@ -208,7 +208,7 @@ version = "0.1.0"
 
 [[package]]
 name = "gen_utils"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "chrono",
  "nom",
@@ -344,7 +344,7 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 
 [[package]]
 name = "makepad_gen_plugin"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "gen_analyzer",
  "gen_dyn_run",
@@ -565,7 +565,7 @@ dependencies = [
 
 [[package]]
 name = "rssyin"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proc-macro2",
  "quote",
