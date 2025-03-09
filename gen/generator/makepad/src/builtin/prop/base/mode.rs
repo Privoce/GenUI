@@ -16,6 +16,14 @@ pub enum CloseMode {
     /// Only Outer Can Close Popup, always use when you have no close button in the popup
     Out,
 }
+#[derive(Clone, PartialEq, Default, Copy, Debug)]
+pub enum PopupMode {
+    #[default]
+    Popup,
+    ToolTip,
+    Dialog,
+    Drawer,
+}
 
 try_from_enum_one_leaf! {
     TriggerMode, "TriggerMode",
@@ -28,4 +36,12 @@ try_from_enum_one_leaf! {
     CloseMode, "CloseMode",
     CloseMode::Virtual = "Virtual",
     CloseMode::Out = "Out"
+}
+
+try_from_enum_one_leaf! {
+    PopupMode, "PopupMode",
+    PopupMode::Popup = "Popup",
+    PopupMode::ToolTip = "ToolTip",
+    PopupMode::Dialog = "Dialog",
+    PopupMode::Drawer = "Drawer"
 }

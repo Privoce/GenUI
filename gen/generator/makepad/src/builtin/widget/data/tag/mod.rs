@@ -1,12 +1,16 @@
-mod prop;
 mod event;
+mod prop;
 
+use crate::{
+    builtin::{
+        prop::{FromGenProps, Prop},
+        widget::WidgetImpl,
+    },
+    to_live_design, try_from_props,
+    two_way_binding::TwoWayBindImpl,
+};
 pub use event::*;
 pub use prop::Props as TagProps;
-use crate::{
-    builtin::{prop::{FromGenProps, Prop}, widget::WidgetImpl},
-    to_live_design, try_from_props, two_way_binding::TwoWayBindImpl,
-};
 
 #[derive(Debug, Clone)]
 pub struct Tag {
@@ -26,7 +30,11 @@ impl WidgetImpl for Tag {
 }
 
 impl TwoWayBindImpl for Tag {
-    fn twb_event(_prop: &str) -> Option<String> {
-        None
+    fn twb_event(prop: &str) -> Option<String> {
+        if prop == "visible" {
+            Some(TagEvent::Closed.to_string())
+        } else {
+            None
+        }
     }
 }

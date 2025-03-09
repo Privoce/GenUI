@@ -320,7 +320,6 @@ mod test {
         common::{fs, Source},
         compiler::ToRs,
     };
-    use quote::ToTokens;
     // use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
 
     use crate::{compiler::Context, model::SimpleAppMain};

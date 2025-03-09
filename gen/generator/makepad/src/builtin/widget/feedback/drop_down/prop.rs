@@ -2,7 +2,7 @@ use gen_analyzer::{value::Value, PropKey};
 use gen_utils::err_from_to;
 
 use crate::{
-    builtin::prop::{CloseMode, Position, Prop, TriggerMode, F32},
+    builtin::prop::{Position, Prop, TriggerMode, F32},
     from_gen_props, props_to_tokens,
 };
 
@@ -17,7 +17,6 @@ pub enum Props {
     Visible(bool),
     Proportion(F32),
     EventKey(bool),
-    CloseMode(CloseMode),
 }
 
 from_gen_props!(Props);
@@ -36,7 +35,6 @@ impl TryFrom<(PropKey, Value)> for Props {
             "visible" => Ok(Props::Visible(value.1.as_bool()?)),
             "proportion" => Ok(Props::Proportion(value.1.as_f32()?.into())),
             "event_key" => Ok(Props::EventKey(value.1.as_bool()?)),
-            "close_mode" => Ok(Props::CloseMode(CloseMode::try_from(&value.1)?)),
             _ => {
                 return Err(err_from_to!(
                     "GenUI Props" => &format!("Makepad GDropDown Prop, Invalid Prop: {}", value.0.name)
@@ -56,6 +54,5 @@ props_to_tokens! {
     Props::OffsetY => offset_y, false,
     Props::Visible => visible, false,
     Props::Proportion => proportion, false,
-    Props::EventKey => event_key, false,
-    Props::CloseMode => close_mode, false
+    Props::EventKey => event_key, false
 }

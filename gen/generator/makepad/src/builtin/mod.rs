@@ -6,8 +6,9 @@ use gen_utils::{
 
 pub use ty::{BuiltinWidgetType, InheritWidgetType};
 use widget::{
-    Button, Checkbox, CheckboxGroup, Collapse, Divider, Image, Input, Label, Link, Loading, Radio,
-    RadioGroup, Root, ScrollBars, Svg, Tag, Toggle, View, Window,
+    Button, Checkbox, CheckboxGroup, Collapse, Dialog, Divider, Drawer, DropDown, Image, Input,
+    Label, Link, Loading, Popup, Radio, RadioGroup, Root, ScrollBars, Svg, Tag, Toggle, ToolTip,
+    View, Window,
 };
 
 use crate::{from_builtin_widget, token::ToLiveDesign};
@@ -45,6 +46,12 @@ pub enum BuiltinWidget {
     Tag(Tag),
     Collapse(Collapse),
     Loading(Loading),
+    // feedback
+    DropDown(DropDown),
+    Popup(Popup),
+    Drawer(Drawer),
+    Dialog(Dialog),
+    ToolTip(ToolTip),
 }
 
 impl BuiltinWidget {
@@ -138,6 +145,11 @@ impl TryFrom<(String, Option<Props>, bool)> for BuiltinWidget {
                 BuiltinWidgetType::Toggle => Toggle::try_from(props).and_then(|x| Ok(x.into())),
                 BuiltinWidgetType::Collapse => Collapse::try_from(props).and_then(|x| Ok(x.into())),
                 BuiltinWidgetType::Loading => Loading::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::DropDown => DropDown::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::Popup => Popup::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::Dialog => Dialog::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::Drawer => Drawer::try_from(props).and_then(|x| Ok(x.into())),
+                BuiltinWidgetType::ToolTip => ToolTip::try_from(props).and_then(|x| Ok(x.into())),
             })
         }
     }
@@ -165,6 +177,11 @@ impl ToLiveDesign for BuiltinWidget {
             BuiltinWidget::Toggle(toggle) => toggle.name(),
             BuiltinWidget::Collapse(collapse) => collapse.name(),
             BuiltinWidget::Loading(loading) => loading.name(),
+            BuiltinWidget::DropDown(drop_down) => drop_down.name(),
+            BuiltinWidget::Popup(popup) => popup.name(),
+            BuiltinWidget::Dialog(dialog) => dialog.name(),
+            BuiltinWidget::Drawer(drawer) => drawer.name(),
+            BuiltinWidget::ToolTip(tool_tip) => tool_tip.name(),
         }
     }
 
@@ -189,6 +206,11 @@ impl ToLiveDesign for BuiltinWidget {
             BuiltinWidget::Toggle(toggle) => toggle.props(),
             BuiltinWidget::Collapse(collapse) => collapse.props(),
             BuiltinWidget::Loading(loading) => loading.props(),
+            BuiltinWidget::DropDown(drop_down) => drop_down.props(),
+            BuiltinWidget::Popup(popup) => popup.props(),
+            BuiltinWidget::Dialog(dialog) => dialog.props(),
+            BuiltinWidget::Drawer(drawer) => drawer.props(),
+            BuiltinWidget::ToolTip(tool_tip) => tool_tip.props(),
         }
     }
 }
@@ -212,5 +234,10 @@ from_builtin_widget! {
     Tag => BuiltinWidget::Tag,
     Toggle => BuiltinWidget::Toggle,
     Collapse => BuiltinWidget::Collapse,
-    Loading => BuiltinWidget::Loading
+    Loading => BuiltinWidget::Loading,
+    DropDown => BuiltinWidget::DropDown,
+    Popup => BuiltinWidget::Popup,
+    Dialog => BuiltinWidget::Dialog,
+    Drawer => BuiltinWidget::Drawer,
+    ToolTip => BuiltinWidget::ToolTip
 }

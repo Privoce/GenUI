@@ -6,8 +6,7 @@ use crate::two_way_binding::TwoWayBindImpl;
 
 use super::{
     widget::{
-        Button, Checkbox, CheckboxGroup, Collapse, Divider, Image, Input, Label, Link, Loading,
-        Radio, RadioGroup, Root, Svg, Tag, Toggle, View, WidgetImpl,
+        Button, Checkbox, CheckboxGroup, Collapse, Divider, DropDown, Image, Input, Label, Link, Loading, Popup, Radio, RadioGroup, Root, Svg, Tag, Toggle, View, WidgetImpl
     },
     BuiltinWidget,
 };
@@ -38,6 +37,12 @@ pub enum BuiltinWidgetType {
     Tag,
     Collapse,
     Loading,
+    // feedback
+    DropDown,
+    Popup,
+    Drawer,
+    Dialog,
+    ToolTip
 }
 
 impl BuiltinWidgetType {
@@ -62,6 +67,11 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Toggle => "GToggle",
             BuiltinWidgetType::Collapse => "GCollapse",
             BuiltinWidgetType::Loading => "GLoading",
+            BuiltinWidgetType::DropDown => "GDropDown",
+            BuiltinWidgetType::Popup => "GPopup",
+            BuiltinWidgetType::Drawer => "GDrawer",
+            BuiltinWidgetType::Dialog => "GDialog",
+            BuiltinWidgetType::ToolTip => "GToolTip",
         }
     }
     pub fn snake_name(&self) -> &str {
@@ -85,6 +95,12 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Toggle => "gtoggle",
             BuiltinWidgetType::Collapse => "gcollapse",
             BuiltinWidgetType::Loading => "gloading",
+            BuiltinWidgetType::DropDown => "gdrop_down",
+            BuiltinWidgetType::Popup => "gpopup",
+            BuiltinWidgetType::Drawer => "gpopup",
+            BuiltinWidgetType::Dialog => "gpopup",
+            BuiltinWidgetType::ToolTip => "gpopup",
+
         }
     }
     pub fn event_ty_map(&self) -> Option<HashMap<String, String>> {
@@ -108,6 +124,11 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Toggle => Toggle::event_ty_map(),
             BuiltinWidgetType::Collapse => Collapse::event_ty_map(),
             BuiltinWidgetType::Loading => Loading::event_ty_map(),
+            BuiltinWidgetType::DropDown => DropDown::event_ty_map(),
+            BuiltinWidgetType::Popup => None,
+            BuiltinWidgetType::Drawer => None,
+            BuiltinWidgetType::Dialog => None,
+            BuiltinWidgetType::ToolTip => None,
         }
     }
     pub fn twb_event(&self, prop: &str) -> Option<String> {
@@ -131,6 +152,11 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::Toggle => Toggle::twb_event(prop),
             BuiltinWidgetType::Collapse => Collapse::twb_event(prop),
             BuiltinWidgetType::Loading => Loading::twb_event(prop),
+            BuiltinWidgetType::DropDown => DropDown::twb_event(prop),
+            BuiltinWidgetType::Popup => Popup::twb_event(prop),
+            BuiltinWidgetType::Drawer => Popup::twb_event(prop),
+            BuiltinWidgetType::Dialog => Popup::twb_event(prop),
+            BuiltinWidgetType::ToolTip => Popup::twb_event(prop),
         }
     }
 }
@@ -157,6 +183,11 @@ impl From<&BuiltinWidget> for BuiltinWidgetType {
             BuiltinWidget::Toggle(_) => BuiltinWidgetType::Toggle,
             BuiltinWidget::Collapse(_) => BuiltinWidgetType::Collapse,
             BuiltinWidget::Loading(_) => BuiltinWidgetType::Loading,
+            BuiltinWidget::DropDown(_) => BuiltinWidgetType::DropDown,
+            BuiltinWidget::Popup(_) => BuiltinWidgetType::Popup,
+            BuiltinWidget::Drawer(_) => BuiltinWidgetType::Drawer,
+            BuiltinWidget::Dialog(_) => BuiltinWidgetType::Dialog,
+            BuiltinWidget::ToolTip(_) => BuiltinWidgetType::ToolTip,
         }
     }
 }
@@ -185,6 +216,11 @@ impl FromStr for BuiltinWidgetType {
             "tag" => Ok(BuiltinWidgetType::Tag),
             "collapse" => Ok(BuiltinWidgetType::Collapse),
             "loading" => Ok(BuiltinWidgetType::Loading),
+            "drop_down" => Ok(BuiltinWidgetType::DropDown),
+            "popup" => Ok(BuiltinWidgetType::Popup),
+            "drawer" => Ok(BuiltinWidgetType::Drawer),
+            "dialog" => Ok(BuiltinWidgetType::Dialog),
+            "tool_tip" => Ok(BuiltinWidgetType::ToolTip),
             _ => Err(ConvertError::FromTo {
                 from: s.to_string(),
                 to: "GenUI Builtin Component".to_string(),
