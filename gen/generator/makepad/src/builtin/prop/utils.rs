@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use gen_utils::{err_from_to, error::{ConvertError, Error}};
+use gen_utils::{err_from_to, error::Error};
 
 /// convert string to vector
 pub fn convert_str_to_vec<T, E>(s: &str) -> Result<Vec<T>, Error>
@@ -19,7 +19,6 @@ where
     Ok(res)
 }
 
-
 pub fn err_field(field: &str) -> Error {
     Error::FromDynError(format!("can not find target field: {} in Struct", field))
 }
@@ -32,10 +31,8 @@ pub fn err_field_type(field: &str, target: &str) -> Error {
 }
 
 pub fn item_bool(item: &toml_edit::Item) -> Result<bool, Error> {
-    item.as_bool().map_or_else(
-        || Err(err_from_to!("toml_edit::Item" => "bool")),
-        |b| Ok(b),
-    )
+    item.as_bool()
+        .map_or_else(|| Err(err_from_to!("toml_edit::Item" => "bool")), |b| Ok(b))
 }
 pub fn value_bool(value: &toml_edit::Value) -> Result<bool, Error> {
     value.as_bool().map_or_else(

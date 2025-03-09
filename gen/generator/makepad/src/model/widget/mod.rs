@@ -62,6 +62,12 @@ impl Widget {
                         Ok::<crate::script::Script, Error>(script)
                     })
                     .transpose()?;
+            } else {
+                self.script = template
+                    .is_define_root_and(|define_widget| {
+                        Ok::<crate::script::Script, Error>(define_widget.default_script())
+                    })
+                    .transpose()?;
             }
         }
 
@@ -305,3 +311,50 @@ impl ToRs for Widget {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use std::path::PathBuf;
+
+    use gen_analyzer::Model;
+    use gen_utils::{
+        common::{fs, Source},
+        compiler::ToRs,
+    };
+    use quote::ToTokens;
+    // use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
+
+    use crate::{compiler::Context, model::SimpleAppMain};
+
+    use super::Widget;
+    #[test]
+    fn easy() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/tag.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/tag.gen",
+            "src_gen_0/src/views/tag.rs",
+        );
+        handle(source);
+    }
+    fn handle(source: Source) {
+        let model = Model::new(source, true).unwrap();
+        // dbg!(model);
+        let mut context = context();
+        let w = Widget::try_from((&mut context, model)).unwrap();
+        // dbg!(&w.template);
+        let content = w.content().unwrap().to_string();
+        let path = PathBuf::from("/Users/shengyifei/projects/gen_ui/GenUI/gen/generator/makepad/src/compiler/conf/mini_test.rs");
+        let _ = fs::write(path.as_path(), &content);
+    }
+
+    fn context() -> Context {
+        Context {
+            app_main: SimpleAppMain::default(),
+            // sc_visitor_chain: VisitorChain::build(),
+            define_widget_poll: Default::default(),
+            plugins: None,
+            dyn_processor: None,
+            lib_content: None,
+        }
+    }
+}

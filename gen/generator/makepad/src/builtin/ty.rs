@@ -6,7 +6,8 @@ use crate::two_way_binding::TwoWayBindImpl;
 
 use super::{
     widget::{
-        Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup, Root, Svg, Tag, View, WidgetImpl
+        Button, Checkbox, CheckboxGroup, Divider, Image, Input, Label, Link, Radio, RadioGroup,
+        Root, Svg, Tag, Toggle, View, WidgetImpl,
     },
     BuiltinWidget,
 };
@@ -32,8 +33,9 @@ pub enum BuiltinWidgetType {
     Checkbox,
     CheckboxGroup,
     Input,
+    Toggle,
     // data
-    Tag
+    Tag,
 }
 
 impl BuiltinWidgetType {
@@ -55,6 +57,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::CheckboxGroup => "GCheckboxGroup",
             BuiltinWidgetType::ScrollBars => "GScrollBars",
             BuiltinWidgetType::Tag => "GTag",
+            BuiltinWidgetType::Toggle => "GToggle",
         }
     }
     pub fn snake_name(&self) -> &str {
@@ -75,6 +78,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::CheckboxGroup => "gcheckbox_group",
             BuiltinWidgetType::ScrollBars => "gscroll_bars",
             BuiltinWidgetType::Tag => "gtag",
+            BuiltinWidgetType::Toggle => "gtoggle",
         }
     }
     pub fn event_ty_map(&self) -> Option<HashMap<String, String>> {
@@ -95,6 +99,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::CheckboxGroup => CheckboxGroup::event_ty_map(),
             BuiltinWidgetType::ScrollBars => None,
             BuiltinWidgetType::Tag => Tag::event_ty_map(),
+            BuiltinWidgetType::Toggle => Toggle::event_ty_map(),
         }
     }
     pub fn twb_event(&self, prop: &str) -> Option<String> {
@@ -115,6 +120,7 @@ impl BuiltinWidgetType {
             BuiltinWidgetType::CheckboxGroup => CheckboxGroup::twb_event(prop),
             BuiltinWidgetType::ScrollBars => None,
             BuiltinWidgetType::Tag => Tag::twb_event(prop),
+            BuiltinWidgetType::Toggle => Toggle::twb_event(prop),
         }
     }
 }
@@ -138,6 +144,7 @@ impl From<&BuiltinWidget> for BuiltinWidgetType {
             BuiltinWidget::CheckboxGroup(_) => BuiltinWidgetType::CheckboxGroup,
             BuiltinWidget::ScrollBars(_) => BuiltinWidgetType::ScrollBars,
             BuiltinWidget::Tag(_) => BuiltinWidgetType::Tag,
+            BuiltinWidget::Toggle(_) => BuiltinWidgetType::Toggle,
         }
     }
 }
@@ -162,6 +169,7 @@ impl FromStr for BuiltinWidgetType {
             "checkbox" => Ok(BuiltinWidgetType::Checkbox),
             "checkbox_group" => Ok(BuiltinWidgetType::CheckboxGroup),
             "input" => Ok(BuiltinWidgetType::Input),
+            "toggle" => Ok(BuiltinWidgetType::Toggle),
             "tag" => Ok(BuiltinWidgetType::Tag),
             _ => Err(ConvertError::FromTo {
                 from: s.to_string(),
