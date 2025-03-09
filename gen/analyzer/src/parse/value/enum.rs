@@ -26,36 +26,13 @@ impl Enum {
     pub fn is_anonymous(&self) -> bool {
         self.field_chain.len() == 1
     }
-    pub fn parse_template(s: &str) -> Result<Self, Error>{
-        Self::parse_style(s)
+    pub fn parse_template(s: &str) -> Result<Self, Error> {
+        Self::parse(s, false)
     }
     pub fn parse_style(s: &str) -> Result<Self, Error> {
-        fn parse_leaf(s: &str) -> Result<EnumItem, Error> {
-            let s = s.trim();
-            match parse_value(s) {
-                Ok((input, s)) => {
-                    return if input.starts_with("(") && input.ends_with(")") {
-                        let input = input.trim_matches(|c| c == '(' || c == ')');
-                        Ok(EnumItem::Leaf(
-                            s.to_string(),
-                            Some(Value::parse_style(input)?),
-                        ))
-                    } else if input.starts_with("{") && input.ends_with("}") {
-                        Ok(EnumItem::Leaf(
-                            s.to_string(),
-                            Some(Value::parse_style(input)?),
-                        ))
-                    } else {
-                        if Value::check_unknown(s) {
-                            return Ok(EnumItem::Leaf(s.to_string(), None));
-                        }
-                        return Err(ParseError::template("style Enum leaf parse failed").into());
-                    };
-                }
-                Err(_) => Err(ParseError::template("style Enum leaf parse failed").into()),
-            }
-        }
-
+        Self::parse(s, true)
+    }
+    fn parse(s: &str, is_style: bool) -> Result<Self, Error> {
         // split `::`
         if s.contains("::") {
             let mut field_chain = vec![];
@@ -69,15 +46,52 @@ impl Enum {
                     field_chain.push(EnumItem::Branch(item.to_string()));
                 } else {
                     // leaf
-                    field_chain.push(parse_leaf(item)?);
+                    field_chain.push(Self::parse_leaf(item, is_style)?);
                 }
             }
             return Ok(Enum { field_chain });
         } else {
-            let leaf = parse_leaf(s)?;
+            let leaf = Self::parse_leaf(s, is_style)?;
             return Ok(Enum {
                 field_chain: vec![leaf],
             });
+        }
+    }
+    fn parse_leaf(s: &str, is_style: bool) -> Result<EnumItem, Error> {
+        let s = s.trim();
+        match parse_value(s) {
+            Ok((input, s)) => {
+                return if input.starts_with("(") && input.ends_with(")") {
+                    let input = input
+                        .strip_prefix('(')
+                        .and_then(|x| x.strip_suffix(')'))
+                        .unwrap_or(input);
+
+                    Ok(EnumItem::Leaf(
+                        s.to_string(),
+                        Some(if is_style {
+                            Value::parse_style(input)?
+                        } else {
+                            Value::parse_template(input)?
+                        }),
+                    ))
+                } else if input.starts_with("{") && input.ends_with("}") {
+                    Ok(EnumItem::Leaf(
+                        s.to_string(),
+                        Some(if is_style {
+                            Value::parse_style(input)?
+                        } else {
+                            Value::parse_template(input)?
+                        }),
+                    ))
+                } else {
+                    if Value::check_unknown(s) {
+                        return Ok(EnumItem::Leaf(s.to_string(), None));
+                    }
+                    return Err(ParseError::template("style Enum leaf parse failed").into());
+                };
+            }
+            Err(_) => Err(ParseError::template("style Enum leaf parse failed").into()),
         }
     }
 }
