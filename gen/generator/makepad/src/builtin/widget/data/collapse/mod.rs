@@ -26,7 +26,11 @@ impl WidgetImpl for Collapse {
 }
 
 impl TwoWayBindImpl for Collapse {
-    fn twb_event(_prop: &str) -> Option<String> {
-        None
+    fn twb_event(prop: &str) -> Option<String> {
+        if prop == "opened"{
+            Some(CollapseEvent::Opened.to_string())
+        }else{
+            None
+        }
     }
 }

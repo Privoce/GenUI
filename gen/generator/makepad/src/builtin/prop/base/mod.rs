@@ -18,6 +18,7 @@ mod walk;
 mod choose;
 mod src;
 mod loading;
+mod mode;
 
 pub use align::Align;
 pub use cursor::MouseCursor;
@@ -39,3 +40,4 @@ pub use walk::{Walk, TextWalk};
 pub use choose::*;
 pub use src::Src;
 pub use loading::*;
+pub use mode::*;

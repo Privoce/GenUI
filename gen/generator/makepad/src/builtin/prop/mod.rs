@@ -129,5 +129,8 @@ try_from_value_ref_enum! {
     GChooseType, "GChooseType",
     GToggleType, "GToggleType",
     GLoadingType, "GLoadingType",
-    Position4, "Position4"
+    Position4, "Position4",
+    Position, "Position",
+    TriggerMode, "TriggerMode",
+    CloseMode, "CloseMode"
 }
