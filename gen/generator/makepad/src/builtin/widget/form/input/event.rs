@@ -13,8 +13,8 @@ impl_widget_event! {
     InputEvent {
         InputEvent::Changed => "GInputChangedParam" => "changed",
         InputEvent::KeyDownUnhandled => "KeyEvent" => "keydown_unhandled",
-        InputEvent::Escaped => "_" => "escaped",
-        InputEvent::KeyFocus => "_" => "key_focus",
-        InputEvent::KeyFocusLost => "_" => "key_focus_lost"
+        InputEvent::Escaped => "KeyEvent" => "escaped",
+        InputEvent::KeyFocus => "KeyFocusEvent" => "key_focus",
+        InputEvent::KeyFocusLost => "KeyFocusEvent" => "key_focus_lost"
     }
 }

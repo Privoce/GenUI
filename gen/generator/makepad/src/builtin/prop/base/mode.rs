@@ -25,6 +25,24 @@ pub enum PopupMode {
     Drawer,
 }
 
+#[derive(Clone, PartialEq, Default, Copy, Debug)]
+pub enum NavMode {
+    #[default]
+    /// History mode
+    /// - use history to navigate (nav_to or nav_back) till stack is empty
+    /// ```
+    /// nav_to: A -> B -> C -> D
+    /// nav_back: D -> C -> B -> A
+    /// ```
+    History,
+    /// Stack mode
+    /// ```
+    /// nav_to: A -> B -> C -> D
+    /// nav_back: D -> C -> D -> C
+    /// ```
+    Switch,
+}
+
 try_from_enum_one_leaf! {
     TriggerMode, "TriggerMode",
     TriggerMode::Click = "Click",
@@ -44,4 +62,10 @@ try_from_enum_one_leaf! {
     PopupMode::ToolTip = "ToolTip",
     PopupMode::Dialog = "Dialog",
     PopupMode::Drawer = "Drawer"
+}
+
+try_from_enum_one_leaf! {
+    NavMode, "NavMode",
+    NavMode::History = "History",
+    NavMode::Switch = "Switch"
 }

@@ -8,7 +8,7 @@ pub enum LoadingEvent {
 
 impl_widget_event! {
     LoadingEvent {
-        LoadingEvent::Opened => "_" => "opened",
-        LoadingEvent::Closed => "_" => "closed"
+        LoadingEvent::Opened => "GLoadingEventParam" => "opened",
+        LoadingEvent::Closed => "GLoadingEventParam" => "closed"
     }
 }

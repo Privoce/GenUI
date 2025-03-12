@@ -1,8 +1,9 @@
 mod wasm;
+mod router;
 // mod mini_test;
 
 use std::{fmt::Display, path::PathBuf, str::FromStr};
-
+pub use router::RouterBuilder;
 use gen_utils::{
     common::{string::FixedString, RustDependence},
     compiler::UnderlayerConfImpl,

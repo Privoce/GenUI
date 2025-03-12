@@ -133,5 +133,6 @@ try_from_value_ref_enum! {
     Position, "Position",
     TriggerMode, "TriggerMode",
     CloseMode, "CloseMode",
-    PopupMode, "PopupMode"
+    PopupMode, "PopupMode",
+    NavMode, "NavMode"
 }

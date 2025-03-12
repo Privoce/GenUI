@@ -6,6 +6,8 @@ use gen_plugin::Token as PluginToken;
 
 use crate::model::{AbsWidget, SimpleAppMain};
 
+use super::RouterBuilder;
+
 /// in other: Key: WidgetID, Value: AbsWidget
 /// in ctx(define widget poll): Key: WidgetName, Value: AbsWidget
 pub type WidgetPoll = HashMap<String, AbsWidget>;
@@ -30,6 +32,8 @@ pub struct Context {
     /// plugins
     pub plugins: Option<HashSet<PluginToken>>,
     pub dyn_processor: Option<DynProcessor>,
+    /// routers
+    pub routers: Option<HashMap<String, RouterBuilder>>
 }
 
 impl Default for Context {
@@ -41,6 +45,7 @@ impl Default for Context {
             plugins: None,
             dyn_processor: None,
             lib_content: None,
+            routers: None
         }
     }
 }

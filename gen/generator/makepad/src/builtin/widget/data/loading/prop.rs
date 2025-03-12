@@ -1,32 +1,3 @@
-// #[live]
-// pub theme: Themes,
-// #[live]
-// pub stroke_color: Option<Vec4>,
-// // deref -------------------
-// #[live]
-// #[redraw]
-// pub draw_loading: DrawGLoading,
-// #[live]
-// pub loading_type: GLoadingType,
-// #[walk]
-// pub walk: Walk,
-// #[layout]
-// pub layout: Layout,
-// // frame -------------------
-// #[live(true)]
-// pub visible: bool,
-// #[live(true)]
-// pub animation_key: bool,
-// #[live]
-// pub time: f32,
-// #[rust]
-// next_frame: NextFrame,
-// // store previous state(animation_key)
-// #[rust]
-// pub pre_state: bool,
-// #[live(true)]
-// pub event_key: bool,
-
 use gen_analyzer::{value::Value, PropKey};
 use gen_utils::err_from_to;
 
