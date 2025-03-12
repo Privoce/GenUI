@@ -1,7 +1,8 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, path::PathBuf};
 
 use gen_dyn_run::DynProcessor;
 use gen_plugin::Token as PluginToken;
+use gen_utils::error::Error;
 // use rssyin::{makepad::MakepadChainExpand, visitor::chain::VisitorChain};
 
 use crate::model::{AbsWidget, SimpleAppMain};
@@ -54,6 +55,13 @@ impl Context {
     pub fn push_widget(&mut self, key: String, value: AbsWidget) {
         self.define_widget_poll.insert(key, value);
     }
+    pub fn load_routers(&mut self, routers: &Vec<PathBuf>) -> Result<(), Error> {
+        let mut router_map = HashMap::new();
+        for router in routers {
+            let router = RouterBuilder::new(router)?;
+            router_map.insert(router.id.to_string(), router);
+        }
+    
+        Ok(())
+    }
 }
-
-// pub struct SimpleVirtualWidget {}

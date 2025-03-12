@@ -5,7 +5,7 @@ use gen_utils::{err_from_to, error::Error};
 use quote::ToTokens;
 
 #[derive(Debug, Clone)]
-pub struct LiveDependency(String);
+pub struct LiveDependency(pub String);
 
 impl TryFrom<&Function> for LiveDependency {
     type Error = Error;

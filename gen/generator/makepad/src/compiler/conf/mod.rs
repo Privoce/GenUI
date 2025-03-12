@@ -1,16 +1,17 @@
-mod wasm;
 mod router;
+mod wasm;
 // mod mini_test;
 
-use std::{fmt::Display, path::PathBuf, str::FromStr};
-pub use router::RouterBuilder;
 use gen_utils::{
-    common::{string::FixedString, RustDependence},
+    common::{fs::path_to_str, string::FixedString, RustDependence},
     compiler::UnderlayerConfImpl,
+    err_from_to,
     error::{ConvertError, Error, ParseError, ParseType},
 };
+pub use router::RouterBuilder;
+use std::{fmt::Display, path::PathBuf, str::FromStr};
 
-use toml_edit::{value, Item, Table};
+use toml_edit::{value, Array, Formatted, Item, Table, Value};
 use wasm::WasmConf;
 
 use crate::builtin::widget::RootConf;
@@ -51,6 +52,7 @@ pub struct Config {
     /// use wasm to run ?
     /// makepad wasm
     pub wasm: Option<WasmConf>,
+    pub routers: Option<Vec<PathBuf>>,
 }
 
 impl Config {
@@ -60,6 +62,7 @@ impl Config {
             root: root.into(),
             dependencies: None,
             wasm: None,
+            routers: None,
         }
     }
     pub fn push_dep(&mut self, dep: RustDependence) {
@@ -99,6 +102,14 @@ impl From<&Config> for Item {
 
         if let Some(wasm) = conf.wasm.as_ref() {
             table.insert("wasm", wasm.into());
+        }
+
+        if let Some(routers) = conf.routers.as_ref() {
+            let mut arr = Array::new();
+            for router in routers {
+                arr.push(Value::String(Formatted::new(path_to_str(router))));
+            }
+            table.insert("routers", value(arr));
         }
 
         // here need to wrap a new table outside key is makepad
@@ -150,11 +161,33 @@ impl TryFrom<Option<&Table>> for Config {
                 None
             };
 
+            // [routers] ------------------------------------------------------------------------------------------------
+            let routers = if let Some(routers) = table.get("routers") {
+                let mut paths = vec![];
+                routers
+                    .as_array()
+                    .ok_or_else(|| err_from_to!("toml::Value" => "Array"))
+                    .and_then(|arr| {
+                        for item in arr.iter() {
+                            paths.push(PathBuf::from(
+                                item.as_str()
+                                    .ok_or_else(|| err_from_to!("toml::Value" => "String"))?
+                                    .to_string(),
+                            ));
+                        }
+                        Ok(())
+                    })?;
+                Some(paths)
+            } else {
+                None
+            };
+
             return Ok(Self {
                 entry,
                 root,
                 dependencies,
                 wasm,
+                routers,
             });
         }
 
@@ -198,6 +231,7 @@ mod test_conf {
                     .unwrap(),
             ]),
             wasm: None,
+            routers: None,
         };
 
         let toml = conf.to_string();
