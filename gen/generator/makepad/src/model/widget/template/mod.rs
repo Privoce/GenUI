@@ -25,6 +25,7 @@ use super::role::Role;
 /// 这个Widget模型主要用于抽象整个Makepad Widget结构
 #[derive(Debug, Clone)]
 pub struct WidgetTemplate {
+    /// 虽然这里是Option，但是在生成代码的时候，这个id是自动填充的，见[utils::Ulid]
     pub id: Option<String>,
     pub is_root: bool,
     pub as_prop: Option<String>,
@@ -102,52 +103,44 @@ impl WidgetTemplate {
         let widget = &self.ty;
         let children = self.children.as_ref();
         let is_root = self.is_root;
-
         // [id, signal: `:` or `=`, name] ----------------------------------------------------------------------
         let widget_name = widget.name();
-        let (id, sig, widget_name) = if let Some(prop_slot) = as_prop {
-            let id = parse_str::<TokenStream>(&prop_slot).unwrap();
-            let name = quote! {
-                <#widget_name>
-            };
-            (Some(id), Some(punct_alone(':')), name)
-        } else {
-            let id = id.map(|id| {
-                let id = if is_root {
-                    snake_to_camel(id)
-                } else {
-                    id.to_string()
+        let (id, sig, widget_name) = if is_root {
+            if widget.is_define(){
+                let id = widget_name.clone();
+                // 如果是define的root节点，那么name属性就是下面需要的id
+                let name = quote! {
+                    {{#widget_name}}
                 };
-
-                parse_str::<TokenStream>(&id).unwrap()
-            });
-
-            if id.is_some() {
+                (id, Some(punct_alone('=')), name)
+            }else{
+                // 不是define, 那么就是id的大写形式
+                let id = parse_str::<TokenStream>(&snake_to_camel(id.unwrap())).unwrap();
                 let name = quote! {
                     <#widget_name>
                 };
                 (id, Some(punct_alone('=')), name)
-            } else {
-                // if is root and widget is define, use widget name as id
-                if is_root && widget.is_define() {
-                    let name = quote! {
-                        {{#widget_name}}
-                    };
-                    (Some(widget.name()), Some(punct_alone('=')), name)
-                } else {
-                    let name = quote! {
-                        <#widget_name>
-                    };
-                    (id, None, name)
-                }
+            }
+        }else{
+            // 不是root节点, 那么就需要对组件类型进行检查
+            // 如果是as_prop, 那么id就是as_prop的值, sig则是`:`, name则是组件名
+            if let Some(prop_slot) = as_prop{
+                let id = parse_str::<TokenStream>(&prop_slot).unwrap();
+                let name = quote! {
+                    <#widget_name>
+                };
+
+                (id, Some(punct_alone(':')), name)
+            }else{
+                // 不是as_prop, 不是root, 那么就是最普通的组件情况, 直接使用id, 也无需大写
+                let name = quote! {
+                    <#widget_name>
+                };
+                let id = parse_str::<TokenStream>(id.unwrap()).unwrap();
+                (id, Some(punct_alone('=')), name)
             }
         };
-        // [pub sign] -----------------------------------------------------------------------------------------
-        // let pub_sign = if is_root && widget.is_define() {
-        //     Some(quote! {pub})
-        // } else {
-        //     None
-        // };
+
         // [widget props] -------------------------------------------------------------------------------------
         let widget_props = widget.props();
         // [children] -----------------------------------------------------------------------------------------
@@ -174,18 +167,6 @@ impl WidgetTemplate {
         }
     }
 }
-
-// /// 仅处理单个节点
-// impl ToTokensExt for WidgetTemplate {
-//     fn to_token_stream(&self) -> Result<proc_macro2::TokenStream, Error> {
-//         // [生成Widget] -------------------------------------------------------------------------------------
-//         if let WidgetType::Global(globals) = &self.ty {
-//             return ToTokensExt::to_token_stream(globals);
-//         } else {
-//             return Ok(self.live_node());
-//         }
-//     }
-// }
 
 /// generate root widget
 /// ```

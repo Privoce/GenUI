@@ -12,17 +12,26 @@ use nom::multi::{many1, separated_list0};
 use nom::sequence::{pair, preceded, separated_pair};
 use nom::{bytes::complete::tag, sequence::delimited, IResult};
 
+use super::Function;
+
 /// # Bind Value
 /// - in template: `:bind="A"` A is a bind ident
 /// - in style: `$A`
+/// ## Normal Bind
+/// in template: `:bind="A"` See [`Vec<Ident>`]
+/// ## Function Bind
+/// in template: `:bind="hello()"` See [`Function`]
 /// ## For Bind
-/// in template: `:for="(index, item) in iter_ident"` See [For]
+/// in template: `:for="(index, item) in iter_ident"` See [`For`]
 /// ## Test
 /// See [test_bind](tests/src/parser/value/bind.rs)
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Bind {
-    // normal is a bind ident, maybe it bind a ident or a closure ident
+    /// normal is a bind ident, maybe it bind a ident or a closure ident
     Normal(Vec<Ident>),
+    /// bind function
+    Fn(Function),
+    /// for loop bind
     For(For),
 }
 
@@ -31,13 +40,14 @@ impl Bind {
         match self {
             Bind::Normal(n) => Ident::fmt_idents(n),
             Bind::For(f) => f.ident(),
-            // Bind::For(f) => f.fmt_item(),
+            Bind::Fn(function) => function.ident().to_string(),
         }
     }
     pub fn is(&self, s: &str) -> bool {
         match self {
             Bind::Normal(n) => n[0].name == s,
             Bind::For(f) => f.iter_ident[0].name == s,
+            Bind::Fn(function) => function.name == s,
         }
     }
     pub fn get_for(&self) -> Option<&For> {
@@ -70,6 +80,7 @@ impl Display for Bind {
         match self {
             Bind::Normal(n) => f.write_str(&n.iter().map(|i| i.to_string()).collect::<String>()),
             Bind::For(for_bind) => for_bind.fmt(f),
+            Bind::Fn(function) => function.fmt(f),
         }
     }
 }
@@ -83,6 +94,10 @@ impl FromStr for Bind {
                 return Ok(Bind::For(f));
             }
             Err(_) => {
+                if let Ok(fn_bind) = Function::parse(s, false) {
+                    return Ok(Bind::Fn(fn_bind));
+                }
+
                 if let Ok(normal) = Ident::parse_idents(s) {
                     return Ok(Bind::Normal(normal));
                 }
@@ -487,7 +502,7 @@ impl Ident {
 
         alt((dot, holder, ident))(s)
     }
-    pub fn fmt_idents(idents: &Vec<Ident>) -> String{
+    pub fn fmt_idents(idents: &Vec<Ident>) -> String {
         idents.iter().map(|i| i.to_string()).collect::<String>()
     }
 }

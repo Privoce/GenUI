@@ -43,6 +43,18 @@ mod test_widget {
     }
 
     #[test]
+    fn vis(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/bind1.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/bind1.gen",
+            "src_gen_0/src/views/bind1.rs",
+        );
+
+        handle(source);
+    }
+
+    #[test]
     fn script(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/sc1.gen
         let source = Source::new(

@@ -23,7 +23,9 @@ use super::{special::Special, Value};
 /// See [test_func](tests/src/parser/value/function.rs)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
+    /// function name (ident)
     pub name: String,
+    /// function params
     pub params: Option<Vec<Value>>,
     /// use to recognize the function is used on the `template` or `style`
     /// if is `style`: `()` should be exist in the function when the function is called (although no args)
@@ -31,6 +33,9 @@ pub struct Function {
 }
 
 impl Function {
+    pub fn ident(&self) -> &str {
+        &self.name
+    }
     pub fn new(name: &str, params: Option<Vec<Value>>, is_style: bool) -> Self {
         // check params
         let params = match params {
