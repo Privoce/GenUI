@@ -16,6 +16,10 @@ use crate::script::Impls;
 pub struct EventLzVisitor;
 
 impl EventLzVisitor {
+    pub fn visit_pure(event: &mut ItemEnum) -> () {
+        Self::handle_event_enum(event);
+    }
+
     /// 处理事件枚举
     /// 返回：HashMap<事件名，事件类型> （可以从事件枚举的定义中得到）
     pub fn visit(

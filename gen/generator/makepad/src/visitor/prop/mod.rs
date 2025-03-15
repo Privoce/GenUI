@@ -189,6 +189,13 @@ impl PropLzVisitor {
         }
     }
 
+    pub fn visit_pure(props: Option<&mut Vec<PropItem>>, others: &mut Vec<Stmt>) -> Result<(), Error> {
+        if let Some(props) = props {
+            Self::props(props, others)?;
+        }
+        Ok(())
+    }
+
     /// ## params
     /// - component: 使用#[component]修饰的struct
     /// - props: 使用#[prop(bool)]修饰的struct或enum

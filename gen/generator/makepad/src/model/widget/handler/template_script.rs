@@ -43,7 +43,7 @@ pub fn template_script(
 
     // [处理script] ----------------------------------------------------------------------------------------
     let script = if let Some(script) = script {
-        Some(crate::script::Script::handle(
+        Some(crate::script::Script::new(
             script,
             context,
             polls,

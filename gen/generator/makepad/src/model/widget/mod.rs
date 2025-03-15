@@ -44,13 +44,13 @@ impl Widget {
         Ok(widget)
     }
     pub fn imports(&self) -> Option<proc_macro2::TokenStream> {
-        self.script.as_ref().and_then(|sc| sc.uses())
+        self.script.as_ref().and_then(|sc| sc.uses.clone())
     }
     /// default script impl for easy define widget
     pub fn patch_or_default_script(&mut self) -> Result<(), Error> {
         // 确保有template
         if let Some(template) = self.template.as_ref() {
-            if let Some(crate::script::Script::ScRs(patch_sc)) = self.script.as_ref() {
+            if let Some(patch_sc) = self.script.as_ref() {
                 if patch_sc.live_component.is_some() {
                     return Ok(());
                 }
@@ -58,7 +58,7 @@ impl Widget {
                 self.script = template
                     .is_define_root_and(|define_widget| {
                         let mut script = define_widget.default_script();
-                        script.patch(patch_sc)?;
+                        script.patch(patch_sc);
                         Ok::<crate::script::Script, Error>(script)
                     })
                     .transpose()?;

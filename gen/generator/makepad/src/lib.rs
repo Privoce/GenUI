@@ -50,8 +50,9 @@ mod test_widget {
             "views/sc1.gen",
             "src_gen_0/src/views/sc1.rs",
         );
-        let model = Model::new(source, true).unwrap();
-        dbg!(model);
+        // let model = Model::new(source, true).unwrap();
+        // dbg!(model);
+        handle(source);
     }
 
 
