@@ -11,7 +11,7 @@ use std::{
 // use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
 
 use gen_utils::{
-    common::ulid,
+    common::Ulid,
     err_from, err_from_to,
     error::{Error, ParseError},
 };
@@ -42,7 +42,7 @@ pub struct Template {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
     /// 以此来在不同的文件中区分相同的组件
-    pub special: String,
+    pub special: Ulid,
     /// class是一个数组，一个组件模型可以有多个class
     /// 这些class指向style中的样式
     /// 这些class可以是动态绑定的
@@ -125,6 +125,12 @@ impl Template {
                 poll.insert_event(self.as_event_component(callbacks)?);
             }
         }
+
+        // 检查组件是否有id, 如果没有id则将special作为id
+        if self.id.is_none() {
+            self.id.replace(self.special.to_snake());
+        }
+
         Ok(())
     }
     pub fn after_all(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
@@ -293,7 +299,11 @@ impl Template {
         let _ = self.parent.replace((id, name, root).into());
     }
     pub fn as_parent(&self) -> (String, String) {
-        let id = self.id.as_ref().unwrap_or(&self.special).to_string();
+        let id = self
+            .id
+            .as_ref()
+            .unwrap_or(&self.special.to_snake())
+            .to_string();
 
         (id, self.name.to_string())
     }
@@ -345,7 +355,7 @@ impl Template {
 impl Default for Template {
     fn default() -> Self {
         Self {
-            special: ulid(),
+            special: Ulid::new(),
             class: Default::default(),
             id: Default::default(),
             name: Default::default(),
