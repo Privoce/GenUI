@@ -43,6 +43,32 @@ mod test_widget {
     }
 
     #[test]
+    fn script(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/sc1.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/sc1.gen",
+            "src_gen_0/src/views/sc1.rs",
+        );
+        // let model = Model::new(source, true).unwrap();
+        // dbg!(model);
+        handle(source);
+    }
+
+    #[test]
+    fn script_pure(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/sc_pure.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/sc_pure.gen",
+            "src_gen_0/src/views/sc_pure.rs",
+        );
+        // let model = Model::new(source, true).unwrap();
+        // dbg!(model);
+        handle(source);
+    }
+
+    #[test]
     fn c_ref2() {
         let source = Source::new(
             "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test",
@@ -65,18 +91,7 @@ mod test_widget {
         handle(source);
     }
 
-    #[test]
-    fn script(){
-        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/sc1.gen
-        let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
-            "views/sc1.gen",
-            "src_gen_0/src/views/sc1.rs",
-        );
-        // let model = Model::new(source, true).unwrap();
-        // dbg!(model);
-        handle(source);
-    }
+    
 
 
     #[test]

@@ -56,6 +56,7 @@ impl FromStr for Script {
             impl_component,
             mut others,
         } = ScriptAnalyzer::analyze(&s).map_err(|e| Error::from(e.to_string()))?;
+
         // [check] -------------------------------------------------------------------------------------------
         if imports.is_some()
             || component.is_some()
@@ -66,6 +67,7 @@ impl FromStr for Script {
                 "imports, component, instance, impl_component are not allowed in single script",
             ));
         }
+        let pure = props.is_none() && events.is_none();
         // [props] -------------------------------------------------------------------------------------------
         PropLzVisitor::visit_pure(props.as_mut(), &mut others)?;
         // [events] ------------------------------------------------------------------------------------------
@@ -89,7 +91,7 @@ impl FromStr for Script {
             impls: None,
             twb_poll: None,
             others: Some(others),
-            pure: false,
+            pure,
         })
     }
 }
@@ -249,7 +251,7 @@ impl ToTokens for Script {
                 .impls
                 .as_ref()
                 .map(|impls| impls.to_token_stream(struct_ident, self.twb_poll.as_ref()));
-            
+
             tokens.extend(quote! {
                 #live_component
                 #impls
