@@ -43,6 +43,29 @@ mod test_widget {
     }
 
     #[test]
+    fn c_ref2() {
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test",
+            "c_ref/components/header.gen",
+            "src_gen_0/src/components/header.rs",
+        );
+
+        handle(source);
+    }
+
+    // /Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test/c_ref/views/root.gen
+    #[test]
+    fn c_ref() {
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/c_ref_test",
+            "c_ref/views/hello.gen",
+            "src_gen_0/src/views/hello.rs",
+        );
+
+        handle(source);
+    }
+
+    #[test]
     fn script(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/sc1.gen
         let source = Source::new(

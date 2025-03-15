@@ -81,7 +81,7 @@ impl ScriptAnalyzer {
         let mut import_macro = None;
         let mut component_struct = None;
         let mut props = None;
-        let mut event_enum = None;
+        let mut event_enums = None;
         let mut default_impl = None;
         let mut impl_component = None;
         let mut others = vec![];
@@ -194,7 +194,7 @@ impl ScriptAnalyzer {
 
                 match macro_enum {
                     AttrMacroEnum::Event => {
-                        event_enum.replace(
+                        event_enums.get_or_insert_with(|| vec![]).push(
                             parse_str::<ItemEnum>(&enm.syntax().text().to_string())
                                 .map_err(|e| Error::Parse(e))?,
                         );
@@ -282,7 +282,7 @@ impl ScriptAnalyzer {
             imports: import_macro,
             component: component_struct,
             instance: default_impl,
-            event: event_enum,
+            events: event_enums,
             impl_component,
             props,
             others,

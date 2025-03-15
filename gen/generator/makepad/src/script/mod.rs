@@ -10,6 +10,7 @@ use std::{
 use crate::{
     compiler::{Context, WidgetPoll},
     model::{TemplatePtrs, WidgetTemplate, WidgetType},
+    token::use_default_all,
     two_way_binding::TWBPollBuilder,
     visitor::{EventLzVisitor, FnLzVisitor, InstanceLzVisitor, PropLzVisitor},
 };
@@ -37,6 +38,8 @@ pub struct Script {
     pub impls: Option<Impls>,
     pub twb_poll: Option<TWBPollBuilder>,
     pub others: Option<Vec<Stmt>>,
+    /// is pure rust code
+    pub pure: bool,
 }
 
 /// only for single script
@@ -49,7 +52,7 @@ impl FromStr for Script {
             component,
             mut props,
             instance,
-            event,
+            events,
             impl_component,
             mut others,
         } = ScriptAnalyzer::analyze(&s).map_err(|e| Error::from(e.to_string()))?;
@@ -66,10 +69,14 @@ impl FromStr for Script {
         // [props] -------------------------------------------------------------------------------------------
         PropLzVisitor::visit_pure(props.as_mut(), &mut others)?;
         // [events] ------------------------------------------------------------------------------------------
-        let events = if let Some(mut event) = event {
-            EventLzVisitor::visit_pure(&mut event);
+        let events = if let Some(events) = events {
+            let mut res = vec![];
+            for mut event in events {
+                EventLzVisitor::visit_pure(&mut event);
+                res.push(event);
+            }
 
-            Some(vec![event])
+            Some(res)
         } else {
             None
         };
@@ -82,6 +89,7 @@ impl FromStr for Script {
             impls: None,
             twb_poll: None,
             others: Some(others),
+            pure: false,
         })
     }
 }
@@ -110,7 +118,7 @@ impl Script {
             component,
             mut props,
             mut instance,
-            event,
+            events,
             impl_component,
             mut others,
         } = ScriptAnalyzer::analyze(&sc).map_err(|e| Error::from(e.to_string()))?;
@@ -146,22 +154,25 @@ impl Script {
             (None, None)
         };
         // [events] ------------------------------------------------------------------------------------------
-        if let Some(mut event) = event {
-            let events = EventLzVisitor::visit(&mut event, &mut impls)?;
-            if let WidgetType::Define(define_widget) = &template.ty {
-                let snake_name = define_widget.snake_name();
-                let name = define_widget.root_name().to_string();
-                ctx.push_widget(
-                    snake_name,
-                    crate::model::AbsWidget::Define {
-                        name,
-                        props: twb.as_ref().map(|build| build.0.clone()),
-                        events,
-                    },
-                );
+        if let Some(events) = events {
+            for mut event in events {
+                let events = EventLzVisitor::visit(&mut event, &mut impls)?;
+                if let WidgetType::Define(define_widget) = &template.ty {
+                    let snake_name = define_widget.snake_name();
+                    let name = define_widget.root_name().to_string();
+                    ctx.push_widget(
+                        snake_name,
+                        crate::model::AbsWidget::Define {
+                            name,
+                            props: twb.as_ref().map(|build| build.0.clone()),
+                            events,
+                        },
+                    );
+                }
+                sc_rs.events.get_or_insert(vec![]).push(event);
             }
-            // others.push(parse_quote!(#event));
-            sc_rs.events = Some(vec![event]);
+            // // others.push(parse_quote!(#event));
+            // sc_rs.events = Some(vec![event]);
         }
         // [处理fn-callback] ----------------------------------------------------------------------------------
         if let Some(impl_component) = impl_component {
@@ -187,6 +198,7 @@ impl Script {
         sc_rs.live_component = live_component;
         sc_rs.twb_poll = twb;
         sc_rs.others = Some(others);
+        sc_rs.pure = false;
         Ok(sc_rs)
     }
     /// 默认生成的Makepad中的Rust代码部分，只含有最基础页面结构, 用于没有任何动态交互的页面
@@ -201,6 +213,7 @@ impl Script {
             events: None,
             twb_poll: None,
             others: None,
+            pure: false,
         }
     }
 
@@ -223,6 +236,7 @@ impl Script {
             impls: None,
             twb_poll: None,
             others: None,
+            pure: true,
         }
     }
 }
@@ -235,17 +249,26 @@ impl ToTokens for Script {
                 .impls
                 .as_ref()
                 .map(|impls| impls.to_token_stream(struct_ident, self.twb_poll.as_ref()));
-            let events = self.events.as_ref().map(|events| {
-                quote! {
-                    #( #events )*
-                }
-            });
+            
             tokens.extend(quote! {
                 #live_component
-                #events
                 #impls
             });
+        } else {
+            if !self.pure {
+                tokens.extend(use_default_all());
+            }
         }
+
+        let events = self.events.as_ref().map(|events| {
+            quote! {
+                #( #events )*
+            }
+        });
+
+        tokens.extend(quote! {
+            #events
+        });
 
         self.others.as_ref().map(|others| {
             tokens.extend(quote! {

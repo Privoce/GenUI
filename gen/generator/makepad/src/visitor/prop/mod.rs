@@ -237,11 +237,6 @@ impl PropLzVisitor {
     /// 处理props
     /// 这些props是使用#[prop]修饰的struct或enum，我们需要
     fn props(props: &mut Vec<PropItem>, others: &mut Vec<Stmt>) -> Result<(), Error> {
-        // let mut prop_in_component = PropInComponent {
-        //     rust: HashSet::new(),
-        //     live: HashSet::new(),
-        // };
-
         for prop_item in props.iter_mut() {
             match prop_item {
                 PropItem::Struct(prop) => {

@@ -11,7 +11,7 @@ pub struct ScriptBridger {
     pub component: Option<syn::ItemStruct>,
     /// default impl
     pub instance: Option<syn::ItemImpl>,
-    pub event: Option<syn::ItemEnum>,
+    pub events: Option<Vec<syn::ItemEnum>>,
     pub impl_component: Option<syn::ItemImpl>,
     /// prop struct|enum which use `#[prop(true)] or #[prop(false)]`
     pub props: Option<Vec<PropItem>>,
@@ -30,8 +30,10 @@ impl ToTokens for ScriptBridger {
         if let Some(instance) = &self.instance {
             instance.to_tokens(tokens);
         }
-        if let Some(event) = &self.event {
-            event.to_tokens(tokens);
+        if let Some(event) = &self.events {
+            tokens.extend(quote! {
+                #(#event)*
+            });
         }
         if let Some(impl_component) = &self.impl_component {
             impl_component.to_tokens(tokens);
