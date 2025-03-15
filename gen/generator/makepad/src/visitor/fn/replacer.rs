@@ -53,11 +53,12 @@ impl BindingReplacer {
     }
 }
 
-pub fn visit_builtin(
+pub fn visit_fns(
     input: &mut ImplItemFn,
     fields: Vec<String>,
     widgets: &WidgetPoll,
     prop_binds: Option<&Binds>,
+    signal_fns: &Vec<String>,
     processor: Option<&DynProcessor>,
 ) -> Result<(), Error> {
     let input_str = input.to_token_stream().to_string();
@@ -266,6 +267,27 @@ pub fn visit_builtin(
                                 };
 
                                 replacer.add_replacement(full_range, new_expr);
+                            }
+                        }else{
+                            // 检查是否在signal_fns中
+                            if signal_fns.contains(&method_name) {
+                                // 这里只需要为方法调用的参数中最后一个参数添加cx即可
+                                if let Some(arg_list) = method_call.arg_list() {
+                                    let args = arg_list.syntax().text().to_string();
+                                    if !args.contains("cx") {
+                                        // 在参数列表最后添加cx
+                                        let mut args = args.to_string();
+                                        if args == "()" {
+                                            args = "(cx)".to_string();
+                                        } else {
+                                            args.insert(args.len() - 1, ',');
+                                            args.push_str("cx");
+                                        }
+                                        let full_range = method_call.syntax().text_range();
+                                        let new_expr = format!("{}.{}{}", receiver_text, method_name, args);
+                                        replacer.add_replacement(full_range, new_expr);
+                                    }
+                                }
                             }
                         }
                     }

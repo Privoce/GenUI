@@ -41,7 +41,7 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
 /// let input = r#"<button value="Hello world" class="button1" @clicked="handle_actions"/>"#;
 /// let res = parse_tag_start(input).unwrap();
 /// ```
-pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
+pub fn parse_tag_start(input: &str) -> IResult<&str, (Template, CloseType)> {
     let (remain, (name, props)) = trim(preceded(
         char('<'),
         tuple((parse_tag_name, parse_properties)),
@@ -57,17 +57,20 @@ pub fn parse_tag_start(input: &str) -> IResult<&str, Template> {
     let mut template = Template::new(name);
     let mut remain = remain.trim();
     // check if remain start with `/>`, if true, is end tag
-    if remain.starts_with(SELF_END_SIGN) {
-        unimplemented!("self closed tag not support yet, please use `>` to close tag, expect support version 0.2.1+");
+    let close_type = if remain.starts_with(SELF_END_SIGN) {
+        // unimplemented!("self closed tag not support yet, please use `>` to close tag, expect support version 0.2.1+");
         // remain = remain.trim_start_matches(SELF_END_SIGN);
         // tag.set_ty(CloseType::SelfClosed);
+        remain = remain.strip_prefix(SELF_END_SIGN).unwrap_or(remain);
+        CloseType::SelfClosed
     } else {
         remain = remain.trim_start_matches(END_SIGN);
-    }
+        CloseType::Usual
+    };
 
     template.props = props;
 
-    Ok((remain, template))
+    Ok((remain, (template, close_type)))
 }
 
 /// ## parse property key 🆗
@@ -241,7 +244,7 @@ fn parse_tag<'a>(
         // [parse comment if exist] ------------------------------------------------------------------------------------
         let (input, comments) = parse_comment(input)?;
         // [parse tag start] -------------------------------------------------------------------------------------------
-        let (input, mut template) = parse_tag_start(input)?;
+        let (input, (mut template, close_type)) = parse_tag_start(input)?;
         template.root = root;
         root = false;
         template.after_prop_parse(Arc::clone(&poll)).map_err(|e| {
@@ -252,40 +255,54 @@ fn parse_tag<'a>(
             template.comments.replace(comments);
         }
         // let (is_tag, is_self_closed) = template.is_tag_close();
-        // is tag, nest parse tag
-        let tag_name = template.name.to_string();
+
         // trim input and check is start with `</tag_name>`
-        let input = match parse_end_tag(input, tag_name.to_string()) {
-            Ok((input, _)) => input,
-            Err(_) => {
-                // has children, parse children
-                let (input, mut children) = many0(parse_tag(Arc::clone(&poll), root))(input)?;
+        let input = match close_type {
+            CloseType::SelfClosed => {
+                // no children, return
+                input
+            }
+            CloseType::Usual => {
+                // is tag, nest parse tag
+                let tag_name = template.name.to_string();
+                match parse_end_tag(input, tag_name.to_string()) {
+                    Ok((input, _)) => input,
+                    Err(_) => {
+                        // has children, parse children
+                        let (input, mut children) =
+                            many0(parse_tag(Arc::clone(&poll), root))(input)?;
 
-                let input = match parse_end_tag_common(input) {
-                    Ok((remain, _)) => remain,
-                    Err(_) => input,
-                };
+                        let input = match parse_end_tag_common(input) {
+                            Ok((remain, _)) => remain,
+                            Err(_) => input,
+                        };
 
-                if !children.is_empty() {
-                    let (special, name) = template.as_parent();
-                    for child in children.iter_mut() {
-                        child.set_parent(special.to_string(), name.to_string(), template.root);
-                        child.after_all(Arc::clone(&poll)).map_err(|e| {
-                            eprintln!("parse_tag error: {:?}", e);
-                            nom_err!(input, ErrorKind::Fail)
-                        })?;
+                        if !children.is_empty() {
+                            let (special, name) = template.as_parent();
+                            for child in children.iter_mut() {
+                                child.set_parent(
+                                    special.to_string(),
+                                    name.to_string(),
+                                    template.root,
+                                );
+                                child.after_all(Arc::clone(&poll)).map_err(|e| {
+                                    eprintln!("parse_tag error: {:?}", e);
+                                    nom_err!(input, ErrorKind::Fail)
+                                })?;
+                            }
+
+                            template.children.replace(children);
+                        }
+                        let input = input.trim();
+                        // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
+                        if preceded(char('<'), parse_tag_name)(input).is_ok()
+                            && parse_end_tag_common(input).is_err()
+                        {
+                            input
+                        } else {
+                            input
+                        }
                     }
-
-                    template.children.replace(children);
-                }
-                let input = input.trim();
-                // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
-                if preceded(char('<'), parse_tag_name)(input).is_ok()
-                    && parse_end_tag_common(input).is_err()
-                {
-                    input
-                } else {
-                    input
                 }
             }
         };
@@ -307,4 +324,10 @@ pub fn parse(input: &str, poll: Arc<RwLock<Polls>>, root: bool) -> Result<Templa
         }
         Err(e) => Err(ParseError::template(&e.to_string()).into()),
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum CloseType {
+    SelfClosed,
+    Usual,
 }

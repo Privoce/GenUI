@@ -13,11 +13,10 @@ use nom::{
 pub use poll::*;
 pub use script::*;
 use std::{
-    sync::{
+    str::FromStr, sync::{
         mpsc::{self},
         Arc, RwLock,
-    },
-    thread,
+    }, thread
 };
 pub use strategy::*;
 pub use style::*;
@@ -73,6 +72,16 @@ pub struct Model {
     pub strategy: Strategy,
     /// 池化属性和回调
     pub polls: Arc<RwLock<Polls>>,
+}
+
+impl FromStr for Model {
+    type Err = gen_utils::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut model = Model::default();
+        model.parse(s)?;
+        Ok(model)
+    }
 }
 
 impl Model {

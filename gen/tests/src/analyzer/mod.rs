@@ -82,4 +82,48 @@ mod test_analyzer{
 
         dbg!(&model);
     }
+
+    #[test]
+    fn parse_root3() {
+        let input = r#"
+        <template>
+            <view>
+                <label text="'hello'"/>
+                <button padding="12.0" />
+                <view>
+                    <button>
+                        <label text="'world'" as_prop="slot" />
+                    </button>
+                </view>
+            </view>
+        </template>
+        "#;
+
+        let t = Instant::now();
+        let model = input.parse::<Model>();
+        dbg!(t.elapsed());
+        dbg!(&model);
+    }
+
+    #[test]
+    fn parse_root2() {
+        let input = r#"
+        <template>
+            <view>
+                <label text="'hello'"></label>
+                <button padding="12.0"></button>
+                <view>
+                    <button>
+                        <label text="'world'" as_prop="slot" />
+                    </button>
+                </view>
+            </view>
+        </template>
+        "#;
+
+        let t = Instant::now();
+        let model = input.parse::<Model>();
+        dbg!(t.elapsed());
+        dbg!(&model);
+    }
 }

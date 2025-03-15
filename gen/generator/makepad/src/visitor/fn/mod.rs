@@ -11,6 +11,7 @@ use crate::{
 };
 use gen_analyzer::{Binds, Events};
 
+use gen_dyn_run::DynProcessor;
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -61,8 +62,8 @@ const SPECIAL_EVENT: [&str; 1] = ["http_response"];
 /// 2. 检查是否方法参数`impl EventParam`，如果有则需要根据静态分析的结果替换为对应的回调参数类型，如按钮的回调参数类型为`GButtonEventParam`
 /// 3. 在方法参数，FnArg中添加`cx: &mut Cx`
 /// 4. 将当前方法的调用设置到handle_event中
-/// ## 功能2: 忽略中间方法
-/// 对于中间方法，它不涉及到事件回调，基本只是一个普通方法，不需要改动
+/// ## 功能2: 中间方法
+/// 对于中间方法，它不涉及到事件回调，基本只是一个普通方法，若参数中含有self|&self|&mut self，则需要增加cx: &mut Cx
 /// ## 功能3: 生命周期钩子
 /// 生命周期是GenUI中的一个重要概念，它是一个特殊的方法，用于在组件的生命周期中执行一些操作，如`before_mount`，`mounted`等
 /// 这些操作在Makepad中也是非常重要的，因此我们需要将这些方法转为Makepad中的生命周期钩子
@@ -80,6 +81,8 @@ const SPECIAL_EVENT: [&str; 1] = ["http_response"];
 #[derive(Debug)]
 pub struct FnLzVisitor;
 impl FnLzVisitor {
+    /// 基于编译特性，除了中间方法外，其他所有的方法都需要进行延迟处理，因为其他的方法都可能会使用到中间方法
+    /// 在这里其实只需要将通用转换延后
     pub fn visit(
         mut self_impl: ItemImpl,
         impls: &mut Impls,
@@ -89,7 +92,25 @@ impl FnLzVisitor {
         widget_poll: &WidgetPoll,
         ctx: &Context,
     ) -> Result<(), Error> {
+        fn convert_fns(
+            item_fn: &mut ImplItemFn,
+            widget_poll: &WidgetPoll,
+            binds: Option<&Binds>,
+            signal_fns: &Vec<String>,
+            processor: Option<&DynProcessor>,
+            twb_poll: Option<&TWBPollBuilder>,
+        ) -> Result<(), Error> {
+            // [通用转化] --------------------------------------------------------------------------------
+            let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
+            visit_fns(item_fn, fields, widget_poll, binds, &signal_fns, processor)
+        }
+
+        // 记录增加了cx: &mut Cx的中间方法的ident，用于在visit_fns中提供替换支持
+        let mut signal_fns = vec![];
+        let mut self_events = vec![];
+        let mut lifecycle_events = vec![];
         let mut special_events = vec![];
+
         for impl_item in self_impl.items.iter_mut() {
             // only care about fn
             let (res, impl_item) = if let ImplItem::Fn(item_fn) = impl_item {
@@ -125,18 +146,22 @@ impl FnLzVisitor {
                             res = ConvertResult::SpecialEvent(special);
                         }
                     }
-                }
 
-                // [通用转化] --------------------------------------------------------------------------------
-                let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
-                visit_builtin(
-                    item_fn,
-                    fields,
-                    widget_poll,
-                    binds,
-                    ctx.dyn_processor.as_ref(),
-                )
-                .map_err(|e| CompilerError::runtime("Makepad Compiler - Script", &e.to_string()))?;
+                    // [功能2: 中间方法] -----------------------------------------------------------------------
+                    if matches!(res, ConvertResult::Ignore) {
+                        // 既不是callback fn，也不是生命周期钩子，也不是特殊事件，那么就是中间方法，检查参数中是否含有任意self的引用，如果有则添加cx: &mut Cx
+                        let mut has_self = false;
+                        if item_fn.sig.inputs.iter().any(|args| {
+                            if let FnArg::Receiver(_receiver) = args {
+                                has_self = true;
+                            }
+                            has_self
+                        }) {
+                            item_fn.sig.inputs.push(parse_quote!(cx: &mut Cx));
+                            signal_fns.push(item_fn.sig.ident.to_token_stream().to_string());
+                        }
+                    }
+                }
                 (res, impl_item.clone())
             } else {
                 (ConvertResult::Ignore, impl_item.clone())
@@ -144,14 +169,55 @@ impl FnLzVisitor {
             // [将impl_item添加到impls.self_impl中] ---------------------------------------------------------
             match res {
                 ConvertResult::SelfImpl | ConvertResult::Ignore => {
-                    impls.self_impl.push(impl_item);
+                    self_events.push(impl_item);
                 }
                 ConvertResult::LifeCycle(life_cycle) => {
-                    Self::set_life_cycle(life_cycle, impls, impl_item)?;
+                    lifecycle_events.push((life_cycle, impl_item));
                 }
                 ConvertResult::SpecialEvent(special_event) => {
                     special_events.push((special_event, impl_item));
                 }
+            }
+        }
+
+        for mut impl_item in self_events {
+            if let ImplItem::Fn(item_fn) = &mut impl_item {
+                convert_fns(
+                    item_fn,
+                    widget_poll,
+                    binds,
+                    &signal_fns,
+                    ctx.dyn_processor.as_ref(),
+                    twb_poll,
+                )?;
+            }
+            impls.self_impl.push(impl_item);
+        }
+
+        for (life_cycle, mut impl_item) in lifecycle_events {
+            if let ImplItem::Fn(item_fn) = &mut impl_item {
+                convert_fns(
+                    item_fn,
+                    widget_poll,
+                    binds,
+                    &signal_fns,
+                    ctx.dyn_processor.as_ref(),
+                    twb_poll,
+                )?;
+            }
+            Self::set_life_cycle(life_cycle, impls, impl_item)?;
+        }
+
+        for (_special_event, impl_item) in special_events.iter_mut() {
+            if let ImplItem::Fn(item_fn) = impl_item {
+                convert_fns(
+                    item_fn,
+                    widget_poll,
+                    binds,
+                    &signal_fns,
+                    ctx.dyn_processor.as_ref(),
+                    twb_poll,
+                )?;
             }
         }
 

@@ -12,3 +12,4 @@
 /wiki/**/target
 /examples/ract
 **/*.DS_Store
+/gen/mini_test.rs
