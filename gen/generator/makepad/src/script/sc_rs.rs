@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use gen_analyzer::Polls;
-use gen_utils::error::{CompilerError, Error};
+use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use rssyin::{analyzer::ScriptAnalyzer, bridger::ScriptBridger};
@@ -67,8 +67,14 @@ impl ScRs {
         // let mut component = component.expect("component is required in component!");
         let polls = polls.read().unwrap();
         let (twb, live_component) = if let Some(mut component) = component {
-            let (twb, live_component) =
-                PropLzVisitor::visit(&mut component,props.as_mut() ,template_ptrs, &mut impls, polls.binds.as_ref(), &mut others)?;
+            let (twb, live_component) = PropLzVisitor::visit(
+                &mut component,
+                props.as_mut(),
+                template_ptrs,
+                &mut impls,
+                polls.binds.as_ref(),
+                &mut others,
+            )?;
             // - [twb token stream for other_stmts] --------------------------------------------------------------
             if let Some(twb) = twb.as_ref() {
                 others.push(parse_quote!(#twb));
@@ -136,16 +142,7 @@ impl ScRs {
         template_ptrs: &TemplatePtrs,
         template: Option<&WidgetTemplate>,
     ) -> Result<Self, Error> {
-        match sc {
-            gen_analyzer::Script::Rs(rs) => {
-                Self::handle(rs, ctx, polls, widget_poll, template_ptrs, template)
-            }
-            gen_analyzer::Script::Other { lang, .. } => Err(CompilerError::runtime(
-                "Makepad Compiler - Script",
-                &format!("Unsupported script language: {}", lang),
-            )
-            .into()),
-        }
+        Self::handle(sc, ctx, polls, widget_poll, template_ptrs, template)
     }
     /// 默认生成的Makepad中的Rust代码部分，只含有最基础页面结构, 用于没有任何动态交互的页面
     pub fn default_sc(ident: TokenStream) -> Self {

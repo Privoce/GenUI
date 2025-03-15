@@ -187,7 +187,7 @@ impl Model {
                     (Ok(template), Ok(style)) => {
                         self.template.replace(template?);
                         self.style.replace(style?);
-                        self.script.replace(sc.into());
+                        self.script.replace(sc);
                     }
                     (Ok(_), Err(e)) => {
                         return Err(Error::from(format!("receive style error: {}", e)));
@@ -235,7 +235,7 @@ impl Model {
                         Ok(())
                     },
                 )?;
-                self.script.replace(sc.into());
+                self.script.replace(sc);
             }
             (Some(t), None, None) => {
                 self.strategy = Strategy::SingleTemplate;
@@ -248,7 +248,7 @@ impl Model {
             }
             (None, None, Some(sc)) => {
                 self.strategy = Strategy::SingleScript;
-                self.script.replace(sc.into());
+                self.script.replace(sc);
             }
             (None, None, None) => {
                 self.strategy = Strategy::None;

@@ -1,7 +1,7 @@
+use crate::model::Widget;
 use gen_analyzer::Script;
 use gen_utils::{common::Source, error::Error};
 use syn::parse_str;
-use crate::model::Widget;
 
 pub fn single_script(
     source: Source,
@@ -9,13 +9,7 @@ pub fn single_script(
     is_entry: bool,
 ) -> Result<Widget, Error> {
     let script = if let Some(sc) = script {
-        let content = match sc {
-            Script::Rs(code) => {
-                parse_str::<syn::File>(&code).map_err(|e| Error::from(e.to_string()))?
-            }
-            Script::Other { lang, code } => unimplemented!("{}: {}", lang, code),
-        };
-
+        let content = parse_str::<syn::File>(&sc).map_err(|e| Error::from(e.to_string()))?;
         Some(content.into())
     } else {
         None

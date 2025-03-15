@@ -43,6 +43,19 @@ mod test_widget {
     }
 
     #[test]
+    fn script(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/sc1.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/sc1.gen",
+            "src_gen_0/src/views/sc1.rs",
+        );
+        let model = Model::new(source, true).unwrap();
+        dbg!(model);
+    }
+
+
+    #[test]
     fn setting(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/others/others/views/home.gen
         let source = Source::new(
@@ -52,6 +65,8 @@ mod test_widget {
         );
         handle(source);
     }
+
+    
 
     
     fn handle(source: Source) {

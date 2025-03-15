@@ -166,17 +166,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gen_analyzer"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b3d07f859c6f3926b20ec2654c93f8af0d34cc0308e07d7702a7e7875c9c5c7"
-dependencies = [
- "gen_utils 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nom",
- "serde_json",
-]
-
-[[package]]
 name = "gen_dyn_run"
 version = "0.1.0"
 dependencies = [
@@ -396,7 +385,7 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 name = "makepad_gen_plugin"
 version = "0.1.1"
 dependencies = [
- "gen_analyzer 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_analyzer",
  "gen_dyn_run 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gen_plugin 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gen_utils 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -731,7 +720,7 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
- "gen_analyzer 0.1.0",
+ "gen_analyzer",
  "gen_utils 0.1.1",
  "quote",
  "rssyin 0.1.1",
