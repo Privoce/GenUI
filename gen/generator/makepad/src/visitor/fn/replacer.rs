@@ -53,6 +53,13 @@ impl BindingReplacer {
     }
 }
 
+/// ## 访问fuction并进行替换
+/// 以下内容需要进行处理:
+/// 1. c_ref!宏 (转为self.#widget(id!(#id)))
+/// 2. active!宏 (转为self.active_event(cx, |cx, uid, path| {cx.widget_action(uid, path, #param);}))
+/// 3. get_和set_方法 (转为self.#field_name()和self.#field_name(#param))
+/// 4. signal_fns中的方法 (在参数列表最后添加cx)
+/// 5. 当方法中含有set_方法时, 最终需要增加一行重新绘制的代码 (self.redraw(cx);) 来触发重绘
 pub fn visit_fns(
     input: &mut ImplItemFn,
     fields: Vec<String>,
@@ -67,7 +74,9 @@ pub fn visit_fns(
 
     // 记录需要检查并调用get|set的组件，当使用者调用c_ref!时需要将组件id记录到这里，然后在get|set访问时进行替换
     let mut addition_widgets = HashMap::new();
-
+    // 记录是否需要增加重绘
+    let mut redraw = false;
+    // 创建替换器
     let mut replacer = BindingReplacer::new(fields.clone());
     // [visit_two_way_binding] -------------------------------------------------------------------------------
     // 遍历语法树
@@ -194,7 +203,7 @@ pub fn visit_fns(
                                 .to_string();
 
                             // 检查字段是否在目标列表中
-                            if fields.contains(&field_name) || from_widget.is_some(){
+                            if fields.contains(&field_name) || from_widget.is_some() {
                                 let prefix = if let Some((w, _)) = from_widget {
                                     w.to_string()
                                 } else {
@@ -207,6 +216,7 @@ pub fn visit_fns(
 
                                 // 构建新的调用表达式
                                 let new_expr = if is_setter {
+                                    redraw = true;
                                     let mut new_call = String::new();
                                     // 如果from_widget则需要反向绑定到父组件中完成双向绑定
                                     if let Some((_, widget_id)) = from_widget {
@@ -268,7 +278,7 @@ pub fn visit_fns(
 
                                 replacer.add_replacement(full_range, new_expr);
                             }
-                        }else{
+                        } else {
                             // 检查是否在signal_fns中
                             if signal_fns.contains(&method_name) {
                                 // 这里只需要为方法调用的参数中最后一个参数添加cx即可
@@ -284,7 +294,8 @@ pub fn visit_fns(
                                             args.push_str("cx");
                                         }
                                         let full_range = method_call.syntax().text_range();
-                                        let new_expr = format!("{}.{}{}", receiver_text, method_name, args);
+                                        let new_expr =
+                                            format!("{}.{}{}", receiver_text, method_name, args);
                                         replacer.add_replacement(full_range, new_expr);
                                     }
                                 }
@@ -301,7 +312,15 @@ pub fn visit_fns(
 
     // 解析回ImplItemFn
     match parse_str::<ImplItemFn>(&modified_code) {
-        Ok(new_fn) => {
+        Ok(mut new_fn) => {
+            // 如果有需要重绘的情况，需要在最后添加self.redraw(cx);
+            if redraw {
+                new_fn
+                    .block
+                    .stmts
+                    .push(parse_str("self.redraw(cx);").unwrap());
+            }
+
             *input = new_fn;
             Ok(())
         }
