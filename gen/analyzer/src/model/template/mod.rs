@@ -8,8 +8,6 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-// use gen_parser::{ASTNodes, BuiltinProps, PropertyKeyType, Props, PropsKey, Tag, Value};
-
 use gen_utils::{
     common::Ulid,
     err_from, err_from_to,
@@ -108,14 +106,22 @@ impl Template {
 
     /// ## after parse
     /// 在 template::parse(input) 内部调用在，在所有属性被分析完成后调用这个方法
-    /// See: `push_prop()`
-    pub fn after_prop_parse(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
+    /// See: [`self.push_prop()`]
+    pub fn after_prop_parse(
+        &mut self,
+        poll: Arc<RwLock<Polls>>,
+        iter: Option<&SugarIter>,
+    ) -> Result<Option<SugarIter>, Error> {
+        let mut back_iter = None;
         // [获取Tag被设置的属性作为Template传入的属性]------------------------------------------
         // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
         // 在进行属性处理的时候同时获取出池化属性
         if let Some(props) = self.props.take() {
             for (k, v) in props {
-                self.push_prop(k, v)?;
+                let sugar_iter = self.push_prop(k, v, iter)?;
+                if sugar_iter.is_some() {
+                    back_iter = sugar_iter;
+                }
             }
             // [set events] ----------------------------------------------------------------
             // 由于事件的存储是直接存储所有事件在EvenComponent中所以在外面一次性处理
@@ -131,7 +137,7 @@ impl Template {
             self.id.replace(self.special.to_snake());
         }
 
-        Ok(())
+        Ok(back_iter)
     }
     pub fn after_all(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
         let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
@@ -152,7 +158,7 @@ impl Template {
             }
         }
         // sugar中的for也是binds的一种
-        if let Some(for_sign) = self.sugar_props.for_sign.as_ref() {
+        if let SugarProps::For(for_sign) = &self.sugar_props {
             let (name, id) = self.get_name_and_id()?;
             poll.insert_prop(
                 &for_sign.as_bind()?.ident(),
@@ -197,8 +203,14 @@ impl Template {
             }
         }
     }
-    pub fn push_prop(&mut self, key: PropKey, value: Value) -> Result<(), Error> {
+    pub fn push_prop(
+        &mut self,
+        key: PropKey,
+        value: Value,
+        iter: Option<&SugarIter>,
+    ) -> Result<Option<SugarIter>, Error> {
         // [if is special props]---------------------------------------------------------------------------
+        let mut back_iter = None;
         if let Ok(prop) = BuiltinProps::from_str(&key.name) {
             match prop {
                 BuiltinProps::AsProp => {
@@ -235,7 +247,7 @@ impl Template {
                 }
                 BuiltinProps::For => {
                     if key.is_bind() {
-                        self.sugar_props.set_for(value.clone());
+                        self.sugar_props = SugarProps::For(value.clone());
                     } else {
                         return Err(
                             ParseError::template("for sugar sync must be a bind property").into(),
@@ -244,7 +256,10 @@ impl Template {
                 }
                 BuiltinProps::If => {
                     if key.is_bind() {
-                        self.sugar_props.set_if(IfSign::If(value.clone()));
+                        self.sugar_props = SugarProps::If(SugarIf::If(If {
+                            expr: value.clone(),
+                        }));
+                        back_iter.replace(SugarIter::If { expr: value });
                     } else {
                         return Err(
                             ParseError::template("if sugar sync must be a bind property").into(),
@@ -254,7 +269,37 @@ impl Template {
 
                 BuiltinProps::ElseIf => {
                     if key.is_bind() {
-                        self.sugar_props.set_if(IfSign::ElseIf(value.clone()));
+                        if let Some(iter) = iter {
+                            let else_if = match iter {
+                                SugarIter::If { expr } => SugarIf::ElseIf(ElseIf {
+                                    expr: value.clone(),
+                                    if_expr: If { expr: expr.clone() },
+                                    else_if_exprs: vec![],
+                                }),
+                                SugarIter::ElseIf {
+                                    expr,
+                                    else_if_exprs,
+                                    if_expr,
+                                } => {
+                                    let mut else_if_exprs = else_if_exprs.clone();
+                                    else_if_exprs.push(expr.clone());
+                                    SugarIf::ElseIf(ElseIf {
+                                        expr: value.clone(),
+                                        if_expr: If {
+                                            expr: if_expr.clone(),
+                                        },
+                                        else_if_exprs,
+                                    })
+                                }
+                            };
+                            self.sugar_props = SugarProps::If(else_if.clone());
+                            back_iter.replace(self.sugar_props.clone().try_into()?);
+                        } else {
+                            return Err(ParseError::template(
+                                "else_if sugar sync must be after `if` or `else_if`",
+                            )
+                            .into());
+                        }
                     } else {
                         return Err(ParseError::template(
                             "else_if sugar sync must be a bind property",
@@ -264,7 +309,36 @@ impl Template {
                 }
                 BuiltinProps::Else => {
                     if key.is_bind() {
-                        self.sugar_props.set_if(IfSign::Else);
+                        // dbg!(iter);
+                        if let Some(iter) = iter {
+                            match iter {
+                                SugarIter::If { expr } => {
+                                    self.sugar_props = SugarProps::If(SugarIf::Else(Else {
+                                        if_expr: If { expr: expr.clone() },
+                                        else_if_exprs: vec![],
+                                    }));
+                                }
+                                SugarIter::ElseIf {
+                                    expr,
+                                    else_if_exprs,
+                                    if_expr,
+                                } => {
+                                    let mut else_if_exprs = else_if_exprs.clone();
+                                    else_if_exprs.push(expr.clone());
+                                    self.sugar_props = SugarProps::If(SugarIf::Else(Else {
+                                        if_expr: If {
+                                            expr: if_expr.clone(),
+                                        },
+                                        else_if_exprs,
+                                    }));
+                                }
+                            }
+                        } else {
+                            return Err(ParseError::template(
+                                "else sugar sync must be after `if` or `else_if`",
+                            )
+                            .into());
+                        }
                     } else {
                         return Err(ParseError::template(
                             "else sugar sync must be a bind property",
@@ -288,7 +362,7 @@ impl Template {
             }
         }
 
-        Ok(())
+        Ok(back_iter)
     }
 
     pub fn is_component(&self) -> bool {
@@ -375,28 +449,119 @@ impl Default for Template {
 
 /// ## GenUI组件属性的语法糖
 #[derive(Debug, Clone, Default)]
-pub struct SugarProps {
+pub enum SugarProps {
     /// for语法糖
-    pub for_sign: Option<Value>,
+    For(Value),
     /// if_else_if_else语法糖
-    pub if_sign: Option<IfSign>,
+    If(SugarIf),
+    /// 没有语法糖
+    #[default]
+    None,
 }
 
-impl SugarProps {
-    pub fn set_for(&mut self, for_sign: Value) -> () {
-        let _ = self.for_sign.replace(for_sign);
+impl TryFrom<SugarProps> for SugarIter {
+    type Error = Error;
+
+    fn try_from(value: SugarProps) -> Result<Self, Self::Error> {
+        if let SugarProps::If(if_sugar) = value {
+            match if_sugar {
+                SugarIf::If(if_sugar) => {
+                    return Ok(SugarIter::If {
+                        expr: if_sugar.expr,
+                    });
+                }
+                SugarIf::ElseIf(else_if) => {
+                    return Ok(SugarIter::ElseIf {
+                        expr: else_if.expr,
+                        else_if_exprs: else_if.else_if_exprs,
+                        if_expr: else_if.if_expr.expr,
+                    });
+                }
+                SugarIf::Else(_) => {
+                    return Err(
+                        err_from_to!("SugarProps" => "SugarIter, only `If`, `ElseIf` can be convert to SugarIter"),
+                    );
+                }
+            }
+        } else {
+            return Err(
+                err_from_to!("SugarProps" => "SugarIter, only `If`, `ElseIf` can be convert to SugarIter"),
+            );
+        }
     }
-    pub fn set_if(&mut self, if_sign: IfSign) -> () {
-        let _ = self.if_sign.replace(if_sign);
+}
+
+impl From<SugarIf> for SugarIter {
+    fn from(value: SugarIf) -> Self {
+        match value {
+            SugarIf::If(if_sugar) => SugarIter::If {
+                expr: if_sugar.expr,
+            },
+            SugarIf::ElseIf(else_if) => SugarIter::ElseIf {
+                expr: else_if.expr,
+                else_if_exprs: else_if.else_if_exprs,
+                if_expr: else_if.if_expr.expr,
+            },
+            SugarIf::Else(_) => unreachable!("SugarIf::Else can not convert to SugarIter"),
+        }
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum IfSign {
-    If(Value),
-    ElseIf(Value),
-    Else,
+pub enum SugarIter {
+    If {
+        expr: Value,
+        // component: Template,
+    },
+    ElseIf {
+        expr: Value,
+        else_if_exprs: Vec<Value>,
+        if_expr: Value,
+    },
 }
+
+impl SugarIter {
+    pub fn is_if(&self) -> bool {
+        matches!(self, SugarIter::If { .. })
+    }
+    pub fn is_else_if(&self) -> bool {
+        matches!(self, SugarIter::ElseIf { .. })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum SugarIf {
+    If(If),
+    ElseIf(ElseIf),
+    Else(Else),
+}
+
+#[derive(Debug, Clone)]
+pub struct If {
+    /// if语句的条件
+    pub expr: Value,
+}
+
+#[derive(Debug, Clone)]
+pub struct ElseIf {
+    /// else if语句的条件
+    pub expr: Value,
+    /// 其他的else if语句，因为else if语句可以有多个
+    pub else_if_exprs: Vec<Value>,
+    /// if语句的条件
+    pub if_expr: If,
+    // /// if 语句组件
+    // pub if_component: Template
+}
+
+#[derive(Debug, Clone)]
+pub struct Else {
+    pub if_expr: If,
+    pub else_if_exprs: Vec<Value>,
+    // pub if_component: Template,
+    // pub else_components: Vec<Template>
+}
+
 #[derive(Debug, Clone)]
 pub struct Parent {
     pub id: String,

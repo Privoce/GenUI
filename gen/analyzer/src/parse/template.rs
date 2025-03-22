@@ -1,6 +1,6 @@
 use crate::model::Template;
 use crate::value::{Bind, Ident, Value};
-use crate::{nom_err, Comment, Polls, PropKey, PropKeyType};
+use crate::{nom_err, Comment, Polls, PropKey, PropKeyType, SugarIter};
 use gen_utils::error::{Error, ParseError};
 use gen_utils::parser::parse_value;
 use gen_utils::{
@@ -239,6 +239,7 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 fn parse_tag<'a>(
     poll: Arc<RwLock<Polls>>,
     mut root: bool,
+    mut iter: Option<SugarIter>,
 ) -> impl FnMut(&'a str) -> IResult<&'a str, Template> {
     move |input: &str| {
         // [parse comment if exist] ------------------------------------------------------------------------------------
@@ -247,15 +248,17 @@ fn parse_tag<'a>(
         let (input, (mut template, close_type)) = parse_tag_start(input)?;
         template.root = root;
         root = false;
-        template.after_prop_parse(Arc::clone(&poll)).map_err(|e| {
-            eprintln!("parse_tag error: {:?}", e);
-            nom_err!(input, ErrorKind::Fail)
-        })?;
+        let sugar_iter = template
+            .after_prop_parse(Arc::clone(&poll), iter.as_ref())
+            .map_err(|e| {
+                eprintln!("parse_tag error: {:?}", e);
+                nom_err!(input, ErrorKind::Fail)
+            })?;
+        iter = sugar_iter;
         if !comments.is_empty() {
             template.comments.replace(comments);
         }
         // let (is_tag, is_self_closed) = template.is_tag_close();
-
         // trim input and check is start with `</tag_name>`
         let input = match close_type {
             CloseType::SelfClosed => {
@@ -270,7 +273,7 @@ fn parse_tag<'a>(
                     Err(_) => {
                         // has children, parse children
                         let (input, mut children) =
-                            many0(parse_tag(Arc::clone(&poll), root))(input)?;
+                            many0(parse_tag(Arc::clone(&poll), root, iter.clone()))(input)?;
 
                         let input = match parse_end_tag_common(input) {
                             Ok((remain, _)) => remain,
@@ -315,7 +318,7 @@ fn parse_tag<'a>(
 /// main template parser
 #[allow(dead_code)]
 pub fn parse(input: &str, poll: Arc<RwLock<Polls>>, root: bool) -> Result<Template, Error> {
-    match parse_tag(poll, root)(input) {
+    match parse_tag(poll, root, None)(input) {
         Ok((remain, template)) => {
             if remain.is_empty() {
                 return Ok(template);

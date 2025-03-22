@@ -92,6 +92,7 @@ impl FnLzVisitor {
         widget_poll: &WidgetPoll,
         ctx: &Context,
     ) -> Result<(), Error> {
+        dbg!(&twb_poll);
         fn convert_fns(
             item_fn: &mut ImplItemFn,
             widget_poll: &WidgetPoll,

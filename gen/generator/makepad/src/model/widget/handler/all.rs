@@ -6,7 +6,9 @@ use crate::{
     },
 };
 
-use gen_analyzer::{value::Bind, IdClass, Polls, Script, Style, StyleVisitor, Template};
+use gen_analyzer::{
+    value::Bind, IdClass, Polls, Script, Style, StyleVisitor, SugarProps, Template,
+};
 use gen_utils::{common::Source, err_from_to, error::Error};
 use std::{
     collections::HashMap,
@@ -122,32 +124,32 @@ fn handle_template(
     }
     // [处理语法糖] -----------------------------------------------------------------------------------------
     // [for] ------------------------------------------------------------------------------------------
-    let mut role = sugar_props.for_sign.map_or_else(
-        || Ok(Role::default()),
-        |v| {
-            if let Ok(Bind::For(bind)) = v.as_bind() {
-                let mut parent: ForParent = parent.as_ref().unwrap().into();
-                parent.set_credential(father_role);
-                if let Some(id) = id.as_ref() {
-                    Ok(Role::For {
-                        parent,
-                        creditial: bind,
-                        origin_pos: index,
-                        props: bind_props.clone(),
-                        children: vec![],
-                        id: id.to_string(),
-                        name: name.to_string(),
-                    })
-                } else {
-                    Err(err_from_to!(
-                        "GenUI Component" => "Makepad Widget, for widget need id!"
-                    ))
-                }
+    let mut role = if let SugarProps::For(for_sign) = sugar_props {
+        if let Ok(Bind::For(bind)) = for_sign.as_bind() {
+            let mut parent: ForParent = parent.as_ref().unwrap().into();
+            parent.set_credential(father_role);
+            if let Some(id) = id.as_ref() {
+                Ok(Role::For {
+                    parent,
+                    creditial: bind,
+                    origin_pos: index,
+                    props: bind_props.clone(),
+                    children: vec![],
+                    id: id.to_string(),
+                    name: name.to_string(),
+                })
             } else {
-                Ok(Role::default())
+                Err(err_from_to!(
+                    "GenUI Component" => "Makepad Widget, for widget need id!"
+                ))
             }
-        },
-    )?;
+        } else {
+            Ok(Role::default())
+        }
+    } else {
+        Ok(Role::default())
+    }?;
+
     let is_role_virtual = role.is_virtual();
     // [处理inherits] --------------------------------------------------------------------------------------
     if inherits.is_some() {
