@@ -43,6 +43,17 @@ mod test_widget {
     }
 
     #[test]
+    fn if_easy(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/if_easy.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/if_easy.gen",
+            "src_gen_0/src/views/if_easy.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn if_else(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/if_else.gen
         let source = Source::new(
@@ -116,7 +127,17 @@ mod test_widget {
     }
 
     
+    #[test]
+    fn for_loop() {
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test/fors/components/hello.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/for_test",
+            "fors/components/hello.gen",
+            "src_gen_0/src/components/hello.rs",
+        );
 
+        handle(source);
+    }
 
     #[test]
     fn setting(){

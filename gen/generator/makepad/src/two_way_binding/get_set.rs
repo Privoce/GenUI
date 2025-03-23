@@ -109,13 +109,14 @@ impl GetSet {
     pub fn getter_setter(ident: &TokenStream) -> Vec<Stmt> {
         vec![
             parse_quote! {
-                fn setter<F>(&self, cx: &mut Cx, f: F) -> ()
+                fn setter<F>(&self, cx: &mut Cx, f: F) -> Result<(), Box<dyn std::error::Error>>
                 where
                     F: FnOnce(&mut std::cell::RefMut<'_, #ident>, &mut Cx),
                 {
                     if let Some(mut c_ref) = self.borrow_mut() {
-                        f(&mut c_ref, cx);
+                        f(&mut c_ref, cx)?;
                     }
+                    Ok(())
                 }
             },
             parse_quote! {
@@ -158,14 +159,15 @@ impl GetSet {
         let ty = parse_str::<TokenStream>(ty).unwrap();
         (
             parse_quote! {
-                fn #fn_set(&mut self, cx: &mut Cx, value: #ty) -> (){
+                fn #fn_set(&mut self, cx: &mut Cx, value: #ty) -> Result<(), Box<dyn std::error::Error>> {
                     #bind_and_redraw
                     self.#field = value.clone();
+                    Ok(())
                 }
             },
             parse_quote! {
-                pub fn #fn_set(&self, cx: &mut Cx, value: #ty) -> () {
-                    self.setter(cx, |c_ref, cx| {c_ref.#fn_set(cx, value);});
+                pub fn #fn_set(&self, cx: &mut Cx, value: #ty) -> Result<(), Box<dyn std::error::Error>> {
+                    self.setter(cx, |c_ref, cx| {c_ref.#fn_set(cx, value);})
                 }
             },
         )

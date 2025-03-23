@@ -157,19 +157,52 @@ impl Template {
                 );
             }
         }
-        // sugar中的for也是binds的一种
-        if let SugarProps::For(for_sign) = &self.sugar_props {
-            let (name, id) = self.get_name_and_id()?;
-            poll.insert_prop(
-                &for_sign.as_bind()?.ident(),
-                PropComponent {
-                    id,
-                    name,
-                    prop: crate::value::For::SUGAR_SIGN.to_string(),
-                    as_prop: self.as_prop.clone(),
-                    father_ref: self.parent.clone(),
-                },
-            );
+
+        match &self.sugar_props {
+            SugarProps::For(for_sign) => {
+                // sugar中的for也是binds的一种
+                let (name, id) = self.get_name_and_id()?;
+                poll.insert_prop(
+                    &for_sign.as_bind()?.ident(),
+                    PropComponent {
+                        id,
+                        name,
+                        prop: crate::value::For::SUGAR_SIGN.to_string(),
+                        as_prop: self.as_prop.clone(),
+                        father_ref: self.parent.clone(),
+                    },
+                );
+            }
+            SugarProps::If(sugar_if) => match sugar_if {
+                SugarIf::If(sugar_if) => {
+                    let (name, id) = self.get_name_and_id()?;
+                    poll.insert_prop(
+                        &sugar_if.expr.as_bind()?.ident(),
+                        PropComponent {
+                            id,
+                            name,
+                            prop: If::SUGAR_SIGN.to_string(),
+                            as_prop: self.as_prop.clone(),
+                            father_ref: self.parent.clone(),
+                        },
+                    );
+                }
+                SugarIf::ElseIf(sugar_else_if) => {
+                    let (name, id) = self.get_name_and_id()?;
+                    poll.insert_prop(
+                        &sugar_else_if.expr.as_bind()?.ident(),
+                        PropComponent {
+                            id,
+                            name,
+                            prop: ElseIf::SUGAR_SIGN.to_string(),
+                            as_prop: self.as_prop.clone(),
+                            father_ref: self.parent.clone(),
+                        },
+                    );
+                }
+                SugarIf::Else(_) => {}
+            },
+            SugarProps::None => {}
         }
 
         Ok(())
@@ -542,6 +575,10 @@ pub struct If {
     pub expr: Value,
 }
 
+impl If {
+    pub const SUGAR_SIGN: &'static str = "if_sugar_sign";
+}
+
 #[derive(Debug, Clone)]
 pub struct ElseIf {
     /// else if语句的条件
@@ -552,6 +589,10 @@ pub struct ElseIf {
     pub if_expr: If,
     // /// if 语句组件
     // pub if_component: Template
+}
+
+impl ElseIf {
+    pub const SUGAR_SIGN: &'static str = "else_if_sugar_sign";
 }
 
 #[derive(Debug, Clone)]
