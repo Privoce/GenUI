@@ -1,4 +1,4 @@
-use gen_analyzer::{value::For, Binds};
+use gen_analyzer::{value::For, Binds, Else, ElseIf, If};
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -40,6 +40,7 @@ impl GetSet {
         impls: &mut Impls,
     ) -> Result<(), Error> {
         let mut bind_and_redraw = TokenStream::new();
+        // dbg!(binds);
         if let Some(binds) = binds.get(field) {
             for widget in binds {
                 // 如果是sugar_sign则跳过
@@ -47,8 +48,18 @@ impl GetSet {
                     continue;
                 }
 
+                let (set_prop_fn, value_prefix) = match widget.prop.as_str() {
+                    For::SUGAR_SIGN => continue,
+                    If::SUGAR_SIGN => ("visible", None),
+                    ElseIf::SUGAR_SIGN => ("visible", None),
+                    Else::SUGAR_SIGN => ("visible", Some(quote! {!})),
+                    _ => (widget.prop.as_str(), None),
+                };
+
                 let set_prop_fn =
-                    parse_str::<TokenStream>(&format!("set_{}", &widget.prop)).unwrap();
+                    parse_str::<TokenStream>(&format!("set_{}", set_prop_fn)).unwrap();
+                let value = quote! {#value_prefix value.clone()};
+
                 let set_prop = if let Some(as_prop) = widget.as_prop.as_ref() {
                     let (widget_name, widget_id) = if let Some(father_ref) =
                         widget.father_ref.as_ref()
@@ -67,7 +78,7 @@ impl GetSet {
                     quote! {
                         if let Some(mut c_ref) = self.#widget_name(id!(#widget_id)).borrow_mut(){
                             let slot_widget = c_ref.#as_prop.#as_prop_widget();
-                            slot_widget.#set_prop_fn(cx, value.clone());
+                            slot_widget.#set_prop_fn(cx, #value)?;
                         }
                     }
                 } else {
@@ -75,7 +86,7 @@ impl GetSet {
                     let widget_id = parse_str::<TokenStream>(&widget.id).unwrap();
                     quote! {
                         let widget = self.#widget_name(id!(#widget_id));
-                        widget.#set_prop_fn(cx, value.clone());
+                        widget.#set_prop_fn(cx, #value)?;
                     }
                 };
 
@@ -111,10 +122,10 @@ impl GetSet {
             parse_quote! {
                 fn setter<F>(&self, cx: &mut Cx, f: F) -> Result<(), Box<dyn std::error::Error>>
                 where
-                    F: FnOnce(&mut std::cell::RefMut<'_, #ident>, &mut Cx),
+                    F: FnOnce(&mut std::cell::RefMut<'_, #ident>, &mut Cx) -> Result<(), Box<dyn std::error::Error>>,
                 {
                     if let Some(mut c_ref) = self.borrow_mut() {
-                        f(&mut c_ref, cx)?;
+                        return f(&mut c_ref, cx);
                     }
                     Ok(())
                 }
@@ -167,7 +178,7 @@ impl GetSet {
             },
             parse_quote! {
                 pub fn #fn_set(&self, cx: &mut Cx, value: #ty) -> Result<(), Box<dyn std::error::Error>> {
-                    self.setter(cx, |c_ref, cx| {c_ref.#fn_set(cx, value);})
+                    self.setter(cx, |c_ref, cx| {c_ref.#fn_set(cx, value)})
                 }
             },
         )

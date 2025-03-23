@@ -194,7 +194,7 @@ pub fn visit_fns(
 
                 // 检查是否是目标属性访问
                 if receiver_text == "self" || from_widget.is_some() {
-                    dbg!(method_call.syntax().text());
+                    // dbg!(method_call.syntax().text());
                     if let Some(name_ref) = method_call.name_ref() {
                         let method_name = name_ref.syntax().text().to_string();
                         if method_name.starts_with("get_") || method_name.starts_with("set_") {
@@ -202,7 +202,7 @@ pub fn visit_fns(
                                 .trim_start_matches("get_")
                                 .trim_start_matches("set_")
                                 .to_string();
-                            dbg!(&fields, &field_name);
+                            // dbg!(&fields, &field_name);
                             // 检查字段是否在目标列表中
                             if fields.contains(&field_name) || from_widget.is_some() {
                                 let prefix = if let Some((w, _)) = from_widget {

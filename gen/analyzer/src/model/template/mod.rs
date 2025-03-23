@@ -3,6 +3,7 @@ mod prop;
 pub use comment::*;
 pub use prop::*;
 use std::{
+    borrow::Cow,
     collections::HashMap,
     str::FromStr,
     sync::{Arc, RwLock},
@@ -142,14 +143,14 @@ impl Template {
     pub fn after_all(&mut self, poll: Arc<RwLock<Polls>>) -> Result<(), Error> {
         let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
         if let Some(binds) = self.binds.as_ref() {
+            let (name, id) = self.get_name_and_id()?;
             // 延迟处理binds
             for (key, value) in binds {
-                let (name, id) = self.get_name_and_id()?;
                 poll.insert_prop(
                     &value.as_bind()?.ident(),
                     PropComponent {
-                        id,
-                        name,
+                        id: id.clone().into_owned(),
+                        name: name.clone().into_owned(),
                         prop: key.name.to_string(),
                         as_prop: self.as_prop.clone(),
                         father_ref: self.parent.clone(),
@@ -158,51 +159,20 @@ impl Template {
             }
         }
 
-        match &self.sugar_props {
-            SugarProps::For(for_sign) => {
-                // sugar中的for也是binds的一种
-                let (name, id) = self.get_name_and_id()?;
+        if let Some(props) = self.sugar_props.as_props()? {
+            let (name, id) = self.get_name_and_id()?;
+            for (ident, prop) in props {
                 poll.insert_prop(
-                    &for_sign.as_bind()?.ident(),
+                    &ident,
                     PropComponent {
-                        id,
-                        name,
-                        prop: crate::value::For::SUGAR_SIGN.to_string(),
+                        id: id.clone().into_owned(),
+                        name: name.clone().into_owned(),
+                        prop,
                         as_prop: self.as_prop.clone(),
                         father_ref: self.parent.clone(),
                     },
                 );
             }
-            SugarProps::If(sugar_if) => match sugar_if {
-                SugarIf::If(sugar_if) => {
-                    let (name, id) = self.get_name_and_id()?;
-                    poll.insert_prop(
-                        &sugar_if.expr.as_bind()?.ident(),
-                        PropComponent {
-                            id,
-                            name,
-                            prop: If::SUGAR_SIGN.to_string(),
-                            as_prop: self.as_prop.clone(),
-                            father_ref: self.parent.clone(),
-                        },
-                    );
-                }
-                SugarIf::ElseIf(sugar_else_if) => {
-                    let (name, id) = self.get_name_and_id()?;
-                    poll.insert_prop(
-                        &sugar_else_if.expr.as_bind()?.ident(),
-                        PropComponent {
-                            id,
-                            name,
-                            prop: ElseIf::SUGAR_SIGN.to_string(),
-                            as_prop: self.as_prop.clone(),
-                            father_ref: self.parent.clone(),
-                        },
-                    );
-                }
-                SugarIf::Else(_) => {}
-            },
-            SugarProps::None => {}
         }
 
         Ok(())
@@ -415,18 +385,18 @@ impl Template {
         (id, self.name.to_string())
     }
 
-    fn get_name_and_id(&self) -> Result<(String, String), Error> {
+    fn get_name_and_id(&self) -> Result<(Cow<'_, String>, Cow<'_, String>), Error> {
         // [name] -------------------------------------------------------------------------------------------------------
-        let name = self.name.to_string();
+        let name = Cow::Borrowed(&self.name);
         // [id (needed or err)] -----------------------------------------------------------------------------------------
         let id = if let Some(as_prop) = self.as_prop.as_ref() {
-            as_prop.to_string()
+            Cow::Borrowed(as_prop)
         } else {
             self.id
             .as_ref()
             .map_or_else(
             || Err(err_from_to!("Template" => format!("PropComponent, can not find id in template please check: {}", &name))),
-            |id| Ok(id.to_string())
+            |id| Ok(Cow::Borrowed(id))
             )?
         };
         Ok((name, id))
@@ -437,8 +407,8 @@ impl Template {
         let (name, id) = self.get_name_and_id()?;
 
         Ok(PropComponent {
-            id,
-            name,
+            id: id.into_owned(),
+            name: name.into_owned(),
             prop: prop.to_string(),
             as_prop: self.as_prop.clone(),
             father_ref: self.parent.clone(),
@@ -452,8 +422,8 @@ impl Template {
         let (name, id) = self.get_name_and_id()?;
 
         Ok(EventComponent {
-            id,
-            name,
+            id: id.into_owned(),
+            name: name.into_owned(),
             callbacks: EventComponent::convert_callbacks(callbacks)?,
         })
     }
@@ -490,6 +460,54 @@ pub enum SugarProps {
     /// 没有语法糖
     #[default]
     None,
+}
+
+impl SugarProps {
+    pub fn as_props(&self) -> Result<Option<Vec<(String, String)>>, Error> {
+        match self {
+            SugarProps::For(for_sign) => Ok(Some(vec![(
+                for_sign.as_bind()?.ident(),
+                crate::value::For::SUGAR_SIGN.to_string(),
+            )])),
+            SugarProps::If(sugar_if) => match sugar_if {
+                SugarIf::If(sugar_if) => Ok(Some(vec![(
+                    sugar_if.expr.as_bind()?.ident(),
+                    If::SUGAR_SIGN.to_string(),
+                )])),
+                SugarIf::ElseIf(sugar_else_if) => {
+                    let mut res = vec![
+                        (
+                            sugar_else_if.if_expr.expr.as_bind()?.ident(),
+                            ElseIf::SUGAR_SIGN.to_string(),
+                        ),
+                        (
+                            sugar_else_if.expr.as_bind()?.ident(),
+                            ElseIf::SUGAR_SIGN.to_string(),
+                        ),
+                    ];
+
+                    for expr in sugar_else_if.else_if_exprs.iter() {
+                        res.push((expr.as_bind()?.ident(), ElseIf::SUGAR_SIGN.to_string()));
+                    }
+
+                    Ok(Some(res))
+                }
+                SugarIf::Else(sugar_else) => {
+                    let mut res = vec![(
+                        sugar_else.if_expr.expr.as_bind()?.ident(),
+                        Else::SUGAR_SIGN.to_string(),
+                    )];
+
+                    for expr in sugar_else.else_if_exprs.iter() {
+                        res.push((expr.as_bind()?.ident(), Else::SUGAR_SIGN.to_string()));
+                    }
+
+                    Ok(Some(res))
+                }
+            },
+            SugarProps::None => Ok(None),
+        }
+    }
 }
 
 impl TryFrom<SugarProps> for SugarIter {
@@ -569,6 +587,10 @@ pub enum SugarIf {
     Else(Else),
 }
 
+impl SugarIf {
+    pub const SUGAR_SIGNS: [&'static str; 3] = [If::SUGAR_SIGN, ElseIf::SUGAR_SIGN, Else::SUGAR_SIGN];
+}
+
 #[derive(Debug, Clone)]
 pub struct If {
     /// if语句的条件
@@ -603,6 +625,9 @@ pub struct Else {
     // pub else_components: Vec<Template>
 }
 
+impl Else {
+    pub const SUGAR_SIGN: &'static str = "else_sugar_sign";
+}
 #[derive(Debug, Clone)]
 pub struct Parent {
     pub id: String,
