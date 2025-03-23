@@ -149,6 +149,23 @@ impl Script {
             if let Some(instance) = instance.as_mut() {
                 let deref_prop_ident = component.ident.to_token_stream();
                 InstanceLzVisitor::visit(instance, deref_prop_ident, &mut others);
+            } else {
+                // if no instance, check if has `#[derive(Default)]` on deref prop, if not add it
+                if !component.attrs.iter().any(|attr| {
+                    let mut has = false;
+                    if attr.path().is_ident("derive") {
+                        attr.parse_nested_meta(|meta| {
+                            if meta.path.is_ident("Default") {
+                                has = true;
+                            }
+                            Ok(())
+                        })
+                        .unwrap_or_else(|_| {});
+                    }
+                    has
+                }) {
+                    component.attrs.push(parse_quote!(#[derive(Default)]));
+                }
             }
             others.push(parse_quote!(#component));
             (twb, Some(live_component))
