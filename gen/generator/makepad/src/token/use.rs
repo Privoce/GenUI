@@ -4,7 +4,7 @@ use quote::quote;
 pub fn use_default_all() -> TokenStream{
     quote! {
         use makepad_widgets::*;
-        use gen_components::*;
+        use gen_components::{themes::*, utils::*, *};
     }
 }
 
