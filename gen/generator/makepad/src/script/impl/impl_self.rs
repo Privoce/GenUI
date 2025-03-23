@@ -2,7 +2,10 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::{parse_quote, ImplItem, ItemImpl};
 
-/// Vec<ItemFn>
+use crate::two_way_binding::default_impl_get_set;
+
+/// ## impl `${Widget}`{}
+/// it will add `getter` and `setter` as `GView` (inherits from `GView`)
 #[derive(Debug, Clone)]
 pub struct ImplSelf(pub ItemImpl);
 
@@ -11,8 +14,11 @@ impl ImplSelf {
         Self(if let Some(self_impl) = self_impl {
             self_impl
         } else {
+            let impl_get_set = default_impl_get_set(ident);
             parse_quote! {
-                impl #ident {}
+                impl #ident {
+                    #impl_get_set
+                }
             }
         })
     }

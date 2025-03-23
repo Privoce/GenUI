@@ -183,3 +183,119 @@ impl From<&str> for GetSet {
         };
     }
 }
+
+pub fn default_impl_get_set(ident: &TokenStream) -> TokenStream {
+    quote! {
+        setter! {
+            #ident{
+                set_theme(theme: Themes) {|c, cx| {c.theme = theme; c.render(cx)}},
+                set_background_color(color: String) {|c, _cx| {let color = hex_to_vec4(&color)?; c.background_color.replace(color); c.draw_view.background_color = color; Ok(())}},
+                set_shadow_color(color: String) {|c, _cx| {let color = hex_to_vec4(&color)?; c.shadow_color.replace(color); c.draw_view.shadow_color = color; Ok(())}},
+                set_hover_color(color: String) {|c, _cx| {let color = hex_to_vec4(&color)?; c.hover_color.replace(color); c.draw_view.hover_color = color; Ok(())}},
+                set_focus_color(color: String) {|c, _cx| {let color = hex_to_vec4(&color)?; c.focus_color.replace(color); c.draw_view.focus_color = color; Ok(())}},
+                set_border_color(color: String) {|c, _cx| {let color = hex_to_vec4(&color)?; c.border_color.replace(color); c.draw_view.border_color = color; Ok(())}},
+                set_border_width(width: f32) {|c, _cx| {c.border_width = width; c.draw_view.border_width = width; Ok(())}},
+                set_border_radius(radius: f32) {|c, _cx| {c.border_radius = radius; c.draw_view.border_radius = radius; Ok(())}},
+                set_shadow_offset(offset: Vec2) {|c, _cx| {c.shadow_offset = offset; c.draw_view.shadow_offset = offset; Ok(())}},
+                set_spread_radius(radius: f32) {|c, _cx| {c.spread_radius = radius; c.draw_view.spread_radius = radius; Ok(())}},
+                set_blur_radius(radius: f32) {|c, _cx| {c.blur_radius = radius; c.draw_view.blur_radius = radius; Ok(())}},
+                set_background_visible(visible: bool) {|c, _cx| {c.background_visible = visible; c.draw_view.background_visible = visible.to_f32(); Ok(())}},
+                set_visible(visible: bool) {|c, _cx| {c.visible = visible; Ok(())}},
+                set_cursor(cursor: MouseCursor) {|c, _cx| {c.cursor = Some(cursor); Ok(())}},
+                set_grab_key_focus(grab: bool) {|c, _cx| {c.grab_key_focus = grab; Ok(())}},
+                set_block_signal_event(block: bool) {|c, _cx| {c.block_signal_event = block; Ok(())}},
+                set_abs_pos(pos: Option<DVec2>) {|c, _cx| {c.walk.abs_pos = pos; Ok(())}},
+                set_margin(margin: Margin) {|c, _cx| {c.walk.margin = margin; Ok(())}},
+                set_height(height: Size) {|c, _cx| {c.walk.height = height; Ok(())}},
+                set_width(width: Size) {|c, _cx| {c.walk.width = width; Ok(())}},
+                set_scroll(scroll: DVec2) {|c, _cx| {c.layout.scroll = scroll; Ok(())}},
+                set_clip_x(clip: bool) {|c, _cx| {c.layout.clip_x = clip; Ok(())}},
+                set_clip_y(clip: bool) {|c, _cx| {c.layout.clip_y = clip; Ok(())}},
+                set_padding(padding: Padding) {|c, _cx| {c.layout.padding = padding; Ok(())}},
+                set_align(align: Align) {|c, _cx| {c.layout.align = align; Ok(())}},
+                set_flow(flow: Flow) {|c, _cx| {c.layout.flow = flow; Ok(())}},
+                set_spacing(spacing: f64) {|c, _cx| {c.layout.spacing = spacing; Ok(())}},
+                set_dpi_factor(factor: f64) {|c, _cx| {c.dpi_factor.replace(factor); Ok(())}},
+                set_optimize(optimize: ViewOptimize) {|c, _cx| {c.optimize = optimize; Ok(())}},
+                set_capture_overload(overload: bool) {|c, _cx| {c.capture_overload = overload; Ok(())}},
+                set_event_key(event_key: bool) {|c, _cx| {c.event_key = event_key; Ok(())}}
+            }
+        }
+        getter! {
+            #ident{
+                get_theme(Themes) {|c| {c.theme}},
+                get_background_color(String) {|c| {vec4_to_hex(&c.draw_view.background_color)}},
+                get_shadow_color(String) {|c| {vec4_to_hex(&c.draw_view.shadow_color)}},
+                get_hover_color(String) {|c| {vec4_to_hex(&c.draw_view.hover_color)}},
+                get_focus_color(String) {|c| {vec4_to_hex(&c.draw_view.focus_color)}},
+                get_border_color(String) {|c| {vec4_to_hex(&c.draw_view.border_color)}},
+                get_border_width(f32) {|c| {c.draw_view.border_width}},
+                get_border_radius(f32) {|c| {c.draw_view.border_radius}},
+                get_shadow_offset(Vec2) {|c| {c.draw_view.shadow_offset}},
+                get_spread_radius(f32) {|c| {c.draw_view.spread_radius}},
+                get_blur_radius(f32) {|c| {c.draw_view.blur_radius}},
+                get_background_visible(bool) {|c| {c.draw_view.background_visible.to_bool()}},
+                get_visible(bool) {|c| {c.visible}},
+                get_cursor(MouseCursor) {|c| {c.cursor.unwrap_or_default()}},
+                get_grab_key_focus(bool) {|c| {c.grab_key_focus}},
+                get_block_signal_event(bool) {|c| {c.block_signal_event}},
+                get_abs_pos(Option<DVec2>) {|c| {c.walk.abs_pos.clone()}},
+                get_margin(Margin) {|c| {c.walk.margin}},
+                get_height(Size) {|c| {c.walk.height}},
+                get_width(Size) {|c| {c.walk.width}},
+                get_scroll(DVec2) {|c| {c.layout.scroll}},
+                get_clip_x(bool) {|c| {c.layout.clip_x}},
+                get_clip_y(bool) {|c| {c.layout.clip_y}},
+                get_padding(Padding) {|c| {c.layout.padding}},
+                get_align(Align) {|c| {c.layout.align}},
+                get_flow(Flow) {|c| {c.layout.flow}},
+                get_spacing(f64) {|c| {c.layout.spacing}},
+                get_dpi_factor(f64) {|c| {c.dpi_factor.unwrap_or_default()}},
+                get_optimize(ViewOptimize) {|c| {c.optimize}},
+                get_capture_overload(bool) {|c| {c.capture_overload}},
+                get_event_key(bool) {|c| {c.event_key}}
+            }
+        }
+        pub fn redraw(&mut self, cx: &mut Cx){
+            self.deref_widget.redraw(cx);
+        }
+    }
+}
+
+pub fn default_impl_ref_get_set() -> TokenStream {
+    quote! {
+        ref_getter_setter!{
+            get_theme, set_theme -> Themes,
+            get_background_color, set_background_color -> String,
+            get_shadow_color, set_shadow_color -> String,
+            get_hover_color, set_hover_color -> String,
+            get_focus_color, set_focus_color -> String,
+            get_border_color, set_border_color -> String,
+            get_border_width, set_border_width -> f32,
+            get_border_radius, set_border_radius -> f32,
+            get_shadow_offset, set_shadow_offset -> Vec2,
+            get_spread_radius, set_spread_radius -> f32,
+            get_blur_radius, set_blur_radius -> f32,
+            get_background_visible, set_background_visible -> bool,
+            get_visible, set_visible -> bool,
+            get_cursor, set_cursor -> MouseCursor,
+            get_grab_key_focus, set_grab_key_focus -> bool,
+            get_block_signal_event, set_block_signal_event -> bool,
+            get_abs_pos, set_abs_pos -> Option<DVec2>,
+            get_margin, set_margin -> Margin,
+            get_height, set_height -> Size,
+            get_width, set_width -> Size,
+            get_scroll, set_scroll -> DVec2,
+            get_clip_x, set_clip_x -> bool,
+            get_clip_y, set_clip_y -> bool,
+            get_padding, set_padding -> Padding,
+            get_align, set_align -> Align,
+            get_flow, set_flow -> Flow,
+            get_spacing, set_spacing -> f64,
+            get_dpi_factor, set_dpi_factor -> f64,
+            get_optimize, set_optimize -> ViewOptimize,
+            get_capture_overload, set_capture_overload -> bool,
+            get_event_key, set_event_key -> bool
+        }
+    }
+}

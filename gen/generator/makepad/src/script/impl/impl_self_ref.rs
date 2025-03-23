@@ -1,7 +1,9 @@
 use quote::ToTokens;
-use syn::Stmt;
+use syn::{parse_quote, Stmt};
 
-#[derive(Default, Debug, Clone)]
+use crate::two_way_binding::default_impl_ref_get_set;
+
+#[derive(Debug, Clone)]
 pub struct ImplSelfRef(pub Vec<Stmt>);
 
 impl ImplSelfRef {
@@ -15,5 +17,23 @@ impl ToTokens for ImplSelfRef {
         for stmt in &self.0 {
             stmt.to_tokens(tokens);
         }
+    }
+}
+
+impl Default for ImplSelfRef {
+    fn default() -> Self {
+        let impl_ref_get_set = default_impl_ref_get_set();
+        let ref_render: Stmt = parse_quote! {
+            ref_render!();
+        };
+        let ref_redraw_mut: Stmt = parse_quote! {
+            ref_redraw_mut!();
+        };
+
+        Self(vec![
+            parse_quote! {#impl_ref_get_set},
+            ref_render,
+            ref_redraw_mut,
+        ])
     }
 }

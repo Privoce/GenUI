@@ -134,13 +134,13 @@ mod test_widget {
     
     fn handle(source: Source) {
         let model = Model::new(source, true).unwrap();
-        dbg!(model.template);
-        // let mut context = context();
-        // let w = Widget::try_from((&mut context, model)).unwrap();
-        // // dbg!(w.template);
-        // let content = w.content().unwrap().to_string();
-        // let path = PathBuf::from("/Users/shengyifei/projects/gen_ui/GenUI/gen/mini_test.rs");
-        // let _ = fs::write(path.as_path(), &content);
+        // dbg!(model.template);
+        let mut context = context();
+        let w = Widget::try_from((&mut context, model)).unwrap();
+        // dbg!(w.template);
+        let content = w.content().unwrap().to_string();
+        let path = PathBuf::from("/Users/shengyifei/projects/gen_ui/GenUI/gen/mini_test.rs");
+        let _ = fs::write(path.as_path(), &content);
     }
 
 }
