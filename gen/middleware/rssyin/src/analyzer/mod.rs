@@ -9,11 +9,11 @@ use ra_ap_syntax::{
     AstNode, Edition, SourceFile, TextSize,
 };
 use syn::{parse_str, ItemEnum, ItemImpl, ItemStruct};
-use utils::*;
+pub use utils::*;
 
 use crate::{
     bridger::{Imports, PropItem, ScriptBridger},
-    error::{AttrMacroError, Error},
+    error::{AttrMacroError, Error, ProcMacroError},
 };
 
 /// # 脚本分析追踪器
@@ -84,6 +84,7 @@ impl ScriptAnalyzer {
         let mut event_enums = None;
         let mut default_impl = None;
         let mut impl_component = None;
+        let mut router = None;
         let mut others = vec![];
         let mut lazy: Option<Lazy> = None;
 
@@ -107,19 +108,50 @@ impl ScriptAnalyzer {
 
             // [import!] ----------------------------------------------------------------------------------------
             if let Some(macro_call) = ast::MacroCall::cast(node.clone()) {
-                let is_import = macro_call
+                let prop_macro_enum = macro_call
                     .path()
-                    .map(|path| "import".is_path_segment(&path))
-                    .unwrap_or_default();
-                if is_import {
-                    if let Some(tree) = macro_call.token_tree() {
-                        import_macro.replace(Imports::from_str(&tree.to_string())?);
-                    }
-                    // 记录结束位置
-                    start_index = macro_call.syntax().text_range().end();
-                    continue;
+                    .map(|path| {
+                        
+                        get_path_segment(&path).map_or_else(|| PropMacroEnum::None, |path|{
+                            if path == "import"{
+                                PropMacroEnum::Import
+                            }else if path == "router"{
+                                PropMacroEnum::Router
+                            }else{
+                                PropMacroEnum::None
+                            }
+                        })
+
+                    }).unwrap_or(PropMacroEnum::None);
+
+                    
+                match prop_macro_enum {
+                    PropMacroEnum::Import => {
+                        if let Some(tree) = macro_call.token_tree() {
+                            import_macro.replace(Imports::from_str(&tree.to_string())?);
+                        }
+                        // 记录结束位置
+                        start_index = macro_call.syntax().text_range().end();
+                        continue;
+                    },
+                    PropMacroEnum::Router => {
+                        router.replace(macro_call.token_tree().try_into()?);
+                        // 直接结束，因为如果有router过程宏，那么不允许有其他代码，所以检查当前的位置是否是最后一个位置，如果不是则报错
+                        if node.text_range().end() != source_file.syntax().text_range().end() {
+                            return Err(Error::ProcMacro(ProcMacroError::OnlyRouterMacro));
+                        }
+                        break;
+                    },
+                    PropMacroEnum::None => {
+                        // 记录结束位置
+                        start_index = macro_call.syntax().text_range().end();
+                        continue;
+                    },
                 }
             }
+            
+            
+
             // [prop macro] -------------------------------------------------------------------------------------
             if let Some(strt) = ast::Struct::cast(node.clone()) {
                 let macro_struct = strt
@@ -284,6 +316,7 @@ impl ScriptAnalyzer {
             instance: default_impl,
             events: event_enums,
             impl_component,
+            router,
             props,
             others,
         })
@@ -375,6 +408,14 @@ enum AttrMacroEnum {
     Prop,
     #[default]
     None,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+enum PropMacroEnum{
+    Import,
+    Router,
+    #[default]
+    None
 }
 
 fn trim_attr_holder(tk: String) -> Vec<String> {

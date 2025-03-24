@@ -3,7 +3,7 @@ use std::str::FromStr;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse_str;
-
+use crate::analyzer::AnalyzerStr;
 use crate::error::Error;
 
 #[derive(Debug, Clone)]
@@ -21,8 +21,8 @@ impl FromStr for Imports {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let s = s.trim_matches(|c| c == '{' || c == '}').trim();
-
+        let s = s.strip_macro_holder()?;
+        
         Ok(Self(
             s.split(';')
                 .filter(|s| !s.is_empty())

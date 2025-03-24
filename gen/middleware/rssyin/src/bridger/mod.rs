@@ -4,6 +4,12 @@ mod lifecycle;
 pub use import::{Import, Imports};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
+use ra_ap_syntax::ast::TokenTree;
+
+use crate::{
+    analyzer::AnalyzerStr,
+    error::{Error, ProcMacroError},
+};
 
 #[derive(Debug)]
 pub struct ScriptBridger {
@@ -15,6 +21,9 @@ pub struct ScriptBridger {
     pub impl_component: Option<syn::ItemImpl>,
     /// prop struct|enum which use `#[prop(true)] or #[prop(false)]`
     pub props: Option<Vec<PropItem>>,
+    /// router, if has `router!{}` block or `router!();` block
+    /// if router has, only has router, other code is not allowed
+    pub router: Option<RouterTk>,
     // 非追踪部分
     pub others: Vec<syn::Stmt>,
 }
@@ -49,4 +58,19 @@ impl ToTokens for ScriptBridger {
 pub enum PropItem {
     Struct(syn::ItemStruct),
     Enum(syn::ItemEnum),
+}
+
+#[derive(Debug)]
+pub struct RouterTk(pub String);
+
+impl TryFrom<Option<TokenTree>> for RouterTk {
+    type Error = Error;
+
+    fn try_from(value: Option<TokenTree>) -> Result<Self, Self::Error> {
+        if let Some(tk) = value {
+            Ok(Self(tk.to_string().strip_macro_holder()?.to_string()))
+        } else {
+            Err(Error::ProcMacro(ProcMacroError::ParseRouterToken))
+        }
+    }
 }

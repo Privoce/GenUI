@@ -61,18 +61,30 @@ impl From<ProcMacroError> for Error {
 // ProcMacro error ------------------------------------------------------------------------------------
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ProcMacroError {
-    MultiDefaultProp,
+    MultiImportMacro,
+    OnlyRouterMacro,
+    ParseRouterToken,
     NamedFieldEvent,
+    HolderNotFound
 }
 
 impl Display for ProcMacroError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ProcMacroError::MultiDefaultProp => {
-                f.write_str("GenUI `default_prop!` can only be used once!")
+            ProcMacroError::MultiImportMacro => {
+                f.write_str("GenUI `import!` can only be used once!")
+            }
+            ProcMacroError::OnlyRouterMacro => {
+                f.write_str("GenUI `router!` can only be used once and if has, do not allow other code!")
+            }
+            ProcMacroError::ParseRouterToken => {
+                f.write_str("GenUI `router!` parse error, allow format: router!(${router_id}); router!{${router_id}}. ${router_id}: TokenStream")
             }
             ProcMacroError::NamedFieldEvent => {
                 f.write_str("GenUI `#[event]` can only be used on unnamed fields, means you can not use like: `enum $Enum{ $field{$arg: $arg_ty, ..} }`!")
+            }
+            ProcMacroError::HolderNotFound => {
+                f.write_str("Parse error, proc macro must use `()` or `{}` as holder!")
             }
         }
     }
