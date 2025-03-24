@@ -1,6 +1,8 @@
 mod import;
 mod lifecycle;
 
+use std::fmt::Display;
+
 pub use import::{Import, Imports};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};

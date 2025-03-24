@@ -1,14 +1,17 @@
-use std::{str::FromStr, sync::{Arc, RwLock}};
-
+use std::sync::{Arc, RwLock};
 use gen_analyzer::Polls;
 use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use rssyin::{analyzer::ScriptAnalyzer, bridger::ScriptBridger};
 use syn::{parse_quote, ItemEnum, Stmt};
-
-use crate::{compiler::{Context, WidgetPoll}, model::{TemplatePtrs, WidgetTemplate, WidgetType}, token::use_default_all, two_way_binding::TWBPollBuilder, visitor::{EventLzVisitor, FnLzVisitor, InstanceLzVisitor, PropLzVisitor}};
-
+use crate::{
+    compiler::{Context, WidgetPoll},
+    model::{TemplatePtrs, WidgetTemplate, WidgetType},
+    token::use_default_all,
+    two_way_binding::TWBPollBuilder,
+    visitor::{EventLzVisitor, FnLzVisitor, InstanceLzVisitor, PropLzVisitor},
+};
 use super::{Impls, LiveComponent};
 
 /// 经过包装处理的rust，用于表示makepad中的rust代码，这些代码需要进行一些处理
@@ -31,10 +34,10 @@ pub struct RsScript {
 }
 
 /// only for single script
-impl FromStr for RsScript {
-    type Err = Error;
+impl TryFrom<ScriptBridger> for RsScript {
+    type Error = Error;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn try_from(value: ScriptBridger) -> Result<Self, Self::Error> {
         let ScriptBridger {
             imports,
             component,
@@ -43,7 +46,8 @@ impl FromStr for RsScript {
             events,
             impl_component,
             mut others,
-        } = ScriptAnalyzer::analyze(&s).map_err(|e| Error::from(e.to_string()))?;
+            ..
+        } = value;
 
         // [check] -------------------------------------------------------------------------------------------
         if imports.is_some()
@@ -111,6 +115,7 @@ impl RsScript {
             events,
             impl_component,
             mut others,
+            ..
         } = ScriptAnalyzer::analyze(&sc).map_err(|e| Error::from(e.to_string()))?;
         // [datas] -------------------------------------------------------------------------------------------
         let mut sc_rs = RsScript::default_sc();

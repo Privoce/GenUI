@@ -44,24 +44,26 @@ impl Widget {
         Ok(widget)
     }
     pub fn imports(&self) -> Option<proc_macro2::TokenStream> {
-        self.script.as_ref().and_then(|sc| sc.uses.clone())
+        self.script.as_ref().and_then(|sc| sc.uses())
     }
     /// default script impl for easy define widget
     pub fn patch_or_default_script(&mut self) -> Result<(), Error> {
         // 确保有template
         if let Some(template) = self.template.as_ref() {
             if let Some(patch_sc) = self.script.as_ref() {
-                if patch_sc.live_component.is_some() {
-                    return Ok(());
+                if let crate::script::Script::Rust(patch_sc) = patch_sc {
+                    if patch_sc.live_component.is_some() {
+                        return Ok(());
+                    }
+                    // 说明没有进行具体的定义，但有一些其他的代码，需要patch
+                    self.script = template
+                        .is_define_root_and(|define_widget| {
+                            let mut script = define_widget.default_script();
+                            script.patch(patch_sc);
+                            Ok::<crate::script::Script, Error>(script)
+                        })
+                        .transpose()?;
                 }
-                // 说明没有进行具体的定义，但有一些其他的代码，需要patch
-                self.script = template
-                    .is_define_root_and(|define_widget| {
-                        let mut script = define_widget.default_script();
-                        script.patch(patch_sc);
-                        Ok::<crate::script::Script, Error>(script)
-                    })
-                    .transpose()?;
             } else {
                 self.script = template
                     .is_define_root_and(|define_widget| {
@@ -120,7 +122,7 @@ impl TryFrom<(&mut Context, Model)> for Widget {
         let widget = match strategy {
             gen_analyzer::Strategy::SingleStyle => (special, style, is_entry).try_into(),
             gen_analyzer::Strategy::SingleTemplate => (special, template, is_entry).try_into(),
-            gen_analyzer::Strategy::SingleScript => (special, script, is_entry).try_into(),
+            gen_analyzer::Strategy::SingleScript => (context, special, script, is_entry).try_into(),
             gen_analyzer::Strategy::TemplateScript => {
                 (context, special, template, script, is_entry, polls).try_into()
             }
@@ -176,11 +178,11 @@ impl TryFrom<(Source, Option<Template>, bool)> for Widget {
 
 /// 解析单script模版
 /// 处理只有单个<script>标签的情况,
-impl TryFrom<(Source, Option<Script>, bool)> for Widget {
+impl TryFrom<(&mut Context, Source, Option<Script>, bool)> for Widget {
     type Error = Error;
 
-    fn try_from(value: (Source, Option<Script>, bool)) -> Result<Self, Self::Error> {
-        handler::single_script(value.0, value.1, value.2)
+    fn try_from(value: (&mut Context, Source, Option<Script>, bool)) -> Result<Self, Self::Error> {
+        handler::single_script(value.0, value.1, value.2, value.3)
     }
 }
 
