@@ -8,7 +8,7 @@ use gen_utils::{
     err_from_to,
     error::{ConvertError, Error, ParseError, ParseType},
 };
-pub use router::RouterBuilder;
+pub use router::*;
 use std::{fmt::Display, path::PathBuf, str::FromStr};
 
 use toml_edit::{value, Array, Formatted, Item, Table, Value};

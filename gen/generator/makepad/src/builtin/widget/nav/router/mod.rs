@@ -1,5 +1,11 @@
-mod prop;
 mod event;
+mod prop;
+
+use crate::{
+    builtin::prop::{FromGenProps, Prop},
+    try_from_props,
+};
+pub use prop::Props as RouterProps;
 
 #[derive(Debug, Clone)]
 pub struct Router {

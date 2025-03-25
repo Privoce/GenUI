@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     fmt::Display,
-    path::Path,
+    path::Path, str::FromStr,
 };
 
 use gen_utils::{common::ToToml, err_from_to, error::Error};
@@ -19,15 +19,15 @@ pub struct RouterBuilder {
     /// router mode
     pub mode: NavMode,
     /// default active page
-    pub active: String,
-    pub tabbar: TabbarBuilder,
-    pub bar_pages: HashMap<String, Page>,
+    pub active: Option<String>,
+    pub tabbar: Option<TabbarBuilder>,
+    pub bar_pages: Vec<(String, Page)>,
     pub nav_pages: HashMap<String, Page>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TabbarBuilder {
-    pub theme: Themes,
+    pub theme: Option<Themes>,
     pub active: bool,
     pub bars: HashMap<String, TabbarItem>,
 }
@@ -38,8 +38,11 @@ impl TryFrom<&Item> for TabbarBuilder{
     fn try_from(value: &Item) -> Result<Self, Self::Error> {
         let value = value.as_table().ok_or(err_from_to!("toml::Item" => "Table (TabbarBuilder)"))?;
         let theme = value.get("theme").map_or_else(
-            || Err(err_from_to!("toml::Table" => "Themes, can not find `theme`")),
-            |v| v.as_str().map_or_else(| | Err(err_from_to!("toml::Item" => "str")), |s| s.parse())
+            || Ok::<Option<Themes>, Error>(None),
+            |v| {
+               let theme: Themes = v.as_str().map_or_else(| | Err(err_from_to!("toml::Item" => "str")), |s| s.parse())?;
+                Ok(Some(theme))
+            }
         )?;
 
         let active = value.get("active").map_or_else(
@@ -65,8 +68,8 @@ impl TryFrom<&Item> for TabbarBuilder{
 
 #[derive(Debug, Clone)]
 pub struct TabbarItem {
-    pub icon: LiveDependency,
-    pub text: String,
+    pub icon: Option<LiveDependency>,
+    pub text: Option<String>,
 }
 
 impl TryFrom<&Item> for TabbarItem {
@@ -75,13 +78,13 @@ impl TryFrom<&Item> for TabbarItem {
     fn try_from(value: &Item) -> Result<Self, Self::Error> {
         let value = value.as_inline_table().ok_or(err_from_to!("toml::Item" => "InlineTable (TabbarItem)"))?;
         let icon = value.get("icon").map_or_else(
-            || Err(err_from_to!("toml::Value" => "LiveDependency, can not find `icon`")),
-            |v| v.as_str().map_or_else(| | Err(err_from_to!("toml::Item" => "str")), |s| Ok(LiveDependency(s.to_string())))
+            || Ok(None),
+            |v| v.as_str().map_or_else(| | Err(err_from_to!("toml::Item" => "str")), |s| Ok(Some(LiveDependency(s.to_string()))))
         )?;
 
         let text = value.get("text").map_or_else(
-            || Err(err_from_to!("toml::Value" => "String, can not find `text`")),
-            |v| v.as_str().map_or_else(| | Err(err_from_to!("toml::Item" => "str")), |s| Ok(s.to_string()))
+            || Ok(None),
+            |v| v.as_str().map_or_else(| | Err(err_from_to!("toml::Item" => "str")), |s| Ok(Some(s.to_string())))
         )?;
 
         Ok(Self { icon, text })
@@ -155,18 +158,18 @@ impl TryFrom<DocumentMut> for RouterBuilder {
 
         let name = from_str(&value, "name")?;
         let id = from_str(&value, "id")?;
-        let mode = from_str(&value, "mode")?.parse()?;
-        let active = from_str(&value, "active")?;
+        let mode = from_str(&value, "mode").map_or_else(|_|Ok(NavMode::default()),|mode| NavMode::from_str(&mode))?;
+        let active = from_str(&value, "active").ok();
         let tabbar = value.get("tabbar").map_or_else(
-            || Err(err_from_to!("toml::DocumentMut" => "TabbarBuilder, can not find `tabbar`")),
-            |v| v.try_into(),
+            || Ok(None),
+            |v| TabbarBuilder::try_from(v).map(|v| Some(v)),
         )?;
         let bar_pages = value.get("bar_pages").map_or_else(
-            || Err(err_from_to!("toml::DocumentMut" => "HashMap<String, Page>, can not find `bar_pages`")),
+            || Err(err_from_to!("toml::DocumentMut" => "Vec<(String, Page)>, can not find `bar_pages`")),
             |v| {
-                let mut pages = HashMap::new();
+                let mut pages = Vec::new();
                 for (k, v) in v.as_table().unwrap() {
-                    pages.insert(k.to_string(), v.try_into()?);
+                    pages.push((k.to_string(), v.try_into()?));
                 }
                 Ok(pages)
             },
@@ -208,7 +211,10 @@ impl RouterBuilder {
 #[cfg(test)]
 mod test_router{
     
+    use quote::ToTokens;
     use toml_edit::DocumentMut;
+
+    use crate::script::RouterScript;
 
     use super::RouterBuilder;
 
@@ -248,6 +254,7 @@ nav_about = { path = "crate::views::about::*", component = "About" }
 
         let router = input.parse::<DocumentMut>().unwrap();
         let router = RouterBuilder::try_from(router).unwrap();
-        dbg!(router);
+        let router = RouterScript(router).to_token_stream();
+        dbg!(router.to_string());
     }
 }
