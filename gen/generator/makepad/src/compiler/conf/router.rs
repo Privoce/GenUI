@@ -211,6 +211,7 @@ impl RouterBuilder {
 #[cfg(test)]
 mod test_router{
     
+    use gen_utils::common::fs;
     use quote::ToTokens;
     use toml_edit::DocumentMut;
 
@@ -255,6 +256,6 @@ nav_about = { path = "crate::views::about::*", component = "About" }
         let router = input.parse::<DocumentMut>().unwrap();
         let router = RouterBuilder::try_from(router).unwrap();
         let router = RouterScript(router).to_token_stream();
-        dbg!(router.to_string());
+        fs::write("/Users/shengyifei/projects/gen_ui/GenUI/gen/mini_test.rs", &router.to_string()).unwrap();
     }
 }

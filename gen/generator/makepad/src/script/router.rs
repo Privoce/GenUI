@@ -2,9 +2,11 @@ use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use rssyin::bridger::RouterTk;
+use syn::{parse_quote, Fields};
 
 use crate::{
     compiler::{Context, RouterBuilder, TabbarItem},
+    script::RsScript,
     str_to_tk,
     token::{import_default, import_default_all, use_default_all},
 };
@@ -56,14 +58,25 @@ impl ToTokens for RouterScript {
         }
 
         let uses = use_default_all();
+        let active = self.0.active.as_ref().map(|active| {
+            let active = str_to_tk!(active).unwrap();
+            quote! {
+                active(id!(#active))
+            }
+        });
         let component = str_to_tk!(&self.0.name).unwrap();
         let mut imports = import_default();
         let router_id = str_to_tk!(&self.0.id).unwrap();
         let nav_mode = self.0.mode.to_token_stream();
 
-        let (bar_pages, tabbar_items, used_items) = self.0.bar_pages.iter().fold(
-            (TokenStream::new(), TokenStream::new(), Vec::new()),
-            |(mut bars, mut tabbar_items, mut used_items), (key, page)| {
+        let (bar_pages, bar_pages_ids, tabbar_items, used_items) = self.0.bar_pages.iter().fold(
+            (
+                TokenStream::new(),
+                Vec::new(),
+                TokenStream::new(),
+                Vec::new(),
+            ),
+            |(mut bars, mut ids, mut tabbar_items, mut used_items), (key, page)| {
                 let page_id = str_to_tk!(key).unwrap();
                 let page_name = match page {
                     crate::compiler::Page::Path(import) => {
@@ -75,7 +88,7 @@ impl ToTokens for RouterScript {
                         str_to_tk!(component).unwrap()
                     }
                 };
-
+                ids.push(page_id.clone());
                 bars.extend(quote! {
                     #page_id = <GBarPage>{
                         <#page_name>{}
@@ -91,7 +104,7 @@ impl ToTokens for RouterScript {
                     }
                 });
 
-                (bars, tabbar_items, used_items)
+                (bars, ids, tabbar_items, used_items)
             },
         );
 
@@ -126,29 +139,77 @@ impl ToTokens for RouterScript {
             }
         });
 
-        let nav_pages = self.0.nav_pages.iter().fold(TokenStream::new(), |mut acc, (key, page)| {
-            let page_id = str_to_tk!(key).unwrap();
-            let page_name = match page {
-                crate::compiler::Page::Path(import) => {
-                    imports.extend(import.to_token_stream());
-                    import.component().unwrap()
-                }
-                crate::compiler::Page::Component { path, component } => {
-                    imports.extend(path.to_token_stream());
-                    str_to_tk!(component).unwrap()
-                }
-            };
-
-            acc.extend(quote! {
-                #page_id = <GNavPage>{
-                    header = {
-                        visible: false,
+        let (nav_pages, nav_pages_ids) = self.0.nav_pages.iter().fold(
+            (TokenStream::new(), Vec::new()),
+            |(mut acc, mut ids), (key, page)| {
+                let page_id = str_to_tk!(key).unwrap();
+                let page_name = match page {
+                    crate::compiler::Page::Path(import) => {
+                        imports.extend(import.to_token_stream());
+                        import.component().unwrap()
                     }
-                    body = <#page_name>{}
-                }
-            });
+                    crate::compiler::Page::Component { path, component } => {
+                        imports.extend(path.to_token_stream());
+                        str_to_tk!(component).unwrap()
+                    }
+                };
+                ids.push(page_id.clone());
+                acc.extend(quote! {
+                    #page_id = <GNavPage>{
+                        header = {
+                            visible: false,
+                        }
+                        body = <#page_name>{}
+                    }
+                });
 
-            acc
+                (acc, ids)
+            },
+        );
+
+        let nav_pages_ids = if nav_pages_ids.is_empty() {
+            quote! {None}
+        } else {
+            quote! {Some(ids!(#(#nav_pages_ids),*))}
+        };
+
+        let mut script = RsScript::default(component.clone());
+        // add `#[rust]lifetime: Lifetime`, for router LiveComponent
+        script.live_component.as_mut().map(|c| {
+            if let Fields::Named(fields) = &mut c.0.fields {
+                fields.named.push(parse_quote! {
+                    #[rust] lifetime: Lifetime
+                });
+            }
+        });
+        script.impls.as_mut().map(|impls| {
+            impls.traits().widget.draw_walk = quote! {
+                let _ = self.deref_widget.draw_walk(cx, scope, walk);
+                self.lifetime
+                    .init()
+                    .execute(|| {
+                        let router = self.grouter(id!(app_router));
+                        router.borrow_mut().map(|mut router| {
+                            let _ = router
+                                .init(
+                                    ids!(#(#bar_pages_ids),*),
+                                    #nav_pages_ids,
+                                    Some(RouterIndicatorMode::Define),
+                                )
+                                .#active
+                                .build(cx);
+                        });
+                    })
+                    .map(|_| {
+                        let router = self.grouter(id!(app_router));
+                        router.borrow().map(|router| {
+                            if router.scope_path.is_some() {
+                                self.lifetime.next();
+                            }
+                        })
+                    });
+                DrawStep::done()
+            };
         });
 
         tokens.extend(quote! {
@@ -168,6 +229,7 @@ impl ToTokens for RouterScript {
                     }
                 }
             }
+            #script
         });
     }
 }
