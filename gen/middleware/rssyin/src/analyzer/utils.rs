@@ -19,7 +19,7 @@ impl AnalyzerStr for str {
     fn is_self_type(&self, self_type: Type) -> bool {
         is_self_type(self_type, self)
     }
-    
+
     fn strip_macro_holder(&self) -> Result<&str, Error> {
         strip_macro_holder(self)
     }
@@ -73,13 +73,15 @@ pub fn is_self_type(self_type: Type, target: &str) -> bool {
 pub fn strip_macro_holder(s: &str) -> Result<&str, Error> {
     return if s.starts_with('(') && s.ends_with(')') {
         Ok(s.strip_prefix('(')
-        .and_then(|x| x.strip_suffix(')'))
-        .unwrap())
+            .and_then(|x| x.strip_suffix(')'))
+            .unwrap()
+            .trim())
     } else if s.starts_with('{') && s.ends_with('}') {
         Ok(s.strip_prefix('{')
-        .and_then(|x| x.strip_suffix('}'))
-        .unwrap())
+            .and_then(|x| x.strip_suffix('}'))
+            .unwrap()
+            .trim())
     } else {
         Err(Error::ProcMacro(ProcMacroError::HolderNotFound))
-    }
+    };
 }

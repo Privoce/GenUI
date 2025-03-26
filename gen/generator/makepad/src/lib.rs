@@ -41,6 +41,16 @@ mod test_widget {
             routers: None,
         }
     }
+    #[test]
+    fn ui_root(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/root.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else",
+            "views/root.gen",
+            "src_gen_0/src/views/root.rs",
+        );
+        handle(source);
+    }
 
     #[test]
     fn route_macro(){
@@ -49,6 +59,17 @@ mod test_widget {
             "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
             "views/router_test.gen",
             "src_gen_0/src/views/router_test.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
+    fn only_if(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/home.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else",
+            "views/home.gen",
+            "src_gen_0/src/views/home.rs",
         );
         handle(source);
     }

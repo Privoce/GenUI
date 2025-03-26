@@ -141,7 +141,6 @@ impl ToRs for AppMain {
         let match_event = self.match_event.to_token_stream();
         // [app main] --------------------------------------------------------------------------------
         let app_main_trait = self.app_main.to_token_stream();
-
         tk.extend(quote! {
             #uses
 

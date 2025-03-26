@@ -115,7 +115,7 @@ impl WidgetTemplate {
                 (id, Some(punct_alone('=')), name)
             }else{
                 // 不是define, 那么就是id的大写形式
-                let id = parse_str::<TokenStream>(&snake_to_camel(id.unwrap())).unwrap();
+                let id = parse_str::<TokenStream>(&snake_to_camel(id.unwrap_or(&"".to_string()))).unwrap();
                 let name = quote! {
                     <#widget_name>
                 };
@@ -136,7 +136,7 @@ impl WidgetTemplate {
                 let name = quote! {
                     <#widget_name>
                 };
-                let id = parse_str::<TokenStream>(id.unwrap()).unwrap();
+                let id = parse_str::<TokenStream>(id.unwrap_or(&"".to_string())).unwrap();
                 (id, Some(punct_alone('=')), name)
             }
         };
