@@ -103,6 +103,7 @@ impl FnLzVisitor {
         ) -> Result<(), Error> {
             // [通用转化] --------------------------------------------------------------------------------
             let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
+
             visit_fns(item_fn, fields, widget_poll, binds, &signal_fns, processor)
         }
 

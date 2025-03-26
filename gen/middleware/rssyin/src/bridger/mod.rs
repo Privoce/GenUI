@@ -70,7 +70,7 @@ impl TryFrom<Option<TokenTree>> for RouterTk {
         if let Some(tk) = value {
             Ok(Self(tk.to_string().strip_macro_holder()?.to_string()))
         } else {
-            Err(Error::ProcMacro(ProcMacroError::ParseRouterToken))
+            Err(Error::ProcMacro(ProcMacroError::ParseRouteToken))
         }
     }
 }

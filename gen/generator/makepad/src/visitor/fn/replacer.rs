@@ -156,6 +156,39 @@ pub fn visit_fns(
                         )
                         .into());
                     }
+                } else if ident == "nav_to" {
+                    if let Some(tt) = macro_call.token_tree() {
+                        let tt = inner_tt(tt);
+                        if !tt.is_empty(){
+                            // add cx, self.widget_uid(), &mut Scope::empty() as param
+                            let new_expr = format!("nav_to!({}, cx, self.widget_uid(), &mut Scope::empty());", tt);
+                            let full_range = macro_call.syntax().text_range();
+                            replacer.add_replacement(full_range, new_expr);
+                        }else{
+                            return Err(CompilerError::runtime(
+                                "Makepad Compiler - Script",
+                                "nav_to! macro should has param, param is the id of the page you registered in router toml",
+                            )
+                            .into());
+                        }
+                    }
+                } else if ident == "nav_back" {
+                    if let Some(tt) = macro_call.token_tree() {
+                        let tt = inner_tt(tt);
+                        // nav_back should have no tt, so tt should be empty
+                        if tt.is_empty() {
+                            // add cx, self.widget_uid(), &mut Scope::empty() as param
+                            let new_expr = format!("nav_back!(cx, self.widget_uid(), &mut Scope::empty());");
+                            let full_range = macro_call.syntax().text_range();
+                            replacer.add_replacement(full_range, new_expr);
+                        } else {
+                            return Err(CompilerError::runtime(
+                                "Makepad Compiler - Script",
+                                "nav_back! macro should has no param",
+                            )
+                            .into());
+                        }
+                    }
                 } else {
                     if let Some(processor) = processor {
                         let tokens = if let Some(tt) = macro_call.token_tree() {

@@ -34,7 +34,9 @@ pub struct Context {
     pub plugins: Option<HashSet<PluginToken>>,
     pub dyn_processor: Option<DynProcessor>,
     /// routers
-    pub routers: Option<HashMap<String, RouterBuilder>>
+    pub routers: Option<HashMap<String, RouterBuilder>>,
+    // /// global active router
+    // pub active_router: Option<RouterBuilder>
 }
 
 impl Default for Context {
@@ -46,7 +48,8 @@ impl Default for Context {
             plugins: None,
             dyn_processor: None,
             lib_content: None,
-            routers: None
+            routers: None,
+            // active_router: None
         }
     }
 }

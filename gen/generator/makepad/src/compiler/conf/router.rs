@@ -205,6 +205,12 @@ impl RouterBuilder {
         let doc = Self::read(path)?;
         doc.try_into()
     }
+    pub fn routes(&self) -> Vec<String>  {
+        let mut routes = Vec::new();
+        self.bar_pages.iter().for_each(|(k, _)| routes.push(k.to_string()));
+        self.nav_pages.iter().for_each(|(k, _)| routes.push(k.to_string()));
+        routes
+    }
 }
 
 
