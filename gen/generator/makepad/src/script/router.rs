@@ -8,7 +8,7 @@ use crate::{
     compiler::{Context, RouterBuilder, TabbarItem},
     script::RsScript,
     str_to_tk,
-    token::{import_default, import_default_all, use_default_all},
+    token::{import_default, use_default_all},
 };
 
 #[derive(Debug, Clone)]
@@ -210,8 +210,11 @@ impl ToTokens for RouterScript {
                     });
                 DrawStep::done()
             };
+            impls.traits().widget.handle_event.other = quote! {
+                let router = self.grouter(id!(app_router));
+                router.handle_nav_events(cx, &actions);
+            };
         });
-
         tokens.extend(quote! {
             #uses
             live_design!{

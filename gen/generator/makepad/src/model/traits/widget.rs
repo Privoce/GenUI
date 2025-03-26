@@ -150,7 +150,8 @@ fn default_is_visible() -> TokenStream {
 pub struct HandleEvent {
     pub c_refs: HashSet<CRef>,
     pub callbacks: HashSet<CallbackStmt>,
-    pub widget_match_event: bool
+    pub widget_match_event: bool,
+    pub other: TokenStream,
 }
 
 impl HandleEvent {
@@ -164,10 +165,12 @@ impl HandleEvent {
         }else{
             None
         };
+        let other = &self.other;
         quote! {
             #call_widget
             #(#c_refs)*
             #(#callbacks)*
+            #other
         }
     }
 }
