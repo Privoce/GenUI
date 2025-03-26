@@ -62,8 +62,8 @@ impl From<ProcMacroError> for Error {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ProcMacroError {
     MultiImportMacro,
-    OnlyRouterMacro,
-    ParseRouterToken,
+    OnlyRouteMacro,
+    ParseRouteToken,
     NamedFieldEvent,
     HolderNotFound
 }
@@ -74,11 +74,11 @@ impl Display for ProcMacroError {
             ProcMacroError::MultiImportMacro => {
                 f.write_str("GenUI `import!` can only be used once!")
             }
-            ProcMacroError::OnlyRouterMacro => {
-                f.write_str("GenUI `router!` can only be used once and if has, do not allow other code!")
+            ProcMacroError::OnlyRouteMacro => {
+                f.write_str("GenUI `route!` can only be used once and if has, do not allow other code!")
             }
-            ProcMacroError::ParseRouterToken => {
-                f.write_str("GenUI `router!` parse error, allow format: router!(${router_id}); router!{${router_id}}. ${router_id}: TokenStream")
+            ProcMacroError::ParseRouteToken => {
+                f.write_str("GenUI `route!` parse error, allow format: route!(${router_id}); route!{${router_id}}. ${router_id}: TokenStream")
             }
             ProcMacroError::NamedFieldEvent => {
                 f.write_str("GenUI `#[event]` can only be used on unnamed fields, means you can not use like: `enum $Enum{ $field{$arg: $arg_ty, ..} }`!")

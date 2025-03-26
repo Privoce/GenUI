@@ -115,8 +115,8 @@ impl ScriptAnalyzer {
                         get_path_segment(&path).map_or_else(|| PropMacroEnum::None, |path|{
                             if path == "import"{
                                 PropMacroEnum::Import
-                            }else if path == "router"{
-                                PropMacroEnum::Router
+                            }else if path == "route"{
+                                PropMacroEnum::Route
                             }else{
                                 PropMacroEnum::None
                             }
@@ -134,11 +134,11 @@ impl ScriptAnalyzer {
                         start_index = macro_call.syntax().text_range().end();
                         continue;
                     },
-                    PropMacroEnum::Router => {
+                    PropMacroEnum::Route => {
                         router.replace(macro_call.token_tree().try_into()?);
-                        // 直接结束，因为如果有router过程宏，那么不允许有其他代码，所以检查当前的位置是否是最后一个位置，如果不是则报错
+                        // 直接结束，因为如果有route过程宏，那么不允许有其他代码，所以检查当前的位置是否是最后一个位置，如果不是则报错
                         if node.text_range().end() != source_file.syntax().text_range().end() {
-                            return Err(Error::ProcMacro(ProcMacroError::OnlyRouterMacro));
+                            return Err(Error::ProcMacro(ProcMacroError::OnlyRouteMacro));
                         }
                         break;
                     },
@@ -413,7 +413,7 @@ enum AttrMacroEnum {
 #[derive(Debug, Clone, Copy, Default)]
 enum PropMacroEnum{
     Import,
-    Router,
+    Route,
     #[default]
     None
 }

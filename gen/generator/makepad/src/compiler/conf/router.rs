@@ -219,8 +219,33 @@ mod test_router{
 
     use super::RouterBuilder;
 
+    fn handle(input: &str){
+        let router = input.parse::<DocumentMut>().unwrap();
+        let router = RouterBuilder::try_from(router).unwrap();
+        let router = RouterScript(router).to_token_stream();
+        fs::write("/Users/shengyifei/projects/gen_ui/GenUI/gen/mini_test.rs", &router.to_string()).unwrap();
+    }
+
     #[test]
-    fn t(){
+    fn without_tabbar(){
+        let input = r#"
+name = "UiRoot"
+id = "app_router"
+mode = "History"
+active = "login"
+
+[bar_pages]
+login = { path = "crate::views::login::*", component = "Login" }
+
+[nav_pages]
+nav_home = { path = "crate::views::home::*", component = "Home" }
+"#;
+
+        handle(input);
+    }
+
+    #[test]
+    fn full(){
         let input = r#"
 name = "UiRoot"
 id = "app_router"
@@ -253,9 +278,6 @@ nav_todo = { path = "crate::views::todo::*", component = "Todo" }
 nav_about = { path = "crate::views::about::*", component = "About" }
         "#;
 
-        let router = input.parse::<DocumentMut>().unwrap();
-        let router = RouterBuilder::try_from(router).unwrap();
-        let router = RouterScript(router).to_token_stream();
-        fs::write("/Users/shengyifei/projects/gen_ui/GenUI/gen/mini_test.rs", &router.to_string()).unwrap();
+        handle(input);
     }
 }
