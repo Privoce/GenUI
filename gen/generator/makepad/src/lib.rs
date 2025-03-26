@@ -43,6 +43,17 @@ mod test_widget {
     }
 
     #[test]
+    fn route_macro(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/router_test.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "views/router_test.gen",
+            "src_gen_0/src/views/router_test.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn if_easy(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/if_easy.gen
         let source = Source::new(

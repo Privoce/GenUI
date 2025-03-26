@@ -124,18 +124,19 @@ impl Template {
                     back_iter = sugar_iter;
                 }
             }
-            // [set events] ----------------------------------------------------------------
-            // 由于事件的存储是直接存储所有事件在EvenComponent中所以在外面一次性处理
-            if let Some(callbacks) = self.callbacks.as_ref() {
-                // get write lock
-                let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
-                poll.insert_event(self.as_event_component(callbacks)?);
-            }
         }
 
         // 检查组件是否有id, 如果没有id则将special作为id
         if self.id.is_none() {
             self.id.replace(self.special.to_snake());
+        }
+
+        // [set events] ----------------------------------------------------------------
+        // 由于事件的存储是直接存储所有事件在EvenComponent中所以在外面一次性处理
+        if let Some(callbacks) = self.callbacks.as_ref() {
+            // get write lock
+            let mut poll = poll.write().map_err(|e| err_from!(e.to_string()))?;
+            poll.insert_event(self.as_event_component(callbacks)?);
         }
 
         Ok(back_iter)
@@ -588,7 +589,8 @@ pub enum SugarIf {
 }
 
 impl SugarIf {
-    pub const SUGAR_SIGNS: [&'static str; 3] = [If::SUGAR_SIGN, ElseIf::SUGAR_SIGN, Else::SUGAR_SIGN];
+    pub const SUGAR_SIGNS: [&'static str; 3] =
+        [If::SUGAR_SIGN, ElseIf::SUGAR_SIGN, Else::SUGAR_SIGN];
 }
 
 #[derive(Debug, Clone)]
