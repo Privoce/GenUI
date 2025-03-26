@@ -1,8 +1,6 @@
 mod define;
 mod ty;
 
-use std::collections::HashMap;
-pub use define::*;
 use crate::{
     builtin::{
         widget::{Root, RootConf, Window},
@@ -11,15 +9,17 @@ use crate::{
     traits::ToTokensExt,
     visitor::ptr_ident,
 };
+pub use define::*;
+use std::collections::HashMap;
 
+use super::role::Role;
+use crate::token::ToLiveDesign;
 use gen_utils::common::{punct_alone, snake_to_camel};
+use gen_utils::error::Error;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
-use crate::token::ToLiveDesign;
-use gen_utils::error::Error;
 pub use ty::WidgetType;
-use super::role::Role;
 
 /// # 通用Widget模型
 /// 这个Widget模型主要用于抽象整个Makepad Widget结构
@@ -106,38 +106,53 @@ impl WidgetTemplate {
         // [id, signal: `:` or `=`, name] ----------------------------------------------------------------------
         let widget_name = widget.name();
         let (id, sig, widget_name) = if is_root {
-            if widget.is_define(){
+            if widget.is_define() {
                 let id = widget_name.clone();
                 // 如果是define的root节点，那么name属性就是下面需要的id
                 let name = quote! {
                     {{#widget_name}}
                 };
                 (id, Some(punct_alone('=')), name)
-            }else{
+            } else {
                 // 不是define, 那么就是id的大写形式
-                let id = parse_str::<TokenStream>(&snake_to_camel(id.unwrap_or(&"".to_string()))).unwrap();
+                let (id, sig) = if let Some(id) = id {
+                    (
+                        parse_str::<TokenStream>(&snake_to_camel(id)).unwrap(),
+                        Some(punct_alone('=')),
+                    )
+                } else {
+                    (TokenStream::new(), None)
+                };
+
                 let name = quote! {
                     <#widget_name>
                 };
-                (id, Some(punct_alone('=')), name)
+                (id, sig, name)
             }
-        }else{
+        } else {
             // 不是root节点, 那么就需要对组件类型进行检查
             // 如果是as_prop, 那么id就是as_prop的值, sig则是`:`, name则是组件名
-            if let Some(prop_slot) = as_prop{
+            if let Some(prop_slot) = as_prop {
                 let id = parse_str::<TokenStream>(&prop_slot).unwrap();
                 let name = quote! {
                     <#widget_name>
                 };
 
                 (id, Some(punct_alone(':')), name)
-            }else{
+            } else {
                 // 不是as_prop, 不是root, 那么就是最普通的组件情况, 直接使用id, 也无需大写
                 let name = quote! {
                     <#widget_name>
                 };
-                let id = parse_str::<TokenStream>(id.unwrap_or(&"".to_string())).unwrap();
-                (id, Some(punct_alone('=')), name)
+                let (id, sig) = if let Some(id) = id {
+                    (
+                        parse_str::<TokenStream>(&id).unwrap(),
+                        Some(punct_alone('=')),
+                    )
+                } else {
+                    (TokenStream::new(), None)
+                };
+                (id, sig, name)
             }
         };
 
@@ -199,7 +214,7 @@ impl From<(String, &RootConf)> for WidgetTemplate {
             role: Role::default(),
             binds: None,
             children: Some(vec![WidgetTemplate {
-                id: None,
+                id: Some("main_window".to_string()),
                 is_root: false,
                 as_prop: None,
                 is_static: true,
