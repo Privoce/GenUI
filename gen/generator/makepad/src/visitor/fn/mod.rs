@@ -9,6 +9,7 @@ use crate::{
     str_to_tk,
     two_way_binding::TWBPollBuilder,
 };
+use computed::ComputedVisitor;
 use gen_analyzer::{Binds, Events};
 
 use gen_dyn_run::DynProcessor;
@@ -20,6 +21,7 @@ use std::collections::HashSet;
 use syn::{parse_quote, FnArg, ImplItem, ImplItemFn, ItemImpl};
 
 // mod input;
+mod computed;
 mod replacer;
 mod special_event;
 // mod traits;
@@ -78,6 +80,12 @@ const SPECIAL_EVENT: [&str; 1] = ["http_response"];
 /// ## 功能5: 通用转换
 /// 1. 在方法中检查是否含有`c_ref!()`宏，需要替换为makepad的组件引用（基于静态分析，通用）
 /// 2. 在方法中检查是否含有编译器上下文注册的宏，需要对应替换为编译器提供的宏的转换代码（基于动态库构建，通用）
+/// ## 功能6: 计算属性 (e.g.: #[computed(a, b, c)] )
+/// 计算属性是GenUI中的一个重要概念，它是一个特殊的方法，使用`#[computed(${link_arg}...)]`进行方法标记，表示这个方法是一个计算属性
+/// 计算属性需要关联到组件属性上，这样在组件属性进行变化时，计算属性会自动更新。对计算属性我们需要生成：
+/// 1. 去除方法上的`#[computed(${link_arg}...)]`标记
+/// 2. 生成`update_${computed_fn_name}`方法, 该方法用于更新计算属性和对应组件
+/// 3. 找到宏中与计算属性关联的组件属性的setter方法，将更新方法添加到setter方法中
 #[derive(Debug)]
 pub struct FnLzVisitor;
 impl FnLzVisitor {
@@ -92,7 +100,6 @@ impl FnLzVisitor {
         widget_poll: &WidgetPoll,
         ctx: &Context,
     ) -> Result<(), Error> {
-        // dbg!(&twb_poll);
         fn convert_fns(
             item_fn: &mut ImplItemFn,
             widget_poll: &WidgetPoll,
@@ -112,6 +119,7 @@ impl FnLzVisitor {
         let mut self_events = vec![];
         let mut lifecycle_events = vec![];
         let mut special_events = vec![];
+        let mut computed_events = vec![];
 
         for impl_item in self_impl.items.iter_mut() {
             // only care about fn
@@ -149,6 +157,25 @@ impl FnLzVisitor {
                         }
                     }
 
+                    // [功能6: 计算属性] ------------------------------------------------------------------------
+                    if matches!(res, ConvertResult::Ignore) {
+                        if let Some(computed) = item_fn
+                            .attrs
+                            .iter()
+                            .find(|attr| attr.path().is_ident("computed"))
+                        {
+                            // 获得计算属性的参数
+                            let args: syn::ExprArray = computed.parse_args().map_err(|e| {
+                                CompilerError::runtime(
+                                    "Makepad Compiler - Script",
+                                    &format!("computed attr parse args error: {}, which should be ExprArray", e),
+                                )
+                            })?;
+                            ComputedVisitor::visit(item_fn, args, impls, binds)?;
+                            res = ConvertResult::Computed;
+                        }
+                    }
+
                     // [功能2: 中间方法] -----------------------------------------------------------------------
                     if matches!(res, ConvertResult::Ignore) {
                         // 既不是callback fn，也不是生命周期钩子，也不是特殊事件，那么就是中间方法，检查参数中是否含有任意self的引用，如果有则添加cx: &mut Cx
@@ -178,6 +205,9 @@ impl FnLzVisitor {
                 }
                 ConvertResult::SpecialEvent(special_event) => {
                     special_events.push((special_event, impl_item));
+                }
+                ConvertResult::Computed => {
+                    computed_events.push(impl_item);
                 }
             }
         }
@@ -225,6 +255,25 @@ impl FnLzVisitor {
 
         Self::set_special_event(impls, special_events)?;
 
+        for mut computed_event in computed_events {
+            if let ImplItem::Fn(item_fn) = &mut computed_event {
+                convert_fns(
+                    item_fn,
+                    widget_poll,
+                    binds,
+                    &signal_fns,
+                    ctx.dyn_processor.as_ref(),
+                    twb_poll,
+                )?;
+            }
+            Self::set_computed_event(computed_event, impls)?;
+        }
+
+        Ok(())
+    }
+
+    fn set_computed_event(computed_event: ImplItem, impls: &mut Impls) -> Result<(), Error> {
+        impls.self_impl.push(computed_event);
         Ok(())
     }
 
@@ -431,6 +480,7 @@ enum ConvertResult {
     SelfImpl,
     LifeCycle(LifeCycle),
     SpecialEvent(SpecialEvent),
+    Computed,
     Ignore,
 }
 

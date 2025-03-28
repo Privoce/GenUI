@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{parse_quote, ImplItem, ItemImpl};
+use syn::{parse_quote, ImplItem, ImplItemFn, ItemImpl};
 
 use crate::two_way_binding::default_impl_get_set;
 
@@ -33,6 +33,17 @@ impl ImplSelf {
     pub fn patch(self, mut patch_impl: ItemImpl) -> Self {
         patch_impl.items.extend(self.0.items);
         Self(patch_impl)
+    }
+    /// get the impl fn item by name
+    pub fn get_mut_fn(&mut self, fn_name: &str) -> Option<&mut ImplItemFn> {
+        self.0.items.iter_mut().find_map(|item| {
+            if let ImplItem::Fn(item_fn) = item {
+                if item_fn.sig.ident.to_string() == fn_name {
+                    return Some(item_fn);
+                }
+            }
+            None
+        })
     }
 }
 
