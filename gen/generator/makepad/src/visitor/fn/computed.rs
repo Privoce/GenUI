@@ -1,7 +1,7 @@
 use gen_analyzer::{Binds, SugarIf};
 use gen_utils::error::{CompilerError, Error};
-use quote::ToTokens;
-use syn::{parse_quote, ExprArray, ImplItem, ImplItemFn};
+use quote::{quote, ToTokens};
+use syn::{parse_quote, ExprArray, ImplItem, ImplItemFn, Stmt};
 
 use crate::{script::Impls, str_to_tk, traits::MakepadExtComponent};
 
@@ -50,17 +50,30 @@ impl ComputedVisitor {
                     bind_component.prop.as_str()
                 }
             ))?;
-
-            let update_fn: ImplItem = parse_quote! {
-                fn #update_fn_name(&mut self, cx: &mut Cx) -> Result<(), Box<dyn std::error::Error>> {
-                    let new_value = self.#fn_name(cx);
-                    let widget = self.#widget(id!(#widget_id));
-                    widget.#set_fn(cx, new_value)?;
-                    Ok(())
-                }
+            let fn_block = quote! {
+                let new_value = self.#fn_name(cx);
+                let widget = self.#widget(id!(#widget_id));
+                widget.#set_fn(cx, new_value)?;
             };
 
-            impls.self_impl.push(update_fn);
+            // 如果之前已经存在更新方法，则需要将代码附加到更新方法中，否则创建新的更新方法
+            if let Some(update_fn) = impls.self_impl.get_mut_fn(&update_fn_name.to_string()) {
+                let mut index = update_fn.block.stmts.len() - 1;
+                let stmts: Vec<Stmt> = parse_quote!(#fn_block);
+                for stmt in stmts {
+                    update_fn.block.stmts.insert(index, stmt);
+                    index += 1;
+                }
+            } else {
+                let update_fn: ImplItem = parse_quote! {
+                    fn #update_fn_name(&mut self, cx: &mut Cx) -> Result<(), Box<dyn std::error::Error>> {
+                        #fn_block
+                        Ok(())
+                    }
+                };
+
+                impls.self_impl.push(update_fn);
+            }
         }
 
         // [从args中获取绑定的组件属性并将更新方法添加到对应的setter中] -------------------------------------------------
