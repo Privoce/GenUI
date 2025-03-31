@@ -358,7 +358,7 @@ impl PropLzVisitor {
                     .c_refs
                     .insert(CRef::new(id.to_string(), name.to_string()));
 
-                if let Some(event) = BuiltinWidget::twb_event(name, prop) {
+                if let Some(event) = BuiltinWidget::twb_event(name, prop.as_str()) {
                     handle_event.callbacks.insert(CallbackStmt::new(
                         id.to_string(),
                         field.to_string(),

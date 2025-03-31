@@ -4,7 +4,7 @@ use gen_utils::error::Error;
 
 use crate::value::{Function, Value};
 
-use super::{Parent, PropKey};
+use super::{Else, Parent, PropKey};
 
 /// # Polls
 /// 对每个模型中组件的绑定属性和事件属性进行池化，用于进行静态分析
@@ -45,11 +45,35 @@ pub struct PropComponent {
     /// name of the widget
     pub name: String,
     /// 绑定的prop的key
-    pub prop: String,
+    pub prop: Prop,
     /// 如果组件被设置成as_prop, 这里会有值
     pub as_prop: Option<String>,
     /// 标识父组件的引用
     pub father_ref: Option<Parent>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Prop {
+    Value(String),
+    Else(Vec<String>),
+}
+
+impl Prop {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Prop::Value(val) => &val,
+            Prop::Else(_) => Else::SUGAR_SIGN,
+        }
+    }
+}
+
+impl ToString for Prop {
+    fn to_string(&self) -> String {
+        match self {
+            Prop::Value(val) => val.to_string(),
+            Prop::Else(val) => val.join(","),
+        }
+    }
 }
 
 // ------------------------------------ Event -----------------------------------------------------------------

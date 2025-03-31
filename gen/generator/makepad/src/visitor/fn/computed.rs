@@ -1,9 +1,8 @@
+use crate::{script::Impls, str_to_tk, traits::MakepadExtComponent};
 use gen_analyzer::{Binds, SugarIf};
 use gen_utils::error::{CompilerError, Error};
 use quote::{quote, ToTokens};
 use syn::{parse_quote, ExprArray, ImplItem, ImplItemFn, Stmt};
-
-use crate::{script::Impls, str_to_tk, traits::MakepadExtComponent};
 
 pub struct ComputedVisitor;
 
@@ -50,8 +49,20 @@ impl ComputedVisitor {
                     bind_component.prop.as_str()
                 }
             ))?;
+            // 如果是Else的话，需要对value进行累加
+            let new_value_fn = match bind_component.prop {
+                gen_analyzer::Prop::Value(_) => {
+                    quote! {self.#fn_name(cx)}
+                }
+                gen_analyzer::Prop::Else(items) => str_to_tk!(&items
+                    .iter()
+                    .map(|item| format!("!self.{}(cx)", item))
+                    .collect::<Vec<_>>()
+                    .join(" && "))?,
+            };
+
             let fn_block = quote! {
-                let new_value = self.#fn_name(cx);
+                let new_value = #new_value_fn;
                 let widget = self.#widget(id!(#widget_id));
                 widget.#set_fn(cx, new_value)?;
             };

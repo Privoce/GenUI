@@ -159,12 +159,15 @@ pub fn visit_fns(
                 } else if ident == "nav_to" {
                     if let Some(tt) = macro_call.token_tree() {
                         let tt = inner_tt(tt);
-                        if !tt.is_empty(){
+                        if !tt.is_empty() {
                             // add cx, self.widget_uid(), &mut Scope::empty() as param
-                            let new_expr = format!("nav_to!({}, cx, self.widget_uid(), &mut Scope::empty());", tt);
+                            let new_expr = format!(
+                                "nav_to!({}, cx, self.widget_uid(), &mut Scope::empty());",
+                                tt
+                            );
                             let full_range = macro_call.syntax().text_range();
                             replacer.add_replacement(full_range, new_expr);
-                        }else{
+                        } else {
                             return Err(CompilerError::runtime(
                                 "Makepad Compiler - Script",
                                 "nav_to! macro should has param, param is the id of the page you registered in router toml",
@@ -178,7 +181,8 @@ pub fn visit_fns(
                         // nav_back should have no tt, so tt should be empty
                         if tt.is_empty() {
                             // add cx, self.widget_uid(), &mut Scope::empty() as param
-                            let new_expr = format!("nav_back!(cx, self.widget_uid(), &mut Scope::empty());");
+                            let new_expr =
+                                format!("nav_back!(cx, self.widget_uid(), &mut Scope::empty());");
                             let full_range = macro_call.syntax().text_range();
                             replacer.add_replacement(full_range, new_expr);
                         } else {
@@ -267,7 +271,7 @@ pub fn visit_fns(
                                                 .find(|(_, v)| {
                                                     v.iter().any(|widget| {
                                                         &widget.id == widget_id
-                                                            && widget.prop == field_name
+                                                            && widget.prop.as_str() == field_name
                                                     })
                                                 })
                                                 .map(|(bind_field, _)| {

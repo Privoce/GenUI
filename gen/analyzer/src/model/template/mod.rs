@@ -17,7 +17,7 @@ use gen_utils::{
 
 use crate::{template, value::Value, PropComponent};
 
-use super::{EventComponent, Polls};
+use super::{EventComponent, Polls, Prop};
 
 /// ## 事件回调集合
 /// 用于标识外部传入组件的事件的集合
@@ -152,7 +152,7 @@ impl Template {
                     PropComponent {
                         id: id.clone().into_owned(),
                         name: name.clone().into_owned(),
-                        prop: key.name.to_string(),
+                        prop: Prop::Value(key.name.to_string()),
                         as_prop: self.as_prop.clone(),
                         father_ref: self.parent.clone(),
                     },
@@ -403,18 +403,18 @@ impl Template {
         Ok((name, id))
     }
 
-    /// prop: bind prop name (:color="label_color" => color)
-    pub fn as_prop_component(&self, prop: &str) -> Result<PropComponent, Error> {
-        let (name, id) = self.get_name_and_id()?;
+    // /// prop: bind prop name (:color="label_color" => color)
+    // pub fn as_prop_component(&self, prop: &str) -> Result<PropComponent, Error> {
+    //     let (name, id) = self.get_name_and_id()?;
 
-        Ok(PropComponent {
-            id: id.into_owned(),
-            name: name.into_owned(),
-            prop: prop.to_string(),
-            as_prop: self.as_prop.clone(),
-            father_ref: self.parent.clone(),
-        })
-    }
+    //     Ok(PropComponent {
+    //         id: id.into_owned(),
+    //         name: name.into_owned(),
+    //         prop: Prop::Value(prop.to_string()),
+    //         as_prop: self.as_prop.clone(),
+    //         father_ref: self.parent.clone(),
+    //     })
+    // }
 
     pub fn as_event_component(
         &self,
@@ -464,44 +464,67 @@ pub enum SugarProps {
 }
 
 impl SugarProps {
-    pub fn as_props(&self) -> Result<Option<Vec<(String, String)>>, Error> {
+    pub fn as_props(&self) -> Result<Option<Vec<(String, Prop)>>, Error> {
         match self {
             SugarProps::For(for_sign) => Ok(Some(vec![(
                 for_sign.as_bind()?.ident(),
-                crate::value::For::SUGAR_SIGN.to_string(),
+                Prop::Value(crate::value::For::SUGAR_SIGN.to_string()),
             )])),
             SugarProps::If(sugar_if) => match sugar_if {
                 SugarIf::If(sugar_if) => Ok(Some(vec![(
                     sugar_if.expr.as_bind()?.ident(),
-                    If::SUGAR_SIGN.to_string(),
+                    Prop::Value(If::SUGAR_SIGN.to_string()),
                 )])),
                 SugarIf::ElseIf(sugar_else_if) => {
                     let mut res = vec![
-                        (
-                            sugar_else_if.if_expr.expr.as_bind()?.ident(),
-                            ElseIf::SUGAR_SIGN.to_string(),
-                        ),
+                        // (
+                        //     sugar_else_if.if_expr.expr.as_bind()?.ident(),
+                        //     ElseIf::SUGAR_SIGN.to_string(),
+                        // ),
                         (
                             sugar_else_if.expr.as_bind()?.ident(),
-                            ElseIf::SUGAR_SIGN.to_string(),
+                            Prop::Value(ElseIf::SUGAR_SIGN.to_string()),
                         ),
                     ];
 
                     for expr in sugar_else_if.else_if_exprs.iter() {
-                        res.push((expr.as_bind()?.ident(), ElseIf::SUGAR_SIGN.to_string()));
+                        res.push((
+                            expr.as_bind()?.ident(),
+                            Prop::Value(ElseIf::SUGAR_SIGN.to_string()),
+                        ));
                     }
 
                     Ok(Some(res))
                 }
                 SugarIf::Else(sugar_else) => {
-                    let mut res = vec![(
-                        sugar_else.if_expr.expr.as_bind()?.ident(),
-                        Else::SUGAR_SIGN.to_string(),
-                    )];
+                    // 判断Else中elseif是否有，如果有则获取最后一个elseif并附加到对应prop中，否则到if中
+                    let res = if sugar_else.else_if_exprs.is_empty() {
+                        let if_expr = sugar_else.if_expr.expr.as_bind()?.ident();
+                        vec![(if_expr.to_string(), Prop::Else(vec![if_expr]))]
+                    } else {
+                        // 如果有则获取最后一个，但Prop::Else是将所有的prop ident放入
+                        let last_else_if =
+                            sugar_else.else_if_exprs.last().unwrap().as_bind()?.ident();
+                        let mut props = vec![];
+                        // 添加if
+                        props.push(sugar_else.if_expr.expr.as_bind()?.ident());
+                        // 添加else if
+                        for expr in sugar_else.else_if_exprs.iter() {
+                            props.push(expr.as_bind()?.ident());
+                        }
 
-                    for expr in sugar_else.else_if_exprs.iter() {
-                        res.push((expr.as_bind()?.ident(), Else::SUGAR_SIGN.to_string()));
-                    }
+                        vec![(last_else_if, Prop::Else(props))]
+                    };
+
+                    // dbg!(sugar_else);
+                    // let mut res = vec![(
+                    //     sugar_else.if_expr.expr.as_bind()?.ident(),
+                    //     Else::SUGAR_SIGN.to_string(),
+                    // )];
+
+                    // for expr in sugar_else.else_if_exprs.iter() {
+                    //     res.push((expr.as_bind()?.ident(), Else::SUGAR_SIGN.to_string()));
+                    // }
 
                     Ok(Some(res))
                 }

@@ -44,7 +44,7 @@ impl GetSet {
         if let Some(binds) = binds.get(field) {
             for widget in binds {
                 // 如果是sugar_sign则跳过
-                if widget.prop == For::SUGAR_SIGN {
+                if widget.prop.as_str() == For::SUGAR_SIGN {
                     continue;
                 }
 
