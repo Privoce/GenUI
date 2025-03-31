@@ -11,8 +11,6 @@ use crate::{
 };
 use computed::ComputedVisitor;
 use gen_analyzer::{Binds, Events};
-
-use gen_dyn_run::DynProcessor;
 use gen_utils::error::{CompilerError, Error};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -100,19 +98,9 @@ impl FnLzVisitor {
         widget_poll: &WidgetPoll,
         ctx: &Context,
     ) -> Result<(), Error> {
-        fn convert_fns(
-            item_fn: &mut ImplItemFn,
-            widget_poll: &WidgetPoll,
-            binds: Option<&Binds>,
-            signal_fns: &Vec<String>,
-            processor: Option<&DynProcessor>,
-            twb_poll: Option<&TWBPollBuilder>,
-        ) -> Result<(), Error> {
-            // [通用转化] --------------------------------------------------------------------------------
-            let fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
+        
 
-            visit_fns(item_fn, fields, widget_poll, binds, &signal_fns, processor)
-        }
+        let mut fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
 
         // 记录增加了cx: &mut Cx的中间方法的ident，用于在visit_fns中提供替换支持
         let mut signal_fns = vec![];
@@ -171,7 +159,7 @@ impl FnLzVisitor {
                                     &format!("computed attr parse args error: {}, which should be ExprArray", e),
                                 )
                             })?;
-                            ComputedVisitor::visit(item_fn, args, impls, binds)?;
+                            ComputedVisitor::visit(item_fn, args, impls, binds, &mut fields)?;
                             res = ConvertResult::Computed;
                         }
                     }
@@ -214,42 +202,21 @@ impl FnLzVisitor {
 
         for mut impl_item in self_events {
             if let ImplItem::Fn(item_fn) = &mut impl_item {
-                convert_fns(
-                    item_fn,
-                    widget_poll,
-                    binds,
-                    &signal_fns,
-                    ctx.dyn_processor.as_ref(),
-                    twb_poll,
-                )?;
+                visit_fns(item_fn, &fields, widget_poll, binds, &signal_fns,  ctx.dyn_processor.as_ref())?;
             }
             impls.self_impl.push(impl_item);
         }
 
         for (life_cycle, mut impl_item) in lifecycle_events {
             if let ImplItem::Fn(item_fn) = &mut impl_item {
-                convert_fns(
-                    item_fn,
-                    widget_poll,
-                    binds,
-                    &signal_fns,
-                    ctx.dyn_processor.as_ref(),
-                    twb_poll,
-                )?;
+                visit_fns(item_fn, &fields, widget_poll, binds, &signal_fns,  ctx.dyn_processor.as_ref())?;
             }
             Self::set_life_cycle(life_cycle, impls, impl_item)?;
         }
 
         for (_special_event, impl_item) in special_events.iter_mut() {
             if let ImplItem::Fn(item_fn) = impl_item {
-                convert_fns(
-                    item_fn,
-                    widget_poll,
-                    binds,
-                    &signal_fns,
-                    ctx.dyn_processor.as_ref(),
-                    twb_poll,
-                )?;
+                visit_fns(item_fn, &fields, widget_poll, binds, &signal_fns,  ctx.dyn_processor.as_ref())?;
             }
         }
 
@@ -257,14 +224,7 @@ impl FnLzVisitor {
 
         for mut computed_event in computed_events {
             if let ImplItem::Fn(item_fn) = &mut computed_event {
-                convert_fns(
-                    item_fn,
-                    widget_poll,
-                    binds,
-                    &signal_fns,
-                    ctx.dyn_processor.as_ref(),
-                    twb_poll,
-                )?;
+                visit_fns(item_fn, &fields, widget_poll, binds, &signal_fns,  ctx.dyn_processor.as_ref())?;
             }
             Self::set_computed_event(computed_event, impls)?;
         }

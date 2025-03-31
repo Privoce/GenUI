@@ -18,6 +18,7 @@ impl ComputedVisitor {
         args: ExprArray,
         impls: &mut Impls,
         binds: Option<&Binds>,
+        fields: &mut Vec<String>,
     ) -> Result<(), Error> {
         // [去除方法上的属性宏] ------------------------------------------------------------------------------------
         item_fn
@@ -89,7 +90,9 @@ impl ComputedVisitor {
 
         // [从args中获取绑定的组件属性并将更新方法添加到对应的setter中] -------------------------------------------------
         for arg in args.elems.iter() {
-            let set_fn = format!("set_{}", arg.to_token_stream().to_string());
+            let arg = arg.to_token_stream().to_string();
+            fields.push(arg.to_string());
+            let set_fn = format!("set_{}", arg);
 
             if let Some(item_fn) = impls.self_impl.get_mut_fn(&set_fn) {
                 let index = item_fn.block.stmts.len() - 1;

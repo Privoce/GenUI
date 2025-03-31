@@ -62,7 +62,7 @@ impl BindingReplacer {
 /// 5. 当方法中含有set_方法时, 最终需要增加一行重新绘制的代码 (self.redraw(cx);) 来触发重绘
 pub fn visit_fns(
     input: &mut ImplItemFn,
-    fields: Vec<String>,
+    fields: &Vec<String>,
     widgets: &WidgetPoll,
     prop_binds: Option<&Binds>,
     signal_fns: &Vec<String>,
