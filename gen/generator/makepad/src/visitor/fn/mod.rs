@@ -98,8 +98,7 @@ impl FnLzVisitor {
         widget_poll: &WidgetPoll,
         ctx: &Context,
     ) -> Result<(), Error> {
-        
-
+        // 双向绑定的fields, 在computed中会添加进去
         let mut fields = twb_poll.as_ref().map(|x| x.fields()).unwrap_or_default();
 
         // 记录增加了cx: &mut Cx的中间方法的ident，用于在visit_fns中提供替换支持

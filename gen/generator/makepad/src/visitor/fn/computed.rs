@@ -1,4 +1,9 @@
-use crate::{script::Impls, str_to_tk, traits::MakepadExtComponent};
+use crate::{
+    model::traits::{ImplLiveHook, LiveHookType},
+    script::Impls,
+    str_to_tk,
+    traits::MakepadExtComponent,
+};
 use gen_analyzer::{Binds, SugarIf};
 use gen_utils::error::{CompilerError, Error};
 use quote::{quote, ToTokens};
@@ -90,11 +95,23 @@ impl ComputedVisitor {
 
         // [从args中获取绑定的组件属性并将更新方法添加到对应的setter中] -------------------------------------------------
         for arg in args.elems.iter() {
-            let arg = arg.to_token_stream().to_string();
-            fields.push(arg.to_string());
-            let set_fn = format!("set_{}", arg);
+            let arg = arg.to_token_stream();
+            let arg_str = arg.to_string();
+            let set_fn_str = format!("set_{}", arg.to_string());
 
-            if let Some(item_fn) = impls.self_impl.get_mut_fn(&set_fn) {
+            // 如果arg在fields中已经存在，则跳过
+            if !fields.contains(&arg_str) {
+                fields.push(arg_str);
+                let set_fn = str_to_tk!(&set_fn_str)?;
+                impls.traits().live_hook.push(
+                    quote! {
+                        self.#set_fn(cx, deref_prop.#arg).unwrap();
+                    },
+                    LiveHookType::AfterNewFromDoc,
+                );
+            }
+
+            if let Some(item_fn) = impls.self_impl.get_mut_fn(&set_fn_str) {
                 let index = item_fn.block.stmts.len() - 1;
                 item_fn.block.stmts.insert(
                     index,
