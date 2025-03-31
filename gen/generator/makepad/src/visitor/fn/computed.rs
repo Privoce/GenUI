@@ -23,7 +23,7 @@ impl ComputedVisitor {
         args: ExprArray,
         impls: &mut Impls,
         binds: Option<&Binds>,
-        fields: &mut Vec<String>,
+        computeds: &mut Vec<String>,
     ) -> Result<(), Error> {
         // [去除方法上的属性宏] ------------------------------------------------------------------------------------
         item_fn
@@ -62,7 +62,14 @@ impl ComputedVisitor {
                 }
                 gen_analyzer::Prop::Else(items) => str_to_tk!(&items
                     .iter()
-                    .map(|item| format!("!self.{}(cx)", item))
+                    .enumerate()
+                    .map(|(index, item)| {
+                        if index == items.len() - 1 {
+                            "!new_value".to_string()
+                        } else {
+                            format!("!self.{}(cx)", item)
+                        }
+                    })
                     .collect::<Vec<_>>()
                     .join(" && "))?,
             };
@@ -100,8 +107,8 @@ impl ComputedVisitor {
             let set_fn_str = format!("set_{}", arg.to_string());
 
             // 如果arg在fields中已经存在，则跳过
-            if !fields.contains(&arg_str) {
-                fields.push(arg_str);
+            if !computeds.contains(&arg_str) {
+                computeds.push(arg_str);
                 let set_fn = str_to_tk!(&set_fn_str)?;
                 impls.traits().live_hook.push(
                     quote! {

@@ -63,6 +63,7 @@ impl BindingReplacer {
 pub fn visit_fns(
     input: &mut ImplItemFn,
     fields: &Vec<String>,
+    computeds: &Vec<String>,
     widgets: &WidgetPoll,
     prop_binds: Option<&Binds>,
     signal_fns: &Vec<String>,
@@ -240,8 +241,10 @@ pub fn visit_fns(
                                 .trim_start_matches("set_")
                                 .to_string();
                             // dbg!(&fields, &field_name);
+                            let is_computed = computeds.contains(&field_name);
                             // 检查字段是否在目标列表中
-                            if fields.contains(&field_name) || from_widget.is_some() {
+                            if fields.contains(&field_name) || from_widget.is_some() || is_computed
+                            {
                                 let prefix = if let Some((w, _)) = from_widget {
                                     w.to_string()
                                 } else {
@@ -254,7 +257,10 @@ pub fn visit_fns(
 
                                 // 构建新的调用表达式
                                 let new_expr = if is_setter {
-                                    redraw = true;
+                                    // computed不需要重绘
+                                    if !is_computed {
+                                        redraw = true;
+                                    }
                                     let mut new_call = String::new();
                                     // 如果from_widget则需要反向绑定到父组件中完成双向绑定
                                     if let Some((_, widget_id)) = from_widget {
