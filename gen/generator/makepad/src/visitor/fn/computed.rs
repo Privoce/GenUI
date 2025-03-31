@@ -1,11 +1,17 @@
+use std::collections::HashMap;
+
 use crate::{
     model::traits::{ImplLiveHook, LiveHookType},
     script::Impls,
     str_to_tk,
     traits::MakepadExtComponent,
 };
-use gen_analyzer::{Binds, SugarIf};
+use gen_analyzer::{
+    value::{Bind, Function, Value},
+    Binds, SugarIf,
+};
 use gen_utils::error::{CompilerError, Error};
+use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_quote, ExprArray, ImplItem, ImplItemFn, Stmt};
 
@@ -20,11 +26,22 @@ pub struct ComputedVisitor;
 impl ComputedVisitor {
     pub fn visit(
         item_fn: &mut ImplItemFn,
-        args: ExprArray,
         impls: &mut Impls,
         binds: Option<&Binds>,
-        computeds: &mut Vec<String>,
+        elses: &mut HashMap<String, Function>,
     ) -> Result<(), Error> {
+        fn build_fn_args(function: &Function) -> TokenStream {
+            function
+                .params_str()
+                .map(|args| {
+                    let mut args = str_to_tk!(&args).unwrap();
+                    args.extend(quote! {, cx});
+                    args
+                })
+                .unwrap_or(quote! {cx})
+        }
+        // dbg!(binds);
+
         // [去除方法上的属性宏] ------------------------------------------------------------------------------------
         item_fn
             .attrs
@@ -55,23 +72,56 @@ impl ComputedVisitor {
                     bind_component.prop.as_str()
                 }
             ))?;
+
             // 如果是Else的话，需要对value进行累加
             let new_value_fn = match bind_component.prop {
-                gen_analyzer::Prop::Value(_) => {
-                    quote! {self.#fn_name(cx)}
+                gen_analyzer::Prop::Value(prop_kv) => {
+                    if let Value::Function(function) = prop_kv.value {
+                        let fn_args = build_fn_args(&function);
+                        quote! {self.#fn_name(#fn_args)}
+                    } else if let Value::Bind(Bind::Fn(function)) = prop_kv.value {
+                        let fn_args = build_fn_args(&function);
+                        quote! {self.#fn_name(#fn_args)}
+                    } else {
+                        quote! {self.#fn_name(cx)}
+                    }
                 }
-                gen_analyzer::Prop::Else(items) => str_to_tk!(&items
-                    .iter()
-                    .enumerate()
-                    .map(|(index, item)| {
-                        if index == items.len() - 1 {
-                            "!new_value".to_string()
-                        } else {
-                            format!("!self.{}(cx)", item)
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join(" && "))?,
+                gen_analyzer::Prop::Else(items) => {
+                    let len = items.len();
+                    let mut pre: Option<String> = None;
+                    str_to_tk!(&items
+                        .iter()
+                        .enumerate()
+                        .map(|(index, item)| {
+                            if index == len - 1 {
+                                if let Value::Bind(Bind::Fn(function)) = &item.value {
+                                    if let Some(pre) = pre.as_ref() {
+                                        elses.insert(pre.to_string(), function.clone());
+                                    }
+                                }
+                                Ok("!new_value".to_string())
+                            } else {
+                                let fn_ident = item.value.as_bind()?.ident();
+                                if index == len - 2
+                                    && SugarIf::SUGAR_SIGNS.contains(&item.key.as_str())
+                                {
+                                    pre.replace(fn_ident.to_string());
+                                }
+
+                                let args = if let Value::Function(function) = &item.value {
+                                    build_fn_args(function)
+                                } else if let Value::Bind(Bind::Fn(function)) = &item.value {
+                                    build_fn_args(function)
+                                } else {
+                                    TokenStream::new()
+                                };
+
+                                Ok(format!("!self.{}({})", fn_ident, args.to_string()))
+                            }
+                        })
+                        .collect::<Result<Vec<String>, Error>>()?
+                        .join(" && "))?
+                }
             };
 
             let fn_block = quote! {
@@ -100,25 +150,18 @@ impl ComputedVisitor {
             }
         }
 
-        // [从args中获取绑定的组件属性并将更新方法添加到对应的setter中] -------------------------------------------------
-        for arg in args.elems.iter() {
-            let arg = arg.to_token_stream();
-            let arg_str = arg.to_string();
-            let set_fn_str = format!("set_{}", arg.to_string());
+        Ok(())
+    }
 
-            // 如果arg在fields中已经存在，则跳过
-            if !computeds.contains(&arg_str) {
-                computeds.push(arg_str);
-                let set_fn = str_to_tk!(&set_fn_str)?;
-                impls.traits().live_hook.push(
-                    quote! {
-                        self.#set_fn(cx, deref_prop.#arg).unwrap();
-                    },
-                    LiveHookType::AfterNewFromDoc,
-                );
-            }
-
-            if let Some(item_fn) = impls.self_impl.get_mut_fn(&set_fn_str) {
+    pub fn handle_update(
+        arg_map: HashMap<String, ExprArray>,
+        impls: &mut Impls,
+        fields: &Vec<String>,
+        computeds: &mut Vec<String>,
+        elses: &HashMap<String, Function>,
+    ) -> Result<(), Error> {
+        fn patch_update(set_fn: &str, impls: &mut Impls, update_fn_name: &TokenStream) {
+            if let Some(item_fn) = impls.self_impl.get_mut_fn(set_fn) {
                 let index = item_fn.block.stmts.len() - 1;
                 item_fn.block.stmts.insert(
                     index,
@@ -129,6 +172,37 @@ impl ComputedVisitor {
             }
         }
 
+        // [从args中获取绑定的组件属性并将更新方法添加到对应的setter中] -------------------------------------------------
+        for (fn_name, args) in arg_map {
+            let update_fn_name = str_to_tk!(&format!("update_{}", fn_name))?;
+            for arg in args.elems.iter() {
+                let arg = arg.to_token_stream();
+                let arg_str = arg.to_string();
+                let set_fn_str = format!("set_{}", arg.to_string());
+
+                // 如果arg在fields中已经存在，则跳过，否则在AfterNewFromDoc中添加初始化方法
+                if !computeds.contains(&arg_str) && !fields.contains(&arg_str) {
+                    computeds.push(arg_str);
+                    let set_fn = str_to_tk!(&set_fn_str)?;
+                    impls.traits().live_hook.push(
+                        quote! {
+                            self.#set_fn(cx, deref_prop.#arg);
+                        },
+                        LiveHookType::AfterNewFromDoc,
+                    );
+                }
+
+                patch_update(&set_fn_str, impls, &update_fn_name);
+            }
+            // 查找elses中是否有与fn_name相同的函数，如果有则需要添加一个update方法
+            if let Some(else_fn) = elses.get(&fn_name) {
+                let update_fn_name = str_to_tk!(&format!("update_{}", else_fn.ident()))?;
+                for arg in args.elems.iter() {
+                    let set_fn_str = format!("set_{}", arg.to_token_stream().to_string());
+                    patch_update(&set_fn_str, impls, &update_fn_name);
+                }
+            }
+        }
         Ok(())
     }
 }

@@ -54,14 +54,14 @@ pub struct PropComponent {
 
 #[derive(Debug, Clone)]
 pub enum Prop {
-    Value(String),
-    Else(Vec<String>),
+    Value(PropKV),
+    Else(Vec<PropKV>),
 }
 
 impl Prop {
     pub fn as_str(&self) -> &str {
         match self {
-            Prop::Value(val) => &val,
+            Prop::Value(kv) => kv.key.as_str(),
             Prop::Else(_) => Else::SUGAR_SIGN,
         }
     }
@@ -69,10 +69,19 @@ impl Prop {
 
 impl ToString for Prop {
     fn to_string(&self) -> String {
-        match self {
-            Prop::Value(val) => val.to_string(),
-            Prop::Else(val) => val.join(","),
-        }
+        self.as_str().to_string()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PropKV {
+    pub key: String,
+    pub value: Value,
+}
+
+impl PropKV {
+    pub fn new(key: String, value: Value) -> Self {
+        PropKV { key, value }
     }
 }
 

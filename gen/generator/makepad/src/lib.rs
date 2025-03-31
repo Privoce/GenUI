@@ -41,6 +41,18 @@ mod test_widget {
             routers: None,
         }
     }
+
+    #[test]
+    fn computed_with_args(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/if_multi_else_if.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else",
+            "views/if_multi_else_if.gen",
+            "src_gen_0/src/views/if_multi_else_if.rs",
+        );
+        handle(source);
+    }
+
     #[test]
     fn if_computed(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/if_else_if_else.gen
@@ -109,9 +121,9 @@ mod test_widget {
 
     #[test]
     fn if_else(){
-        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/if_else.gen
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/if_else.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else",
             "views/if_else.gen",
             "src_gen_0/src/views/if_else.rs",
         );

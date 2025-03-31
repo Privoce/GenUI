@@ -258,9 +258,11 @@ pub fn visit_fns(
                                 // 构建新的调用表达式
                                 let new_expr = if is_setter {
                                     // computed不需要重绘
-                                    if !is_computed {
-                                        redraw = true;
-                                    }
+                                    // if !is_computed {
+                                    //     redraw = true;
+                                    // }
+                                    redraw = true;
+                                    
                                     let mut new_call = String::new();
                                     // 如果from_widget则需要反向绑定到父组件中完成双向绑定
                                     if let Some((_, widget_id)) = from_widget {
