@@ -340,23 +340,46 @@ impl FnLzVisitor {
         impls: &mut Impls,
         item: ImplItem,
     ) -> Result<(), Error> {
-        if let ImplItem::Fn(item_fn) = item {
+        /// 处理before_update和updated生命周期
+        fn handle_update(impls: &mut Impls, item_fn: ImplItemFn, is_before_update: bool) {
+            let fn_name = item_fn.sig.ident.to_token_stream();
+            impls.self_impl.get_mut_fn("redraw").map(|redraw_fn| {
+                let index = if is_before_update {
+                    0
+                } else {
+                    redraw_fn.block.stmts.len()
+                };
+
+                redraw_fn.block.stmts.insert(
+                    index,
+                    parse_quote! {
+                        self.#fn_name(cx);
+                    },
+                );
+            });
+
+            impls.self_impl.push(ImplItem::Fn(item_fn));
+        }
+        /// 处理before_mount和mounted生命周期
+        fn handle_mount(impls: &mut Impls, item_fn: ImplItemFn, ty: LiveHookType) {
             let block = item_fn.block.to_token_stream();
+            impls.traits().live_hook.push(block, ty);
+        }
+
+        if let ImplItem::Fn(item_fn) = item {
             match life_cycle {
                 LifeCycle::BeforeMount => {
-                    impls
-                        .traits()
-                        .live_hook
-                        .push(block, LiveHookType::AfterNewFromDoc);
+                    handle_mount(impls, item_fn, LiveHookType::AfterNewFromDoc);
                 }
                 LifeCycle::Mounted => {
-                    impls
-                        .traits()
-                        .live_hook
-                        .push(block, LiveHookType::AfterApplyFromDoc);
+                    handle_mount(impls, item_fn, LiveHookType::AfterApplyFromDoc);
                 }
-                LifeCycle::BeforeUpdate => {}
-                LifeCycle::Updated => {}
+                LifeCycle::BeforeUpdate => {
+                    handle_update(impls, item_fn, true);
+                }
+                LifeCycle::Updated => {
+                    handle_update(impls, item_fn, false);
+                }
             }
 
             Ok(())
