@@ -11,11 +11,15 @@ pub struct ImplSelf(pub ItemImpl);
 
 impl ImplSelf {
     pub fn new(ident: &TokenStream, self_impl: Option<ItemImpl>) -> Self {
-        Self(if let Some(self_impl) = self_impl {
+        Self(if let Some(mut self_impl) = self_impl {
+            self_impl.attrs.push(parse_quote! {
+                #[allow(unused)]
+            });
             self_impl
         } else {
             let impl_get_set = default_impl_get_set(ident);
             parse_quote! {
+                #[allow(unused)]
                 impl #ident {
                     #impl_get_set
                 }

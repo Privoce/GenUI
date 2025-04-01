@@ -40,14 +40,9 @@ impl GetSet {
         impls: &mut Impls,
     ) -> Result<(), Error> {
         let mut bind_and_redraw = TokenStream::new();
-        // dbg!(binds);
         if let Some(binds) = binds.get(field) {
             for widget in binds {
                 // 如果是sugar_sign则跳过
-                if widget.prop.as_str() == For::SUGAR_SIGN {
-                    continue;
-                }
-
                 let (set_prop_fn, value_prefix) = match widget.prop.as_str() {
                     For::SUGAR_SIGN => continue,
                     If::SUGAR_SIGN => ("visible", None),

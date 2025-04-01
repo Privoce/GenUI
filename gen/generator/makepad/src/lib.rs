@@ -43,6 +43,28 @@ mod test_widget {
     }
 
     #[test]
+    fn if_all_multi(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/if_all_multi.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else",
+            "views/if_all_multi.gen",
+            "src_gen_0/src/views/if_all_multi.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
+    fn if_else_and_if_else(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/if_else_and_if_else.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else",
+            "views/if_else_and_if_else.gen",
+            "src_gen_0/src/views/if_else_and_if_else.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn computed_with_args(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/if_else_test/if_else/views/if_multi_else_if.gen
         let source = Source::new(
