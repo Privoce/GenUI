@@ -60,6 +60,8 @@ impl BindingReplacer {
 /// 3. get_和set_方法 (转为self.#field_name()和self.#field_name(#param))
 /// 4. signal_fns中的方法 (在参数列表最后添加cx)
 /// 5. 当方法中含有set_方法时, 最终需要增加一行重新绘制的代码 (self.redraw(cx);) 来触发重绘
+/// 
+/// is_special: 标记当前方法是否是特殊的访问器，例如生命周期就无需进行redraw
 pub fn visit_fns(
     input: &mut ImplItemFn,
     fields: &Vec<String>,
@@ -68,11 +70,11 @@ pub fn visit_fns(
     prop_binds: Option<&Binds>,
     signal_fns: &Vec<String>,
     processor: Option<&DynProcessor>,
+    is_special: bool,
 ) -> Result<(), Error> {
     let input_str = input.to_token_stream().to_string();
     let source_file = SourceFile::parse(&input_str, Edition::Edition2021);
     let syntax = source_file.tree();
-
     // 记录需要检查并调用get|set的组件，当使用者调用c_ref!时需要将组件id记录到这里，然后在get|set访问时进行替换
     let mut addition_widgets = HashMap::new();
     // 记录是否需要增加重绘
@@ -261,7 +263,7 @@ pub fn visit_fns(
                                     // if !is_computed {
                                     //     redraw = true;
                                     // }
-                                    redraw = true;
+                                    redraw = true && !is_special;
                                     
                                     let mut new_call = String::new();
                                     // 如果from_widget则需要反向绑定到父组件中完成双向绑定

@@ -43,6 +43,17 @@ mod test_widget {
     }
 
     #[test]
+    fn lifecycle_hello(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/lifecycle/tests/components/hello.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/lifecycle/tests",
+            "components/hello.gen",
+            "src_gen_0/src/components/hello.rs",
+        );
+        handle(source);
+    }
+
+    #[test]
     fn update_lifecycle(){
         // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/views/update.gen
         let source = Source::new(

@@ -217,6 +217,7 @@ impl FnLzVisitor {
                     binds,
                     &signal_fns,
                     ctx.dyn_processor.as_ref(),
+                    false
                 )?;
             }
             impls.self_impl.push(impl_item);
@@ -232,6 +233,7 @@ impl FnLzVisitor {
                     binds,
                     &signal_fns,
                     ctx.dyn_processor.as_ref(),
+                    true,
                 )?;
             }
             Self::set_life_cycle(life_cycle, impls, impl_item)?;
@@ -247,6 +249,7 @@ impl FnLzVisitor {
                     binds,
                     &signal_fns,
                     ctx.dyn_processor.as_ref(),
+                    false
                 )?;
             }
         }
@@ -263,6 +266,7 @@ impl FnLzVisitor {
                     binds,
                     &signal_fns,
                     ctx.dyn_processor.as_ref(),
+                    false
                 )?;
             }
             Self::set_computed_event(computed_event, impls)?;
