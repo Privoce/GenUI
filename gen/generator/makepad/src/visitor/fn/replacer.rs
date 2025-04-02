@@ -60,7 +60,7 @@ impl BindingReplacer {
 /// 3. get_和set_方法 (转为self.#field_name()和self.#field_name(#param))
 /// 4. signal_fns中的方法 (在参数列表最后添加cx)
 /// 5. 当方法中含有set_方法时, 最终需要增加一行重新绘制的代码 (self.redraw(cx);) 来触发重绘
-/// 
+///
 /// is_special: 标记当前方法是否是特殊的访问器，例如生命周期就无需进行redraw
 pub fn visit_fns(
     input: &mut ImplItemFn,
@@ -259,15 +259,16 @@ pub fn visit_fns(
 
                                 // 构建新的调用表达式
                                 let new_expr = if is_setter {
+                                    let mut redraw_cref = None;
                                     // computed不需要重绘
                                     // if !is_computed {
                                     //     redraw = true;
                                     // }
                                     redraw = true && !is_special;
-                                    
+
                                     let mut new_call = String::new();
                                     // 如果from_widget则需要反向绑定到父组件中完成双向绑定
-                                    if let Some((_, widget_id)) = from_widget {
+                                    if let Some((widget_ident, widget_id)) = from_widget {
                                         // 获取function中的参数
                                         let param = method_call.arg_list().map_or_else(
                                             || Err(Error::from("set prop need a param!")),
@@ -295,6 +296,8 @@ pub fn visit_fns(
                                                     );
                                                 });
                                         }
+                                        // c_ref!调用后使用了set_方法则需要对这个组件进行重绘
+                                        redraw_cref.replace(widget_ident);
                                     }
 
                                     // 对于setter，需要添加cx参数
@@ -316,6 +319,10 @@ pub fn visit_fns(
                                         } else {
                                             new_call.push_str(&args);
                                         }
+                                    }
+
+                                    if let Some(widget) = redraw_cref {
+                                        new_call.push_str(&format!("; {}.redraw(cx);", widget));
                                     }
 
                                     new_call
