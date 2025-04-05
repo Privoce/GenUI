@@ -1,16 +1,18 @@
 use gen_analyzer::Binds;
-use gen_dyn_run::DynProcessor;
 use gen_plugin::MacroContext;
-use gen_utils::error::{CompilerError, Error};
+use gen_utils::{
+    common::string::FixedString,
+    error::{CompilerError, Error},
+};
 use quote::ToTokens;
 use ra_ap_syntax::{
-    ast::{self, HasArgList},
+    ast::{self, HasArgList, MethodCallExpr},
     AstNode, Edition, SourceFile, TextRange,
 };
 use std::collections::HashMap;
 use syn::{parse_str, ImplItemFn};
 
-use crate::compiler::WidgetPoll;
+use crate::compiler::{Context, WidgetPoll};
 
 /// 访问双向绑定访问器结构体
 #[allow(unused)]
@@ -69,9 +71,11 @@ pub fn visit_fns(
     widgets: &WidgetPoll,
     prop_binds: Option<&Binds>,
     signal_fns: &Vec<String>,
-    processor: Option<&DynProcessor>,
+    ctx: &Context,
     is_special: bool,
 ) -> Result<(), Error> {
+    let processor = ctx.dyn_processor.as_ref();
+    let router = ctx.router.as_ref();
     let input_str = input.to_token_stream().to_string();
     let source_file = SourceFile::parse(&input_str, Edition::Edition2021);
     let syntax = source_file.tree();
@@ -81,6 +85,8 @@ pub fn visit_fns(
     let mut redraw = false;
     // 创建替换器
     let mut replacer = BindingReplacer::new(fields.clone());
+    // 记录方法中访问到的路由组件，路由组件需要在其nav_to和nav_back方法中添加cx参数
+    let mut router_widget = None;
     // [visit_two_way_binding] -------------------------------------------------------------------------------
     // 遍历语法树
     for node in syntax.syntax().descendants() {
@@ -97,21 +103,24 @@ pub fn visit_fns(
                                 // remove `{}` or `()`
                                 let id = inner_tt(tt);
                                 // 记录id
-                                let _ = let_stmt.pat().map(|pat| {
-                                    if let Some(ident_pat) =
-                                        ast::IdentPat::cast(pat.syntax().clone())
-                                    {
-                                        addition_widgets.insert(
+                                let let_ident = let_stmt
+                                    .pat()
+                                    .and_then(|pat| {
+                                        ast::IdentPat::cast(pat.syntax().clone()).map(|ident_pat| {
                                             ident_pat
                                                 .syntax()
                                                 .last_token()
                                                 .unwrap()
                                                 .text()
-                                                .to_string(),
-                                            id.to_string(),
-                                        );
-                                    }
-                                });
+                                                .to_string()
+                                        })
+                                    })
+                                    .ok_or(CompilerError::runtime(
+                                        "Makepad Compiler - Script",
+                                        "c_ref! macro should has let statement",
+                                    ))?;
+                                // 这里需要将id记录到addition_widgets中
+                                addition_widgets.insert(let_ident.to_string(), id.to_string());
 
                                 let widget = widgets.get(&id).map_or_else(
                                     || {
@@ -123,9 +132,21 @@ pub fn visit_fns(
                                     |widget| Ok(widget.snake_name()),
                                 )?;
 
-                                let new_expr = format!("self.{}(id!({}))", widget, id);
+                                let new_expr = format!("self.{}(id!({}))", &widget, id);
                                 let full_range = macro_call.syntax().text_range();
                                 replacer.add_replacement(full_range, new_expr);
+
+                                // 尝试获取路由组件
+                                if let Some(router) = router {
+                                    // 这里需要根据组件名字的缩写来判断是否是路由组件
+                                    if widget == router.name.camel_to_snake() {
+                                        router_widget.replace(UsedRouter {
+                                            id: id.to_string(),
+                                            name: widget.to_string(),
+                                            ident: let_ident.to_string(),
+                                        });
+                                    }
+                                }
                             } else {
                                 return Err(CompilerError::runtime(
                                     "Makepad Compiler - Script",
@@ -354,6 +375,44 @@ pub fn visit_fns(
                                         replacer.add_replacement(full_range, new_expr);
                                     }
                                 }
+                            } else {
+                                if let Some(router_widget) = router_widget.as_ref() {
+                                    if router_widget.ident == receiver_text {
+                                        // 这里说明当前方法调用了路由组件的nav_to或nav_back方法，需要添加cx参数
+                                        match RouterCalled::from(method_name.as_str()) {
+                                            RouterCalled::NavTo => {
+                                                let args =
+                                                    handle_router_args(&method_call, 1, "nav_to")?;
+                                                let full_range = method_call.syntax().text_range();
+                                                let new_expr = format!(
+                                                    "{}.{}({});",
+                                                    receiver_text,
+                                                    method_name,
+                                                    args.join(",")
+                                                );
+                                                replacer.add_replacement(full_range, new_expr);
+                                            }
+                                            RouterCalled::NavBack => {
+                                                let args = handle_router_args(
+                                                    &method_call,
+                                                    0,
+                                                    "nav_back",
+                                                )?;
+                                                let full_range = method_call.syntax().text_range();
+                                                let new_expr = format!(
+                                                    "{}.{}({});",
+                                                    receiver_text,
+                                                    method_name,
+                                                    args.join(",")
+                                                );
+                                                replacer.add_replacement(full_range, new_expr);
+                                            }
+                                            RouterCalled::Unknown => {}
+                                        }
+
+                                        // let new_expr =format!("{}.{}")
+                                    }
+                                }
                             }
                         }
                     }
@@ -398,5 +457,63 @@ fn remove_holder(input: &str) -> &str {
         &input[1..input.len() - 1]
     } else {
         input
+    }
+}
+
+fn handle_router_args(
+    method_call: &MethodCallExpr,
+    arg_num: usize,
+    method_name: &str,
+) -> Result<Vec<String>, Error> {
+    method_call.arg_list().map_or_else(
+        || {
+            Err(Error::from(format!(
+                "can not find args in {}()",
+                method_name
+            )))
+        },
+        |arg_list| {
+            // 这里还需要继续判断，args的数量
+            if arg_list.args().count() == arg_num {
+                // 在参数列表末尾添加cx
+                let mut args = arg_list.args().fold(Vec::new(), |mut acc, arg| {
+                    acc.push(arg.syntax().text().to_string());
+                    acc
+                });
+                args.push("cx".to_string());
+                Ok(args)
+            } else {
+                Err(Error::from(format!(
+                    "{}(), should has only {} arg",
+                    method_name, arg_num
+                )))
+            }
+        },
+    )
+}
+
+/// 用于存储路由被调用的结构体
+/// 用于在访问中替换nav_to和nav_back方法
+#[allow(unused)]
+#[derive(Debug, Clone)]
+struct UsedRouter {
+    pub id: String,
+    pub name: String,
+    pub ident: String,
+}
+
+enum RouterCalled {
+    NavTo,
+    NavBack,
+    Unknown,
+}
+
+impl From<&str> for RouterCalled {
+    fn from(value: &str) -> Self {
+        match value {
+            "nav_to" => RouterCalled::NavTo,
+            "nav_back" => RouterCalled::NavBack,
+            _ => RouterCalled::Unknown,
+        }
     }
 }

@@ -21,9 +21,9 @@ impl TryFrom<(RouterTk, &mut Context)> for RouterScript {
 
     fn try_from(value: (RouterTk, &mut Context)) -> Result<Self, Self::Error> {
         // 从context中获取对应的router
-        if let Some(routers) = value.1.routers.as_ref() {
-            if let Some(builder) = routers.get(&value.0 .0) {
-                return Ok(Self(builder.clone()));
+        if let Some(router) = value.1.router.as_ref() {
+            if router.id == value.0 .0 {
+                return Ok(Self(router.clone()));
             }
         }
         Err(CompilerError::Conf(format!(
@@ -216,16 +216,25 @@ impl ToTokens for RouterScript {
             };
             impls.self_ref_impl.extend(vec![
                 parse_quote! {
-                    pub fn nav_to(&self, cx: &mut Cx, path: &[LiveId]) {
+                    pub fn nav_to(&self, path: &[LiveId], cx: &mut Cx) {
                         self.borrow_mut().map(|router| {
                             let router = router.grouter(id!(app_router));
                             router.nav_to(cx, path);
                         });
                     }
-                }
+
+                },
+                parse_quote! {
+                    pub fn nav_back(&self, cx: &mut Cx) {
+                        self.borrow_mut().map(|router| {
+                            let router = router.grouter(id!(app_router));
+                            router.nav_back(cx);
+                        });
+                    }
+                },
             ]);
         });
-      
+
         tokens.extend(quote! {
             #uses
             live_design!{

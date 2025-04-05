@@ -1,4 +1,7 @@
-use std::{collections::{HashMap, HashSet}, path::{Path, PathBuf}};
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+};
 
 use gen_dyn_run::DynProcessor;
 use gen_plugin::Token as PluginToken;
@@ -34,7 +37,7 @@ pub struct Context {
     pub plugins: Option<HashSet<PluginToken>>,
     pub dyn_processor: Option<DynProcessor>,
     /// routers
-    pub routers: Option<HashMap<String, RouterBuilder>>,
+    pub router: Option<RouterBuilder>,
     // /// global active router
     // pub active_router: Option<RouterBuilder>
 }
@@ -48,7 +51,7 @@ impl Default for Context {
             plugins: None,
             dyn_processor: None,
             lib_content: None,
-            routers: None,
+            router: None,
             // active_router: None
         }
     }
@@ -58,16 +61,13 @@ impl Context {
     pub fn push_widget(&mut self, key: String, value: AbsWidget) {
         self.define_widget_poll.insert(key, value);
     }
-    pub fn load_routers<P>(&mut self, routers: &Vec<PathBuf>, from_path: P) -> Result<(), Error> 
-    where P: AsRef<Path>{
-        let mut router_map = HashMap::new();
-        for router in routers {
-            let router = RouterBuilder::new(router, &from_path)?;
-            router_map.insert(router.id.to_string(), router);
-        }
-        if !router_map.is_empty(){
-            self.routers = Some(router_map);
-        }
+    pub fn load_router<P1, P2>(&mut self, router: P1, from_path: P2) -> Result<(), Error>
+    where
+        P1: AsRef<Path>,
+        P2: AsRef<Path>,
+    {
+        let router = RouterBuilder::new(router, &from_path)?;
+        self.router = Some(router);
         Ok(())
     }
 }

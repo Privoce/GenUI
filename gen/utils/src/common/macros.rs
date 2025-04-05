@@ -49,6 +49,10 @@ macro_rules! split_fixed_impl {
             fn parse_str_stream(&self) -> TokenStream {
                 parse_str::<TokenStream>(&self).unwrap()
             }
+
+            fn strip_prefix_suffix(&self, prefix: &str, suffix: &str) -> Result<String, Error> {
+                strip_prefix_suffix(self, prefix, suffix)
+            }
         }
     };
 }

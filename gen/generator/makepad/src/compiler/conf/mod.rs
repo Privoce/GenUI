@@ -52,7 +52,7 @@ pub struct Config {
     /// use wasm to run ?
     /// makepad wasm
     pub wasm: Option<WasmConf>,
-    pub routers: Option<Vec<PathBuf>>,
+    pub router: Option<PathBuf>,
 }
 
 impl Config {
@@ -62,7 +62,7 @@ impl Config {
             root: root.into(),
             dependencies: None,
             wasm: None,
-            routers: None,
+            router: None,
         }
     }
     pub fn push_dep(&mut self, dep: RustDependence) {
@@ -104,7 +104,7 @@ impl From<&Config> for Item {
             table.insert("wasm", wasm.into());
         }
 
-        if let Some(routers) = conf.routers.as_ref() {
+        if let Some(routers) = conf.router.as_ref() {
             let mut arr = Array::new();
             for router in routers {
                 arr.push(Value::String(Formatted::new(path_to_str(router))));
@@ -162,22 +162,18 @@ impl TryFrom<Option<&Table>> for Config {
             };
 
             // [routers] ------------------------------------------------------------------------------------------------
-            let routers = if let Some(routers) = table.get("routers") {
-                let mut paths = vec![];
-                routers
-                    .as_array()
-                    .ok_or_else(|| err_from_to!("toml::Value" => "Array"))
-                    .and_then(|arr| {
-                        for item in arr.iter() {
-                            paths.push(PathBuf::from(
-                                item.as_str()
-                                    .ok_or_else(|| err_from_to!("toml::Value" => "String"))?
-                                    .to_string(),
-                            ));
-                        }
-                        Ok(())
-                    })?;
-                Some(paths)
+            let router = if let Some(router) = table.get("router") {
+                Some(
+                    router
+                        .as_str()
+                        .ok_or_else(|| err_from_to!("toml::Value" => "String"))?
+                        .to_string()
+                        .parse::<PathBuf>()
+                        .map_err(|_| ConvertError::FromTo {
+                            from: "toml::Value".to_string(),
+                            to: "PathBuf".to_string(),
+                        })?,
+                )
             } else {
                 None
             };
@@ -187,7 +183,7 @@ impl TryFrom<Option<&Table>> for Config {
                 root,
                 dependencies,
                 wasm,
-                routers,
+                router,
             });
         }
 
@@ -231,7 +227,7 @@ mod test_conf {
                     .unwrap(),
             ]),
             wasm: None,
-            routers: None,
+            router: None,
         };
 
         let toml = conf.to_string();

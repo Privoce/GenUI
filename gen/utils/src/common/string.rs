@@ -1,6 +1,25 @@
+use crate::{
+    common::{camel_to_snake, snake_to_camel, Ulid},
+    error::Error,
+    split_fixed_impl,
+};
 use proc_macro2::TokenStream;
 use syn::parse_str;
-use crate::{split_fixed_impl, common::{snake_to_camel, camel_to_snake, Ulid}};
+
+pub fn strip_prefix_suffix(s: &str, prefix: &str, suffix: &str) -> Result<String, Error> {
+    if s.starts_with(prefix) && s.ends_with(suffix) {
+        Ok(s.strip_prefix(prefix)
+            .and_then(|x| x.strip_suffix(suffix))
+            .unwrap()
+            .trim()
+            .to_string())
+    } else {
+        Err(Error::FromDynError(format!(
+            "{} not start with {} and end with {}",
+            s, prefix, suffix
+        )))
+    }
+}
 
 /// ## Split a string by a fixed pattern
 /// In Rust, when you use the split method on a string (or a slice of characters) with a pattern
@@ -39,6 +58,8 @@ pub trait FixedString {
     fn has_ulid(&self, prefix: &str) -> bool;
     /// ## to_token_stream
     fn parse_str_stream(&self) -> TokenStream;
+    /// strip prefix and suffix
+    fn strip_prefix_suffix(&self, prefix: &str, suffix: &str) -> Result<String, Error>;
 }
 
 split_fixed_impl!(String);

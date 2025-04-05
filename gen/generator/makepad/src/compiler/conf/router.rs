@@ -25,6 +25,36 @@ pub struct RouterBuilder {
     pub nav_pages: HashMap<String, Page>,
 }
 
+impl RouterBuilder {
+    /// Read the router config from a file, if path is relative, use from_path as base path
+    pub fn new<P, F>(path: P, from_path: F) -> Result<Self, Error>
+    where
+        P: AsRef<Path>,
+        F: AsRef<Path>,
+    {
+
+        let path = if path.as_ref().is_relative() {
+            let abs_path = from_path.as_ref().join(path.as_ref());
+            if abs_path.exists() {
+                abs_path
+            }else{
+                return Err(Error::Fs(FsError::FileNotFound(abs_path)));
+            }
+        }else{
+            path.as_ref().to_path_buf()
+        };
+        let doc = Self::read(path)?;
+        doc.try_into()
+    }
+    pub fn routes(&self) -> Vec<String>  {
+        let mut routes = Vec::new();
+        self.bar_pages.iter().for_each(|(k, _)| routes.push(k.to_string()));
+        self.nav_pages.iter().for_each(|(k, _)| routes.push(k.to_string()));
+        routes
+    }
+}
+
+
 #[derive(Debug, Clone)]
 pub struct TabbarBuilder {
     pub theme: Option<Themes>,
@@ -197,34 +227,6 @@ impl TryFrom<DocumentMut> for RouterBuilder {
     }
 }
 
-impl RouterBuilder {
-    /// Read the router config from a file, if path is relative, use from_path as base path
-    pub fn new<P, F>(path: P, from_path: F) -> Result<Self, Error>
-    where
-        P: AsRef<Path>,
-        F: AsRef<Path>,
-    {
-
-        let path = if path.as_ref().is_relative() {
-            let abs_path = from_path.as_ref().join(path.as_ref());
-            if abs_path.exists() {
-                abs_path
-            }else{
-                return Err(Error::Fs(FsError::FileNotFound(abs_path)));
-            }
-        }else{
-            path.as_ref().to_path_buf()
-        };
-        let doc = Self::read(path)?;
-        doc.try_into()
-    }
-    pub fn routes(&self) -> Vec<String>  {
-        let mut routes = Vec::new();
-        self.bar_pages.iter().for_each(|(k, _)| routes.push(k.to_string()));
-        self.nav_pages.iter().for_each(|(k, _)| routes.push(k.to_string()));
-        routes
-    }
-}
 
 
 #[cfg(test)]

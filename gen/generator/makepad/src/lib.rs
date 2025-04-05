@@ -27,7 +27,7 @@ mod test_widget {
         compiler::ToRs,
     };
 
-    use crate::{compiler::Context, model::{SimpleAppMain, Widget}};
+    use crate::{compiler::{Context, RouterBuilder}, model::{SimpleAppMain, Widget}};
 
 
     fn context() -> Context {
@@ -38,8 +38,19 @@ mod test_widget {
             plugins: None,
             dyn_processor: None,
             lib_content: None,
-            routers: None,
+            router: Some(RouterBuilder::new("/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/router/router.toml", "").unwrap()),
         }
+    }
+
+    #[test]
+    fn router_called(){
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/router/views/home.gen
+        let source = Source::new(
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "router/views/home.gen",
+            "src_gen_0/src/router/views/home.rs",
+        );
+        handle(source);
     }
 
     #[test]

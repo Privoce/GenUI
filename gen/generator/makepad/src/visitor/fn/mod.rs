@@ -216,7 +216,7 @@ impl FnLzVisitor {
                     widget_poll,
                     binds,
                     &signal_fns,
-                    ctx.dyn_processor.as_ref(),
+                    ctx,
                     false
                 )?;
             }
@@ -232,7 +232,7 @@ impl FnLzVisitor {
                     widget_poll,
                     binds,
                     &signal_fns,
-                    ctx.dyn_processor.as_ref(),
+                    ctx,
                     true,
                 )?;
             }
@@ -248,7 +248,7 @@ impl FnLzVisitor {
                     widget_poll,
                     binds,
                     &signal_fns,
-                    ctx.dyn_processor.as_ref(),
+                    ctx,
                     false
                 )?;
             }
@@ -265,7 +265,7 @@ impl FnLzVisitor {
                     widget_poll,
                     binds,
                     &signal_fns,
-                    ctx.dyn_processor.as_ref(),
+                    ctx,
                     false
                 )?;
             }

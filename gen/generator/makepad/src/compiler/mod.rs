@@ -72,8 +72,8 @@ impl Compiler {
         let tree = ModelTree::new(source.to_path().join("src"));
         // [context] -----------------------------------------------------------------------------
         let mut context = Context::default();
-        if let Some(routers) = conf.routers.as_ref() {
-            context.load_routers(routers, source.from_path())?;
+        if let Some(router) = conf.router.as_ref() {
+            context.load_router(router, source.from_path())?;
         }
 
         Ok(Self {
