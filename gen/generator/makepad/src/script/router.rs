@@ -44,7 +44,6 @@ impl ToTokens for RouterScript {
             });
 
             let text = item.text.as_ref().map(|text| {
-                let text = str_to_tk!(text).unwrap();
                 quote! {
                     text_slot: {text: #text},
                 }
@@ -107,9 +106,10 @@ impl ToTokens for RouterScript {
                 (bars, ids, tabbar_items, used_items)
             },
         );
-
+        let mut router_indictaor = quote! {Some(RouterIndicatorMode::Define)};
         let tabbar = self.0.tabbar.as_ref().and_then(|tabbar| {
             if tabbar.active {
+                router_indictaor = quote! {None};
                 let theme = tabbar.theme.map(|theme| {
                     quote! {
                         theme: #theme,
@@ -182,6 +182,7 @@ impl ToTokens for RouterScript {
                 });
             }
         });
+
         script.impls.as_mut().map(|impls| {
             impls.traits().widget.draw_walk = quote! {
                 let _ = self.deref_widget.draw_walk(cx, scope, walk);
@@ -194,7 +195,7 @@ impl ToTokens for RouterScript {
                                 .init(
                                     ids!(#(#bar_pages_ids),*),
                                     #nav_pages_ids,
-                                    Some(RouterIndicatorMode::Define),
+                                    #router_indictaor,
                                 )
                                 .#active
                                 .build(cx);
