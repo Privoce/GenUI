@@ -74,7 +74,7 @@ pub struct ScriptAnalyzer;
 impl ScriptAnalyzer {
     /// 对rust代码进行分析处理
     pub fn analyze(code: &str) -> Result<ScriptBridger, Error> {
-        let source_file = SourceFile::parse(code, Edition::Edition2021).tree();
+        let source_file = SourceFile::parse(code.trim(), Edition::Edition2021).tree();
 
         let mut start_index = TextSize::new(0);
         // let end_index = source_file.syntax().text_range().end();
@@ -135,6 +135,7 @@ impl ScriptAnalyzer {
                     }
                     PropMacroEnum::Route => {
                         router.replace(macro_call.token_tree().try_into()?);
+                        
                         // 直接结束，因为如果有route过程宏，那么不允许有其他代码，所以检查当前的位置是否是最后一个位置，如果不是则报错
                         if node.text_range().end() != source_file.syntax().text_range().end() {
                             return Err(Error::ProcMacro(ProcMacroError::OnlyRouteMacro));

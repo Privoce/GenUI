@@ -73,7 +73,7 @@ impl Compiler {
         // [context] -----------------------------------------------------------------------------
         let mut context = Context::default();
         if let Some(routers) = conf.routers.as_ref() {
-            context.load_routers(routers)?;
+            context.load_routers(routers, source.from_path())?;
         }
 
         Ok(Self {

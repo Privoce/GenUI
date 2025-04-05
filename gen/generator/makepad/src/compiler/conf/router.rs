@@ -4,7 +4,7 @@ use std::{
     path::Path, str::FromStr,
 };
 
-use gen_utils::{common::ToToml, err_from_to, error::Error};
+use gen_utils::{common::ToToml, err_from_to, error::{Error, FsError}};
 use rssyin::bridger::Import;
 use toml_edit::{DocumentMut, Item};
 
@@ -198,10 +198,23 @@ impl TryFrom<DocumentMut> for RouterBuilder {
 }
 
 impl RouterBuilder {
-    pub fn new<P>(path: P) -> Result<Self, Error>
+    /// Read the router config from a file, if path is relative, use from_path as base path
+    pub fn new<P, F>(path: P, from_path: F) -> Result<Self, Error>
     where
         P: AsRef<Path>,
+        F: AsRef<Path>,
     {
+
+        let path = if path.as_ref().is_relative() {
+            let abs_path = from_path.as_ref().join(path.as_ref());
+            if abs_path.exists() {
+                abs_path
+            }else{
+                return Err(Error::Fs(FsError::FileNotFound(abs_path)));
+            }
+        }else{
+            path.as_ref().to_path_buf()
+        };
         let doc = Self::read(path)?;
         doc.try_into()
     }

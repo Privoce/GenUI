@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, path::PathBuf};
+use std::{collections::{HashMap, HashSet}, path::{Path, PathBuf}};
 
 use gen_dyn_run::DynProcessor;
 use gen_plugin::Token as PluginToken;
@@ -58,13 +58,16 @@ impl Context {
     pub fn push_widget(&mut self, key: String, value: AbsWidget) {
         self.define_widget_poll.insert(key, value);
     }
-    pub fn load_routers(&mut self, routers: &Vec<PathBuf>) -> Result<(), Error> {
+    pub fn load_routers<P>(&mut self, routers: &Vec<PathBuf>, from_path: P) -> Result<(), Error> 
+    where P: AsRef<Path>{
         let mut router_map = HashMap::new();
         for router in routers {
-            let router = RouterBuilder::new(router)?;
+            let router = RouterBuilder::new(router, &from_path)?;
             router_map.insert(router.id.to_string(), router);
         }
-    
+        if !router_map.is_empty(){
+            self.routers = Some(router_map);
+        }
         Ok(())
     }
 }

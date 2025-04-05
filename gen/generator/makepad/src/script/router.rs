@@ -8,7 +8,7 @@ use crate::{
     compiler::{Context, RouterBuilder, TabbarItem},
     script::RsScript,
     str_to_tk,
-    token::{import_default, use_default_all},
+    token::{import_default, use_router},
 };
 
 #[derive(Debug, Clone)]
@@ -57,7 +57,7 @@ impl ToTokens for RouterScript {
             }
         }
 
-        let uses = use_default_all();
+        let uses = use_router();
         let active = self.0.active.as_ref().map(|active| {
             let active = str_to_tk!(active).unwrap();
             quote! {
@@ -214,7 +214,18 @@ impl ToTokens for RouterScript {
                 let router = self.grouter(id!(app_router));
                 router.handle_nav_events(cx, &actions);
             };
+            impls.self_ref_impl.extend(vec![
+                parse_quote! {
+                    pub fn nav_to(&self, cx: &mut Cx, path: &[LiveId]) {
+                        self.borrow_mut().map(|router| {
+                            let router = router.grouter(id!(app_router));
+                            router.nav_to(cx, path);
+                        });
+                    }
+                }
+            ]);
         });
+      
         tokens.extend(quote! {
             #uses
             live_design!{

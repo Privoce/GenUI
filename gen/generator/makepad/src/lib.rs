@@ -44,11 +44,11 @@ mod test_widget {
 
     #[test]
     fn lifecycle_home(){
-        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/lifecycle/tests/views/home.gen
+        // /Users/shengyifei/projects/gen_ui/made_with_GenUI/tests/lifecycle/views/home.gen
         let source = Source::new(
-            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/lifecycle/tests",
-            "views/home.gen",
-            "src_gen_0/src/views/home.rs",
+            "/Users/shengyifei/projects/gen_ui/made_with_GenUI/tests",
+            "lifecycle/views/home.gen",
+            "src_gen_0/src/lifecycle/views/home.rs",
         );
         handle(source);
     }
