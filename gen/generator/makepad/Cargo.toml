@@ -1,6 +1,6 @@
 [package]
 name = "makepad_gen_plugin"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Will SHENG<syf20020816@outlook.com>"]
 description = "gen plugin for makepad, a generator for genui to makepad"
@@ -20,14 +20,14 @@ lazy_static = "1.5.0"
 walkdir = "2.5.0"
 ra_ap_syntax = "0.0.264"
 # ------------------------------------------------------------------
-rssyin = { path = "../../middleware/rssyin" }
-gen_utils = { path = "../../utils" }
+# rssyin = { path = "../../middleware/rssyin" }
+# gen_utils = { path = "../../utils" }
 # gen_dyn_run = { path = "../../middleware/dyn" }
 # gen_plugin = { path = "../../middleware/plugins/plugin" }
-gen_analyzer = { path = "../../analyzer" }
+# gen_analyzer = { path = "../../analyzer" }
 
-# gen_analyzer = "0.1.0"
-# rssyin = "0.1.1"
-# gen_utils = "0.1.1"
+gen_analyzer = "0.1.1"
+rssyin = "0.1.2"
+gen_utils = "0.1.2"
 gen_dyn_run = "0.1.0"
 gen_plugin = "0.1.0"
