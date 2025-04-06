@@ -1,6 +1,6 @@
 [package]
 name = "rssyin"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "rssyin is a crate which depends on ra_ap_syntax to identify rust context for tracing and code replacement"
 keywords = ["ra_ap_syntax", "rust", "tracing", "syntax"]
