@@ -10,9 +10,9 @@ repsitory = "https://github.com/Privoce/GenUI"
 
 [dependencies]
 libloading = "0.8.6"
-gen_utils = { path = "../../utils", default-features = false, features = [
-    "common",
-] }
-# gen_utils = { version = "0.1.0", default-features = false, features = [
+# gen_utils = { path = "../../utils", default-features = false, features = [
 #     "common",
 # ] }
+gen_utils = { version = "0.1.2", default-features = false, features = [
+    "common",
+] }

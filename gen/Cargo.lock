@@ -158,9 +158,20 @@ dependencies = [
 
 [[package]]
 name = "gen_analyzer"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
- "gen_utils 0.1.1",
+ "gen_utils 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nom",
+ "serde_json",
+]
+
+[[package]]
+name = "gen_analyzer"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "feda90dac43f15c4381c60ae3df00ca311a1cfe628c0e3deec6389c2de4cfc3f"
+dependencies = [
+ "gen_utils 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom",
  "serde_json",
 ]
@@ -169,7 +180,7 @@ dependencies = [
 name = "gen_dyn_run"
 version = "0.1.0"
 dependencies = [
- "gen_utils 0.1.1",
+ "gen_utils 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "libloading",
 ]
 
@@ -179,7 +190,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb837ae586833e59b63a8dde1474280cd4a7bd4b6e01fdc5e4e98d0965b15e16"
 dependencies = [
- "gen_utils 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_utils 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "libloading",
 ]
 
@@ -205,7 +216,7 @@ dependencies = [
 name = "gen_plugin"
 version = "0.1.0"
 dependencies = [
- "gen_utils 0.1.1",
+ "gen_utils 0.1.2",
  "proc-macro2",
  "quote",
  "syn",
@@ -218,7 +229,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c686396c9a00d41de1ec7d40e3479753e98a62e0f1befc5b814853c454a04c2"
 dependencies = [
- "gen_utils 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gen_utils 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "proc-macro2",
  "quote",
  "syn",
@@ -231,13 +242,13 @@ version = "0.1.0"
 
 [[package]]
 name = "gen_utils"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "nom",
  "proc-macro2",
  "quote",
- "rand 0.9.0",
+ "rand",
  "syn",
  "toml_edit",
  "walkdir",
@@ -245,31 +256,18 @@ dependencies = [
 
 [[package]]
 name = "gen_utils"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48aaf411ec3e4ae02679ba3f3ac9d8461ea8e3ebfe08f54599b970bfe509c281"
+checksum = "786ba8d531a04391f306a0d3bb9e322a9f29d0eaa0b6fc820910071d436c2292"
 dependencies = [
  "chrono",
  "nom",
  "proc-macro2",
  "quote",
+ "rand",
  "syn",
  "toml_edit",
- "ulid",
  "walkdir",
-]
-
-[[package]]
-name = "getrandom"
-version = "0.2.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94b22e06ecb0110981051723910cbf0b5f5e09a2062dd7663334ee79a9d1286c"
-dependencies = [
- "cfg-if",
- "js-sys",
- "libc",
- "wasi 0.11.0+wasi-snapshot-preview1",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -280,7 +278,7 @@ checksum = "43a49c392881ce6d5c3b8cb70f98717b7c07aabbdff06687b9030dbfbe2725f8"
 dependencies = [
  "cfg-if",
  "libc",
- "wasi 0.13.3+wasi-0.2.2",
+ "wasi",
  "windows-targets 0.52.6",
 ]
 
@@ -395,17 +393,17 @@ checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
 
 [[package]]
 name = "makepad_gen_plugin"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
- "gen_analyzer",
+ "gen_analyzer 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gen_dyn_run 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gen_plugin 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gen_utils 0.1.1",
+ "gen_utils 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static",
  "proc-macro2",
  "quote",
  "ra_ap_syntax",
- "rssyin",
+ "rssyin 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn",
  "toml_edit",
  "walkdir",
@@ -573,34 +571,13 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
-dependencies = [
- "libc",
- "rand_chacha 0.3.1",
- "rand_core 0.6.4",
-]
-
-[[package]]
-name = "rand"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
 dependencies = [
- "rand_chacha 0.9.0",
- "rand_core 0.9.3",
+ "rand_chacha",
+ "rand_core",
  "zerocopy 0.8.23",
-]
-
-[[package]]
-name = "rand_chacha"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
-dependencies = [
- "ppv-lite86",
- "rand_core 0.6.4",
 ]
 
 [[package]]
@@ -610,16 +587,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.9.3",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
-dependencies = [
- "getrandom 0.2.14",
+ "rand_core",
 ]
 
 [[package]]
@@ -628,7 +596,7 @@ version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "99d9a13982dcf210057a8a78572b2217b667c3beacbf3a0d8b454f6f82837d38"
 dependencies = [
- "getrandom 0.3.1",
+ "getrandom",
 ]
 
 [[package]]
@@ -646,7 +614,19 @@ dependencies = [
 
 [[package]]
 name = "rssyin"
-version = "0.1.1"
+version = "0.1.2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "ra_ap_syntax",
+ "syn",
+]
+
+[[package]]
+name = "rssyin"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db91f6389a6c14243ec1fe00c2938390792a352d093627400b0a88e1ad048974"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -750,10 +730,10 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
- "gen_analyzer",
- "gen_utils 0.1.1",
+ "gen_analyzer 0.1.1",
+ "gen_utils 0.1.2",
  "quote",
- "rssyin",
+ "rssyin 0.1.2",
  "syn",
 ]
 
@@ -818,17 +798,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef8f7726da4807b58ea5c96fdc122f80702030edc33b35aff9190a51148ccc85"
 
 [[package]]
-name = "ulid"
-version = "1.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04f903f293d11f31c0c29e4148f6dc0d033a7f80cebc0282bea147611667d289"
-dependencies = [
- "getrandom 0.2.14",
- "rand 0.8.5",
- "web-time",
-]
-
-[[package]]
 name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -855,12 +824,6 @@ dependencies = [
  "same-file",
  "winapi-util",
 ]
-
-[[package]]
-name = "wasi"
-version = "0.11.0+wasi-snapshot-preview1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasi"
@@ -924,16 +887,6 @@ name = "wasm-bindgen-shared"
 version = "0.2.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
-
-[[package]]
-name = "web-time"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
 
 [[package]]
 name = "which"
