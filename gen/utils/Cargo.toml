@@ -1,6 +1,6 @@
 [package]
 name = "gen_utils"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 resolver = "2"
 authors = ["Will SHENG<syf20020816@outlook.com>"]
