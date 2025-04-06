@@ -53,19 +53,25 @@ If you have any questions or need further assistance, please feel free to consul
   - [x] component events
   - [x] component import
   - [x] component definition
+  - [x] prop definition
   - [x] event definition
   - [x] network (http)
   - [x] lifecycle
+    - [x] before_mount
+    - [x] mounted
+    - [x] before_update
+    - [x] updated
+  - [x] computed
 - [x] Integrate Basic GenUI Builtin Components
 - [x] Ract Cli support
-- [ ] Built-in syntax sugar
+- [x] Built-in syntax sugar
   - [x] for
-  - [ ] if_else_if_else
-- [ ] Integrate all Builtin Components (40%)
+  - [x] if_else_if_else
+- [ ] Integrate all Builtin Components (70%)
 - [x] Optimize static compilation
 - [ ] Powerful Scss like `<style>`
-- [ ] Self-Close component tag
-- [ ] Powerful Bind
+- [x] Self-Close component tag
+- [x] Powerful Bind
 - [ ] VSCode Plugin
 - [ ] Remote Services
 

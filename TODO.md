@@ -1,10 +1,10 @@
-- [ ] Built-in syntax sugar
+- [x] Built-in syntax sugar
   - [x] for
-  - [ ] if_else_if_else
+  - [x] if_else_if_else
 - [ ] Integrate all Builtin Components
 - [x] Optimize static compilation
 - [ ] Powerful Scss like `<style>`
-- [ ] Self-Close component tag
-- [ ] Powerful Bind
+- [x] Self-Close component tag
+- [x] Powerful Bind
 - [ ] VSCode Plugin
 - [ ] Remote Services
