@@ -18,7 +18,6 @@
   - [x] `#[update]` macro
 - [x] self-close tag for component in `<template></template>`
 - [x] Allow single_script strategies to use genui api
-- [x] 
 - [x] automatic id strategy (see `utils::Ulid`), all components will automatically generate id
 - [x] the define page automatically add getter and setter from `GView` component
 - [x] add redraw if callback events need
