@@ -33,7 +33,7 @@
 
 ## How to learn
 
-You can read [GenUI Book](https://privoce.github.io/GenUI.github.io/gen/introduction.html) to learn
+You can read [GenUI Book](https://privoce.github.io/GenUI.github.io/) to learn
 
 If you have any questions or need further assistance, please feel free to consult the relevant documentation or contact us
 
