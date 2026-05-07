@@ -87,7 +87,6 @@ If you have any questions or need further assistance, please feel free to consul
 > GenUI is currently in the early stages of development, with many features still being planned and implemented. We welcome community feedback and collaboration! If you have any suggestions for the framework, need to report an issue, or would like to add features, please contact us through the following channels:
 
 - **GitHub**: [https://github.com/Privoce/GenUI](https://github.com/Privoce/GenUI)
-- **Discord**: [https://discord.gg/jVEJDhE75Y](https://discord.gg/jVEJDhE75Y)
 - **Email**: [syf20020816@outlook.com](mailto:syf20020816@outlook.com)
 - **Collaboration Email**: [han@privoce.com](mailto:han@privoce.com)
 
